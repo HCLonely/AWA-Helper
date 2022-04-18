@@ -1,0 +1,6 @@
+.history/
+node_modules/
+config.yml
+*.exe
+*.zip
+output/

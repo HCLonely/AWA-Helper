@@ -1,0 +1,24 @@
+name: Release
+on:
+  workflow_dispatch:
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - run: npm install
+      - run: npm run build
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: false
+          tag_name: v1.0.0
+          name: 1.0.0
+          body: '- 第一版'
+          files: AWA-Helper.zip
+          token: ${{ github.TOKEN }}

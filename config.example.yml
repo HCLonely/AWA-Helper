@@ -1,0 +1,24 @@
+#### AWA 配置(必需) ####
+awaCookie: '' # 外星人论坛Cookie
+awaUserId: '' # 外星人论坛用户Id
+awaBorderId: '' # 外星人论坛当前的BorderId
+awaBadgeIds: '' # 外星人论坛当前的BadgeIds
+
+#### Twitch 配置 ####
+twitchCookie: '' # Twitch Cookie, 须包括`unique_id` 和 `auth-token`
+
+#### ASF 配置 ####
+asfProtocol: 'http'
+asfHost: "127.0.0.1"
+asfPort: "1242"
+asfPassword: ''
+asfBotname: ''
+
+#### 代理设置(可选) ####
+proxy:
+  enable:
+    - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
+    - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
+    - asf # 在访问ASF时使用代理，不使用删掉此行
+  host: '127.0.0.1' # 代理host
+  port: 1080 # 代理端口
