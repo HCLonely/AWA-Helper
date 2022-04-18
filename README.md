@@ -46,7 +46,7 @@ console.log(`awaUserId: '${user_id}'\nawaBorderId: '${selectedBorder}'\nawaBadge
 
 ### Twitch 配置(可选)
 
-> 做Twitch在线任务需要，不想做这个任务可以不填。
+> 做Twitch在线任务需要，不想做这个任务可以不填。自动做Twitch任务前需要先在Twitch给外星人扩展授权，只需授权一次即可。
 
 #### Twitch 参数说明
 
