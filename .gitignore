@@ -4,3 +4,4 @@ config.yml
 *.exe
 *.zip
 output/
+log.txt

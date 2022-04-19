@@ -9,6 +9,8 @@ import { log, sleep, random, time } from './tool';
 import { Agent } from 'http';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuest } from './SteamQuest';
+import * as fs from 'fs';
+import * as notifier from 'node-notifier';
 
 class DailyQuest {
   // eslint-disable-next-line no-undef
@@ -45,25 +47,36 @@ class DailyQuest {
   init(): Promise<number> {
     return this.updateDailyQuests(true);
   }
-  async listen(twitch: TwitchTrack | null, steamQuest: SteamQuest | null): Promise<void> {
+  async listen(twitch: TwitchTrack | null, steamQuest: SteamQuest | null, check = false): Promise<void> {
     if (await this.updateDailyQuests() === 200) {
       if (this.questInfo.steamQuest && steamQuest && parseInt(this.questInfo.steamQuest, 10) >= steamQuest.maxArp) {
-        await steamQuest.resume();
+        if (steamQuest.status === 'running') {
+          await steamQuest.resume();
+        }
         this.questStatus.steamQuest = 'complete';
       }
-      if (steamQuest?.stopped || !steamQuest) {
+      if (steamQuest?.status === 'stopped' || (!check && !steamQuest)) {
         this.questStatus.steamQuest = 'complete';
       }
-      if (twitch?.complete || !twitch) {
+      if (twitch?.complete || (!check && !twitch)) {
         this.questStatus.watchTwitch = 'complete';
       }
-      if (this.questStatus.dailyQuest === 'complete' && this.questStatus.timeOnSite === 'complete' && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
+      if ((this.questStatus.dailyQuest === 'complete' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
         log(time() + chalk.green('今日所有任务已完成！'));
+
+        notifier.notify(
+          {
+            title: 'AWA-Helper 提醒',
+            message: '今日所有任务已完成！'
+          }
+        );
+
         log('按任意键退出...');
         process.stdin.setRawMode(true);
         process.stdin.on('data', () => process.exit(0));
         return;
       }
+      if (check) return;
       await sleep(60 * 5);
       this.listen(twitch, steamQuest);
     }
@@ -110,8 +123,10 @@ class DailyQuest {
             .text()
             .trim();
           this.questInfo.steamQuest = steamArp;
-          log(`${time()}当前任务信息:`);
-          console.table(this.formatQuestInfo());
+          if (!verify) log(`${time()}当前任务信息:`);
+          const formatQuestInfo = this.formatQuestInfo();
+          fs.appendFileSync('log.txt', `${JSON.stringify(formatQuestInfo, null, 4)}\n`);
+          if (!verify) console.table(formatQuestInfo);
 
           this.posts = $('.tile-slider__card a[href*="/ucf/show/"]').toArray()
             .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])

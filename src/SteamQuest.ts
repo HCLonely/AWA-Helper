@@ -17,7 +17,7 @@ class SteamQuest {
   maxPlayTimes = 2;
   gamesInfo: Array<steamGameInfo> = [];
   maxArp = 0;
-  stopped = false;
+  status = 'none';
   taskStatus!: Array<steamGameInfo>;
 
   constructor(awaCookie: string, asfProtocol: string, asfHost: string, asfPort: string, asfPassword: string, asfBotname: string, proxy?: proxy) {
@@ -141,7 +141,7 @@ class SteamQuest {
       .then((response) => {
         if (response.data.includes('You have completed this quest')) {
           log(chalk.green('此任务已完成'));
-          return true;
+          return false;
         }
         if (response.data.includes('This quest requires that you own')) {
           log(chalk.yellow('未拥有此游戏，跳过'));
@@ -191,8 +191,8 @@ class SteamQuest {
         return false;
       });
   }
-  async checkStatus():Promise<boolean> {
-    if (this.stopped) return true;
+  async checkStatus(): Promise<boolean> {
+    if (this.status === 'stopped') return true;
     for (const index in this.taskStatus) {
       log(`${time()}正在检测Steam任务[${chalk.yellow(this.taskStatus[index].link)}]进度...`, false);
       const options: AxiosRequestConfig = {
@@ -227,7 +227,7 @@ class SteamQuest {
           return false;
         });
     }
-    if (this.taskStatus.filter((e) => e.progress === '100').length === this.taskStatus.length) {
+    if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
       log(time() + chalk.yellow('Steam') + chalk.green('挂时长任务完成！'));
       this.resume();
       return true;
@@ -278,7 +278,8 @@ class SteamQuest {
   async playGames(): Promise<boolean> {
     if (!await this.getOwnedGames()) return false;
     if (this.ownedGames.length === 0) {
-      log(chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+      log(time() + chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+      this.status = 'stopped';
       return false;
     }
     log(`${time()}正在调用${chalk.yellow('ASF')}挂游戏时长...`, false);
@@ -293,7 +294,7 @@ class SteamQuest {
       .then((response) => {
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            this.stopped = false;
+            this.status = 'running';
             log(chalk.green('OK'));
             return true;
           }
@@ -322,7 +323,7 @@ class SteamQuest {
     // return this.resume();
   }
   async resume(): Promise<boolean> {
-    if (this.stopped) return true;
+    if (this.status === 'stopped') return true;
     log(`${time()}正在停止挂游戏时长...`, false);
     const options: AxiosRequestConfig = {
       url: this.asfUrl,
@@ -335,7 +336,7 @@ class SteamQuest {
       .then((response) => {
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            this.stopped = true;
+            this.status = 'stopped';
             log(chalk.green(response.data.Result));
             return true;
           }

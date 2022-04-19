@@ -3,7 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.time = exports.random = exports.sleep = exports.log = void 0;
 const chalk = require("chalk");
 const dayjs = require("dayjs");
+const fs = require("fs");
 const log = (text, newLine = true) => {
+    // eslint-disable-next-line no-control-regex
+    fs.appendFileSync('log.txt', text.toString().replace(/\x1B\[[\d]*?m/g, '') + (newLine ? '\n' : ''));
     if (newLine)
         console.log(text);
     else

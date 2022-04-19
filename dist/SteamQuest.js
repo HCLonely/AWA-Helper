@@ -14,7 +14,7 @@ class SteamQuest {
         this.maxPlayTimes = 2;
         this.gamesInfo = [];
         this.maxArp = 0;
-        this.stopped = false;
+        this.status = 'none';
         this.awaCookie = awaCookie;
         this.botname = asfBotname;
         this.asfUrl = `${asfProtocol}://${asfHost}:${asfPort}/Api/Command`;
@@ -137,7 +137,7 @@ class SteamQuest {
             .then((response) => {
             if (response.data.includes('You have completed this quest')) {
                 (0, tool_1.log)(chalk.green('此任务已完成'));
-                return true;
+                return false;
             }
             if (response.data.includes('This quest requires that you own')) {
                 (0, tool_1.log)(chalk.yellow('未拥有此游戏，跳过'));
@@ -189,7 +189,7 @@ class SteamQuest {
         });
     }
     async checkStatus() {
-        if (this.stopped)
+        if (this.status === 'stopped')
             return true;
         for (const index in this.taskStatus) {
             (0, tool_1.log)(`${(0, tool_1.time)()}正在检测Steam任务[${chalk.yellow(this.taskStatus[index].link)}]进度...`, false);
@@ -226,7 +226,7 @@ class SteamQuest {
                 return false;
             });
         }
-        if (this.taskStatus.filter((e) => e.progress === '100').length === this.taskStatus.length) {
+        if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
             (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('Steam') + chalk.green('挂时长任务完成！'));
             this.resume();
             return true;
@@ -281,7 +281,8 @@ class SteamQuest {
         if (!await this.getOwnedGames())
             return false;
         if (this.ownedGames.length === 0) {
-            (0, tool_1.log)(chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+            this.status = 'stopped';
             return false;
         }
         (0, tool_1.log)(`${(0, tool_1.time)()}正在调用${chalk.yellow('ASF')}挂游戏时长...`, false);
@@ -297,7 +298,7 @@ class SteamQuest {
             .then((response) => {
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-                    this.stopped = false;
+                    this.status = 'running';
                     (0, tool_1.log)(chalk.green('OK'));
                     return true;
                 }
@@ -327,7 +328,7 @@ class SteamQuest {
         // return this.resume();
     }
     async resume() {
-        if (this.stopped)
+        if (this.status === 'stopped')
             return true;
         (0, tool_1.log)(`${(0, tool_1.time)()}正在停止挂游戏时长...`, false);
         const options = {
@@ -342,7 +343,7 @@ class SteamQuest {
             .then((response) => {
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-                    this.stopped = true;
+                    this.status = 'stopped';
                     (0, tool_1.log)(chalk.green(response.data.Result));
                     return true;
                 }

@@ -13,6 +13,7 @@ const chalk = require("chalk");
         (0, tool_1.log)(chalk.red(`没有找到配置文件[${chalk.yellow('config.yml')}]!`));
         return;
     }
+    fs.writeFileSync('log.txt', '');
     const { awaCookie, awaUserId, awaBorderId, awaBadgeIds, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
     const missingAwaParams = Object.entries({
         awaCookie,
@@ -28,19 +29,29 @@ const chalk = require("chalk");
     const quest = new DailyQuest_1.DailyQuest(awaCookie, awaUserId, awaBorderId, awaBadgeIds, proxy);
     if (await quest.init() !== 200)
         return;
-    await quest.do();
-    quest.sendTrack();
+    await quest.listen(null, null, true);
+    if (quest.questInfo.dailyQuest?.status !== 'complete') {
+        await quest.do();
+    }
+    if (quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {
+        quest.sendTrack();
+    }
     await (0, tool_1.sleep)(10);
     let twitch = null;
-    if (twitchCookie) {
-        twitch = new TwitchTrack_1.TwitchTrack(twitchCookie, proxy);
-        if (await twitch.init() === true) {
-            twitch.sendTrack();
-            await (0, tool_1.sleep)(10);
+    if (quest.questInfo.watchTwitch !== '15') {
+        if (twitchCookie) {
+            twitch = new TwitchTrack_1.TwitchTrack(twitchCookie, proxy);
+            if (await twitch.init() === true) {
+                twitch.sendTrack();
+                await (0, tool_1.sleep)(10);
+            }
+        }
+        else {
+            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(`缺少${chalk.blue('["twitchCookie"]')}参数，跳过Twitch相关任务！`));
         }
     }
     else {
-        (0, tool_1.log)(chalk.yellow(`缺少${chalk.blue('["twitchCookie"]')}参数，跳过Twitch相关任务！`));
+        (0, tool_1.log)((0, tool_1.time)() + chalk.green('Twitch在线任务已完成！'));
     }
     let steamQuest = null;
     const missingAsfParams = Object.entries({

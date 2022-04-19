@@ -9,6 +9,9 @@ const chalk = require("chalk");
 const FormData = require("form-data");
 const tunnel = require("tunnel");
 const tool_1 = require("./tool");
+const fs = require("fs");
+const path = require("path");
+const notifier = require("node-notifier");
 class DailyQuest {
     constructor(awaCookie, awaUserId, awaBorderId, awaBadgeIds, proxy) {
         // eslint-disable-next-line no-undef
@@ -36,25 +39,36 @@ class DailyQuest {
     init() {
         return this.updateDailyQuests(true);
     }
-    async listen(twitch, steamQuest) {
+    async listen(twitch, steamQuest, check = false) {
         if (await this.updateDailyQuests() === 200) {
             if (this.questInfo.steamQuest && steamQuest && parseInt(this.questInfo.steamQuest, 10) >= steamQuest.maxArp) {
-                await steamQuest.resume();
+                if (steamQuest.status === 'running') {
+                    await steamQuest.resume();
+                }
                 this.questStatus.steamQuest = 'complete';
             }
-            if (steamQuest?.stopped || !steamQuest) {
+            if (steamQuest?.status === 'stopped' || (!check && !steamQuest)) {
                 this.questStatus.steamQuest = 'complete';
             }
-            if (twitch?.complete || !twitch) {
+            if (twitch?.complete || (!check && !twitch)) {
                 this.questStatus.watchTwitch = 'complete';
             }
-            if (this.questStatus.dailyQuest === 'complete' && this.questStatus.timeOnSite === 'complete' && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
+            if ((this.questStatus.dailyQuest === 'complete' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
                 (0, tool_1.log)((0, tool_1.time)() + chalk.green('今日所有任务已完成！'));
+                notifier.notify({
+                    title: 'AWA-Helper 提醒',
+                    message: '今日所有任务已完成！',
+                    sound: false,
+                    icon: path.resolve(__dirname, 'static/AW-arpbooster.png'),
+                    open: 'https://www.alienwarearena.com/'
+                });
                 (0, tool_1.log)('按任意键退出...');
                 process.stdin.setRawMode(true);
                 process.stdin.on('data', () => process.exit(0));
                 return;
             }
+            if (check)
+                return;
             await (0, tool_1.sleep)(60 * 5);
             this.listen(twitch, steamQuest);
         }
@@ -104,7 +118,10 @@ class DailyQuest {
                     .trim();
                 this.questInfo.steamQuest = steamArp;
                 (0, tool_1.log)(`${(0, tool_1.time)()}当前任务信息:`);
-                console.table(this.formatQuestInfo());
+                const formatQuestInfo = this.formatQuestInfo();
+                fs.appendFileSync('log.txt', `${JSON.stringify(formatQuestInfo, null, 4)}\n`);
+                if (!verify)
+                    console.table(formatQuestInfo);
                 this.posts = $('.tile-slider__card a[href*="/ucf/show/"]').toArray()
                     .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])
                     .filter((e) => e);

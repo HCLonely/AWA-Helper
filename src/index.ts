@@ -4,7 +4,7 @@ import { TwitchTrack } from './TwitchTrack';
 import { SteamQuest } from './SteamQuest';
 import * as fs from 'fs';
 import { parse } from 'yaml';
-import { sleep, log } from './tool';
+import { sleep, log, time } from './tool';
 import * as chalk from 'chalk';
 
 (async () => {
@@ -12,6 +12,7 @@ import * as chalk from 'chalk';
     log(chalk.red(`没有找到配置文件[${chalk.yellow('config.yml')}]!`));
     return;
   }
+  fs.writeFileSync('log.txt', '');
   const {
     awaCookie,
     awaUserId,
@@ -38,19 +39,28 @@ import * as chalk from 'chalk';
   }
   const quest = new DailyQuest(awaCookie, awaUserId, awaBorderId, awaBadgeIds, proxy);
   if (await quest.init() !== 200) return;
-  await quest.do();
-  quest.sendTrack();
+  await quest.listen(null, null, true);
+  if (quest.questInfo.dailyQuest?.status !== 'complete') {
+    await quest.do();
+  }
+  if (quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {
+    quest.sendTrack();
+  }
   await sleep(10);
 
   let twitch: TwitchTrack | null = null;
-  if (twitchCookie) {
-    twitch = new TwitchTrack(twitchCookie, proxy);
-    if (await twitch.init() === true) {
-      twitch.sendTrack();
-      await sleep(10);
+  if (quest.questInfo.watchTwitch !== '15') {
+    if (twitchCookie) {
+      twitch = new TwitchTrack(twitchCookie, proxy);
+      if (await twitch.init() === true) {
+        twitch.sendTrack();
+        await sleep(10);
+      }
+    } else {
+      log(time() + chalk.yellow(`缺少${chalk.blue('["twitchCookie"]')}参数，跳过Twitch相关任务！`));
     }
   } else {
-    log(chalk.yellow(`缺少${chalk.blue('["twitchCookie"]')}参数，跳过Twitch相关任务！`));
+    log(time() + chalk.green('Twitch在线任务已完成！'));
   }
 
   let steamQuest: SteamQuest | null = null;

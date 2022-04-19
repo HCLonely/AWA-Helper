@@ -1,7 +1,10 @@
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
+import * as fs from 'fs';
 
 const log = (text: string, newLine = true): void => {
+  // eslint-disable-next-line no-control-regex
+  fs.appendFileSync('log.txt', text.toString().replace(/\x1B\[[\d]*?m/g, '') + (newLine ? '\n' : ''));
   if (newLine) console.log(text);
   else process.stdout.write(text);
 };
