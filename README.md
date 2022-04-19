@@ -92,4 +92,6 @@ proxy:
   port: 1080 # 代理端口
 ```
 
-LICENSE
+## 运行示例
+
+![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)

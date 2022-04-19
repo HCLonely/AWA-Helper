@@ -10,7 +10,6 @@ import { Agent } from 'http';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuest } from './SteamQuest';
 import * as fs from 'fs';
-import * as notifier from 'node-notifier';
 
 class DailyQuest {
   // eslint-disable-next-line no-undef
@@ -63,14 +62,6 @@ class DailyQuest {
       }
       if ((this.questStatus.dailyQuest === 'complete' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
         log(time() + chalk.green('今日所有任务已完成！'));
-
-        notifier.notify(
-          {
-            title: 'AWA-Helper 提醒',
-            message: '今日所有任务已完成！'
-          }
-        );
-
         log('按任意键退出...');
         process.stdin.setRawMode(true);
         process.stdin.on('data', () => process.exit(0));
@@ -398,12 +389,12 @@ class DailyQuest {
     form.append('topic_post[quotedPostIds]', '');
     form.append('topic_post[parentPost]', '');
     const options: AxiosRequestConfig = {
-      url: `https://www.alienwarearena.com/comments/${postId}/new/ucf`,
+      url: `https://www.alienwarearena.com/comments/${post}/new/ucf`,
       method: 'POST',
       headers: {
         ...this.headers,
         origin: 'https://www.alienwarearena.com',
-        referer: `https://www.alienwarearena.com/ucf/show/${postId}`,
+        referer: `https://www.alienwarearena.com/ucf/show/${post}`,
         ...form.getHeaders()
       },
       data: form
@@ -427,7 +418,7 @@ class DailyQuest {
       });
   }
 
-  sharePost(postId?: string): Promise<boolean> {
+  sharePost(postId: string): Promise<boolean> {
     log(`${time()}正在分享帖子${chalk.yellow(postId)}...`, false);
     const options: AxiosRequestConfig = {
       url: `https://www.alienwarearena.com/arp/quests/share/${postId}`,
