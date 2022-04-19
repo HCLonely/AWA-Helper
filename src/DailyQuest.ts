@@ -79,7 +79,10 @@ class DailyQuest {
     const options: AxiosRequestConfig = {
       url: `https://${this.host}/`,
       method: 'GET',
-      headers: this.headers
+      headers: {
+        ...this.headers,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+      }
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
@@ -91,10 +94,45 @@ class DailyQuest {
             return 401;
           }
           log(chalk.green('OK'));
+          if (verify) {
+            // 连续签到
+            const consecutiveLoginsText = response.data.match(/consecutive_logins.*?=.*?({.+?})/)?.[1];
+            if (consecutiveLoginsText) {
+              try {
+                const consecutiveLogins = JSON.parse(consecutiveLoginsText);
+                const reward = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                if (reward) {
+                  log(`${time()}已连续登录${chalk.yellow(consecutiveLogins.count)}天，获得${chalk.green(reward)}ARP`);
+                }
+              } catch (e) {
+                //
+              }
+            }
+            // 月签到
+            const monthlyLoginsText = response.data.match(/monthly_logins.*?=.*?({.+?})/)?.[1];
+            if (monthlyLoginsText) {
+              try {
+                const monthlyLogins = JSON.parse(monthlyLoginsText);
+                if (monthlyLogins.count < 29) {
+                  const week = Math.ceil(monthlyLogins.count / 7);
+                  const reward = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                  if (reward) {
+                    log(`${time()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(reward)}ARP`);
+                  }
+                } else {
+                  log(`${time()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(monthlyLogins.extra_arp)}ARP`);
+                }
+              } catch (e) {
+                //
+              }
+            }
+          }
+          // 每日任务
           const [status, arp] = $('div.quest-item .quest-item-progress').map((i, e) => $(e).text().toLowerCase());
           this.questInfo.dailyQuest = {
             status, arp
           };
+          // AWA 在线任务
           const [maxArp, addedArp] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Time on Site')).find('center')
             .toArray()
             .map((e) => parseInt($(e).text().trim()
@@ -106,11 +144,13 @@ class DailyQuest {
               maxArp, addedArp
             };
           }
+          // Twitch 在线任务
           const twitchArp = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Watch Twitch')).find('center b')
             .last()
             .text()
             .trim();
           this.questInfo.watchTwitch = twitchArp;
+          // Steam 挂机任务
           const steamArp = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
             .last()
             .text()
