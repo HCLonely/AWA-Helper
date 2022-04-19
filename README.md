@@ -91,3 +91,5 @@ proxy:
   host: '127.0.0.1' # 代理host
   port: 1080 # 代理端口
 ```
+
+LICENSE

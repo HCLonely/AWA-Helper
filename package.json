@@ -1,8 +1,8 @@
 {
   "name": "awa-helper",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "1.0.1",
+  "description": "外星人论坛自动做任务",
+  "main": "dist/index.js",
   "scripts": {
     "test": "tsc && node dist/index.js",
     "start": "node dist/index.js",

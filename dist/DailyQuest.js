@@ -10,7 +10,6 @@ const FormData = require("form-data");
 const tunnel = require("tunnel");
 const tool_1 = require("./tool");
 const fs = require("fs");
-const path = require("path");
 const notifier = require("node-notifier");
 class DailyQuest {
     constructor(awaCookie, awaUserId, awaBorderId, awaBadgeIds, proxy) {
@@ -57,10 +56,7 @@ class DailyQuest {
                 (0, tool_1.log)((0, tool_1.time)() + chalk.green('今日所有任务已完成！'));
                 notifier.notify({
                     title: 'AWA-Helper 提醒',
-                    message: '今日所有任务已完成！',
-                    sound: false,
-                    icon: path.resolve(__dirname, 'static/AW-arpbooster.png'),
-                    open: 'https://www.alienwarearena.com/'
+                    message: '今日所有任务已完成！'
                 });
                 (0, tool_1.log)('按任意键退出...');
                 process.stdin.setRawMode(true);
@@ -117,7 +113,8 @@ class DailyQuest {
                     .text()
                     .trim();
                 this.questInfo.steamQuest = steamArp;
-                (0, tool_1.log)(`${(0, tool_1.time)()}当前任务信息:`);
+                if (!verify)
+                    (0, tool_1.log)(`${(0, tool_1.time)()}当前任务信息:`);
                 const formatQuestInfo = this.formatQuestInfo();
                 fs.appendFileSync('log.txt', `${JSON.stringify(formatQuestInfo, null, 4)}\n`);
                 if (!verify)

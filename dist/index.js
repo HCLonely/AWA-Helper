@@ -9,11 +9,12 @@ const yaml_1 = require("yaml");
 const tool_1 = require("./tool");
 const chalk = require("chalk");
 (async () => {
+    (0, tool_1.log)('  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely ');
+    fs.writeFileSync('log.txt', '');
     if (!fs.existsSync('config.yml')) {
         (0, tool_1.log)(chalk.red(`没有找到配置文件[${chalk.yellow('config.yml')}]!`));
         return;
     }
-    fs.writeFileSync('log.txt', '');
     const { awaCookie, awaUserId, awaBorderId, awaBadgeIds, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
     const missingAwaParams = Object.entries({
         awaCookie,
