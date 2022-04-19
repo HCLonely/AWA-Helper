@@ -9,13 +9,14 @@ const chalk = require("chalk");
 const tool_1 = require("./tool");
 const tunnel = require("tunnel");
 class SteamQuest {
-    constructor(awaCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy) {
+    constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }) {
         this.ownedGames = [];
         this.maxPlayTimes = 2;
         this.gamesInfo = [];
         this.maxArp = 0;
         this.status = 'none';
         this.awaCookie = awaCookie;
+        this.awaHost = awaHost || 'www.alienwarearena.com';
         this.botname = asfBotname;
         this.asfUrl = `${asfProtocol}://${asfHost}:${asfPort}/Api/Command`;
         this.headers = {
@@ -72,7 +73,7 @@ class SteamQuest {
     async getSteamQuests() {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在获取${chalk.yellow('Steam')}任务信息...`);
         const options = {
-            url: 'https://www.alienwarearena.com/steam/quests',
+            url: `https://${this.awaHost}/steam/quests`,
             method: 'GET'
         };
         if (this.httpsAgent)
@@ -89,7 +90,7 @@ class SteamQuest {
                         ?.match(/steam\/apps\/([\d]+)/)?.[1];
                     if (!id)
                         continue;
-                    const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href'), 'https://www.alienwarearena.com/').href;
+                    const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href'), `https://${this.awaHost}/`).href;
                     const started = await this.getQuestInfo(questLink);
                     if (!started)
                         continue;
@@ -120,7 +121,7 @@ class SteamQuest {
         });
     }
     getQuestInfo(url) {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取Steam任务[${chalk.yellow(url)}]信息...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取Steam任务[${chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url)}]信息...`, false);
         const options = {
             url,
             method: 'GET',

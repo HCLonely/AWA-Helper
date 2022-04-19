@@ -17,8 +17,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.0.2
-          name: 1.0.2
-          body: '- 取消提醒功能 & 优化'
+          tag_name: v1.0.3
+          name: 1.0.3
+          body: '- 添加AWA Host配置 & 优化'
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}

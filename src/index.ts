@@ -17,6 +17,7 @@ import * as chalk from 'chalk';
   }
   const {
     awaCookie,
+    awaHost,
     awaUserId,
     awaBorderId,
     awaBadgeIds,
@@ -39,7 +40,7 @@ import * as chalk from 'chalk';
     console.log(missingAwaParams);
     return;
   }
-  const quest = new DailyQuest(awaCookie, awaUserId, awaBorderId, awaBadgeIds, proxy);
+  const quest = new DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy });
   if (await quest.init() !== 200) return;
   await quest.listen(null, null, true);
   if (quest.questInfo.dailyQuest?.status !== 'complete') {
@@ -53,7 +54,7 @@ import * as chalk from 'chalk';
   let twitch: TwitchTrack | null = null;
   if (quest.questInfo.watchTwitch !== '15') {
     if (twitchCookie) {
-      twitch = new TwitchTrack(twitchCookie, proxy);
+      twitch = new TwitchTrack({ awaHost, cookie: twitchCookie, proxy });
       if (await twitch.init() === true) {
         twitch.sendTrack();
         await sleep(10);
@@ -76,7 +77,7 @@ import * as chalk from 'chalk';
   if (missingAsfParams.length > 0) {
     log(chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
   } else {
-    steamQuest = new SteamQuest(awaCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy);
+    steamQuest = new SteamQuest({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy });
     if (await steamQuest.init()) {
       steamQuest.playGames();
       await sleep(30);

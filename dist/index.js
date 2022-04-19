@@ -15,7 +15,7 @@ const chalk = require("chalk");
         (0, tool_1.log)(chalk.red(`没有找到配置文件[${chalk.yellow('config.yml')}]!`));
         return;
     }
-    const { awaCookie, awaUserId, awaBorderId, awaBadgeIds, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
+    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
     const missingAwaParams = Object.entries({
         awaCookie,
         awaUserId,
@@ -27,7 +27,7 @@ const chalk = require("chalk");
         console.log(missingAwaParams);
         return;
     }
-    const quest = new DailyQuest_1.DailyQuest(awaCookie, awaUserId, awaBorderId, awaBadgeIds, proxy);
+    const quest = new DailyQuest_1.DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy });
     if (await quest.init() !== 200)
         return;
     await quest.listen(null, null, true);
@@ -41,7 +41,7 @@ const chalk = require("chalk");
     let twitch = null;
     if (quest.questInfo.watchTwitch !== '15') {
         if (twitchCookie) {
-            twitch = new TwitchTrack_1.TwitchTrack(twitchCookie, proxy);
+            twitch = new TwitchTrack_1.TwitchTrack({ awaHost, cookie: twitchCookie, proxy });
             if (await twitch.init() === true) {
                 twitch.sendTrack();
                 await (0, tool_1.sleep)(10);
@@ -66,7 +66,7 @@ const chalk = require("chalk");
         (0, tool_1.log)(chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
     }
     else {
-        steamQuest = new SteamQuest_1.SteamQuest(awaCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy);
+        steamQuest = new SteamQuest_1.SteamQuest({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy });
         if (await steamQuest.init()) {
             steamQuest.playGames();
             await (0, tool_1.sleep)(30);

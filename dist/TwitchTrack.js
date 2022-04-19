@@ -9,11 +9,12 @@ const tool_1 = require("./tool");
 const tunnel = require("tunnel");
 class TwitchTrack {
     // eslint-disable-next-line no-undef
-    constructor(cookie, proxy) {
+    constructor({ awaHost, cookie, proxy }) {
         this.trackError = 0;
         this.trackTimes = 0;
         this.formatedCookie = {};
         this.complete = false;
+        this.awaHost = awaHost || 'www.alienwarearena.com';
         cookie.split(';').map((e) => {
             const [name, value] = e.split('=');
             this.formatedCookie[name] = value;
@@ -80,7 +81,7 @@ class TwitchTrack {
     async getAvailableStreams() {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在获取可用直播信息...`, false);
         const options = {
-            url: 'https://www.alienwarearena.com/twitch/live',
+            url: `https://${this.awaHost}/twitch/live`,
             method: 'GET'
         };
         if (this.httpsAgent)

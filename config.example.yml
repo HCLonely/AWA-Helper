@@ -1,5 +1,6 @@
 #### AWA 配置(必需) ####
 awaCookie: '' # 外星人论坛Cookie
+awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 默认的没问题就不要改
 awaUserId: '' # 外星人论坛用户Id
 awaBorderId: '' # 外星人论坛当前的BorderId
 awaBadgeIds: '' # 外星人论坛当前的BadgeIds

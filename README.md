@@ -4,6 +4,11 @@
 
 ## 使用说明
 
+## 用前说明
+
+1. 使用前请确保AWA帐号已关联Steam帐号且Steam帐号信息已设置为公开；
+2. 使用前请确保AWA帐号已关联Twitch帐号且Twitch帐号已给AWA扩展授权。
+
 ### 通过源码运行
 
 1. 前提条件: 安装[Git](https://git-scm.com/downloads)和[NodeJs](https://nodejs.org/zh-cn/download/);
@@ -29,6 +34,7 @@
 
 ```yml
 awaCookie: '' # 外星人论坛Cookie
+awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienwarearena.com`和`na.alienwarearena.com`, 默认的没问题就不要改
 awaUserId: '' # 外星人论坛用户Id
 awaBorderId: '' # 外星人论坛当前使用的BorderId
 awaBadgeIds: '' # 外星人论坛当前使用的BadgeIds

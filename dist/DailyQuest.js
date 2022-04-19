@@ -11,12 +11,13 @@ const tunnel = require("tunnel");
 const tool_1 = require("./tool");
 const fs = require("fs");
 class DailyQuest {
-    constructor(awaCookie, awaUserId, awaBorderId, awaBadgeIds, proxy) {
+    constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy }) {
         // eslint-disable-next-line no-undef
         this.questInfo = {};
         this.trackError = 0;
         this.trackTimes = 0;
         this.questStatus = {};
+        this.host = awaHost || 'www.alienwarearena.com';
         this.userId = awaUserId;
         this.borderId = awaBorderId;
         this.badgeIds = awaBadgeIds.split(',');
@@ -67,7 +68,7 @@ class DailyQuest {
     updateDailyQuests(verify = false) {
         (0, tool_1.log)((0, tool_1.time)() + (verify ? `正在验证 ${chalk.yellow('AWA')} Token...` : '正在获取任务信息...'), false);
         const options = {
-            url: 'https://www.alienwarearena.com/',
+            url: `https://${this.host}/`,
             method: 'GET',
             headers: this.headers
         };
@@ -118,7 +119,7 @@ class DailyQuest {
                     .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])
                     .filter((e) => e);
                 if ($('a.quest-title').length > 0) {
-                    this.dailyQuestLink = new URL($('a.quest-title[href]').attr('href'), 'https://www.alienwarearena.com/').href;
+                    this.dailyQuestLink = new URL($('a.quest-title[href]').attr('href'), `https://${this.host}/`).href;
                 }
                 return 200;
             }
@@ -159,12 +160,12 @@ class DailyQuest {
     changeBorder() {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在更换${chalk.yellow('Border')}...`, false);
         const options = {
-            url: 'https://www.alienwarearena.com/border/select',
+            url: `https://${this.host}/border/select`,
             method: 'POST',
             headers: {
                 ...this.headers,
-                origin: 'https://www.alienwarearena.com',
-                referer: 'https://www.alienwarearena.com/account/personalization'
+                origin: `https://${this.host}`,
+                referer: `https://${this.host}/account/personalization`
             },
             data: { id: this.borderId }
         };
@@ -189,12 +190,12 @@ class DailyQuest {
     changeBadge() {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在更换${chalk.yellow('Badge')}...`, false);
         const options = {
-            url: `https://www.alienwarearena.com/badges/update/${this.userId}`,
+            url: `https://${this.host}/badges/update/${this.userId}`,
             method: 'POST',
             headers: {
                 ...this.headers,
-                origin: 'https://www.alienwarearena.com',
-                referer: 'https://www.alienwarearena.com/account/personalization'
+                origin: `https://${this.host}`,
+                referer: `https://${this.host}/account/personalization`
             },
             data: JSON.stringify(this.badgeIds)
         };
@@ -219,11 +220,11 @@ class DailyQuest {
     async sendViewTrack(link) {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在发送浏览${chalk.yellow(link)}心跳...`, false);
         const options = {
-            url: 'https://www.alienwarearena.com/tos/track',
+            url: `https://${this.host}/tos/track`,
             method: 'POST',
             headers: {
                 ...this.headers,
-                origin: 'https://www.alienwarearena.com',
+                origin: `https://${this.host}`,
                 referer: link
             },
             data: JSON.stringify({ url: link })
@@ -263,14 +264,14 @@ class DailyQuest {
         }
         (0, tool_1.log)(`${(0, tool_1.time)()}正在发送${chalk.yellow('AWA')}在线心跳...`, false);
         const options = {
-            url: 'https://www.alienwarearena.com/tos/track',
+            url: `https://${this.host}/tos/track`,
             method: 'POST',
             headers: {
                 ...this.headers,
-                origin: 'https://www.alienwarearena.com',
-                referer: 'https://www.alienwarearena.com/account/personalization'
+                origin: `https://${this.host}`,
+                referer: `https://${this.host}/account/personalization`
             },
-            data: JSON.stringify({ url: 'https://www.alienwarearena.com/account/personalization' })
+            data: JSON.stringify({ url: `https://${this.host}/account/personalization` })
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
@@ -299,12 +300,12 @@ class DailyQuest {
     viewPost(postId) {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在浏览帖子${chalk.yellow(postId)}...`, false);
         const options = {
-            url: `https://www.alienwarearena.com/ucf/increment-views/${postId}`,
+            url: `https://${this.host}/ucf/increment-views/${postId}`,
             method: 'POST',
             headers: {
                 ...this.headers,
-                origin: 'https://www.alienwarearena.com',
-                referer: `https://www.alienwarearena.com/ucf/show/${postId}`
+                origin: `https://${this.host}`,
+                referer: `https://${this.host}/ucf/show/${postId}`
             }
         };
         if (this.httpsAgent)
@@ -339,7 +340,7 @@ class DailyQuest {
     async replyPost(postId) {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在获取每日任务相关帖子...`, false);
         const getOptions = {
-            url: 'https://www.alienwarearena.com/forums/board/113/awa-on-topic',
+            url: `https://${this.host}/forums/board/113/awa-on-topic`,
             method: 'GET',
             headers: this.headers
         };
@@ -377,12 +378,12 @@ class DailyQuest {
         form.append('topic_post[quotedPostIds]', '');
         form.append('topic_post[parentPost]', '');
         const options = {
-            url: `https://www.alienwarearena.com/comments/${post}/new/ucf`,
+            url: `https://${this.host}/comments/${post}/new/ucf`,
             method: 'POST',
             headers: {
                 ...this.headers,
-                origin: 'https://www.alienwarearena.com',
-                referer: `https://www.alienwarearena.com/ucf/show/${post}`,
+                origin: `https://${this.host}`,
+                referer: `https://${this.host}/ucf/show/${post}`,
                 ...form.getHeaders()
             },
             data: form
@@ -408,12 +409,12 @@ class DailyQuest {
     sharePost(postId) {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在分享帖子${chalk.yellow(postId)}...`, false);
         const options = {
-            url: `https://www.alienwarearena.com/arp/quests/share/${postId}`,
+            url: `https://${this.host}/arp/quests/share/${postId}`,
             method: 'POST',
             headers: {
                 ...this.headers,
-                origin: 'https://www.alienwarearena.com',
-                referer: `https://www.alienwarearena.com/ucf/show/${postId}`
+                origin: `https://${this.host}`,
+                referer: `https://${this.host}/ucf/show/${postId}`
             },
             responseType: 'text'
         };
