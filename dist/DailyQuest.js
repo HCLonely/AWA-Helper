@@ -184,6 +184,7 @@ class DailyQuest {
         await this.changeBorder();
         await this.changeBadge();
         await this.viewPosts();
+        await this.viewNews();
         await this.sharePosts();
         if (this.dailyQuestLink) {
             await this.sendViewTrack(this.dailyQuestLink);
@@ -295,7 +296,7 @@ class DailyQuest {
             return false;
         });
     }
-    async sendTrack() {
+    async track() {
         if (this.trackTimes % 3 === 0) {
             // await this.updateDailyQuests();
             if (!this.questInfo.timeOnSite) {
@@ -311,6 +312,11 @@ class DailyQuest {
             return (0, tool_1.log)((0, tool_1.time)() + chalk.red('发送') + chalk.yellow('[AWA]') + chalk.red('在线心跳连续失败超过6次，跳过此任务'));
         }
         (0, tool_1.log)(`${(0, tool_1.time)()}正在发送${chalk.yellow('AWA')}在线心跳...`, false);
+        await this.sendTrack();
+        await (0, tool_1.sleep)(60);
+        this.track();
+    }
+    async sendTrack(link) {
         const options = {
             url: `https://${this.host}/tos/track`,
             method: 'POST',
@@ -318,13 +324,13 @@ class DailyQuest {
                 ...this.headers,
                 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 origin: `https://${this.host}`,
-                referer: `https://${this.host}/account/personalization`
+                referer: link || `https://${this.host}/account/personalization`
             },
-            data: JSON.stringify({ url: `https://${this.host}/account/personalization` })
+            data: JSON.stringify({ url: link || `https://${this.host}/account/personalization` })
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        await (0, axios_1.default)(options)
+        return await (0, axios_1.default)(options)
             .then((response) => {
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
@@ -343,10 +349,8 @@ class DailyQuest {
             this.trackError++;
             return false;
         });
-        await (0, tool_1.sleep)(60);
-        this.sendTrack();
     }
-    viewPost(postId) {
+    async viewPost(postId) {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在浏览帖子${chalk.yellow(postId)}...`, false);
         const options = {
             url: `https://${this.host}/ucf/increment-views/${postId}`,
@@ -359,9 +363,10 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
-            .then((response) => {
+        return await (0, axios_1.default)(options)
+            .then(async (response) => {
             if (response.data === 'success') {
+                await this.sendTrack(`https://${this.host}/ucf/increment-views/${postId}`);
                 (0, tool_1.log)(chalk.green('OK'));
                 return true;
             }
@@ -380,7 +385,7 @@ class DailyQuest {
         if (!posts?.length) {
             return false;
         }
-        for (const post of posts) {
+        for (const post of posts.slice(0, 5)) {
             await this.viewPost(post);
             await (0, tool_1.sleep)((0, tool_1.random)(1, 5));
         }
@@ -497,15 +502,31 @@ class DailyQuest {
         });
     }
     async sharePosts(postIds) {
-        const posts = (postIds || this.posts).slice(0, 3);
+        const posts = postIds || this.posts;
         if (!posts?.length) {
             return false;
         }
-        for (const post of posts) {
+        for (const post of posts.slice(0, 3)) {
             await this.sharePost(post);
             await (0, tool_1.sleep)((0, tool_1.random)(1, 5));
         }
         return true;
+    }
+    async viewNews() {
+        const options = {
+            url: `https://${this.host}/ucf/show/2162951/boards/awa-information/News/arp-6-0`,
+            method: 'GET',
+            headers: {
+                ...this.headers,
+                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+            }
+        };
+        if (this.httpsAgent)
+            options.httpsAgent = this.httpsAgent;
+        await (0, axios_1.default)(options)
+            .then(() => { })
+            .catch(() => { });
+        await this.viewPost('2162951');
     }
     formatQuestInfo() {
         return {

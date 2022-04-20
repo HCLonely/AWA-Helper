@@ -17,8 +17,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.0.7
-          name: 1.0.7
-          body: '- 添加分享帖子功能'
+          tag_name: v1.0.8
+          name: 1.0.8
+          body: '- 添加阅读新闻功能'
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}

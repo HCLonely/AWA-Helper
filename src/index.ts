@@ -50,7 +50,7 @@ import * as chalk from 'chalk';
     await quest.do();
   }
   if (quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {
-    quest.sendTrack();
+    quest.track();
   }
   await sleep(10);
 
