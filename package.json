@@ -1,12 +1,12 @@
 {
   "name": "awa-helper",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "scripts": {
-    "test": "tsc && node build.js --test && node dist/index.js",
+    "test": "tsc && node build.js --pre && node dist/index.js",
     "start": "node dist/index.js",
-    "build": "tsc && pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe && node build.js"
+    "build": "tsc && node build.js --pre && pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe && node build.js"
   },
   "keywords": [],
   "author": "HCLonely",
