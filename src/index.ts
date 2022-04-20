@@ -44,7 +44,6 @@ import * as chalk from 'chalk';
     return;
   }
   await checkUpdate(version, proxy);
-  await sleep(30);
   const quest = new DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy });
   if (await quest.init() !== 200) return;
   await quest.listen(null, null, true);

@@ -339,22 +339,28 @@ class DailyQuest {
 
     return await axios(options)
       .then((response) => {
-        if (response.data.success) {
-          log(chalk.green('OK'));
-          this.trackError = 0;
-          this.trackTimes++;
-          return true;
+        if (!link) {
+          if (response.data.success) {
+            log(chalk.green('OK'));
+            this.trackError = 0;
+            this.trackTimes++;
+            return true;
+          }
+          log(chalk.red('Error'));
+          log(response.data?.message || response.statusText);
+          this.trackError++;
+          return false;
         }
-        log(chalk.red('Error'));
-        log(response.data?.message || response.statusText);
-        this.trackError++;
-        return false;
+        return true;
       })
       .catch((e) => {
-        log(chalk.red('Error'));
-        console.error(e);
-        this.trackError++;
-        return false;
+        if (!link) {
+          log(chalk.red('Error'));
+          console.error(e);
+          this.trackError++;
+          return false;
+        }
+        return true;
       });
   }
 
@@ -374,7 +380,7 @@ class DailyQuest {
     return await axios(options)
       .then(async (response) => {
         if (response.data === 'success') {
-          await this.sendTrack(`https://${this.host}/ucf/increment-views/${postId}`);
+          await this.sendTrack(`https://${this.host}/ucf/show/${postId}`);
           log(chalk.green('OK'));
           return true;
         }

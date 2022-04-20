@@ -332,22 +332,28 @@ class DailyQuest {
             options.httpsAgent = this.httpsAgent;
         return await (0, axios_1.default)(options)
             .then((response) => {
-            if (response.data.success) {
-                (0, tool_1.log)(chalk.green('OK'));
-                this.trackError = 0;
-                this.trackTimes++;
-                return true;
+            if (!link) {
+                if (response.data.success) {
+                    (0, tool_1.log)(chalk.green('OK'));
+                    this.trackError = 0;
+                    this.trackTimes++;
+                    return true;
+                }
+                (0, tool_1.log)(chalk.red('Error'));
+                (0, tool_1.log)(response.data?.message || response.statusText);
+                this.trackError++;
+                return false;
             }
-            (0, tool_1.log)(chalk.red('Error'));
-            (0, tool_1.log)(response.data?.message || response.statusText);
-            this.trackError++;
-            return false;
+            return true;
         })
             .catch((e) => {
-            (0, tool_1.log)(chalk.red('Error'));
-            console.error(e);
-            this.trackError++;
-            return false;
+            if (!link) {
+                (0, tool_1.log)(chalk.red('Error'));
+                console.error(e);
+                this.trackError++;
+                return false;
+            }
+            return true;
         });
     }
     async viewPost(postId) {
@@ -366,7 +372,7 @@ class DailyQuest {
         return await (0, axios_1.default)(options)
             .then(async (response) => {
             if (response.data === 'success') {
-                await this.sendTrack(`https://${this.host}/ucf/increment-views/${postId}`);
+                await this.sendTrack(`https://${this.host}/ucf/show/${postId}`);
                 (0, tool_1.log)(chalk.green('OK'));
                 return true;
             }
