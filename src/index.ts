@@ -4,7 +4,7 @@ import { TwitchTrack } from './TwitchTrack';
 import { SteamQuest } from './SteamQuest';
 import * as fs from 'fs';
 import { parse } from 'yaml';
-import { sleep, log, time } from './tool';
+import { sleep, log, time, checkUpdate } from './tool';
 import * as chalk from 'chalk';
 
 (async () => {
@@ -43,6 +43,8 @@ import * as chalk from 'chalk';
     console.log(missingAwaParams);
     return;
   }
+  await checkUpdate(version, proxy);
+  await sleep(30);
   const quest = new DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy });
   if (await quest.init() !== 200) return;
   await quest.listen(null, null, true);

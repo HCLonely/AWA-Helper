@@ -16,6 +16,7 @@ class TwitchTrack {
   formatedCookie: {
     [name: string]: string
   } = {};
+  cookie: string;
   httpsAgent!: Agent;
   headers: AxiosRequestHeaders;
   complete = false;
@@ -26,9 +27,10 @@ class TwitchTrack {
   // eslint-disable-next-line no-undef
   constructor({ awaHost, cookie, proxy }: { awaHost: string, cookie: string, proxy?: proxy }) {
     this.awaHost = awaHost || 'www.alienwarearena.com';
+    this.cookie = cookie;
     cookie.split(';').map((e: string) => {
       const [name, value] = e.split('=');
-      this.formatedCookie[name] = value;
+      this.formatedCookie[name.trim()] = value.trim();
       return e;
     });
     this.headers = {

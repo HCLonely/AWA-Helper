@@ -10,7 +10,7 @@ const tool_1 = require("./tool");
 const chalk = require("chalk");
 (async () => {
     fs.writeFileSync('log.txt', '');
-    const version = 'V1.0.8 ';
+    const version = 'V1.0.9 ';
     const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
     logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
     (0, tool_1.log)(logArr.join('\n'));
@@ -30,6 +30,8 @@ const chalk = require("chalk");
         console.log(missingAwaParams);
         return;
     }
+    await (0, tool_1.checkUpdate)(version, proxy);
+    await (0, tool_1.sleep)(30);
     const quest = new DailyQuest_1.DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy });
     if (await quest.init() !== 200)
         return;

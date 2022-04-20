@@ -101,3 +101,7 @@ proxy:
 ## 运行示例
 
 ![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)
+
+## TODO
+
+- [ ] 更新检测

@@ -15,9 +15,10 @@ class TwitchTrack {
         this.formatedCookie = {};
         this.complete = false;
         this.awaHost = awaHost || 'www.alienwarearena.com';
+        this.cookie = cookie;
         cookie.split(';').map((e) => {
             const [name, value] = e.split('=');
-            this.formatedCookie[name] = value;
+            this.formatedCookie[name.trim()] = value.trim();
             return e;
         });
         this.headers = {
