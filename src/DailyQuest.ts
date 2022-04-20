@@ -187,6 +187,7 @@ class DailyQuest {
     await this.changeBorder();
     await this.changeBadge();
     await this.viewPosts();
+    await this.sharePosts();
     if (this.dailyQuestLink) {
       await this.sendViewTrack(this.dailyQuestLink);
     }
@@ -479,19 +480,25 @@ class DailyQuest {
         origin: `https://${this.host}`,
         referer: `https://${this.host}/ucf/show/${postId}`
       },
-      responseType: 'text'
+      responseType: 'json'
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
 
     return axios(options)
       .then((response) => {
-        if (response.data === '{}') {
-          log(chalk.green('OK'));
-          return true;
+        try {
+          if (JSON.stringify(response.data) === '{}') {
+            log(chalk.green('OK'));
+            return true;
+          }
+          log(chalk.red('Error'));
+          log(response.data);
+          return false;
+        } catch (e) {
+          log(chalk.red('Error'));
+          log(response.data);
+          return false;
         }
-        log(chalk.red('Error'));
-        log(response.data || response.statusText);
-        return false;
       })
       .catch((e) => {
         log(chalk.red('Error'));
