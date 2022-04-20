@@ -75,7 +75,6 @@ import * as chalk from 'chalk';
     asfProtocol,
     asfHost,
     asfPort,
-    asfPassword,
     asfBotname
   }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
   if (missingAsfParams.length > 0) {

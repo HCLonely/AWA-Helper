@@ -21,7 +21,7 @@ class SteamQuest {
   taskStatus!: Array<steamGameInfo>;
   awaHost: string;
 
-  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: string, asfPassword: string, asfBotname: string, proxy ?: proxy }) {
+  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: string, asfPassword?: string, asfBotname: string, proxy ?: proxy }) {
     this.awaCookie = awaCookie;
     this.awaHost = awaHost || 'www.alienwarearena.com';
     this.botname = asfBotname;
@@ -29,11 +29,11 @@ class SteamQuest {
     this.headers = {
       accept: 'application/json',
       'Content-Type': 'application/json',
-      Authentication: asfPassword,
       Host: `${asfHost}:${asfPort}`,
       Origin: `${asfProtocol}://${asfHost}:${asfPort}`,
       Referer: `${asfProtocol}://${asfHost}:${asfPort}/page/commands`
     };
+    if (asfPassword) this.headers.Authentication = asfPassword;
     if (proxy?.enable.includes('asf') && proxy.host && proxy.port) {
       this.httpsAgent = tunnel.httpsOverHttp({
         proxy: {
