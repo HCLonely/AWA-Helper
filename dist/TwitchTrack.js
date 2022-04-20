@@ -90,15 +90,17 @@ class TwitchTrack {
             .then(async (response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
-                if ($('div.media a').length === 0) {
+                this.availableStreams = $('div.media a[href]').toArray().map((e) => $(e).attr('href')
+                    ?.match(/www\.twitch\.tv\/(.+)/)?.[1])
+                    .filter((e) => e);
+                if (this.availableStreams.length === 0) {
                     (0, tool_1.log)(chalk.blue('当前没有可用的直播！'));
                     (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('10 分钟后再次获取可用直播信息'));
                     await (0, tool_1.sleep)(60 * 10);
                     return await this.getAvailableStreams();
                 }
                 (0, tool_1.log)(chalk.green('OK'));
-                return $('div.media a').eq(0).attr('href')
-                    ?.match(/www\.twitch\.tv\/(.+)/)?.[1];
+                return true;
             }
             (0, tool_1.log)(chalk.red(`Net Error: ${response.status}`));
             return false;
@@ -109,37 +111,44 @@ class TwitchTrack {
             return false;
         });
     }
-    async getChannelInfo() {
-        const liverName = await this.getAvailableStreams();
-        if (!liverName)
+    async getChannelInfo(index = 0) {
+        if (index === 0 && !await this.getAvailableStreams())
+            return false;
+        if (index >= this.availableStreams.length)
             return false;
         const twitchOptions = {
             url: 'https://gql.twitch.tv/gql',
             method: 'POST',
             headers: { Authorization: `OAuth ${this.formatedCookie['auth-token']}`, 'Client-Id': this.clientId },
-            data: `[{"operationName":"ActiveWatchParty","variables":{"channelLogin":"${liverName}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4a8156c97b19e3a36e081cf6d6ddb5dbf9f9b02ae60e4d2ff26ed70aebc80a30"}}}]`
+            data: `[{"operationName":"ActiveWatchParty","variables":{"channelLogin":"${this.availableStreams[index]}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4a8156c97b19e3a36e081cf6d6ddb5dbf9f9b02ae60e4d2ff26ed70aebc80a30"}}}]`
         };
         if (this.httpsAgent)
             twitchOptions.httpsAgent = this.httpsAgent;
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取直播频道[${chalk.yellow(liverName)}]信息...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取直播频道[${chalk.yellow(this.availableStreams[index])}]信息...`, false);
         return await (0, axios_1.default)(twitchOptions)
-            .then((response) => {
+            .then(async (response) => {
             const channelId = response.data?.[0]?.data?.user?.id;
             if (!channelId) {
                 (0, tool_1.log)(chalk.red('Error'));
-                return false;
+                return await this.getChannelInfo(index + 1);
             }
             this.channelId = channelId;
             (0, tool_1.log)(chalk.green('OK'));
-            return true;
+            return index;
         })
-            .catch((error) => {
+            .catch(async (error) => {
             (0, tool_1.log)(chalk.red('Error'));
             console.error(error);
-            return false;
+            return await this.getChannelInfo(index + 1);
         });
     }
-    getExtInfo() {
+    async getExtInfo(index = 0) {
+        const returnedIndex = await this.getChannelInfo(index);
+        if (returnedIndex === false) {
+            return false;
+        }
+        if (index >= this.availableStreams.length)
+            return false;
         (0, tool_1.log)(`${(0, tool_1.time)()}正在获取ART扩展信息...`, false);
         const options = {
             url: 'https://gql.twitch.tv/gql',
@@ -152,37 +161,35 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
-            .then((response) => {
+        return await (0, axios_1.default)(options)
+            .then(async (response) => {
             const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
             if (!extensions?.length) {
                 (0, tool_1.log)(chalk.red('Error: 在此频道没有找到扩展！'));
-                return false;
+                return await this.getExtInfo(returnedIndex + 1);
             }
             const [ART_EXT] = extensions.filter((ext) => ext?.installation?.extension?.name === 'Arena Rewards Tracker');
             if (!ART_EXT) {
                 (0, tool_1.log)(chalk.red('Error: 在此频道没有找到ART扩展！'));
-                return false;
+                return await this.getExtInfo(returnedIndex + 1);
             }
             const { jwt } = ART_EXT.token;
             if (!ART_EXT) {
                 (0, tool_1.log)(chalk.red('Error: 获取jwt失败！'));
-                return false;
+                return await this.getExtInfo(returnedIndex + 1);
             }
             this.jwt = jwt;
             (0, tool_1.log)(chalk.green('OK'));
             return true;
         })
-            .catch((error) => {
+            .catch(async (error) => {
             (0, tool_1.log)(chalk.red('Error'));
             console.error(error);
-            return false;
+            return await this.getExtInfo(returnedIndex + 1);
         });
     }
     async sendTrack() {
         if (!this.channelId) {
-            if (await this.getChannelInfo() !== true)
-                return;
             if (await this.getExtInfo() !== true)
                 return;
         }

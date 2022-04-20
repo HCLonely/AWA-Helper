@@ -81,7 +81,7 @@
       }
     ],
     "space-before-blocks": "error",
-    "no-param-reassign": "error",
+    "no-param-reassign": "off",
     "prefer-spread": "error",
     "prefer-arrow-callback": "error",
     "arrow-spacing": "error",

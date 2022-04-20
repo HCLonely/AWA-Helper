@@ -82,7 +82,13 @@ class SteamQuest {
     log(`${time()}正在获取${chalk.yellow('Steam')}任务信息...`);
     const options: AxiosRequestConfig = {
       url: `https://${this.awaHost}/steam/quests`,
-      method: 'GET'
+      method: 'GET',
+      headers: {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44'
+      }
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return await axios(options)
@@ -133,8 +139,11 @@ class SteamQuest {
       responseType: 'text',
       headers: {
         cookie: this.awaCookie,
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/100.0.1185.39',
-        referer: url
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
+        referer: 'https://www.alienwarearena.com/steam/quests'
       }
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
@@ -203,8 +212,11 @@ class SteamQuest {
         responseType: 'text',
         headers: {
           cookie: this.awaCookie,
-          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/100.0.1185.39',
-          referer: this.taskStatus[index].link
+          accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+          'accept-encoding': 'gzip, deflate, br',
+          'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+          'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
+          referer: 'https://www.alienwarearena.com/steam/quests'
         }
       };
       if (this.httpsAgent) options.httpsAgent = this.httpsAgent;

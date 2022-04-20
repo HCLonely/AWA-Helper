@@ -22,9 +22,10 @@ class DailyQuest {
         this.borderId = awaBorderId;
         this.badgeIds = awaBadgeIds.split(',');
         this.headers = {
-            'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
             cookie: awaCookie,
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/100.0.1185.39'
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/100.0.1185.39',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
         };
         if (proxy?.enable.includes('awa') && proxy.host && proxy.port) {
             this.httpsAgent = tunnel.httpsOverHttp({
@@ -207,6 +208,7 @@ class DailyQuest {
             method: 'POST',
             headers: {
                 ...this.headers,
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 origin: `https://${this.host}`,
                 referer: `https://${this.host}/account/personalization`
             },
@@ -237,6 +239,7 @@ class DailyQuest {
             method: 'POST',
             headers: {
                 ...this.headers,
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 origin: `https://${this.host}`,
                 referer: `https://${this.host}/account/personalization`
             },
@@ -267,6 +270,7 @@ class DailyQuest {
             method: 'POST',
             headers: {
                 ...this.headers,
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 origin: `https://${this.host}`,
                 referer: link
             },
@@ -311,6 +315,7 @@ class DailyQuest {
             method: 'POST',
             headers: {
                 ...this.headers,
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 origin: `https://${this.host}`,
                 referer: `https://${this.host}/account/personalization`
             },
@@ -385,7 +390,11 @@ class DailyQuest {
         const getOptions = {
             url: `https://${this.host}/forums/board/113/awa-on-topic`,
             method: 'GET',
-            headers: this.headers
+            headers: {
+                ...this.headers,
+                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                referer: 'https://www.alienwarearena.com/'
+            }
         };
         if (this.httpsAgent)
             getOptions.httpsAgent = this.httpsAgent;
