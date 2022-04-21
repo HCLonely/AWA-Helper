@@ -4,6 +4,9 @@ declare global {
     enable: Array<string>
     host: string
     port: number
+    protocol?: string
+    username?: string
+    password?: string
   }
   interface questInfo {
     dailyQuest?: {

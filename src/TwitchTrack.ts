@@ -2,8 +2,9 @@
 import axios, { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
-import { log, sleep, time } from './tool';
+import { log, sleep, time, netError } from './tool';
 import * as tunnel from 'tunnel';
+import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 import { Agent } from 'http';
 
 class TwitchTrack {
@@ -30,7 +31,7 @@ class TwitchTrack {
     this.cookie = cookie;
     cookie.split(';').map((e: string) => {
       const [name, value] = e.split('=');
-      this.formatedCookie[name.trim()] = value.trim();
+      this.formatedCookie[name.trim()] = value?.trim();
       return e;
     });
     this.headers = {
@@ -42,13 +43,26 @@ class TwitchTrack {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
       'X-Device-Id': this.formatedCookie.unique_id
     };
-    if (proxy?.enable.includes('twitch') && proxy.host && proxy.port) {
-      this.httpsAgent = tunnel.httpsOverHttp({
-        proxy: {
-          host: proxy.host,
-          port: proxy.port
+    if (proxy?.enable?.includes('twitch') && proxy.host && proxy.port) {
+      const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
+        host: proxy.host,
+        port: proxy.port
+      };
+      if (proxy.protocol === 'socks') {
+        proxyOptions.hostname = proxy.host;
+        if (proxy.username && proxy.password) {
+          proxyOptions.userId = proxy.username;
+          proxyOptions.password = proxy.password;
         }
-      });
+        this.httpsAgent = new SocksProxyAgent(proxyOptions);
+      } else {
+        if (proxy.username && proxy.password) {
+          proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
+        }
+        this.httpsAgent = tunnel.httpsOverHttp({
+          proxy: proxyOptions
+        });
+      }
     }
   }
 
@@ -87,7 +101,7 @@ class TwitchTrack {
         return false;
       })
       .catch((error) => {
-        log(chalk.red('Error'));
+        log(chalk.red('Error') + netError(error));
         console.error(error);
         return false;
       });
@@ -119,7 +133,7 @@ class TwitchTrack {
         return false;
       })
       .catch((error) => {
-        log(chalk.red('Error'));
+        log(chalk.red('Error') + netError(error));
         console.error(error);
         return false;
       });
@@ -243,7 +257,7 @@ class TwitchTrack {
         return false;
       })
       .catch((error) => {
-        log(chalk.red('Error'));
+        log(chalk.red('Error') + netError(error));
         console.error(error);
         return false;
       });

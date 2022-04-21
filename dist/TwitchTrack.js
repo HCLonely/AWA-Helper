@@ -7,6 +7,7 @@ const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const tool_1 = require("./tool");
 const tunnel = require("tunnel");
+const socks_proxy_agent_1 = require("socks-proxy-agent");
 class TwitchTrack {
     // eslint-disable-next-line no-undef
     constructor({ awaHost, cookie, proxy }) {
@@ -18,7 +19,7 @@ class TwitchTrack {
         this.cookie = cookie;
         cookie.split(';').map((e) => {
             const [name, value] = e.split('=');
-            this.formatedCookie[name.trim()] = value.trim();
+            this.formatedCookie[name.trim()] = value?.trim();
             return e;
         });
         this.headers = {
@@ -30,13 +31,27 @@ class TwitchTrack {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
             'X-Device-Id': this.formatedCookie.unique_id
         };
-        if (proxy?.enable.includes('twitch') && proxy.host && proxy.port) {
-            this.httpsAgent = tunnel.httpsOverHttp({
-                proxy: {
-                    host: proxy.host,
-                    port: proxy.port
+        if (proxy?.enable?.includes('twitch') && proxy.host && proxy.port) {
+            const proxyOptions = {
+                host: proxy.host,
+                port: proxy.port
+            };
+            if (proxy.protocol === 'socks') {
+                proxyOptions.hostname = proxy.host;
+                if (proxy.username && proxy.password) {
+                    proxyOptions.userId = proxy.username;
+                    proxyOptions.password = proxy.password;
                 }
-            });
+                this.httpsAgent = new socks_proxy_agent_1.SocksProxyAgent(proxyOptions);
+            }
+            else {
+                if (proxy.username && proxy.password) {
+                    proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
+                }
+                this.httpsAgent = tunnel.httpsOverHttp({
+                    proxy: proxyOptions
+                });
+            }
         }
     }
     init() {
@@ -74,7 +89,7 @@ class TwitchTrack {
             return false;
         })
             .catch((error) => {
-            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
             console.error(error);
             return false;
         });
@@ -107,7 +122,7 @@ class TwitchTrack {
             return false;
         })
             .catch((error) => {
-            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
             console.error(error);
             return false;
         });
@@ -238,7 +253,7 @@ class TwitchTrack {
             return false;
         })
             .catch((error) => {
-            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
             console.error(error);
             return false;
         });

@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkUpdate = exports.time = exports.random = exports.sleep = exports.log = void 0;
+exports.netError = exports.checkUpdate = exports.time = exports.random = exports.sleep = exports.log = void 0;
 /* global proxy */
 const chalk = require("chalk");
 const dayjs = require("dayjs");
 const fs = require("fs");
 const axios_1 = require("axios");
 const tunnel = require("tunnel");
+const socks_proxy_agent_1 = require("socks-proxy-agent");
 const log = (text, newLine = true) => {
     // eslint-disable-next-line no-control-regex
     fs.appendFileSync('log.txt', text.toString().replace(/\x1B\[[\d]*?m/g, '') + (newLine ? '\n' : ''));
@@ -27,6 +28,9 @@ const random = (minNum, maxNum) => Math.floor((Math.random() * (maxNum - minNum 
 exports.random = random;
 const time = () => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
 exports.time = time;
+// eslint-disable-next-line
+const netError = (error) => (error.message.includes('ETIMEDOUT') ? `: ${chalk.yellow('连接超时，请尝试更换代理！')}` : (error.message.includes('ECONNREFUSED') ? `: ${chalk.yellow('连接被拒绝，请尝试更换代理！')}` : ''));
+exports.netError = netError;
 const checkUpdate = async (version, proxy) => {
     log(`${time()}正在检测更新...`, false);
     const options = {
@@ -34,12 +38,26 @@ const checkUpdate = async (version, proxy) => {
         maxRedirects: 0
     };
     if (proxy?.host && proxy.port) {
-        options.httpsAgent = tunnel.httpsOverHttp({
-            proxy: {
-                host: proxy.host,
-                port: proxy.port
+        const proxyOptions = {
+            host: proxy.host,
+            port: proxy.port
+        };
+        if (proxy.protocol === 'socks') {
+            proxyOptions.hostname = proxy.host;
+            if (proxy.username && proxy.password) {
+                proxyOptions.userId = proxy.username;
+                proxyOptions.password = proxy.password;
             }
-        });
+            options.httpsAgent = new socks_proxy_agent_1.SocksProxyAgent(proxyOptions);
+        }
+        else {
+            if (proxy.username && proxy.password) {
+                proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
+            }
+            options.httpsAgent = tunnel.httpsOverHttp({
+                proxy: proxyOptions
+            });
+        }
     }
     return await axios_1.default.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
         .then((response) => {
@@ -61,7 +79,7 @@ const checkUpdate = async (version, proxy) => {
         return;
     })
         .catch((error) => {
-        log(chalk.red('Error'));
+        log(chalk.red('Error') + netError(error));
         console.error(error);
         return;
     });

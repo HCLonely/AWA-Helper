@@ -17,8 +17,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.0.11
-          name: 1.0.11
-          body: '- 支持ASF密码为空'
+          tag_name: v1.0.12
+          name: 1.0.12
+          body: '- 网络错误提示\n- socks代理支持\n- 每日任务添加浏览排行榜'
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}

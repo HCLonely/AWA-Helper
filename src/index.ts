@@ -78,7 +78,7 @@ import * as chalk from 'chalk';
     asfBotname
   }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
   if (missingAsfParams.length > 0) {
-    log(chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+    log(time() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
   } else {
     steamQuest = new SteamQuest({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy });
     if (await steamQuest.init()) {

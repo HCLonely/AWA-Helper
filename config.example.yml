@@ -21,5 +21,8 @@ proxy:
     - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
+  protocol: 'http' # 代理协议，'http'或'socks'
   host: '127.0.0.1' # 代理host
   port: 1080 # 代理端口
+  username: '' # 代理用户名，没有可留空
+  password: '' # 代理密码，没有可留空

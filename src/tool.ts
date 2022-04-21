@@ -4,6 +4,7 @@ import * as dayjs from 'dayjs';
 import * as fs from 'fs';
 import axios, { AxiosRequestConfig } from 'axios';
 import * as tunnel from 'tunnel';
+import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 
 const log = (text: string, newLine = true): void => {
   // eslint-disable-next-line no-control-regex
@@ -21,6 +22,8 @@ const sleep = (time: number): Promise<true> => new Promise((resolve) => {
 
 const random = (minNum: number, maxNum: number): number => Math.floor((Math.random() * (maxNum - minNum + 1)) + minNum);
 const time = (): string => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
+// eslint-disable-next-line
+const netError = (error: Error) => (error.message.includes('ETIMEDOUT') ? `: ${chalk.yellow('连接超时，请尝试更换代理！')}` : (error.message.includes('ECONNREFUSED') ? `: ${chalk.yellow('连接被拒绝，请尝试更换代理！')}` : ''));
 
 const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
   log(`${time()}正在检测更新...`, false);
@@ -29,12 +32,25 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     maxRedirects: 0
   };
   if (proxy?.host && proxy.port) {
-    options.httpsAgent = tunnel.httpsOverHttp({
-      proxy: {
-        host: proxy.host,
-        port: proxy.port
+    const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
+      host: proxy.host,
+      port: proxy.port
+    };
+    if (proxy.protocol === 'socks') {
+      proxyOptions.hostname = proxy.host;
+      if (proxy.username && proxy.password) {
+        proxyOptions.userId = proxy.username;
+        proxyOptions.password = proxy.password;
       }
-    });
+      options.httpsAgent = new SocksProxyAgent(proxyOptions);
+    } else {
+      if (proxy.username && proxy.password) {
+        proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
+      }
+      options.httpsAgent = tunnel.httpsOverHttp({
+        proxy: proxyOptions
+      });
+    }
   }
   return await axios.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then((response) => {
@@ -58,10 +74,10 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
       return;
     })
     .catch((error) => {
-      log(chalk.red('Error'));
+      log(chalk.red('Error') + netError(error));
       console.error(error);
       return;
     });
 };
 
-export { log, sleep, random, time, checkUpdate };
+export { log, sleep, random, time, checkUpdate, netError };

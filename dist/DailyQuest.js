@@ -10,6 +10,7 @@ const FormData = require("form-data");
 const tunnel = require("tunnel");
 const tool_1 = require("./tool");
 const fs = require("fs");
+const socks_proxy_agent_1 = require("socks-proxy-agent");
 class DailyQuest {
     constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy }) {
         // eslint-disable-next-line no-undef
@@ -27,13 +28,27 @@ class DailyQuest {
             'accept-encoding': 'gzip, deflate, br',
             'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
         };
-        if (proxy?.enable.includes('awa') && proxy.host && proxy.port) {
-            this.httpsAgent = tunnel.httpsOverHttp({
-                proxy: {
-                    host: proxy.host,
-                    port: proxy.port
+        if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
+            const proxyOptions = {
+                host: proxy.host,
+                port: proxy.port
+            };
+            if (proxy.protocol === 'socks') {
+                proxyOptions.hostname = proxy.host;
+                if (proxy.username && proxy.password) {
+                    proxyOptions.userId = proxy.username;
+                    proxyOptions.password = proxy.password;
                 }
-            });
+                this.httpsAgent = new socks_proxy_agent_1.SocksProxyAgent(proxyOptions);
+            }
+            else {
+                if (proxy.username && proxy.password) {
+                    proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
+                }
+                this.httpsAgent = tunnel.httpsOverHttp({
+                    proxy: proxyOptions
+                });
+            }
         }
     }
     init() {
@@ -171,7 +186,7 @@ class DailyQuest {
             return response.status;
         })
             .catch((error) => {
-            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
             console.error(error);
             return 0;
         });
@@ -187,8 +202,13 @@ class DailyQuest {
         await this.viewNews();
         await this.sharePosts();
         if (this.dailyQuestLink) {
-            await this.sendViewTrack(this.dailyQuestLink);
+            await this.openLink(this.dailyQuestLink);
+            const postId = this.dailyQuestLink.match(/ucf\/show\/([\d]+)/)?.[1];
+            if (postId) {
+                await this.viewPost(postId);
+            }
         }
+        await this.openLink(`https://${this.host}/rewards/leaderboard`);
         await this.updateDailyQuests();
         if (this.questInfo.dailyQuest?.status === 'complete') {
             this.questStatus.dailyQuest = 'complete';
@@ -429,7 +449,7 @@ class DailyQuest {
             return false;
         })
             .catch((error) => {
-            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
             console.error(error);
             return false;
         });
@@ -533,6 +553,38 @@ class DailyQuest {
             .then(() => { })
             .catch(() => { });
         await this.viewPost('2162951');
+    }
+    async openLink(link) {
+        (0, tool_1.log)(`${(0, tool_1.time)()}正在浏览页面[${chalk.yellow(link)}]...`, false);
+        const options = {
+            url: link,
+            method: 'GET',
+            headers: {
+                ...this.headers,
+                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+            }
+        };
+        if (this.httpsAgent)
+            options.httpsAgent = this.httpsAgent;
+        return await (0, axios_1.default)(options)
+            .then((response) => {
+            if (response.status === 200) {
+                const $ = (0, cheerio_1.load)(response.data);
+                if ($('a.nav-link-login').length > 0) {
+                    (0, tool_1.log)(chalk.red('Token已过期'));
+                    return;
+                }
+                (0, tool_1.log)(chalk.green('OK'));
+                return;
+            }
+            (0, tool_1.log)(chalk.red('Net Error'));
+            return;
+        })
+            .catch((error) => {
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
+            console.error(error);
+            return;
+        });
     }
     formatQuestInfo() {
         return {
