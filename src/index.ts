@@ -80,7 +80,7 @@ import * as chalk from 'chalk';
   if (missingAsfParams.length > 0) {
     log(time() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
   } else {
-    steamQuest = new SteamQuest({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy });
+    steamQuest = new SteamQuest({ awaCookie: quest.headers.cookie as string, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy });
     if (await steamQuest.init()) {
       steamQuest.playGames();
       await sleep(30);

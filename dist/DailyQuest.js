@@ -51,7 +51,14 @@ class DailyQuest {
             }
         }
     }
-    init() {
+    async init() {
+        const REMEMBERME = this.headers.cookie.split(';').find((e) => e.includes('REMEMBERME'));
+        if (REMEMBERME) {
+            await this.updateCookie(REMEMBERME);
+        }
+        else {
+            (0, tool_1.log)(`${(0, tool_1.time)()}检测到${chalk.yellow('awaCookie')}中没有${chalk.blue('REMEMBERME')}，可能会导致连续签到天数获取错误，不影响其他功能`);
+        }
         return this.updateDailyQuests(true);
     }
     async listen(twitch, steamQuest, check = false) {
@@ -70,9 +77,11 @@ class DailyQuest {
             }
             if ((this.questStatus.dailyQuest === 'complete' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
                 (0, tool_1.log)((0, tool_1.time)() + chalk.green('今日所有任务已完成！'));
-                (0, tool_1.log)('按任意键退出...');
+                /*
+                log('按任意键退出...');
                 process.stdin.setRawMode(true);
                 process.stdin.on('data', () => process.exit(0));
+                */
                 return;
             }
             if (check)
@@ -81,15 +90,48 @@ class DailyQuest {
             this.listen(twitch, steamQuest);
         }
     }
-    updateDailyQuests(verify = false) {
-        (0, tool_1.log)((0, tool_1.time)() + (verify ? `正在验证 ${chalk.yellow('AWA')} Token...` : '正在获取任务信息...'), false);
+    async updateCookie(REMEMBERME) {
+        (0, tool_1.log)(`${(0, tool_1.time)()}正在更新${chalk.yellow('AWA')} Cookie...`, false);
+        const options = {
+            url: `https://${this.host}/`,
+            method: 'GET',
+            headers: {
+                ...this.headers,
+                cookie: REMEMBERME,
+                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+            },
+            maxRedirects: 0,
+            validateStatus: (status) => status === 302
+        };
+        if (this.httpsAgent)
+            options.httpsAgent = this.httpsAgent;
+        return (0, axios_1.default)(options)
+            .then((response) => {
+            if (response.headers['set-cookie']?.length) {
+                this.headers.cookie = `${this.headers.cookie.trim().replace(/;$/, '')};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
+                (0, tool_1.log)(chalk.green('OK'));
+                return true;
+            }
+            (0, tool_1.log)(chalk.green('Error'));
+            console.error(response);
+            return false;
+        })
+            .catch((error) => {
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
+            console.error(error);
+            return false;
+        });
+    }
+    async updateDailyQuests(verify = false) {
+        (0, tool_1.log)((0, tool_1.time)() + (verify ? `正在验证${chalk.yellow('AWA')} Token...` : '正在获取任务信息...'), false);
         const options = {
             url: `https://${this.host}/`,
             method: 'GET',
             headers: {
                 ...this.headers,
                 accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
-            }
+            },
+            maxRedirects: 0
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
@@ -377,7 +419,8 @@ class DailyQuest {
         });
     }
     async viewPost(postId) {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在浏览帖子${chalk.yellow(postId)}...`, false);
+        await this.openLink(`https://${this.host}/ucf/show/${postId}`);
+        (0, tool_1.log)(`${(0, tool_1.time)()}正在发送浏览帖子${chalk.yellow(postId)}记录...`, false);
         const options = {
             url: `https://${this.host}/ucf/increment-views/${postId}`,
             method: 'POST',

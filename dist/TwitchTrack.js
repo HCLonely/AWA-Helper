@@ -54,7 +54,7 @@ class TwitchTrack {
             }
         }
     }
-    init() {
+    async init() {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在初始化TwitchTrack...`, false);
         const options = {
             url: 'https://www.twitch.tv/',
@@ -67,7 +67,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        const result = await (0, axios_1.default)(options)
             .then((response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
@@ -86,6 +86,38 @@ class TwitchTrack {
                 return true;
             }
             (0, tool_1.log)(chalk.red(`Error: ${response.status}`));
+            return false;
+        })
+            .catch((error) => {
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
+            console.error(error);
+            return false;
+        });
+        if (!result)
+            return false;
+        return await this.checkLinkedExt();
+    }
+    async checkLinkedExt() {
+        (0, tool_1.log)(`${(0, tool_1.time)()}正在检测是否授权${chalk.yellow('Twitch')}扩展...`, false);
+        const options = {
+            url: 'https://gql.twitch.tv/gql',
+            method: 'POST',
+            headers: {
+                ...this.headers,
+                'Client-Id': this.clientId
+            },
+            data: '[{"operationName":"Settings_Connections_ExtensionConnectionsList","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7de55e735212a90752672f9baf33016fe1c7f2b4bfdad94a6d8031a1633deaeb"}}}]'
+        };
+        if (this.httpsAgent)
+            options.httpsAgent = this.httpsAgent;
+        return await (0, axios_1.default)(options)
+            .then(async (response) => {
+            const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e) => e.name === 'Arena Rewards Tracker');
+            if (linkedExtension) {
+                (0, tool_1.log)(chalk.green('已授权'));
+                return true;
+            }
+            (0, tool_1.log)(chalk.red('未授权'));
             return false;
         })
             .catch((error) => {
@@ -153,7 +185,7 @@ class TwitchTrack {
             return index;
         })
             .catch(async (error) => {
-            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
             console.error(error);
             return await this.getChannelInfo(index + 1);
         });
@@ -199,7 +231,7 @@ class TwitchTrack {
             return true;
         })
             .catch(async (error) => {
-            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
             console.error(error);
             return await this.getExtInfo(returnedIndex + 1);
         });

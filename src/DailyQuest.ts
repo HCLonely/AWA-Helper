@@ -60,7 +60,13 @@ class DailyQuest {
       }
     }
   }
-  init(): Promise<number> {
+  async init(): Promise<number> {
+    const REMEMBERME = (this.headers.cookie as string).split(';').find((e) => e.includes('REMEMBERME'));
+    if (REMEMBERME) {
+      await this.updateCookie(REMEMBERME);
+    } else {
+      log(`${time()}检测到${chalk.yellow('awaCookie')}中没有${chalk.blue('REMEMBERME')}，可能会导致连续签到天数获取错误，不影响其他功能`);
+    }
     return this.updateDailyQuests(true);
   }
   async listen(twitch: TwitchTrack | null, steamQuest: SteamQuest | null, check = false): Promise<void> {
@@ -79,9 +85,11 @@ class DailyQuest {
       }
       if ((this.questStatus.dailyQuest === 'complete' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
         log(time() + chalk.green('今日所有任务已完成！'));
+        /*
         log('按任意键退出...');
         process.stdin.setRawMode(true);
         process.stdin.on('data', () => process.exit(0));
+        */
         return;
       }
       if (check) return;
@@ -89,15 +97,47 @@ class DailyQuest {
       this.listen(twitch, steamQuest);
     }
   }
-  updateDailyQuests(verify = false): Promise<number> {
-    log(time() + (verify ? `正在验证 ${chalk.yellow('AWA')} Token...` : '正在获取任务信息...'), false);
+  async updateCookie(REMEMBERME: string): Promise<boolean> {
+    log(`${time()}正在更新${chalk.yellow('AWA')} Cookie...`, false);
+    const options: AxiosRequestConfig = {
+      url: `https://${this.host}/`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        cookie: REMEMBERME,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+      },
+      maxRedirects: 0,
+      validateStatus: (status) => status === 302
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then((response) => {
+        if (response.headers['set-cookie']?.length) {
+          this.headers.cookie = `${(this.headers.cookie as string).trim().replace(/;$/, '')};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
+          log(chalk.green('OK'));
+          return true;
+        }
+        log(chalk.green('Error'));
+        console.error(response);
+        return false;
+      })
+      .catch((error) => {
+        log(chalk.red('Error') + netError(error));
+        console.error(error);
+        return false;
+      });
+  }
+  async updateDailyQuests(verify = false): Promise<number> {
+    log(time() + (verify ? `正在验证${chalk.yellow('AWA')} Token...` : '正在获取任务信息...'), false);
     const options: AxiosRequestConfig = {
       url: `https://${this.host}/`,
       method: 'GET',
       headers: {
         ...this.headers,
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
-      }
+      },
+      maxRedirects: 0
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
@@ -384,7 +424,8 @@ class DailyQuest {
   }
 
   async viewPost(postId?: string): Promise<boolean> {
-    log(`${time()}正在浏览帖子${chalk.yellow(postId)}...`, false);
+    await this.openLink(`https://${this.host}/ucf/show/${postId}`);
+    log(`${time()}正在发送浏览帖子${chalk.yellow(postId)}记录...`, false);
     const options: AxiosRequestConfig = {
       url: `https://${this.host}/ucf/increment-views/${postId}`,
       method: 'POST',

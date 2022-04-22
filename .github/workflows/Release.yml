@@ -17,8 +17,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.0.12
-          name: 1.0.12
-          body: '- 网络错误提示\n- socks代理支持\n- 每日任务添加浏览排行榜'
+          tag_name: v1.0.13
+          name: 1.0.13
+          body: |-
+            - 优化浏览帖子功能
+            - 优化AWA身份验证
+            - 取消按任意键退出
+            - 添加Twitch扩展授权检测
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}

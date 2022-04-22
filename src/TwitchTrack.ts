@@ -66,7 +66,7 @@ class TwitchTrack {
     }
   }
 
-  init(): Promise<boolean> {
+  async init(): Promise<boolean> {
     log(`${time()}正在初始化TwitchTrack...`, false);
     const options: AxiosRequestConfig = {
       url: 'https://www.twitch.tv/',
@@ -79,7 +79,7 @@ class TwitchTrack {
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
 
-    return axios(options)
+    const result = await axios(options)
       .then((response) => {
         if (response.status === 200) {
           const $ = load(response.data);
@@ -98,6 +98,36 @@ class TwitchTrack {
           return true;
         }
         log(chalk.red(`Error: ${response.status}`));
+        return false;
+      })
+      .catch((error) => {
+        log(chalk.red('Error') + netError(error));
+        console.error(error);
+        return false;
+      });
+    if (!result) return false;
+    return await this.checkLinkedExt();
+  }
+  async checkLinkedExt(): Promise<boolean> {
+    log(`${time()}正在检测是否授权${chalk.yellow('Twitch')}扩展...`, false);
+    const options: AxiosRequestConfig = {
+      url: 'https://gql.twitch.tv/gql',
+      method: 'POST',
+      headers: {
+        ...this.headers,
+        'Client-Id': this.clientId
+      },
+      data: '[{"operationName":"Settings_Connections_ExtensionConnectionsList","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7de55e735212a90752672f9baf33016fe1c7f2b4bfdad94a6d8031a1633deaeb"}}}]'
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return await axios(options)
+      .then(async (response) => {
+        const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e: any) => e.name === 'Arena Rewards Tracker');
+        if (linkedExtension) {
+          log(chalk.green('已授权'));
+          return true;
+        }
+        log(chalk.red('未授权'));
         return false;
       })
       .catch((error) => {
@@ -161,7 +191,7 @@ class TwitchTrack {
         return index;
       })
       .catch(async (error) => {
-        log(chalk.red('Error'));
+        log(chalk.red('Error') + netError(error));
         console.error(error);
         return await this.getChannelInfo(index + 1);
       });
@@ -205,7 +235,7 @@ class TwitchTrack {
         return true;
       })
       .catch(async (error) => {
-        log(chalk.red('Error'));
+        log(chalk.red('Error') + netError(error));
         console.error(error);
         return await this.getExtInfo((returnedIndex as number) + 1);
       });
