@@ -52,6 +52,7 @@ class TwitchTrack {
                     proxy: proxyOptions
                 });
             }
+            this.httpsAgent.options.rejectUnauthorized = false;
         }
     }
     async init() {

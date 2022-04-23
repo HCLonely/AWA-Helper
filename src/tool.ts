@@ -31,7 +31,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     validateStatus: (status: number) => status === 302,
     maxRedirects: 0
   };
-  if (proxy?.host && proxy.port) {
+  if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
     const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
       host: proxy.host,
       port: proxy.port
@@ -51,6 +51,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
         proxy: proxyOptions
       });
     }
+    options.httpsAgent.options.rejectUnauthorized = false;
   }
   return await axios.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then((response) => {

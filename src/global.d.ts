@@ -34,6 +34,5 @@ declare global {
     watchTwitch?: 'complete' | 'incomplete'
     steamQuest?: 'complete' | 'incomplete'
   }
-
 }
 export {};

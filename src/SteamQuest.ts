@@ -5,13 +5,12 @@ import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { log, netError, sleep, time } from './tool';
 import * as tunnel from 'tunnel';
-import { Agent } from 'http';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 
 class SteamQuest {
   awaCookie: string;
   asfUrl: string;
-  httpsAgent!: Agent;
+  httpsAgent!: AxiosRequestConfig['httpsAgent'];
   headers: AxiosRequestHeaders;
   botname!: string;
   ownedGames: Array<string> = [];
@@ -55,6 +54,7 @@ class SteamQuest {
           proxy: proxyOptions
         });
       }
+      this.httpsAgent.options.rejectUnauthorized = false;
     }
   }
 

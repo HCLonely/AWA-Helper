@@ -6,7 +6,6 @@ import * as chalk from 'chalk';
 import * as FormData from 'form-data';
 import * as tunnel from 'tunnel';
 import { log, sleep, random, time, netError } from './tool';
-import { Agent } from 'http';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuest } from './SteamQuest';
 import * as fs from 'fs';
@@ -19,7 +18,7 @@ class DailyQuest {
   trackError = 0;
   trackTimes = 0;
   headers: AxiosRequestHeaders;
-  httpsAgent!: Agent;
+  httpsAgent!: AxiosRequestConfig['httpsAgent'];
   userId: string;
   borderId: string;
   badgeIds: Array<string>;
@@ -58,6 +57,7 @@ class DailyQuest {
           proxy: proxyOptions
         });
       }
+      this.httpsAgent.options.rejectUnauthorized = false;
     }
   }
   async init(): Promise<number> {

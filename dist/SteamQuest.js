@@ -50,6 +50,7 @@ class SteamQuest {
                     proxy: proxyOptions
                 });
             }
+            this.httpsAgent.options.rejectUnauthorized = false;
         }
     }
     init() {

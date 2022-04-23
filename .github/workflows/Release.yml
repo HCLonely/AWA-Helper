@@ -17,12 +17,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.0.13
-          name: 1.0.13
+          tag_name: v1.0.14
+          name: 1.0.14
           body: |-
-            - 优化浏览帖子功能
-            - 优化AWA身份验证
-            - 取消按任意键退出
-            - 添加Twitch扩展授权检测
+            - 尝试忽略SSL/TLS证书验证，不一定有用
+            - 添加检测更新时是否启用代理配置
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}

@@ -5,7 +5,6 @@ import * as chalk from 'chalk';
 import { log, sleep, time, netError } from './tool';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
-import { Agent } from 'http';
 
 class TwitchTrack {
   channelId!: string;
@@ -18,7 +17,7 @@ class TwitchTrack {
     [name: string]: string
   } = {};
   cookie: string;
-  httpsAgent!: Agent;
+  httpsAgent!: AxiosRequestConfig['httpsAgent'];
   headers: AxiosRequestHeaders;
   complete = false;
   awaHost: string;
@@ -63,6 +62,7 @@ class TwitchTrack {
           proxy: proxyOptions
         });
       }
+      this.httpsAgent.options.rejectUnauthorized = false;
     }
   }
 

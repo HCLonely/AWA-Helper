@@ -49,6 +49,7 @@ class DailyQuest {
                     proxy: proxyOptions
                 });
             }
+            this.httpsAgent.options.rejectUnauthorized = false;
         }
     }
     async init() {
