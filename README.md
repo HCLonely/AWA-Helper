@@ -38,6 +38,7 @@ awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienw
 awaUserId: '' # 外星人论坛用户Id
 awaBorderId: '' # 外星人论坛当前使用的BorderId
 awaBadgeIds: '' # 外星人论坛当前使用的BadgeIds
+awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 ```
 
 #### AWA 参数获取方式
@@ -91,6 +92,7 @@ asfBotname: '' # 要挂游戏的ASF Bot名称
 ```yml
 proxy:
   enable:
+    - github # 在检测更新时使用代理，不使用删掉此行
     - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
@@ -100,6 +102,11 @@ proxy:
   username: '' # 代理用户名，没有可留空
   password: '' # 代理密码，没有可留空
 ```
+
+## 关于每日任务
+
+1. 每日任务会尝试做换Border、换Badge、浏览帖子、分享帖子、回复帖子，如果无法完成也不会继续尝试其他方法！
+2. 每日任务如果有多个，只会默认做第一个任务！
 
 ## 运行示例
 

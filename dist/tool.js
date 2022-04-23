@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.netError = exports.checkUpdate = exports.time = exports.random = exports.sleep = exports.log = void 0;
+exports.ask = exports.netError = exports.checkUpdate = exports.time = exports.random = exports.sleep = exports.log = void 0;
 /* global proxy */
 const chalk = require("chalk");
 const dayjs = require("dayjs");
@@ -86,3 +86,18 @@ const checkUpdate = async (version, proxy) => {
     });
 };
 exports.checkUpdate = checkUpdate;
+const ask = (question, answers) => new Promise((resolve) => {
+    process.stdout.write(`${question}\n`);
+    process.stdin.resume();
+    process.stdin.setEncoding('utf-8');
+    process.stdin.on('data', async (chunk) => {
+        const answer = chunk.toString().trim();
+        if (answers) {
+            if (!answers.includes(answer)) {
+                return resolve(await ask(question, answers));
+            }
+        }
+        return resolve(answer);
+    });
+});
+exports.ask = ask;

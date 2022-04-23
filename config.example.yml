@@ -4,6 +4,7 @@ awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 默认的没问题就�
 awaUserId: '' # 外星人论坛用户Id
 awaBorderId: '' # 外星人论坛当前的BorderId
 awaBadgeIds: '' # 外星人论坛当前的BadgeIds
+awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 
 #### Twitch 配置 ####
 twitchCookie: '' # Twitch Cookie, 须包括`unique_id` 和 `auth-token`

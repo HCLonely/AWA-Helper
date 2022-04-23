@@ -17,10 +17,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.0.14
-          name: 1.0.14
+          tag_name: v1.0.15
+          name: 1.0.15
           body: |-
-            - 尝试忽略SSL/TLS证书验证，不一定有用
-            - 添加检测更新时是否启用代理配置
+            - 添加配置项[awaBoosterNotice]: `true` | `false` 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}

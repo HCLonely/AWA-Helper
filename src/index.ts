@@ -24,6 +24,7 @@ import * as chalk from 'chalk';
     awaUserId,
     awaBorderId,
     awaBadgeIds,
+    awaBoosterNotice,
     twitchCookie,
     asfProtocol,
     asfHost,
@@ -44,7 +45,7 @@ import * as chalk from 'chalk';
     return;
   }
   await checkUpdate(version, proxy);
-  const quest = new DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy });
+  const quest = new DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, proxy });
   if (await quest.init() !== 200) return;
   await quest.listen(null, null, true);
   if (quest.questInfo.dailyQuest?.status !== 'complete') {

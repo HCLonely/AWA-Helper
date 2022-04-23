@@ -12,7 +12,7 @@ const tool_1 = require("./tool");
 const fs = require("fs");
 const socks_proxy_agent_1 = require("socks-proxy-agent");
 class DailyQuest {
-    constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy }) {
+    constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, proxy }) {
         // eslint-disable-next-line no-undef
         this.questInfo = {};
         this.trackError = 0;
@@ -21,6 +21,7 @@ class DailyQuest {
         this.host = awaHost || 'www.alienwarearena.com';
         this.userId = awaUserId;
         this.borderId = awaBorderId;
+        this.awaBoosterNotice = awaBoosterNotice ?? true;
         this.badgeIds = awaBadgeIds.split(',');
         this.headers = {
             cookie: awaCookie,
@@ -76,7 +77,7 @@ class DailyQuest {
             if (twitch?.complete || (!check && !twitch)) {
                 this.questStatus.watchTwitch = 'complete';
             }
-            if ((this.questStatus.dailyQuest === 'complete' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
+            if ((this.questStatus.dailyQuest === 'complete' || this.questStatus.dailyQuest === 'skip' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
                 (0, tool_1.log)((0, tool_1.time)() + chalk.green('今日所有任务已完成！'));
                 /*
                 log('按任意键退出...');
@@ -137,7 +138,7 @@ class DailyQuest {
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
         return (0, axios_1.default)(options)
-            .then((response) => {
+            .then(async (response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
                 if ($('a.nav-link-login').length > 0) {
@@ -186,6 +187,27 @@ class DailyQuest {
                 this.questInfo.dailyQuest = {
                     status, arp
                 };
+                if (verify && this.awaBoosterNotice && $('div.quest-item .quest-item-progress').length > 2) {
+                    const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
+                    let boostEnabled = false;
+                    if (userArpBoostText) {
+                        try {
+                            const userArpBoost = JSON.parse(userArpBoostText);
+                            if (new Date() < userArpBoost.end) {
+                                boostEnabled = true;
+                            }
+                        }
+                        catch (e) {
+                            //
+                        }
+                    }
+                    if (!boostEnabled) {
+                        const answer = await (0, tool_1.ask)(`检测到每日任务大于1个，请确认是否要使用${chalk.blue('ARP 助推器')}(${chalk.yellow('需要自行开启！！！')})。\n输入 ${chalk.yellow('1')} 继续任务，输入 ${chalk.yellow('2')} 跳过每日任务。`, ['1', '2']);
+                        if (answer === '2') {
+                            this.questStatus.dailyQuest = 'skip';
+                        }
+                    }
+                }
                 // AWA 在线任务
                 const [maxArp, addedArp] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Time on Site')).find('center')
                     .toArray()
@@ -235,6 +257,9 @@ class DailyQuest {
         });
     }
     async do() {
+        if (this.questStatus.dailyQuest === 'skip') {
+            return (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('已跳过每日任务！'));
+        }
         if (this.questInfo.dailyQuest?.status === 'complete') {
             this.questStatus.dailyQuest = 'complete';
             return (0, tool_1.log)((0, tool_1.time)() + chalk.green('每日任务已完成！'));
@@ -369,7 +394,7 @@ class DailyQuest {
                 this.questStatus.timeOnSite = 'complete';
                 return (0, tool_1.log)((0, tool_1.time)() + chalk.green('每日在线任务完成！'));
             }
-            (0, tool_1.log)(`${(0, tool_1.time)()}当前每日在线任务进度：${chalk.blue(`${this.questInfo.timeOnSite.addedArp}/${this.questInfo.timeOnSite.maxArp}`)}`);
+            // log(`${time()}当前每日在线任务进度：${chalk.blue(`${this.questInfo.timeOnSite.addedArp}/${this.questInfo.timeOnSite.maxArp}`)}`);
         }
         if (this.trackError >= 6) {
             return (0, tool_1.log)((0, tool_1.time)() + chalk.red('发送') + chalk.yellow('[AWA]') + chalk.red('在线心跳连续失败超过6次，跳过此任务'));
@@ -633,7 +658,8 @@ class DailyQuest {
     formatQuestInfo() {
         return {
             ['每日任务']: {
-                ['状态']: this.questInfo.dailyQuest?.status === 'complete' ? '已完成' : '未完成',
+                // eslint-disable-next-line no-nested-ternary
+                ['状态']: this.questInfo.dailyQuest?.status === 'complete' ? '已完成' : (this.questStatus.dailyQuest === 'skip' ? '已跳过' : '未完成'),
                 ['已获得ARP']: parseInt(this.questInfo.dailyQuest?.arp || '0', 10),
                 ['最大可获得ARP']: parseInt(this.questInfo.dailyQuest?.arp || '0', 10)
             },

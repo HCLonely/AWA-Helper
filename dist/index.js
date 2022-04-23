@@ -10,7 +10,7 @@ const tool_1 = require("./tool");
 const chalk = require("chalk");
 (async () => {
     fs.writeFileSync('log.txt', '');
-    const version = 'V1.0.14 ';
+    const version = 'V1.0.15 ';
     const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
     logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
     (0, tool_1.log)(logArr.join('\n'));
@@ -18,7 +18,7 @@ const chalk = require("chalk");
         (0, tool_1.log)(chalk.red(`没有找到配置文件[${chalk.yellow('config.yml')}]!`));
         return;
     }
-    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
+    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
     const missingAwaParams = Object.entries({
         awaCookie,
         awaUserId,
@@ -31,7 +31,7 @@ const chalk = require("chalk");
         return;
     }
     await (0, tool_1.checkUpdate)(version, proxy);
-    const quest = new DailyQuest_1.DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, proxy });
+    const quest = new DailyQuest_1.DailyQuest({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, proxy });
     if (await quest.init() !== 200)
         return;
     await quest.listen(null, null, true);

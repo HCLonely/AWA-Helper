@@ -29,7 +29,7 @@ declare global {
   }
 
   interface questStatus {
-    dailyQuest?: 'complete' | 'incomplete'
+    dailyQuest?: 'complete' | 'incomplete' | 'skip'
     timeOnSite?: 'complete' | 'incomplete'
     watchTwitch?: 'complete' | 'incomplete'
     steamQuest?: 'complete' | 'incomplete'
