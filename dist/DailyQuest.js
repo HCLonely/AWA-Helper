@@ -183,11 +183,13 @@ class DailyQuest {
                     }
                 }
                 // 每日任务
-                const [status, arp] = $('div.quest-item .quest-item-progress').map((i, e) => $(e).text().toLowerCase());
+                const [status, arp] = $('div.quest-item .quest-item-progress').map((i, e) => $(e).text().trim()
+                    .toLowerCase());
                 this.questInfo.dailyQuest = {
                     status, arp
                 };
-                if (verify && this.awaBoosterNotice && $('div.quest-item .quest-item-progress').length > 2) {
+                if (verify && this.awaBoosterNotice && $('div.quest-item .quest-item-progress').map((i, e) => $(e).text().trim()
+                    .toLowerCase()).filter((i, e) => e === 'incomplete').length > 1) {
                     const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
                     let boostEnabled = false;
                     if (userArpBoostText) {
@@ -202,7 +204,7 @@ class DailyQuest {
                         }
                     }
                     if (!boostEnabled) {
-                        const answer = await (0, tool_1.ask)(`检测到每日任务大于1个，请确认是否要使用${chalk.blue('ARP 助推器')}(${chalk.yellow('需要自行开启！！！')})。\n输入 ${chalk.yellow('1')} 继续任务，输入 ${chalk.yellow('2')} 跳过每日任务。`, ['1', '2']);
+                        const answer = await (0, tool_1.ask)(`检测到未完成的每日任务大于1个，请确认是否要使用${chalk.blue('ARP 助推器')}(${chalk.yellow('需要自行开启！！！')})。\n输入 ${chalk.yellow('1')} 继续任务，输入 ${chalk.yellow('2')} 跳过每日任务。`, ['1', '2']);
                         if (answer === '2') {
                             this.questStatus.dailyQuest = 'skip';
                         }

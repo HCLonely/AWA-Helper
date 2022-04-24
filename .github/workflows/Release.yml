@@ -17,9 +17,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.0.15
-          name: 1.0.15
+          tag_name: v1.0.16
+          name: 1.0.16
           body: |-
-            - 添加配置项[awaBoosterNotice]: `true` | `false` 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
+            - 每日任务检测优化
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}
