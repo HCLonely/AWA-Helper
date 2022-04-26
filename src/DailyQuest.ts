@@ -190,8 +190,9 @@ class DailyQuest {
             }
           }
           // 每日任务
-          const [status, arp] = $('div.quest-item .quest-item-progress').map((i, e) => $(e).text().trim()
-            .toLowerCase());
+          const [status, arp] = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0')).find('.quest-item-progress')
+            .map((i, e) => $(e).text().trim()
+              .toLowerCase());
           this.questInfo.dailyQuest = {
             status, arp
           };
