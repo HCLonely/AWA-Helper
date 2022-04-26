@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
-import axios, { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
+import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
-import { log, sleep, time, netError } from './tool';
+import { log, sleep, time, netError, http as axios } from './tool';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 

@@ -7,6 +7,7 @@
     return;
   }
   fs.copyFileSync('config.example.yml', 'output/config.example.yml');
+  fs.copyFileSync('CHANGELOG.txt', 'output/CHANGELOG.txt');
   fs.writeFileSync('output/运行.bat', 'start cmd /k "AWA-Helper.exe"');
   await zipdir('output', { saveTo: './AWA-Helper.zip' });
 })();

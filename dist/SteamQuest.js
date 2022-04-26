@@ -1,9 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SteamQuest = void 0;
-/* eslint-disable max-len */
-/* global steamGameInfo, proxy */
-const axios_1 = require("axios");
 const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const tool_1 = require("./tool");
@@ -63,7 +60,7 @@ class SteamQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
@@ -101,7 +98,7 @@ class SteamQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then(async (response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
@@ -160,7 +157,7 @@ class SteamQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             if (response.data.includes('You have completed this quest')) {
                 (0, tool_1.log)(chalk.green('此任务已完成'));
@@ -200,7 +197,7 @@ class SteamQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
@@ -235,7 +232,7 @@ class SteamQuest {
             };
             if (this.httpsAgent)
                 options.httpsAgent = this.httpsAgent;
-            await (0, axios_1.default)(options)
+            await (0, tool_1.http)(options)
                 .then((response) => {
                 if (response.data.includes('aria-valuenow')) {
                     const progress = response.data.match(/aria-valuenow="([\d]+?)"/)?.[1];
@@ -278,7 +275,7 @@ class SteamQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then((response) => {
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
@@ -324,7 +321,7 @@ class SteamQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        const started = await (0, axios_1.default)(options)
+        const started = await (0, tool_1.http)(options)
             .then((response) => {
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
@@ -369,7 +366,7 @@ class SteamQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then((response) => {
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {

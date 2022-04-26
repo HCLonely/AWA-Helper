@@ -1,11 +1,11 @@
 /* eslint-disable max-len */
 /* global questStatus, proxy */
-import axios, { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
+import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import * as FormData from 'form-data';
 import * as tunnel from 'tunnel';
-import { log, sleep, random, time, netError, ask } from './tool';
+import { log, sleep, random, time, netError, ask, http as axios } from './tool';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuest } from './SteamQuest';
 import * as fs from 'fs';
@@ -157,9 +157,9 @@ class DailyQuest {
             if (consecutiveLoginsText) {
               try {
                 const consecutiveLogins = JSON.parse(consecutiveLoginsText);
-                const reward = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
-                if (reward) {
-                  log(`${time()}已连续登录${chalk.yellow(consecutiveLogins.count)}天，获得${chalk.green(reward)}ARP`);
+                const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                if (rewardArp) {
+                  log(`${time()}已连续登录${chalk.yellow(consecutiveLogins.count)}天，获得${chalk.green(rewardArp)}ARP`);
                 }
               } catch (e) {
                 //
@@ -172,9 +172,14 @@ class DailyQuest {
                 const monthlyLogins = JSON.parse(monthlyLoginsText);
                 if (monthlyLogins.count < 29) {
                   const week = Math.ceil(monthlyLogins.count / 7);
-                  const reward = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward h1`).text().trim();
-                  if (reward) {
-                    log(`${time()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(reward)}ARP`);
+                  const rewardArp = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                  const rewardItem = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__day-overlay`).eq(0).text()
+                    .trim();
+                  if (rewardArp) {
+                    log(`${time()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(rewardArp)}ARP`);
+                  }
+                  if (rewardItem) {
+                    log(`${time()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(rewardItem)}`);
                   }
                 } else {
                   log(`${time()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(monthlyLogins.extra_arp)}ARP`);

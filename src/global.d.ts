@@ -1,5 +1,21 @@
 /* eslint-disable no-unused-vars */
 declare global {
+  interface config {
+    awaCookie?: string
+    awaHost: string,
+    awaUserId?: string,
+    awaBorderId?: string,
+    awaBadgeIds?: string,
+    awaBoosterNotice?: boolean,
+    awaQuests: Array<string>,
+    twitchCookie?: string,
+    asfProtocol: string,
+    asfHost?: string,
+    asfPort?: number,
+    asfPassword?: string,
+    asfBotname?: string,
+    proxy?: proxy
+  }
   interface proxy {
     enable: Array<string>
     host: string

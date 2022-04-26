@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TwitchTrack = void 0;
-/* eslint-disable max-len */
-const axios_1 = require("axios");
 const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const tool_1 = require("./tool");
@@ -68,7 +66,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        const result = await (0, axios_1.default)(options)
+        const result = await (0, tool_1.http)(options)
             .then((response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
@@ -111,7 +109,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then(async (response) => {
             const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e) => e.name === 'Arena Rewards Tracker');
             if (linkedExtension) {
@@ -135,7 +133,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then(async (response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
@@ -174,7 +172,7 @@ class TwitchTrack {
         if (this.httpsAgent)
             twitchOptions.httpsAgent = this.httpsAgent;
         (0, tool_1.log)(`${(0, tool_1.time)()}正在获取直播频道[${chalk.yellow(this.availableStreams[index])}]信息...`, false);
-        return await (0, axios_1.default)(twitchOptions)
+        return await (0, tool_1.http)(twitchOptions)
             .then(async (response) => {
             const channelId = response.data?.[0]?.data?.user?.id;
             if (!channelId) {
@@ -210,7 +208,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then(async (response) => {
             const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
             if (!extensions?.length) {
@@ -256,7 +254,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        const status = await (0, axios_1.default)(options)
+        const status = await (0, tool_1.http)(options)
             .then((response) => {
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));

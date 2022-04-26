@@ -2,7 +2,7 @@
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
 import * as fs from 'fs';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosAdapter, AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 
@@ -24,6 +24,49 @@ const random = (minNum: number, maxNum: number): number => Math.floor((Math.rand
 const time = (): string => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
 // eslint-disable-next-line
 const netError = (error: Error) => (error.message.includes('ETIMEDOUT') ? `: ${chalk.yellow('连接超时，请尝试更换代理！')}` : (error.message.includes('ECONNREFUSED') ? `: ${chalk.yellow('连接被拒绝，请尝试更换代理！')}` : ''));
+
+interface retryAdapterOptions {
+  times?: number
+  delay?: number
+}
+interface myAxiosConfig extends AxiosRequestConfig {
+  retryTimes?: number
+  retryDelay?: number
+}
+const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOptions): AxiosAdapter => {
+  const { times = 0, delay = 300 } = options;
+
+  return async (config: myAxiosConfig): Promise<AxiosResponse> => {
+    const { retryTimes = times, retryDelay = delay } = config;
+    let retryCount = 0;
+    const request = async (): Promise<AxiosResponse> => {
+      try {
+        return await adapter(config);
+      } catch (err) {
+        if (!retryTimes || retryCount >= retryTimes) {
+          return Promise.reject(err);
+        }
+        retryCount++;
+        log(chalk.red('Error'));
+        log(`${time()}${chalk.yellow(`正在重试第 ${chalk.blue(retryCount)} 次...`)}`, false);
+        const delay = new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(true);
+          }, retryDelay);
+        });
+        return delay.then(() => request());
+      }
+    };
+    return request();
+  };
+};
+
+const http = axios.create({
+  adapter: retryAdapterEnhancer(axios.defaults.adapter as AxiosAdapter, {
+    delay: 1000,
+    times: 3
+  })
+});
 
 const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
   log(`${time()}正在检测更新...`, false);
@@ -53,7 +96,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     }
     options.httpsAgent.options.rejectUnauthorized = false;
   }
-  return await axios.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
+  return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then((response) => {
       const latestVersion = response.headers.location.match(/tag\/v([\d.]+)/)?.[1];
       if (latestVersion) {
@@ -96,4 +139,4 @@ const ask = (question: string, answers?: Array<string>): Promise<string> => new 
   });
 });
 
-export { log, sleep, random, time, checkUpdate, netError, ask };
+export { log, sleep, random, time, checkUpdate, netError, ask, http };

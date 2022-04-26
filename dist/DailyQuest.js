@@ -1,9 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DailyQuest = void 0;
-/* eslint-disable max-len */
-/* global questStatus, proxy */
-const axios_1 = require("axios");
 const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const FormData = require("form-data");
@@ -107,7 +104,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             if (response.headers['set-cookie']?.length) {
                 this.headers.cookie = `${this.headers.cookie.trim().replace(/;$/, '')};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
@@ -137,7 +134,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then(async (response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
@@ -152,9 +149,9 @@ class DailyQuest {
                     if (consecutiveLoginsText) {
                         try {
                             const consecutiveLogins = JSON.parse(consecutiveLoginsText);
-                            const reward = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
-                            if (reward) {
-                                (0, tool_1.log)(`${(0, tool_1.time)()}已连续登录${chalk.yellow(consecutiveLogins.count)}天，获得${chalk.green(reward)}ARP`);
+                            const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                            if (rewardArp) {
+                                (0, tool_1.log)(`${(0, tool_1.time)()}已连续登录${chalk.yellow(consecutiveLogins.count)}天，获得${chalk.green(rewardArp)}ARP`);
                             }
                         }
                         catch (e) {
@@ -168,9 +165,14 @@ class DailyQuest {
                             const monthlyLogins = JSON.parse(monthlyLoginsText);
                             if (monthlyLogins.count < 29) {
                                 const week = Math.ceil(monthlyLogins.count / 7);
-                                const reward = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward h1`).text().trim();
-                                if (reward) {
-                                    (0, tool_1.log)(`${(0, tool_1.time)()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(reward)}ARP`);
+                                const rewardArp = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                                const rewardItem = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__day-overlay`).eq(0).text()
+                                    .trim();
+                                if (rewardArp) {
+                                    (0, tool_1.log)(`${(0, tool_1.time)()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(rewardArp)}ARP`);
+                                }
+                                if (rewardItem) {
+                                    (0, tool_1.log)(`${(0, tool_1.time)()}本月已登录${chalk.yellow(monthlyLogins.count)}天，获得${chalk.green(rewardItem)}`);
                                 }
                             }
                             else {
@@ -308,7 +310,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
@@ -339,7 +341,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
@@ -370,7 +372,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then((response) => {
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
@@ -420,7 +422,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then((response) => {
             if (!link) {
                 if (response.data.success) {
@@ -460,7 +462,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then(async (response) => {
             if (response.data === 'success') {
                 await this.sendTrack(`https://${this.host}/ucf/show/${postId}`);
@@ -501,7 +503,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             getOptions.httpsAgent = this.httpsAgent;
-        const post = postId || await (0, axios_1.default)(getOptions)
+        const post = postId || await (0, tool_1.http)(getOptions)
             .then((response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
@@ -545,7 +547,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
@@ -575,7 +577,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return (0, axios_1.default)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             try {
                 if (JSON.stringify(response.data) === '{}') {
@@ -620,7 +622,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        await (0, axios_1.default)(options)
+        await (0, tool_1.http)(options)
             .then(() => { })
             .catch(() => { });
         await this.viewPost('2162951');
@@ -637,7 +639,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, axios_1.default)(options)
+        return await (0, tool_1.http)(options)
             .then((response) => {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);

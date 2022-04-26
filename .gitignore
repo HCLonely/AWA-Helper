@@ -5,3 +5,4 @@ config.yml
 *.zip
 output/
 log.txt
+version

@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 /* global steamGameInfo, proxy */
-import axios, { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
+import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
-import { log, netError, sleep, time } from './tool';
+import { log, netError, sleep, time, http as axios } from './tool';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 
@@ -21,7 +21,7 @@ class SteamQuest {
   taskStatus!: Array<steamGameInfo>;
   awaHost: string;
 
-  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: string, asfPassword?: string, asfBotname: string, proxy ?: proxy }) {
+  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy ?: proxy }) {
     this.awaCookie = awaCookie;
     this.awaHost = awaHost || 'www.alienwarearena.com';
     this.botname = asfBotname;
