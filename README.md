@@ -39,6 +39,11 @@ awaUserId: '' # 外星人论坛用户Id
 awaBorderId: '' # 外星人论坛当前使用的BorderId
 awaBadgeIds: '' # 外星人论坛当前使用的BadgeIds
 awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
+awaQuests:
+  - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
+  - timeOnSite # 自动做AWA在线任务，不需要做此任务删除或注释掉此行
+  - watchTwitch # 自动做Twitch直播间在线任务，不需要做此任务删除或注释掉此行
+  - steamQuest # 自动做Steam游戏时长任务，不需要做此任务删除或注释掉此行
 ```
 
 #### AWA 参数获取方式
