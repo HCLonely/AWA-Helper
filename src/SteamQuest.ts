@@ -3,9 +3,7 @@
 import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
-import { log, netError, sleep, time, http as axios } from './tool';
-import * as tunnel from 'tunnel';
-import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
+import { log, netError, sleep, time, http as axios, formatProxy } from './tool';
 
 class SteamQuest {
   awaCookie: string;
@@ -35,26 +33,7 @@ class SteamQuest {
     };
     if (asfPassword) this.headers.Authentication = asfPassword;
     if (proxy?.enable?.includes('asf') && proxy.host && proxy.port) {
-      const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
-        host: proxy.host,
-        port: proxy.port
-      };
-      if (proxy.protocol === 'socks') {
-        proxyOptions.hostname = proxy.host;
-        if (proxy.username && proxy.password) {
-          proxyOptions.userId = proxy.username;
-          proxyOptions.password = proxy.password;
-        }
-        this.httpsAgent = new SocksProxyAgent(proxyOptions);
-      } else {
-        if (proxy.username && proxy.password) {
-          proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
-        }
-        this.httpsAgent = tunnel.httpsOverHttp({
-          proxy: proxyOptions
-        });
-      }
-      this.httpsAgent.options.rejectUnauthorized = false;
+      this.httpsAgent = formatProxy(proxy);
     }
   }
 

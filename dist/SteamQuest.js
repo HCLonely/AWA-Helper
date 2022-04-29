@@ -4,8 +4,6 @@ exports.SteamQuest = void 0;
 const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const tool_1 = require("./tool");
-const tunnel = require("tunnel");
-const socks_proxy_agent_1 = require("socks-proxy-agent");
 class SteamQuest {
     constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }) {
         this.ownedGames = [];
@@ -27,27 +25,7 @@ class SteamQuest {
         if (asfPassword)
             this.headers.Authentication = asfPassword;
         if (proxy?.enable?.includes('asf') && proxy.host && proxy.port) {
-            const proxyOptions = {
-                host: proxy.host,
-                port: proxy.port
-            };
-            if (proxy.protocol === 'socks') {
-                proxyOptions.hostname = proxy.host;
-                if (proxy.username && proxy.password) {
-                    proxyOptions.userId = proxy.username;
-                    proxyOptions.password = proxy.password;
-                }
-                this.httpsAgent = new socks_proxy_agent_1.SocksProxyAgent(proxyOptions);
-            }
-            else {
-                if (proxy.username && proxy.password) {
-                    proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
-                }
-                this.httpsAgent = tunnel.httpsOverHttp({
-                    proxy: proxyOptions
-                });
-            }
-            this.httpsAgent.options.rejectUnauthorized = false;
+            this.httpsAgent = (0, tool_1.formatProxy)(proxy);
         }
     }
     init() {

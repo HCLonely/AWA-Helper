@@ -4,12 +4,10 @@ import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import * as FormData from 'form-data';
-import * as tunnel from 'tunnel';
-import { log, sleep, random, time, netError, ask, http as axios } from './tool';
+import { log, sleep, random, time, netError, ask, http as axios, formatProxy } from './tool';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuest } from './SteamQuest';
 import * as fs from 'fs';
-import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 
 class DailyQuest {
   // eslint-disable-next-line no-undef
@@ -40,26 +38,7 @@ class DailyQuest {
       'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
     };
     if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
-      const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
-        host: proxy.host,
-        port: proxy.port
-      };
-      if (proxy.protocol === 'socks') {
-        proxyOptions.hostname = proxy.host;
-        if (proxy.username && proxy.password) {
-          proxyOptions.userId = proxy.username;
-          proxyOptions.password = proxy.password;
-        }
-        this.httpsAgent = new SocksProxyAgent(proxyOptions);
-      } else {
-        if (proxy.username && proxy.password) {
-          proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
-        }
-        this.httpsAgent = tunnel.httpsOverHttp({
-          proxy: proxyOptions
-        });
-      }
-      this.httpsAgent.options.rejectUnauthorized = false;
+      this.httpsAgent = formatProxy(proxy);
     }
   }
   async init(): Promise<number> {

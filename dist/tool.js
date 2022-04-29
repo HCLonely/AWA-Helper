@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.http = exports.ask = exports.netError = exports.checkUpdate = exports.time = exports.random = exports.sleep = exports.log = void 0;
+exports.formatProxy = exports.http = exports.ask = exports.netError = exports.checkUpdate = exports.time = exports.random = exports.sleep = exports.log = void 0;
 /* global proxy */
 const chalk = require("chalk");
 const dayjs = require("dayjs");
@@ -29,8 +29,54 @@ exports.random = random;
 const time = () => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
 exports.time = time;
 // eslint-disable-next-line
-const netError = (error) => (error.message.includes('ETIMEDOUT') ? `: ${chalk.yellow('连接超时，请尝试更换代理！')}` : (error.message.includes('ECONNREFUSED') ? `: ${chalk.yellow('连接被拒绝，请尝试更换代理！')}` : ''));
+const netError = (error) => {
+    if (error.message.includes('ETIMEDOUT')) {
+        return `: ${chalk.yellow('连接超时，请尝试更换代理！')}`;
+    }
+    if (error.message.includes('ECONNREFUSED')) {
+        return `: ${chalk.yellow('连接被拒绝，请尝试更换代理！')}`;
+    }
+    if (error.message.includes('hang up') || error.message.includes('ECONNRESET')) {
+        return `: ${chalk.yellow('连接被重置，请尝试更换代理！')}`;
+    }
+};
 exports.netError = netError;
+const formatProxy = (proxy) => {
+    let agent;
+    const proxyOptions = {
+        host: proxy.host,
+        port: proxy.port
+    };
+    if (proxy.protocol?.includes('socks')) {
+        proxyOptions.hostname = proxy.host;
+        if (proxy.username && proxy.password) {
+            proxyOptions.userId = proxy.username;
+            proxyOptions.password = proxy.password;
+        }
+        agent = new socks_proxy_agent_1.SocksProxyAgent(proxyOptions);
+    }
+    else if (proxy.protocol === 'http') {
+        if (proxy.username && proxy.password) {
+            proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
+        }
+        agent = tunnel.httpsOverHttp({
+            proxy: proxyOptions
+        });
+    }
+    else if (proxy.protocol === 'https') {
+        if (proxy.username && proxy.password) {
+            proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
+        }
+        agent = tunnel.httpsOverHttps({
+            proxy: proxyOptions
+        });
+    }
+    if (agent.options) {
+        agent.options.rejectUnauthorized = false;
+    }
+    return agent;
+};
+exports.formatProxy = formatProxy;
 const retryAdapterEnhancer = (adapter, options) => {
     const { times = 0, delay = 300 } = options;
     return async (config) => {
@@ -72,27 +118,7 @@ const checkUpdate = async (version, proxy) => {
         maxRedirects: 0
     };
     if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
-        const proxyOptions = {
-            host: proxy.host,
-            port: proxy.port
-        };
-        if (proxy.protocol === 'socks') {
-            proxyOptions.hostname = proxy.host;
-            if (proxy.username && proxy.password) {
-                proxyOptions.userId = proxy.username;
-                proxyOptions.password = proxy.password;
-            }
-            options.httpsAgent = new socks_proxy_agent_1.SocksProxyAgent(proxyOptions);
-        }
-        else {
-            if (proxy.username && proxy.password) {
-                proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
-            }
-            options.httpsAgent = tunnel.httpsOverHttp({
-                proxy: proxyOptions
-            });
-        }
-        options.httpsAgent.options.rejectUnauthorized = false;
+        options.httpsAgent = formatProxy(proxy);
     }
     return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
         .then((response) => {

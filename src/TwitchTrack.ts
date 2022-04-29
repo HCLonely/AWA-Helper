@@ -2,9 +2,7 @@
 import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
-import { log, sleep, time, netError, http as axios } from './tool';
-import * as tunnel from 'tunnel';
-import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
+import { log, sleep, time, netError, http as axios, formatProxy } from './tool';
 
 class TwitchTrack {
   channelId!: string;
@@ -43,26 +41,7 @@ class TwitchTrack {
       'X-Device-Id': this.formatedCookie.unique_id
     };
     if (proxy?.enable?.includes('twitch') && proxy.host && proxy.port) {
-      const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
-        host: proxy.host,
-        port: proxy.port
-      };
-      if (proxy.protocol === 'socks') {
-        proxyOptions.hostname = proxy.host;
-        if (proxy.username && proxy.password) {
-          proxyOptions.userId = proxy.username;
-          proxyOptions.password = proxy.password;
-        }
-        this.httpsAgent = new SocksProxyAgent(proxyOptions);
-      } else {
-        if (proxy.username && proxy.password) {
-          proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
-        }
-        this.httpsAgent = tunnel.httpsOverHttp({
-          proxy: proxyOptions
-        });
-      }
-      this.httpsAgent.options.rejectUnauthorized = false;
+      this.httpsAgent = formatProxy(proxy);
     }
   }
 

@@ -4,10 +4,8 @@ exports.DailyQuest = void 0;
 const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const FormData = require("form-data");
-const tunnel = require("tunnel");
 const tool_1 = require("./tool");
 const fs = require("fs");
-const socks_proxy_agent_1 = require("socks-proxy-agent");
 class DailyQuest {
     constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, proxy }) {
         // eslint-disable-next-line no-undef
@@ -27,27 +25,7 @@ class DailyQuest {
             'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
         };
         if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
-            const proxyOptions = {
-                host: proxy.host,
-                port: proxy.port
-            };
-            if (proxy.protocol === 'socks') {
-                proxyOptions.hostname = proxy.host;
-                if (proxy.username && proxy.password) {
-                    proxyOptions.userId = proxy.username;
-                    proxyOptions.password = proxy.password;
-                }
-                this.httpsAgent = new socks_proxy_agent_1.SocksProxyAgent(proxyOptions);
-            }
-            else {
-                if (proxy.username && proxy.password) {
-                    proxyOptions.proxyAuth = `${proxy.username}:${proxy.password}`;
-                }
-                this.httpsAgent = tunnel.httpsOverHttp({
-                    proxy: proxyOptions
-                });
-            }
-            this.httpsAgent.options.rejectUnauthorized = false;
+            this.httpsAgent = (0, tool_1.formatProxy)(proxy);
         }
     }
     async init() {
