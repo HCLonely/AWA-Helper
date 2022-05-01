@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import { parse } from 'yaml';
 import { sleep, log, time, checkUpdate } from './tool';
 import * as chalk from 'chalk';
+import * as yamlLint from 'yaml-lint';
 
 (async () => {
   fs.writeFileSync('log.txt', '');
@@ -34,6 +35,20 @@ import * as chalk from 'chalk';
     awaQuests: ['dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
     asfProtocol: 'http'
   };
+  const configString = fs.readFileSync('config.yml').toString();
+  let config: config | null = null;
+  await yamlLint
+    .lint(configString)
+    .then(() => {
+      config = { ...defaultConfig, ...parse(configString) };
+    })
+    .catch((error) => {
+      log(time() + chalk.red(`配置文件第 ${chalk.blue(error.mark.line + 1)} 行格式错误, ${chalk.yellow('以下是错误原因及错误位置')}`));
+      log(error.message);
+    });
+  if (!config) {
+    return;
+  }
   const {
     awaCookie,
     awaHost,
@@ -49,7 +64,7 @@ import * as chalk from 'chalk';
     asfPassword,
     asfBotname,
     proxy
-  }: config = { ...defaultConfig, ...parse(fs.readFileSync('config.yml').toString()) };
+  }: config = config;
   const missingAwaParams = Object.entries({
     awaCookie,
     awaUserId,

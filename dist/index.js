@@ -9,9 +9,10 @@ const fs = require("fs");
 const yaml_1 = require("yaml");
 const tool_1 = require("./tool");
 const chalk = require("chalk");
+const yamlLint = require("yaml-lint");
 (async () => {
     fs.writeFileSync('log.txt', '');
-    const version = 'V1.1.2 ';
+    const version = 'V1.1.3 ';
     const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
     logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
     (0, tool_1.log)(logArr.join('\n'));
@@ -32,7 +33,21 @@ const chalk = require("chalk");
         awaQuests: ['dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
         asfProtocol: 'http'
     };
-    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, awaQuests, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = { ...defaultConfig, ...(0, yaml_1.parse)(fs.readFileSync('config.yml').toString()) };
+    const configString = fs.readFileSync('config.yml').toString();
+    let config = null;
+    await yamlLint
+        .lint(configString)
+        .then(() => {
+        config = { ...defaultConfig, ...(0, yaml_1.parse)(configString) };
+    })
+        .catch((error) => {
+        (0, tool_1.log)((0, tool_1.time)() + chalk.red(`配置文件第 ${chalk.blue(error.mark.line + 1)} 行格式错误, ${chalk.yellow('以下是错误原因及错误位置')}`));
+        (0, tool_1.log)(error.message);
+    });
+    if (!config) {
+        return;
+    }
+    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, awaQuests, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = config;
     const missingAwaParams = Object.entries({
         awaCookie,
         awaUserId,
