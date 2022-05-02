@@ -78,13 +78,17 @@ class DailyQuest {
                 accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
             },
             maxRedirects: 0,
-            validateStatus: (status) => status === 302
+            validateStatus: (status) => status === 302 || status === 200
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
         return (0, tool_1.http)(options)
             .then((response) => {
-            if (response.headers['set-cookie']?.length) {
+            if (response.status === 200 && response.data.toLowerCase().includes('we have detected an issue with your network')) {
+                (0, tool_1.log)(chalk.red('当前IP被禁止访问，请尝试更换代理！'));
+                return false;
+            }
+            if (response.status === 302 && response.headers['set-cookie']?.length) {
                 this.headers.cookie = `${this.headers.cookie.trim().replace(/;$/, '')};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
                 (0, tool_1.log)(chalk.green('OK'));
                 return true;
@@ -115,6 +119,10 @@ class DailyQuest {
         return (0, tool_1.http)(options)
             .then(async (response) => {
             if (response.status === 200) {
+                if (response.data.toLowerCase().includes('we have detected an issue with your network')) {
+                    (0, tool_1.log)(chalk.red('当前IP被禁止访问，请尝试更换代理！'));
+                    return 410;
+                }
                 const $ = (0, cheerio_1.load)(response.data);
                 if ($('a.nav-link-login').length > 0) {
                     (0, tool_1.log)(chalk.red('Token已过期'));

@@ -39,6 +39,9 @@ const netError = (error) => {
     if (error.message.includes('hang up') || error.message.includes('ECONNRESET')) {
         return `: ${chalk.yellow('连接被重置，请尝试更换代理！')}`;
     }
+    if (error.message.includes('certificate') || error.message.includes('TLS') || error.message.includes('SSL')) {
+        return `: ${chalk.yellow('证书错误，请尝试更换代理！')}`;
+    }
 };
 exports.netError = netError;
 const formatProxy = (proxy) => {
