@@ -49,12 +49,18 @@ awaQuests:
 #### AWA 参数获取方式
 
 1. 打开[https://www.alienwarearena.com/account/personalization](https://www.alienwarearena.com/account/personalization)页面，打开控制台，找到网络一栏，筛选`personalization`, 复制请求头中`cookie:`后面的部分，粘贴到配置文件中的`awaCookie`部分；
-![awaCookie](https://github.com/HCLonely/AWA-Helper/raw/main/static/SaMhNF92RY.png)
-2. 除`awaCookie`外，其他参数可在[https://www.alienwarearena.com/account/personalization](https://www.alienwarearena.com/account/personalization)页面，打开控制台输入以下内容获取：
+    ![awaCookie](https://github.com/HCLonely/AWA-Helper/raw/main/static/SaMhNF92RY.png)
+2. [可选&建议] 打开控制台输入以下内容，并把`你的COOKIE`替换为复制的`cookie`，回车运行后会剔除不需要的`cookie`.
 
-```javascript
-console.log(`awaUserId: '${user_id}'\nawaBorderId: '${selectedBorder}'\nawaBadgeIds: '${selectedBadges.join(',')}'`);
-```
+    ```javascript
+    console.log(`你的COOKIE`.split(';').map((e) => ['REMEMBERME','PHPSESSID','sc'].includes(e.trim().split('=')[0]) ? e.trim() : null).filter((e) => e).join(';'));
+    ```
+
+3. 除`awaCookie`外，其他参数可在[https://www.alienwarearena.com/account/personalization](https://www.alienwarearena.com/account/personalization)页面，打开控制台输入以下内容获取：
+
+    ```javascript
+    console.log(`awaUserId: '${user_id}'\nawaBorderId: '${selectedBorder}'\nawaBadgeIds: '${selectedBadges.join(',')}'`);
+    ```
 
 ### Twitch 配置(可选)
 
