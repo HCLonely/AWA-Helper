@@ -24,6 +24,7 @@ class DailyQuest {
   dailyQuestLink!: string;
   host: string;
   awaBoosterNotice: boolean;
+  // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaUserId: string, awaBorderId: string, awaBadgeIds: string, awaBoosterNotice:boolean, proxy?: proxy }) {
     this.host = awaHost || 'www.alienwarearena.com';
@@ -176,6 +177,19 @@ class DailyQuest {
               }
             }
           }
+          /*
+          // 美区任务
+          const country = response.data.match(/user_country.*?=.*?([\w]+)/)?.[1];
+          if (country === 'US') {
+            this.USTaskInfo = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0).toArray()
+              .map((e) => ({
+                url: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${this.host}/`).href,
+                progress: $(e).find('.quest-item-progress').toArray()
+                  .map((e) => $(e).text().trim()
+                    .toLowerCase())
+              }));
+          }
+          */
           // 每日任务
           const [status, arp] = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0')).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
@@ -183,8 +197,10 @@ class DailyQuest {
           this.questInfo.dailyQuest = {
             status, arp
           };
-          if (verify && this.awaBoosterNotice && $('div.quest-item .quest-item-progress').map((i, e) => $(e).text().trim()
-            .toLowerCase()).filter((i, e) => e === 'incomplete').length > 1) {
+          if (verify && this.awaBoosterNotice && $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
+            .map((i, e) => $(e).text().trim()
+              .toLowerCase())
+            .filter((i, e) => e === 'incomplete').length > 1) {
             const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
             let boostEnabled = false;
             if (userArpBoostText) {
@@ -251,6 +267,16 @@ class DailyQuest {
       });
   }
   async do(): Promise<void> {
+    /*
+    if (this.USTaskInfo?.length) {
+      for (const { url, progress: [status] } of this.USTaskInfo) {
+        if (status === 'complete') {
+          continue;
+        }
+        await this.doUSTask(url);
+      }
+    }
+    */
     if (this.questStatus.dailyQuest === 'skip') {
       return log(time() + chalk.yellow('已跳过每日任务！'));
     }
@@ -493,7 +519,7 @@ class DailyQuest {
       headers: {
         ...this.headers,
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        referer: 'https://www.alienwarearena.com/'
+        referer: `https://${this.host}/`
       }
     };
     if (this.httpsAgent) getOptions.httpsAgent = this.httpsAgent;
@@ -655,6 +681,46 @@ class DailyQuest {
         return;
       });
   }
+
+  /*
+  async getUSTaskInfo(url: string): Promise<string | false> {
+    log(`${time()}正在获取美区任务[${chalk.yellow(url.match(/[\d]+/)?.[0] || url)}] render...`, false);
+    const getOptions: AxiosRequestConfig = {
+      url,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*\/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        referer: `https://${this.host}/`
+      }
+    };
+    if (this.httpsAgent) getOptions.httpsAgent = this.httpsAgent;
+
+    return axios(getOptions)
+      .then((response) => {
+        if (response.status === 200) {
+          const render = response.data.match(/https:\/\/www\.google\.com\/recaptcha\/enterprise\.js\?render=(.*?)'/)?.[1];
+          if (render) {
+            log(chalk.green('OK'));
+            return render;
+          }
+          log(chalk.red('Error'));
+          return false;
+        }
+        log(chalk.red('Net Error'));
+        return false;
+      })
+      .catch((error) => {
+        log(chalk.red('Error') + netError(error));
+        console.error(error);
+        return false;
+      });
+  }
+  async doUSTask(url: string) {
+    const render = await this.getUSTaskInfo(url);
+    if (!render) return false;
+  }
+  */
   formatQuestInfo() {
     return {
       ['每日任务']: {

@@ -6,7 +6,7 @@ import axios, { AxiosAdapter, AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 
-const log = (text: string, newLine = true): void => {
+const log = (text: any, newLine = true): void => {
   // eslint-disable-next-line no-control-regex
   fs.appendFileSync('log.txt', text.toString().replace(/\x1B\[[\d]*?m/g, '') + (newLine ? '\n' : ''));
   if (newLine) console.log(text);

@@ -73,7 +73,7 @@ import * as yamlLint from 'yaml-lint';
   }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
   if (missingAwaParams.length > 0) {
     log(chalk.red('缺少以下参数: '));
-    console.log(missingAwaParams);
+    log(missingAwaParams);
     return;
   }
   await checkUpdate(version, proxy);
