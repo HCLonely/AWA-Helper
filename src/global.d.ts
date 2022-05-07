@@ -50,5 +50,8 @@ declare global {
     watchTwitch?: 'complete' | 'incomplete'
     steamQuest?: 'complete' | 'incomplete'
   }
+
+  // eslint-disable-next-line no-var
+  var secrets: string;
 }
 export {};

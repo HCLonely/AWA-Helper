@@ -95,6 +95,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200 && response.data.toLowerCase().includes('we have detected an issue with your network')) {
           log(chalk.red('当前IP被禁止访问，请尝试更换代理！'));
           return false;
@@ -110,7 +111,8 @@ class DailyQuest {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -122,12 +124,12 @@ class DailyQuest {
       headers: {
         ...this.headers,
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
-      },
-      maxRedirects: 0
+      }
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           if (response.data.toLowerCase().includes('we have detected an issue with your network')) {
             log(chalk.red('当前IP被禁止访问，请尝试更换代理！'));
@@ -262,7 +264,8 @@ class DailyQuest {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return 0;
       });
   }
@@ -328,6 +331,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
           log(chalk.green('OK'));
           return true;
@@ -336,9 +340,10 @@ class DailyQuest {
         log(response.data?.message || response.statusText);
         return false;
       })
-      .catch((e) => {
+      .catch((error) => {
         log(chalk.red('Error'));
-        console.error(e);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -360,6 +365,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
           log(chalk.green('OK'));
           return true;
@@ -368,9 +374,10 @@ class DailyQuest {
         log(response.data?.message || response.statusText);
         return false;
       })
-      .catch((e) => {
+      .catch((error) => {
         log(chalk.red('Error'));
-        console.error(e);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -392,6 +399,7 @@ class DailyQuest {
 
     return await axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
           log(chalk.green('OK'));
           return true;
@@ -400,9 +408,10 @@ class DailyQuest {
         log(response.data?.message || response.statusText);
         return false;
       })
-      .catch((e) => {
+      .catch((error) => {
         log(chalk.red('Error'));
-        console.error(e);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -444,6 +453,7 @@ class DailyQuest {
 
     return await axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (!link) {
           if (response.data.success) {
             log(chalk.green('OK'));
@@ -458,10 +468,11 @@ class DailyQuest {
         }
         return true;
       })
-      .catch((e) => {
+      .catch((error) => {
         if (!link) {
           log(chalk.red('Error'));
-          console.error(e);
+          globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+          log(error);
           this.trackError++;
           return false;
         }
@@ -485,6 +496,7 @@ class DailyQuest {
 
     return await axios(options)
       .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data === 'success') {
           await this.sendTrack(`https://${this.host}/ucf/show/${postId}`);
           log(chalk.green('OK'));
@@ -494,9 +506,10 @@ class DailyQuest {
         log(response.data || response.statusText);
         return false;
       })
-      .catch((e) => {
+      .catch((error) => {
         log(chalk.red('Error'));
-        console.error(e);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -526,6 +539,7 @@ class DailyQuest {
 
     const post = postId || await axios(getOptions)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           const $ = load(response.data);
           const topicPost = $('.card-title a.forums__topic-link').toArray()
@@ -544,7 +558,8 @@ class DailyQuest {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
 
@@ -573,6 +588,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
           log(chalk.green('OK'));
           return true;
@@ -581,9 +597,10 @@ class DailyQuest {
         log(response.data?.message || response.statusText);
         return false;
       })
-      .catch((e) => {
+      .catch((error) => {
         log(chalk.red('Error'));
-        console.error(e);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -604,6 +621,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         try {
           if (JSON.stringify(response.data) === '{}') {
             log(chalk.green('OK'));
@@ -612,15 +630,16 @@ class DailyQuest {
           log(chalk.red('Error'));
           log(response.data);
           return false;
-        } catch (e) {
+        } catch {
           log(chalk.red('Error'));
           log(response.data);
           return false;
         }
       })
-      .catch((e) => {
+      .catch((error) => {
         log(chalk.red('Error'));
-        console.error(e);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -646,7 +665,7 @@ class DailyQuest {
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     await axios(options)
-      .then(() => { })
+      .then((response) => globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|'))
       .catch(() => { });
     await this.viewPost('2162951');
   }
@@ -663,6 +682,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return await axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
@@ -677,7 +697,8 @@ class DailyQuest {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return;
       });
   }
@@ -698,6 +719,7 @@ class DailyQuest {
 
     return axios(getOptions)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           const render = response.data.match(/https:\/\/www\.google\.com\/recaptcha\/enterprise\.js\?render=(.*?)'/)?.[1];
           if (render) {
@@ -712,7 +734,8 @@ class DailyQuest {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }

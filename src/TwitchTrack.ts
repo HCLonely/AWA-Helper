@@ -60,6 +60,7 @@ class TwitchTrack {
 
     const result = await axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           const $ = load(response.data);
           const optionScript = $('script').filter((i, e) => !!$(e).html()?.includes('clientId'));
@@ -81,7 +82,8 @@ class TwitchTrack {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
     if (!result) return false;
@@ -101,6 +103,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return await axios(options)
       .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e: any) => e.name === 'Arena Rewards Tracker');
         if (linkedExtension) {
           log(chalk.green('已授权'));
@@ -111,7 +114,8 @@ class TwitchTrack {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -124,6 +128,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return await axios(options)
       .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           const $ = load(response.data);
           this.availableStreams = $('div.media a[href]').toArray().map((e) => $(e).attr('href')
@@ -143,7 +148,8 @@ class TwitchTrack {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
   }
@@ -160,6 +166,7 @@ class TwitchTrack {
     log(`${time()}正在获取直播频道[${chalk.yellow(this.availableStreams[index])}]信息...`, false);
     return await axios(twitchOptions)
       .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const channelId = response.data?.[0]?.data?.user?.id;
         if (!channelId) {
           log(chalk.red('Error'));
@@ -171,7 +178,8 @@ class TwitchTrack {
       })
       .catch(async (error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return await this.getChannelInfo(index + 1);
       });
   }
@@ -194,6 +202,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return await axios(options)
       .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
         if (!extensions?.length) {
           log(chalk.red('Error: 在此频道没有找到扩展！'));
@@ -215,7 +224,8 @@ class TwitchTrack {
       })
       .catch(async (error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return await this.getExtInfo((returnedIndex as number) + 1);
       });
   }
@@ -238,6 +248,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     const status = await axios(options)
       .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
           log(chalk.green('OK'));
           this.trackError = 0;
@@ -267,7 +278,8 @@ class TwitchTrack {
       })
       .catch((error) => {
         log(chalk.red('Error') + netError(error));
-        console.error(error);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
         return false;
       });
     if (status === 'complete') {

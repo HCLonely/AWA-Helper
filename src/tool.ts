@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* global proxy */
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
@@ -5,10 +6,48 @@ import * as fs from 'fs';
 import axios, { AxiosAdapter, AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
+import { parse } from 'yaml';
+import { format } from 'util';
+
+const getSecertValue = (): string => {
+  if (!fs.existsSync('config.yml')) {
+    return '__________';
+  }
+  try {
+    const {
+      awaCookie = '=__________',
+      twitchCookie = '=__________',
+      asfPassword = '__________',
+      proxy: {
+        host = '__________',
+        username = '__________',
+        password = '__________'
+      },
+      asfHost = '__________'
+    } = parse(fs.readFileSync('config.yml').toString());
+    const secrets = [];
+    secrets.push(...awaCookie.split(';').map((e: string) => e.split('=')[1]).filter((e: any) => e));
+    secrets.push(...twitchCookie.split(';').map((e: string) => e.split('=')[1]).filter((e: any) => e));
+    secrets.push(asfPassword, host, username, password, asfHost);
+    return [...new Set(secrets)].join('|');
+  } catch {
+    return '__________';
+  }
+};
+
+globalThis.secrets = getSecertValue();
+
+const toJSON = (e: any): string => {
+  if (typeof e === 'string') {
+    // eslint-disable-next-line no-control-regex
+    return e.replace(/\x1B\[[\d]*?m/g, '');
+  }
+
+  return format(e);
+};
 
 const log = (text: any, newLine = true): void => {
-  // eslint-disable-next-line no-control-regex
-  fs.appendFileSync('log.txt', text.toString().replace(/\x1B\[[\d]*?m/g, '') + (newLine ? '\n' : ''));
+  fs.appendFileSync('log.txt', toJSON(text).replace(new RegExp(globalThis.secrets, 'gi'), '********') + (newLine ? '\n' : ''));
   if (newLine) console.log(text);
   else process.stdout.write(text);
 };
@@ -23,7 +62,7 @@ const sleep = (time: number): Promise<true> => new Promise((resolve) => {
 const random = (minNum: number, maxNum: number): number => Math.floor((Math.random() * (maxNum - minNum + 1)) + minNum);
 const time = (): string => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
 // eslint-disable-next-line
-const netError = (error: Error) => {
+const netError = (error: Error): string => {
   if (error.message.includes('ETIMEDOUT')) {
     return `: ${chalk.yellow('连接超时，请尝试更换代理！')}`;
   }
@@ -36,6 +75,7 @@ const netError = (error: Error) => {
   if (error.message.includes('certificate') || error.message.includes('TLS') || error.message.includes('SSL')) {
     return `: ${chalk.yellow('证书错误，请尝试更换代理！')}`;
   }
+  return '';
 };
 
 const formatProxy = (proxy: proxy): any => {
@@ -126,6 +166,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
   }
   return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then((response) => {
+      globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
       const latestVersion = response.headers.location.match(/tag\/v([\d.]+)/)?.[1];
       if (latestVersion) {
         const currentVersionArr = version.replace('V', '').split('.').map((e) => parseInt(e, 10));
@@ -147,7 +188,8 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     })
     .catch((error) => {
       log(chalk.red('Error') + netError(error));
-      console.error(error);
+      globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+      log(error);
       return;
     });
 };

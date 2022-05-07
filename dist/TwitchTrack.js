@@ -46,6 +46,7 @@ class TwitchTrack {
             options.httpsAgent = this.httpsAgent;
         const result = await (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
                 const optionScript = $('script').filter((i, e) => !!$(e).html()?.includes('clientId'));
@@ -67,7 +68,8 @@ class TwitchTrack {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
         if (!result)
@@ -89,6 +91,7 @@ class TwitchTrack {
             options.httpsAgent = this.httpsAgent;
         return await (0, tool_1.http)(options)
             .then(async (response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e) => e.name === 'Arena Rewards Tracker');
             if (linkedExtension) {
                 (0, tool_1.log)(chalk.green('已授权'));
@@ -99,7 +102,8 @@ class TwitchTrack {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
@@ -113,6 +117,7 @@ class TwitchTrack {
             options.httpsAgent = this.httpsAgent;
         return await (0, tool_1.http)(options)
             .then(async (response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
                 this.availableStreams = $('div.media a[href]').toArray().map((e) => $(e).attr('href')
@@ -132,7 +137,8 @@ class TwitchTrack {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
@@ -152,6 +158,7 @@ class TwitchTrack {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在获取直播频道[${chalk.yellow(this.availableStreams[index])}]信息...`, false);
         return await (0, tool_1.http)(twitchOptions)
             .then(async (response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const channelId = response.data?.[0]?.data?.user?.id;
             if (!channelId) {
                 (0, tool_1.log)(chalk.red('Error'));
@@ -163,7 +170,8 @@ class TwitchTrack {
         })
             .catch(async (error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return await this.getChannelInfo(index + 1);
         });
     }
@@ -188,6 +196,7 @@ class TwitchTrack {
             options.httpsAgent = this.httpsAgent;
         return await (0, tool_1.http)(options)
             .then(async (response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
             if (!extensions?.length) {
                 (0, tool_1.log)(chalk.red('Error: 在此频道没有找到扩展！'));
@@ -209,7 +218,8 @@ class TwitchTrack {
         })
             .catch(async (error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return await this.getExtInfo(returnedIndex + 1);
         });
     }
@@ -234,6 +244,7 @@ class TwitchTrack {
             options.httpsAgent = this.httpsAgent;
         const status = await (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
                 this.trackError = 0;
@@ -263,7 +274,8 @@ class TwitchTrack {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
         if (status === 'complete') {

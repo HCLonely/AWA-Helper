@@ -40,6 +40,7 @@ class SteamQuest {
             options.httpsAgent = this.httpsAgent;
         return (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
                     (0, tool_1.log)(chalk.green('OK'));
@@ -58,7 +59,8 @@ class SteamQuest {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error'));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
@@ -78,6 +80,7 @@ class SteamQuest {
             options.httpsAgent = this.httpsAgent;
         return await (0, tool_1.http)(options)
             .then(async (response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
                 const gamesInfo = [];
@@ -114,7 +117,8 @@ class SteamQuest {
         })
             .catch((error) => {
             (0, tool_1.log)((0, tool_1.time)() + chalk.red(`获取${chalk.yellow('Steam')}任务信息失败`) + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
@@ -137,6 +141,7 @@ class SteamQuest {
             options.httpsAgent = this.httpsAgent;
         return (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data.includes('You have completed this quest')) {
                 (0, tool_1.log)(chalk.green('此任务已完成'));
                 return false;
@@ -158,7 +163,8 @@ class SteamQuest {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
@@ -177,6 +183,7 @@ class SteamQuest {
             options.httpsAgent = this.httpsAgent;
         return (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data.success) {
                 (0, tool_1.log)(chalk.green('OK'));
                 return true;
@@ -186,7 +193,8 @@ class SteamQuest {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
@@ -212,6 +220,7 @@ class SteamQuest {
                 options.httpsAgent = this.httpsAgent;
             await (0, tool_1.http)(options)
                 .then((response) => {
+                globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
                 if (response.data.includes('aria-valuenow')) {
                     const progress = response.data.match(/aria-valuenow="([\d]+?)"/)?.[1];
                     if (progress) {
@@ -227,7 +236,8 @@ class SteamQuest {
             })
                 .catch((error) => {
                 (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
-                console.error(error);
+                globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+                (0, tool_1.log)(error);
                 return false;
             });
         }
@@ -255,6 +265,7 @@ class SteamQuest {
             options.httpsAgent = this.httpsAgent;
         return await (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
                     this.ownedGames = [...new Set(response.data.Result.split('\n').filter((e) => e.includes('|')).map((e) => e.trim().match(/app\/([\d]+)/)?.[1])
@@ -278,7 +289,8 @@ class SteamQuest {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error'));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
@@ -301,6 +313,7 @@ class SteamQuest {
             options.httpsAgent = this.httpsAgent;
         const started = await (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
                     this.status = 'running';
@@ -320,7 +333,8 @@ class SteamQuest {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error'));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
         if (!started)
@@ -346,6 +360,7 @@ class SteamQuest {
             options.httpsAgent = this.httpsAgent;
         return await (0, tool_1.http)(options)
             .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
                 if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
                     this.status = 'stopped';
@@ -365,7 +380,8 @@ class SteamQuest {
         })
             .catch((error) => {
             (0, tool_1.log)(chalk.red('Error'));
-            console.error(error);
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
             return false;
         });
     }
