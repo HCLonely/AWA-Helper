@@ -96,7 +96,7 @@ class DailyQuest {
                 return true;
             }
             (0, tool_1.log)(chalk.green('Error'));
-            console.error(response);
+            (0, tool_1.log)(response);
             return false;
         })
             .catch((error) => {
@@ -245,7 +245,7 @@ class DailyQuest {
                 if (!verify)
                     (0, tool_1.log)(`${(0, tool_1.time)()}当前任务信息:`);
                 const formatQuestInfo = this.formatQuestInfo();
-                fs.appendFileSync('log.txt', `${JSON.stringify(formatQuestInfo, null, 4)}\n`);
+                fs.appendFileSync('log.txt', `${JSON.stringify(formatQuestInfo, null, 2)}\n`);
                 if (!verify)
                     console.table(formatQuestInfo);
                 this.posts = $('.tile-slider__card a[href*="/ucf/show/"]').toArray()
@@ -311,7 +311,7 @@ class DailyQuest {
         this.questStatus.dailyQuest = 'complete';
         return (0, tool_1.log)((0, tool_1.time)() + chalk.red('每日任务未完成！'));
     }
-    changeBorder() {
+    async changeBorder() {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在更换${chalk.yellow('Border')}...`, false);
         const options = {
             url: `https://${this.host}/border/select`,
@@ -334,7 +334,7 @@ class DailyQuest {
                 return true;
             }
             (0, tool_1.log)(chalk.red('Error'));
-            (0, tool_1.log)(response.data?.message || response.statusText);
+            (0, tool_1.log)(response.data?.message || response);
             return false;
         })
             .catch((error) => {
@@ -344,7 +344,7 @@ class DailyQuest {
             return false;
         });
     }
-    changeBadge() {
+    async changeBadge() {
         (0, tool_1.log)(`${(0, tool_1.time)()}正在更换${chalk.yellow('Badge')}...`, false);
         const options = {
             url: `https://${this.host}/badges/update/${this.userId}`,
@@ -355,7 +355,7 @@ class DailyQuest {
                 origin: `https://${this.host}`,
                 referer: `https://${this.host}/account/personalization`
             },
-            data: JSON.stringify(this.badgeIds)
+            data: JSON.stringify(this.badgeIds.slice(0, 5))
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
@@ -367,7 +367,7 @@ class DailyQuest {
                 return true;
             }
             (0, tool_1.log)(chalk.red('Error'));
-            (0, tool_1.log)(response.data?.message || response.statusText);
+            (0, tool_1.log)(response.data?.message || response);
             return false;
         })
             .catch((error) => {
@@ -400,7 +400,7 @@ class DailyQuest {
                 return true;
             }
             (0, tool_1.log)(chalk.red('Error'));
-            (0, tool_1.log)(response.data?.message || response.statusText);
+            (0, tool_1.log)(response.data?.message || response);
             return false;
         })
             .catch((error) => {
@@ -455,7 +455,7 @@ class DailyQuest {
                     return true;
                 }
                 (0, tool_1.log)(chalk.red('Error'));
-                (0, tool_1.log)(response.data?.message || response.statusText);
+                (0, tool_1.log)(response.data?.message || response);
                 this.trackError++;
                 return false;
             }
@@ -583,7 +583,7 @@ class DailyQuest {
                 return true;
             }
             (0, tool_1.log)(chalk.red('Error'));
-            (0, tool_1.log)(response.data?.message || response.statusText);
+            (0, tool_1.log)(response.data?.message || response);
             return false;
         })
             .catch((error) => {
