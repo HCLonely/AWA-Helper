@@ -37,6 +37,9 @@ class DailyQuest {
         else {
             (0, tool_1.log)(`${(0, tool_1.time)()}检测到${chalk.yellow('awaCookie')}中没有${chalk.blue('REMEMBERME')}，可能会导致连续签到天数获取错误，不影响其他功能`);
         }
+        if (this.headers.cookie.includes('REMEMBERME=deleted')) {
+            return 402;
+        }
         return this.updateDailyQuests(true);
     }
     async listen(twitch, steamQuest, check = false) {
@@ -92,10 +95,14 @@ class DailyQuest {
             }
             if (response.status === 302 && response.headers['set-cookie']?.length) {
                 this.headers.cookie = `${this.headers.cookie.trim().replace(/;$/, '')};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
+                if (this.headers.cookie.includes('REMEMBERME=deleted')) {
+                    (0, tool_1.log)(chalk.red(`Error: ${chalk.yellow('awaCookie')} 已过期, 请重新获取!`));
+                    return false;
+                }
                 (0, tool_1.log)(chalk.green('OK'));
                 return true;
             }
-            (0, tool_1.log)(chalk.green('Error'));
+            (0, tool_1.log)(chalk.red('Error'));
             (0, tool_1.log)(response);
             return false;
         })
