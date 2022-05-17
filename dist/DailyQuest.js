@@ -94,7 +94,7 @@ class DailyQuest {
                 return false;
             }
             if (response.status === 302 && response.headers['set-cookie']?.length) {
-                this.headers.cookie = `${this.headers.cookie.trim().replace(/;$/, '')};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
+                this.headers.cookie = `REMEMBERME=${Object.fromEntries(this.headers.cookie.trim().split(';').map((e) => e.split('='))).REMEMBERME};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
                 if (this.headers.cookie.includes('REMEMBERME=deleted')) {
                     (0, tool_1.log)(chalk.red(`Error: ${chalk.yellow('awaCookie')} 已过期, 请重新获取!`));
                     return false;

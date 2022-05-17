@@ -17,8 +17,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v1.1.8
-          name: 1.1.8
+          tag_name: v1.1.9
+          name: 1.1.9
           body_path: CHANGELOG.txt
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}
