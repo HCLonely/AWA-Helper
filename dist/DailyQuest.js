@@ -304,6 +304,10 @@ class DailyQuest {
             }
         }
         await this.openLink(`https://${this.host}/rewards/leaderboard`);
+        await (0, tool_1.sleep)((0, tool_1.random)(1, 3));
+        await this.openLink(`https://${this.host}/rewards`);
+        await (0, tool_1.sleep)((0, tool_1.random)(1, 3));
+        await this.openLink(`https://${this.host}/marketplace/`);
         await this.updateDailyQuests();
         if (this.questInfo.dailyQuest?.status === 'complete') {
             this.questStatus.dailyQuest = 'complete';
@@ -517,7 +521,7 @@ class DailyQuest {
         if (!posts?.length) {
             return false;
         }
-        for (const post of posts.slice(0, 5)) {
+        for (const post of posts.slice(0, 3)) {
             await this.viewPost(post);
             await (0, tool_1.sleep)((0, tool_1.random)(1, 5));
         }
