@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 /* eslint-disable no-unused-vars */
 declare global {
   interface config {
@@ -51,7 +52,6 @@ declare global {
     steamQuest?: 'complete' | 'incomplete'
   }
 
-  // eslint-disable-next-line no-var
   var secrets: string;
 }
 export {};

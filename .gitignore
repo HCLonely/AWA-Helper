@@ -1,8 +1,11 @@
 .history/
 node_modules/
 config.yml
-*.exe
+AWA-Helper.exe
 *.zip
 output/
 log.txt
 version
+test*
+chrome-win
+USDailyQuest*
