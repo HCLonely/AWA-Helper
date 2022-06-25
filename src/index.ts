@@ -55,6 +55,7 @@ import * as yamlLint from 'yaml-lint';
     awaUserId,
     awaBorderId,
     awaBadgeIds,
+    awaAvatar,
     awaBoosterNotice,
     awaQuests,
     twitchCookie,
@@ -83,6 +84,7 @@ import * as yamlLint from 'yaml-lint';
     awaUserId: awaUserId as string,
     awaBorderId: awaBorderId as string,
     awaBadgeIds: awaBadgeIds as string,
+    awaAvatar: awaAvatar as string,
     awaBoosterNotice: awaBoosterNotice as boolean,
     proxy
   });

@@ -16,7 +16,7 @@ const getSecertValue = () => {
         return '__________';
     }
     try {
-        const { awaCookie = '=__________', twitchCookie = '=__________', asfPassword = '__________', proxy: { host = '__________', username = '__________', password = '__________' }, asfHost = '__________' } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
+        const { awaCookie = '__________', twitchCookie = '__________', asfPassword = '__________', proxy: { host = '__________', username = '__________', password = '__________' }, asfHost = '__________' } = (0, yaml_1.parse)(fs.readFileSync('config.yml').toString());
         const secrets = [];
         secrets.push(...awaCookie.split(';').map((e) => e.split('=')[1]).filter((e) => e));
         secrets.push(...twitchCookie.split(';').map((e) => e.split('=')[1]).filter((e) => e));
@@ -36,7 +36,8 @@ const toJSON = (e) => {
     return (0, util_1.format)(e);
 };
 const log = (text, newLine = true) => {
-    fs.appendFileSync('log.txt', toJSON(text).replace(new RegExp(globalThis.secrets, 'gi'), '********') + (newLine ? '\n' : ''));
+    fs.appendFileSync('log.txt', toJSON(text).replace(new RegExp(globalThis.secrets, 'gi'), '********')
+        .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********') + (newLine ? '\n' : ''));
     if (newLine)
         console.log(text);
     else

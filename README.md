@@ -38,6 +38,7 @@ awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienw
 awaUserId: '' # 外星人论坛用户Id
 awaBorderId: '' # 外星人论坛当前使用的BorderId
 awaBadgeIds: '' # 外星人论坛当前使用的BadgeIds
+awaAvatar: '' # 外星人论坛当前使用的Avatar
 awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 awaQuests:
   - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
@@ -60,6 +61,24 @@ awaQuests:
 
     ```javascript
     console.log(`awaUserId: '${user_id}'\nawaBorderId: '${selectedBorder}'\nawaBadgeIds: '${selectedBadges.join(',')}'`);
+    ```
+
+4. `awaAvatar`获取方式：打开[https://www.alienwarearena.com/avatar/edit](https://www.alienwarearena.com/avatar/edit)页面，并打开控制台输入以下内容获取：
+
+    ```javascript
+    console.log(`awaAvatar: '${JSON.stringify({body: null, hat: null, top: null, item: null, legs: null, top: null, ...Object.fromEntries($.makeArray($('.drag-drop')).map((e) => {
+        const slotType = $(e).attr('data-slot-type').split('-')[0];
+        const altimg = $(e).attr('data-altImg');
+        const data = {
+            id: $(e).attr('data-id'),
+            img: $(e).attr('data-img'),
+            slotType: $(e).attr('data-slot-type')
+        };
+        if (altimg) {
+            data.altimg = altimg;
+        }
+        return [slotType, data]
+    }))})}'`);
     ```
 
 ### Twitch 配置(可选)

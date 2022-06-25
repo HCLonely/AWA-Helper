@@ -20,16 +20,18 @@ class DailyQuest {
   userId: string;
   borderId: string;
   badgeIds: Array<string>;
+  avatar: string;
   questStatus: questStatus = {};
   dailyQuestLink!: string;
   host: string;
   awaBoosterNotice: boolean;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaUserId: string, awaBorderId: string, awaBadgeIds: string, awaBoosterNotice:boolean, proxy?: proxy }) {
+  constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaAvatar, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaUserId: string, awaBorderId: string, awaBadgeIds: string, awaAvatar: string, awaBoosterNotice:boolean, proxy?: proxy }) {
     this.host = awaHost || 'www.alienwarearena.com';
     this.userId = awaUserId;
     this.borderId = awaBorderId;
+    this.avatar = awaAvatar;
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.badgeIds = awaBadgeIds.split(',');
     this.headers = {
@@ -296,6 +298,7 @@ class DailyQuest {
     }
     await this.changeBorder();
     await this.changeBadge();
+    await this.changeAvatar();
     await this.viewPosts();
     await this.viewNews();
     await this.sharePosts();
@@ -371,6 +374,40 @@ class DailyQuest {
         referer: `https://${this.host}/account/personalization`
       },
       data: JSON.stringify(this.badgeIds.slice(0, 5))
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        if (response.data.success) {
+          log(chalk.green('OK'));
+          return true;
+        }
+        log(chalk.red('Error'));
+        log(response.data?.message || response);
+        return false;
+      })
+      .catch((error) => {
+        log(chalk.red('Error'));
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
+        return false;
+      });
+  }
+
+  async changeAvatar(): Promise<boolean> {
+    log(`${time()}正在更换${chalk.yellow('Avatar')}...`, false);
+    const options: AxiosRequestConfig = {
+      url: `https://${this.host}/ajax/user/avatar/save/${this.userId}`,
+      method: 'POST',
+      headers: {
+        ...this.headers,
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        origin: `https://${this.host}`,
+        referer: `https://${this.host}/avatar/edit/hat`
+      },
+      data: this.avatar
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
 

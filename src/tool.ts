@@ -15,8 +15,8 @@ const getSecertValue = (): string => {
   }
   try {
     const {
-      awaCookie = '=__________',
-      twitchCookie = '=__________',
+      awaCookie = '__________',
+      twitchCookie = '__________',
       asfPassword = '__________',
       proxy: {
         host = '__________',
@@ -47,7 +47,8 @@ const toJSON = (e: any): string => {
 };
 
 const log = (text: any, newLine = true): void => {
-  fs.appendFileSync('log.txt', toJSON(text).replace(new RegExp(globalThis.secrets, 'gi'), '********') + (newLine ? '\n' : ''));
+  fs.appendFileSync('log.txt', toJSON(text).replace(new RegExp(globalThis.secrets, 'gi'), '********')
+    .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********') + (newLine ? '\n' : ''));
   if (newLine) console.log(text);
   else process.stdout.write(text);
 };

@@ -7,6 +7,7 @@ declare global {
     awaUserId?: string,
     awaBorderId?: string,
     awaBadgeIds?: string,
+    awaAvatar?: string,
     awaBoosterNotice?: boolean,
     awaQuests: Array<string>,
     twitchCookie?: string,

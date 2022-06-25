@@ -8,7 +8,7 @@ const tool_1 = require("./tool");
 const fs = require("fs");
 class DailyQuest {
     // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
-    constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, proxy }) {
+    constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaAvatar, awaBoosterNotice, proxy }) {
         // eslint-disable-next-line no-undef
         this.questInfo = {};
         this.trackError = 0;
@@ -17,6 +17,7 @@ class DailyQuest {
         this.host = awaHost || 'www.alienwarearena.com';
         this.userId = awaUserId;
         this.borderId = awaBorderId;
+        this.avatar = awaAvatar;
         this.awaBoosterNotice = awaBoosterNotice ?? true;
         this.badgeIds = awaBadgeIds.split(',');
         this.headers = {
@@ -293,6 +294,7 @@ class DailyQuest {
         }
         await this.changeBorder();
         await this.changeBadge();
+        await this.changeAvatar();
         await this.viewPosts();
         await this.viewNews();
         await this.sharePosts();
@@ -367,6 +369,39 @@ class DailyQuest {
                 referer: `https://${this.host}/account/personalization`
             },
             data: JSON.stringify(this.badgeIds.slice(0, 5))
+        };
+        if (this.httpsAgent)
+            options.httpsAgent = this.httpsAgent;
+        return (0, tool_1.http)(options)
+            .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            if (response.data.success) {
+                (0, tool_1.log)(chalk.green('OK'));
+                return true;
+            }
+            (0, tool_1.log)(chalk.red('Error'));
+            (0, tool_1.log)(response.data?.message || response);
+            return false;
+        })
+            .catch((error) => {
+            (0, tool_1.log)(chalk.red('Error'));
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
+            return false;
+        });
+    }
+    async changeAvatar() {
+        (0, tool_1.log)(`${(0, tool_1.time)()}正在更换${chalk.yellow('Avatar')}...`, false);
+        const options = {
+            url: `https://${this.host}/ajax/user/avatar/save/${this.userId}`,
+            method: 'POST',
+            headers: {
+                ...this.headers,
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                origin: `https://${this.host}`,
+                referer: `https://${this.host}/avatar/edit/hat`
+            },
+            data: this.avatar
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;

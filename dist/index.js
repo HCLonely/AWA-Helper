@@ -12,7 +12,7 @@ const chalk = require("chalk");
 const yamlLint = require("yaml-lint");
 (async () => {
     fs.writeFileSync('log.txt', '');
-    const version = 'V1.1.10 ';
+    const version = 'V1.2.0 ';
     const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
     logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
     (0, tool_1.log)(logArr.join('\n'));
@@ -47,7 +47,7 @@ const yamlLint = require("yaml-lint");
     if (!config) {
         return;
     }
-    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaBoosterNotice, awaQuests, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = config;
+    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaAvatar, awaBoosterNotice, awaQuests, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = config;
     const missingAwaParams = Object.entries({
         awaCookie,
         awaUserId,
@@ -66,6 +66,7 @@ const yamlLint = require("yaml-lint");
         awaUserId: awaUserId,
         awaBorderId: awaBorderId,
         awaBadgeIds: awaBadgeIds,
+        awaAvatar: awaAvatar,
         awaBoosterNotice: awaBoosterNotice,
         proxy
     });
