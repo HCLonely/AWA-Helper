@@ -1,3 +1,1 @@
-- 忽略美区任务
-- 添加更换头像(Avatar)任务, 需配置`awaAvatar`, 获取方式请看https://github.com/HCLonely/AWA-Helper 或 https://keylol.com/t804923-1-1
-- 日志输出加密优化
+- 优化每日任务大于一个时的处理方式

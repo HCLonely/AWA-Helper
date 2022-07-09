@@ -14,6 +14,7 @@ class DailyQuest {
         this.trackError = 0;
         this.trackTimes = 0;
         this.questStatus = {};
+        this.dailyQuestNumber = 0;
         this.host = awaHost || 'www.alienwarearena.com';
         this.userId = awaUserId;
         this.borderId = awaBorderId;
@@ -201,10 +202,11 @@ class DailyQuest {
                 this.questInfo.dailyQuest = {
                     status, arp
                 };
-                if (verify && this.awaBoosterNotice && $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
+                this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
                     .map((i, e) => $(e).text().trim()
                     .toLowerCase())
-                    .filter((i, e) => e === 'incomplete').length > 1) {
+                    .filter((i, e) => e === 'incomplete').length;
+                if (verify && this.awaBoosterNotice && this.dailyQuestNumber > 1) {
                     const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
                     let boostEnabled = false;
                     if (userArpBoostText) {
@@ -313,13 +315,17 @@ class DailyQuest {
         await this.updateDailyQuests();
         if (this.questInfo.dailyQuest?.status === 'complete') {
             this.questStatus.dailyQuest = 'complete';
-            return (0, tool_1.log)((0, tool_1.time)() + chalk.green('每日任务已完成！'));
+            if (this.dailyQuestNumber < 2) {
+                return (0, tool_1.log)((0, tool_1.time)() + chalk.green('每日任务已完成！'));
+            }
         }
         await this.replyPost();
         await this.updateDailyQuests();
         if (this.questInfo.dailyQuest?.status === 'complete') {
             this.questStatus.dailyQuest = 'complete';
-            return (0, tool_1.log)((0, tool_1.time)() + chalk.green('每日任务已完成！'));
+            if (this.dailyQuestNumber < 2) {
+                return (0, tool_1.log)((0, tool_1.time)() + chalk.green('每日任务已完成！'));
+            }
         }
         this.questStatus.dailyQuest = 'complete';
         return (0, tool_1.log)((0, tool_1.time)() + chalk.red('每日任务未完成！'));
