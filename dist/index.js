@@ -11,8 +11,37 @@ const tool_1 = require("./tool");
 const chalk = require("chalk");
 const yamlLint = require("yaml-lint");
 (async () => {
+    if (fs.existsSync('lock')) {
+        try {
+            fs.unlinkSync('lock');
+        }
+        catch (e) {
+            (0, tool_1.log)(chalk.red('另一个AWA-Helper程序正在运行中！'));
+            (0, tool_1.log)(chalk.blue('如需多开，请将本程序复制到另一个文件夹运行！'));
+            (0, tool_1.log)('按任意键退出...');
+            process.stdin.setRawMode(true);
+            process.stdin.on('data', () => process.exit(0));
+            return;
+        }
+    }
+    const locked = await new Promise((resolve) => {
+        fs.open('lock', 'w', (error) => {
+            if (error) {
+                resolve(true);
+            }
+            resolve(false);
+        });
+    });
+    if (locked) {
+        (0, tool_1.log)(chalk.red('另一个AWA-Helper程序正在运行中！'));
+        (0, tool_1.log)(chalk.blue('如需多开，请将本程序复制到另一个文件夹运行！'));
+        (0, tool_1.log)('按任意键退出...');
+        process.stdin.setRawMode(true);
+        process.stdin.on('data', () => process.exit(0));
+        return;
+    }
     fs.writeFileSync('log.txt', '');
-    const version = 'V1.2.1 ';
+    const version = 'V1.2.2 ';
     const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
     logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
     (0, tool_1.log)(logArr.join('\n'));

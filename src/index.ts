@@ -10,6 +10,34 @@ import * as chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 
 (async () => {
+  if (fs.existsSync('lock')) {
+    try {
+      fs.unlinkSync('lock');
+    } catch (e) {
+      log(chalk.red('另一个AWA-Helper程序正在运行中！'));
+      log(chalk.blue('如需多开，请将本程序复制到另一个文件夹运行！'));
+      log('按任意键退出...');
+      process.stdin.setRawMode(true);
+      process.stdin.on('data', () => process.exit(0));
+      return;
+    }
+  }
+  const locked = await new Promise((resolve) => {
+    fs.open('lock', 'w', (error) => {
+      if (error) {
+        resolve(true);
+      }
+      resolve(false);
+    });
+  });
+  if (locked) {
+    log(chalk.red('另一个AWA-Helper程序正在运行中！'));
+    log(chalk.blue('如需多开，请将本程序复制到另一个文件夹运行！'));
+    log('按任意键退出...');
+    process.stdin.setRawMode(true);
+    process.stdin.on('data', () => process.exit(0));
+    return;
+  }
   fs.writeFileSync('log.txt', '');
   const version = 'V__VERSION__ ';
   const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
