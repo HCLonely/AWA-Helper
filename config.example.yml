@@ -15,12 +15,20 @@ awaQuests:
 #### Twitch 配置 ####
 twitchCookie: '' # Twitch Cookie, 须包括`unique_id` 和 `auth-token`
 
-#### ASF 配置 ####
+
+#### Steam 任务配置 ####
+steamUse: 'ASF' # 'ASF'或'SU','SU'为模拟Steam客户端
+#### ASF 配置 (此配置与Steam 配置二选一) ####
+# steamUse为'ASF'时此配置有效
 asfProtocol: 'http'
-asfHost: "127.0.0.1"
-asfPort: "1242"
+asfHost: '127.0.0.1'
+asfPort: '1242'
 asfPassword: ''
 asfBotname: ''
+#### Steam 配置 (此配置与ASF 配置二选一) ####
+# steamUse为'SU'时此配置有效
+steamAccountName: ''
+steamPassword: ''
 
 #### 代理设置(可选) ####
 proxy:
@@ -29,6 +37,7 @@ proxy:
     - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
+    - steam # 在访问Steam时使用代理，不使用删掉此行
   protocol: 'http' # 代理协议，'http'|'https'|'socks4'|'socks5'
   host: '127.0.0.1' # 代理host
   port: 1080 # 代理端口

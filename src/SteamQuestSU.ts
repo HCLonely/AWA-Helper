@@ -1,16 +1,15 @@
 /* eslint-disable max-len */
 /* global steamGameInfo, proxy */
-import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
+import * as fs from 'fs';
+import { AxiosRequestConfig } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { log, netError, sleep, time, http as axios, formatProxy } from './tool';
+import * as SteamUser from 'steam-user';
 
-class SteamQuest {
+class SteamQuestSU {
   awaCookie: string;
-  asfUrl: string;
-  httpsAgent!: AxiosRequestConfig['httpsAgent'];
-  headers: AxiosRequestHeaders;
-  botname!: string;
+  awaHttpsAgent!: AxiosRequestConfig['httpsAgent'];
   ownedGames: Array<string> = [];
   maxPlayTimes = 2;
   gamesInfo: Array<steamGameInfo> = [];
@@ -18,60 +17,51 @@ class SteamQuest {
   status = 'none';
   taskStatus!: Array<steamGameInfo>;
   awaHost: string;
+  suClint = new SteamUser();
+  suInfo: {
+    accountName: string
+    password?: string
+    loginKey?: string
+    rememberPassword: boolean
+  };
 
-  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy ?: proxy }) {
+  constructor({ awaCookie, awaHost, steamAccountName, steamPassword, proxy }: { awaCookie: string, awaHost: string, steamAccountName: string, steamPassword: string, proxy?: proxy }) {
     this.awaCookie = awaCookie;
     this.awaHost = awaHost || 'www.alienwarearena.com';
-    this.botname = asfBotname;
-    this.asfUrl = `${asfProtocol}://${asfHost}:${asfPort}/Api/Command`;
-    this.headers = {
-      accept: 'application/json',
-      'Content-Type': 'application/json',
-      Host: `${asfHost}:${asfPort}`,
-      Origin: `${asfProtocol}://${asfHost}:${asfPort}`,
-      Referer: `${asfProtocol}://${asfHost}:${asfPort}/page/commands`
+    this.suInfo = {
+      accountName: steamAccountName,
+      rememberPassword: true
     };
-    if (asfPassword) this.headers.Authentication = asfPassword;
-    if (proxy?.enable?.includes('asf') && proxy.host && proxy.port) {
-      this.httpsAgent = formatProxy(proxy);
+    const loginKey = fs.existsSync('login-key.txt') ? fs.readFileSync('login-key.txt').toString() : null;
+    if (loginKey) {
+      this.suInfo.loginKey = loginKey;
+    } else {
+      log(chalk.red(`检测到首次使用此方式[${chalk.blue('SU')}]登录Steam, 如果Steam启用了${chalk.gray('两步验证')}，请注意控制台提示输入两步验证码！`));
+      this.suInfo.password = steamPassword;
+    }
+    if (proxy?.enable?.includes('steam') && proxy.host && proxy.port) {
+      this.suClint.setOption('httpProxy', `${proxy.protocol || 'http'}://${proxy.username && proxy.password ? `${proxy.username}:${proxy.password}@` : ''}${proxy.host}:${proxy.port}`);
+    }
+    if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
+      this.awaHttpsAgent = formatProxy(proxy);
     }
   }
 
   init(): Promise<boolean> {
-    log(`${time()}正在初始化${chalk.yellow('ASF')}...`, false);
-    const options: AxiosRequestConfig = {
-      url: this.asfUrl,
-      method: 'POST',
-      headers: this.headers,
-      data: '{"Command":"!stats"}'
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    log(`${time()}正在登录${chalk.yellow('Steam')}...`, false);
 
-    return axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-        if (response.status === 200) {
-          if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            log(chalk.green('OK'));
-            return true;
-          }
-          if (response.data.Message) {
-            log(chalk.blue(response.data.Message));
-            return false;
-          }
-          log(chalk.blue('Error'));
-          log(response.data);
-          return false;
-        }
-        log(chalk.red(`Error: ${response.status}`));
-        return false;
-      })
-      .catch((error) => {
-        log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-        log(error);
-        return false;
+    this.suClint.logOn(this.suInfo);
+
+    this.suClint.on('loginKey', (key) => {
+      fs.writeFileSync('login-key.txt', key);
+    });
+
+    return new Promise((resolve) => {
+      this.suClint.on('loggedOn', () => {
+        log(chalk.green(`登录成功[${chalk.gray(this.suClint.steamID?.getSteamID64())}]`));
+        resolve(true);
       });
+    });
   }
   async getSteamQuests(): Promise<boolean> {
     log(`${time()}正在获取${chalk.yellow('Steam')}任务信息...`);
@@ -85,7 +75,7 @@ class SteamQuest {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44'
       }
     };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
     return await axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
@@ -143,14 +133,15 @@ class SteamQuest {
         referer: 'https://www.alienwarearena.com/steam/quests'
       }
     };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
 
     return axios(options)
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.includes('You have completed this quest')) {
           log(chalk.green('此任务已完成'));
-          return false;
+          // return false;
+          return true;
         }
         if (response.data.includes('This quest requires that you own')) {
           log(chalk.yellow('未拥有此游戏，跳过'));
@@ -185,7 +176,7 @@ class SteamQuest {
         referer: url
       }
     };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
     return axios(options)
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
@@ -220,7 +211,7 @@ class SteamQuest {
           referer: 'https://www.alienwarearena.com/steam/quests'
         }
       };
-      if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+      if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
       await axios(options)
         .then((response) => {
           globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
@@ -256,40 +247,23 @@ class SteamQuest {
     if (!await this.getSteamQuests()) return false;
     if (this.gamesInfo.length === 0) return true;
     log(`${time()}正在匹配${chalk.yellow('Steam')}游戏库...`, false);
-    const options: AxiosRequestConfig = {
-      url: this.asfUrl,
-      method: 'POST',
-      headers: this.headers,
-      data: `{"Command":"!owns ${this.botname} ${this.gamesInfo.map((e) => e.id).join(',')}"}`
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
+
+    return await this.suClint.getUserOwnedApps(this.suClint.steamID?.getSteamID64() as string, {
+      includePlayedFreeGames: true,
+      filterAppids: this.gamesInfo.map((e) => parseInt(e.id, 10)),
+      includeFreeSub: true
+    })
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-        if (response.status === 200) {
-          if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            this.ownedGames = [...new Set(response.data.Result.split('\n').filter((e: string) => e.includes('|')).map((e: string) => e.trim().match(/app\/([\d]+)/)?.[1])
-              .filter((e: undefined | string) => e))] as Array<string>;
-            this.maxArp = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.arp || 0).reduce((acr, cur) => acr + cur);
-            this.maxPlayTimes = Math.max(...this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.time || 2));
-            this.taskStatus = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)).filter((e) => e) as Array<steamGameInfo>;
-            log(chalk.green('OK'));
-            return true;
-          }
-          if (response.data.Message) {
-            log(chalk.blue(response.data.Message));
-            return false;
-          }
-          log(chalk.blue('Error'));
-          log(response.data);
-          return false;
-        }
-        log(chalk.red(`Error: ${response.status}`));
-        return false;
+        // @ts-ignore
+        this.ownedGames = response.apps.map((e) => `${e.appid}`);
+        this.maxArp = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.arp || 0).reduce((acr, cur) => acr + cur);
+        this.maxPlayTimes = Math.max(...this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.time || 2));
+        this.taskStatus = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)).filter((e) => e) as Array<steamGameInfo>;
+        log(chalk.green('OK'));
+        return true;
       })
       .catch((error) => {
         log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         log(error);
         return false;
       });
@@ -301,85 +275,20 @@ class SteamQuest {
       this.status = 'stopped';
       return false;
     }
-    log(`${time()}正在调用${chalk.yellow('ASF')}挂游戏时长...`, false);
-    const options: AxiosRequestConfig = {
-      url: this.asfUrl,
-      method: 'POST',
-      headers: this.headers,
-      data: `{"Command":"!play ${this.botname} ${this.ownedGames.join(',')}"}`
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    const started = await axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-        if (response.status === 200) {
-          if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            this.status = 'running';
-            log(chalk.green('OK'));
-            return true;
-          }
-          if (response.data.Message) {
-            log(chalk.blue(response.data.Message));
-            return false;
-          }
-          log(chalk.blue('Error'));
-          log(response.data);
-          return false;
-        }
-        log(chalk.red(`Error: ${response.status}`));
-        return false;
-      })
-      .catch((error) => {
-        log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-        log(error);
-        return false;
-      });
-    if (!started) return false;
+    log(`${time()}正在挂游戏时长...`, false);
+
+    this.suClint.gamesPlayed(this.ownedGames.map((e) => parseInt(e, 10)), true);
+    log(chalk.green('OK'));
     await sleep(10 * 60);
     return await this.checkStatus();
-    // const mins = ((this.maxPlayTimes * 60) + 30);
-    // log(time() + chalk.green(`${chalk.yellow(mins)} 分钟后停止挂时长！`));
-    // await sleep(mins * 60);
-    // return this.resume();
   }
   async resume(): Promise<boolean> {
     if (this.status === 'stopped') return true;
     log(`${time()}正在停止挂游戏时长...`, false);
-    const options: AxiosRequestConfig = {
-      url: this.asfUrl,
-      method: 'POST',
-      headers: this.headers,
-      data: `{"Command":"!resume ${this.botname}"}`
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-        if (response.status === 200) {
-          if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            this.status = 'stopped';
-            log(chalk.green(response.data.Result));
-            return true;
-          }
-          if (response.data.Message) {
-            log(chalk.blue(response.data.Message));
-            return false;
-          }
-          log(chalk.blue('Error'));
-          log(response.data);
-          return false;
-        }
-        log(chalk.red(`Error: ${response.status}`));
-        return false;
-      })
-      .catch((error) => {
-        log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-        log(error);
-        return false;
-      });
+    this.suClint.gamesPlayed([]);
+    log(chalk.green('OK'));
+    return true;
   }
 }
 
-export { SteamQuest };
+export { SteamQuestSU };

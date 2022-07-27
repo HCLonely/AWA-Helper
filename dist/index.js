@@ -4,7 +4,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* global config */
 const DailyQuest_1 = require("./DailyQuest");
 const TwitchTrack_1 = require("./TwitchTrack");
-const SteamQuest_1 = require("./SteamQuest");
+const SteamQuestASF_1 = require("./SteamQuestASF");
+const SteamQuestSU_1 = require("./SteamQuestSU");
 const fs = require("fs");
 const yaml_1 = require("yaml");
 const tool_1 = require("./tool");
@@ -76,7 +77,7 @@ const yamlLint = require("yaml-lint");
     if (!config) {
         return;
     }
-    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaAvatar, awaBoosterNotice, awaQuests, twitchCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy } = config;
+    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaAvatar, awaBoosterNotice, awaQuests, twitchCookie, steamUse, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, steamAccountName, steamPassword, proxy } = config;
     const missingAwaParams = Object.entries({
         awaCookie,
         awaUserId,
@@ -128,30 +129,56 @@ const yamlLint = require("yaml-lint");
         }
     }
     let steamQuest = null;
-    const missingAsfParams = Object.entries({
-        asfProtocol,
-        asfHost,
-        asfPort,
-        asfBotname
-    }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
-    if (awaQuests.includes('steamQuest')) {
-        if (missingAsfParams.length > 0) {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+    if (!steamUse || steamUse === 'ASF') {
+        const missingAsfParams = Object.entries({
+            asfProtocol,
+            asfHost,
+            asfPort,
+            asfBotname
+        }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
+        if (awaQuests.includes('steamQuest')) {
+            if (missingAsfParams.length > 0) {
+                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+            }
+            else {
+                steamQuest = new SteamQuestASF_1.SteamQuestASF({
+                    awaCookie: quest.headers.cookie,
+                    awaHost,
+                    asfProtocol,
+                    asfHost: asfHost,
+                    asfPort: asfPort,
+                    asfPassword,
+                    asfBotname: asfBotname,
+                    proxy
+                });
+                if (await steamQuest.init()) {
+                    steamQuest.playGames();
+                    await (0, tool_1.sleep)(30);
+                }
+            }
         }
-        else {
-            steamQuest = new SteamQuest_1.SteamQuest({
-                awaCookie: quest.headers.cookie,
-                awaHost,
-                asfProtocol,
-                asfHost: asfHost,
-                asfPort: asfPort,
-                asfPassword,
-                asfBotname: asfBotname,
-                proxy
-            });
-            if (await steamQuest.init()) {
-                steamQuest.playGames();
-                await (0, tool_1.sleep)(30);
+    }
+    else if (steamUse === 'SU') {
+        const missingAsfParams = Object.entries({
+            steamAccountName,
+            steamPassword
+        }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
+        if (awaQuests.includes('steamQuest')) {
+            if (missingAsfParams.length > 0) {
+                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+            }
+            else {
+                steamQuest = new SteamQuestSU_1.SteamQuestSU({
+                    awaCookie: quest.headers.cookie,
+                    awaHost,
+                    steamAccountName: steamAccountName,
+                    steamPassword: steamPassword,
+                    proxy
+                });
+                if (await steamQuest.init()) {
+                    steamQuest.playGames();
+                    await (0, tool_1.sleep)(30);
+                }
             }
         }
     }

@@ -2,7 +2,8 @@
 /* global config */
 import { DailyQuest } from './DailyQuest';
 import { TwitchTrack } from './TwitchTrack';
-import { SteamQuest } from './SteamQuest';
+import { SteamQuestASF } from './SteamQuestASF';
+import { SteamQuestSU } from './SteamQuestSU';
 import * as fs from 'fs';
 import { parse } from 'yaml';
 import { sleep, log, time, checkUpdate } from './tool';
@@ -87,11 +88,14 @@ import * as yamlLint from 'yaml-lint';
     awaBoosterNotice,
     awaQuests,
     twitchCookie,
+    steamUse,
     asfProtocol,
     asfHost,
     asfPort,
     asfPassword,
     asfBotname,
+    steamAccountName,
+    steamPassword,
     proxy
   }: config = config;
   const missingAwaParams = Object.entries({
@@ -143,30 +147,54 @@ import * as yamlLint from 'yaml-lint';
     }
   }
 
-  let steamQuest: SteamQuest | null = null;
-  const missingAsfParams = Object.entries({
-    asfProtocol,
-    asfHost,
-    asfPort,
-    asfBotname
-  }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
-  if (awaQuests.includes('steamQuest')) {
-    if (missingAsfParams.length > 0) {
-      log(time() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
-    } else {
-      steamQuest = new SteamQuest({
-        awaCookie: quest.headers.cookie as string,
-        awaHost,
-        asfProtocol,
-        asfHost: asfHost as string,
-        asfPort: asfPort as number,
-        asfPassword,
-        asfBotname: asfBotname as string,
-        proxy
-      });
-      if (await steamQuest.init()) {
-        steamQuest.playGames();
-        await sleep(30);
+  let steamQuest: SteamQuestASF | SteamQuestSU | null = null;
+  if (!steamUse || steamUse === 'ASF') {
+    const missingAsfParams = Object.entries({
+      asfProtocol,
+      asfHost,
+      asfPort,
+      asfBotname
+    }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
+    if (awaQuests.includes('steamQuest')) {
+      if (missingAsfParams.length > 0) {
+        log(time() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+      } else {
+        steamQuest = new SteamQuestASF({
+          awaCookie: quest.headers.cookie as string,
+          awaHost,
+          asfProtocol,
+          asfHost: asfHost as string,
+          asfPort: asfPort as number,
+          asfPassword,
+          asfBotname: asfBotname as string,
+          proxy
+        });
+        if (await steamQuest.init()) {
+          steamQuest.playGames();
+          await sleep(30);
+        }
+      }
+    }
+  } else if (steamUse === 'SU') {
+    const missingAsfParams = Object.entries({
+      steamAccountName,
+      steamPassword
+    }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
+    if (awaQuests.includes('steamQuest')) {
+      if (missingAsfParams.length > 0) {
+        log(time() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+      } else {
+        steamQuest = new SteamQuestSU({
+          awaCookie: quest.headers.cookie as string,
+          awaHost,
+          steamAccountName: steamAccountName as string,
+          steamPassword: steamPassword as string,
+          proxy
+        });
+        if (await steamQuest.init()) {
+          steamQuest.playGames();
+          await sleep(30);
+        }
       }
     }
   }

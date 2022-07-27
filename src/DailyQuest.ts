@@ -6,7 +6,8 @@ import * as chalk from 'chalk';
 import * as FormData from 'form-data';
 import { log, sleep, random, time, netError, ask, http as axios, formatProxy } from './tool';
 import { TwitchTrack } from './TwitchTrack';
-import { SteamQuest } from './SteamQuest';
+import { SteamQuestASF } from './SteamQuestASF';
+import { SteamQuestSU } from './SteamQuestSU';
 import * as fs from 'fs';
 
 class DailyQuest {
@@ -58,7 +59,7 @@ class DailyQuest {
     }
     return this.updateDailyQuests(true);
   }
-  async listen(twitch: TwitchTrack | null, steamQuest: SteamQuest | null, check = false): Promise<void> {
+  async listen(twitch: TwitchTrack | null, steamQuest: SteamQuestASF | SteamQuestSU | null, check = false): Promise<void> {
     if (await this.updateDailyQuests() === 200) {
       if (this.questInfo.steamQuest && steamQuest && parseInt(this.questInfo.steamQuest, 10) >= steamQuest.maxArp) {
         if (steamQuest.status === 'running') {

@@ -11,11 +11,14 @@ declare global {
     awaBoosterNotice?: boolean,
     awaQuests: Array<string>,
     twitchCookie?: string,
+    steamUse?: 'ASF' | 'SU'
     asfProtocol: string,
     asfHost?: string,
     asfPort?: number,
     asfPassword?: string,
     asfBotname?: string,
+    steamAccountName?: string,
+    steamPassword?: string,
     proxy?: proxy
   }
   interface proxy {
