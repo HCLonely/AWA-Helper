@@ -26,6 +26,7 @@ class DailyQuest {
   host: string;
   awaBoosterNotice: boolean;
   dailyQuestNumber = 0;
+  clickQuestId?: string | undefined;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaAvatar, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaUserId: string, awaBorderId: string, awaBadgeIds: string, awaAvatar: string, awaBoosterNotice:boolean, proxy?: proxy }) {
@@ -232,6 +233,8 @@ class DailyQuest {
                 this.questStatus.dailyQuest = 'skip';
               }
             }
+
+            this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
           }
           // AWA 在线任务
           const [maxArp, addedArp] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Time on Site')).find('center')
@@ -298,12 +301,9 @@ class DailyQuest {
       this.questStatus.dailyQuest = 'complete';
       return log(time() + chalk.green('每日任务已完成！'));
     }
-    await this.changeBorder();
-    await this.changeBadge();
-    await this.changeAvatar();
-    await this.viewPosts();
-    await this.viewNews();
-    await this.sharePosts();
+    if (this.clickQuestId) {
+      await this.questAward(this.clickQuestId);
+    }
     if (this.dailyQuestLink) {
       await this.openLink(this.dailyQuestLink);
       const postId = this.dailyQuestLink.match(/ucf\/show\/([\d]+)/)?.[1];
@@ -311,6 +311,19 @@ class DailyQuest {
         await this.viewPost(postId);
       }
     }
+    await this.updateDailyQuests();
+    if (this.questInfo.dailyQuest?.status === 'complete') {
+      this.questStatus.dailyQuest = 'complete';
+      if (this.dailyQuestNumber < 2) {
+        return log(time() + chalk.green('每日任务已完成！'));
+      }
+    }
+    await this.changeBorder();
+    await this.changeBadge();
+    await this.changeAvatar();
+    await this.viewPosts();
+    await this.viewNews();
+    await this.sharePosts();
     await this.openLink(`https://${this.host}/rewards/leaderboard`);
     await sleep(random(1, 3));
     await this.openLink(`https://${this.host}/rewards`);
@@ -754,6 +767,36 @@ class DailyQuest {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         log(error);
         return;
+      });
+  }
+
+  async questAward(questId: string) {
+    log(`${time()}正在做任务${chalk.yellow(questId)}...`, false);
+    const options: AxiosRequestConfig = {
+      url: `https://${this.host}/ajax/user/quest-award/${questId}`,
+      method: 'get',
+      headers: {
+        ...this.headers,
+        referer: `https://${this.host}/`
+      }
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+
+    return await axios(options)
+      .then(async (response) => {
+        if (response.status === 200) {
+          log(chalk.green('OK'));
+          return true;
+        }
+        log(chalk.red('Error'));
+        log(response.data || response.statusText);
+        return false;
+      })
+      .catch((error) => {
+        log(chalk.red('Error'));
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
+        return false;
       });
   }
 
