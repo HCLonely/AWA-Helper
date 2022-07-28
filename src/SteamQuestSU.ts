@@ -140,8 +140,7 @@ class SteamQuestSU {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.includes('You have completed this quest')) {
           log(chalk.green('此任务已完成'));
-          // return false;
-          return true;
+          return false;
         }
         if (response.data.includes('This quest requires that you own')) {
           log(chalk.yellow('未拥有此游戏，跳过'));

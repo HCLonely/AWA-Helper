@@ -45,7 +45,7 @@ class SteamQuestSU {
         });
         return new Promise((resolve) => {
             this.suClint.on('loggedOn', () => {
-                (0, tool_1.log)(chalk.green(`OK[${chalk.gray(this.suClint.steamID?.getSteamID64())}]`));
+                (0, tool_1.log)(chalk.green(`登录成功[${chalk.gray(this.suClint.steamID?.getSteamID64())}]`));
                 resolve(true);
             });
         });
@@ -130,8 +130,7 @@ class SteamQuestSU {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data.includes('You have completed this quest')) {
                 (0, tool_1.log)(chalk.green('此任务已完成'));
-                // return false;
-                return true;
+                return false;
             }
             if (response.data.includes('This quest requires that you own')) {
                 (0, tool_1.log)(chalk.yellow('未拥有此游戏，跳过'));
