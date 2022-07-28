@@ -7,6 +7,9 @@ import * as chalk from 'chalk';
 import { log, netError, sleep, time, http as axios, formatProxy } from './tool';
 import * as SteamUser from 'steam-user';
 
+import 'lzma/src/lzma_worker.js';
+// fs.readFileSync(process.cwd() + '/system.pem')
+
 class SteamQuestSU {
   awaCookie: string;
   awaHttpsAgent!: AxiosRequestConfig['httpsAgent'];

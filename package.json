@@ -7,17 +7,20 @@
     "test": "tsc && node build.js --pre && node dist/index.js",
     "test2": "tsc && node test.js",
     "start": "node dist/index.js",
-    "build": "tsc && node build.js --pre && pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe && node build.js"
+    "build": "node prebuild.js && tsc && node build.js --pre && pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe && node build.js",
+    "pkg": "pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe"
   },
   "keywords": [],
   "author": "HCLonely",
   "license": "MIT",
   "dependencies": {
+    "@doctormckay/steam-crypto": "1.2.0",
     "axios": "^0.26.1",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.10",
     "dayjs": "^1.11.1",
     "form-data": "^4.0.0",
+    "lzma": "2.3.2",
     "qs": "^6.10.3",
     "socks-proxy-agent": "^6.2.0",
     "tunnel": "^0.0.6",
@@ -40,5 +43,11 @@
     "steam-user": "^4.24.5",
     "typescript": "^4.6.3",
     "zip-dir": "^2.0.0"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/@doctormckay/steam-crypto/system.pem",
+      "node_modules/lzma/src/lzma_worker.js"
+    ]
   }
 }

@@ -8,6 +8,8 @@ const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const tool_1 = require("./tool");
 const SteamUser = require("steam-user");
+require("lzma/src/lzma_worker.js");
+// fs.readFileSync(process.cwd() + '/system.pem')
 class SteamQuestSU {
     constructor({ awaCookie, awaHost, steamAccountName, steamPassword, proxy }) {
         this.ownedGames = [];
