@@ -100,9 +100,17 @@ twitchCookie: '' # Twitch Cookie, 须包括`unique_id` 和 `auth-token`
 document.cookie.split(';').filter((e) => ['unique_id','auth-token'].includes(e.split('=')[0].trim())).join(';');
 ```
 
+### Steam 任务配置
+
+> 挂Steam游戏时长的方式, 支持[ASF](https://github.com/JustArchiNET/ArchiSteamFarm)和[SU](https://github.com/DoctorMcKay/node-steam-user).
+
+```yml
+steamUse: 'ASF' # 'ASF'或'SU','SU'为模拟Steam客户端
+```
+
 ### ASF 配置(可选)
 
-> 做Steam挂游戏时长任务需要，不想做这个任务可以不填。
+> 使用[ASF](https://github.com/JustArchiNET/ArchiSteamFarm)挂Steam游戏时长任务需要，不想做这个任务可以不填。需要`steamUse`为`ASF`.
 
 #### ASF 参数说明
 
@@ -112,6 +120,19 @@ asfHost: '127.0.0.1' # ASF使用的Host，本地运行一般是`127.0.0.1`
 asfPort: '1242' # ASF使用的端口，默认是`1242`
 asfPassword: '' # ASF密码
 asfBotname: '' # 要挂游戏的ASF Bot名称
+```
+
+### SU 配置(可选)
+
+> 使用[SU](https://github.com/DoctorMcKay/node-steam-user)挂Steam游戏时长任务需要，不想做这个任务可以不填。需要`steamUse`为`SU`.
+>
+> 如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
+
+#### SU 参数说明
+
+```yml
+steamAccountName: ''
+steamPassword: ''
 ```
 
 ### proxy 配置(可选)
@@ -127,6 +148,7 @@ proxy:
     - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
+    - steam # 在访问Steam时使用代理，不使用删掉此行
   protocol: 'http' # 代理协议，'http'或'socks'
   host: '127.0.0.1' # 代理host
   port: 1080 # 代理端口
@@ -146,3 +168,17 @@ proxy:
 ## TODO
 
 ## 鸣谢
+
+- [axios](https://github.com/axios/axios)
+- [chalk](https://github.com/chalk/chalk)
+- [cheerio](https://github.com/cheeriojs/cheerio)
+- [dayjs](https://github.com/iamkun/dayjs)
+- [node-tunnel](https://github.com/koichik/node-tunnel)
+- [node-socks-proxy-agent](https://github.com/TooTallNate/node-socks-proxy-agent)
+- [yaml](https://github.com/eemeli/yaml)
+- [pkg](https://github.com/vercel/pkg)
+- [node-steam-user](https://github.com/DoctorMcKay/node-steam-user)
+- [TypeScript](https://github.com/Microsoft/TypeScript)
+- [node-fs-extra](https://github.com/jprichardson/node-fs-extra)
+- [eslint](https://github.com/eslint/eslint)
+- [yaml-lint](https://github.com/rasshofer/yaml-lint)
