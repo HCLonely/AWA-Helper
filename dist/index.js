@@ -7,6 +7,7 @@ const TwitchTrack_1 = require("./TwitchTrack");
 const SteamQuestASF_1 = require("./SteamQuestASF");
 const SteamQuestSU_1 = require("./SteamQuestSU");
 const fs = require("fs");
+const path_1 = require("path");
 const yaml_1 = require("yaml");
 const tool_1 = require("./tool");
 const chalk = require("chalk");
@@ -42,12 +43,18 @@ const yamlLint = require("yaml-lint");
         return;
     }
     fs.writeFileSync('log.txt', '');
-    const version = 'V1.2.3 ';
+    const version = 'V1.2.4 ';
     const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
     logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
     (0, tool_1.log)(logArr.join('\n'));
-    if (!fs.existsSync('config.yml')) {
-        (0, tool_1.log)(chalk.red(`没有找到配置文件[${chalk.yellow('config.yml')}]!`));
+    let configPath = 'config.yml';
+    if (/dist$/.test(process.cwd())) {
+        if (!fs.existsSync(configPath) && fs.existsSync((0, path_1.join)('../', configPath))) {
+            configPath = (0, path_1.join)('../', configPath);
+        }
+    }
+    if (!fs.existsSync(configPath)) {
+        (0, tool_1.log)(chalk.red(`没有找到配置文件[${chalk.yellow((0, path_1.resolve)(configPath))}]!`));
         return;
     }
     if (!fs.existsSync('version') || (fs.readFileSync('version').toString() !== version && fs.existsSync('CHANGELOG.txt'))) {
@@ -63,7 +70,7 @@ const yamlLint = require("yaml-lint");
         awaQuests: ['dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
         asfProtocol: 'http'
     };
-    const configString = fs.readFileSync('config.yml').toString();
+    const configString = fs.readFileSync(configPath).toString();
     let config = null;
     await yamlLint
         .lint(configString)

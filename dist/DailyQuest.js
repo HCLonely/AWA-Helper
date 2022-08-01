@@ -297,6 +297,7 @@ class DailyQuest {
         }
         if (this.clickQuestId) {
             await this.questAward(this.clickQuestId);
+            await this.updateDailyQuests();
         }
         if (this.dailyQuestLink) {
             await this.openLink(this.dailyQuestLink);
@@ -304,8 +305,8 @@ class DailyQuest {
             if (postId) {
                 await this.viewPost(postId);
             }
+            await this.updateDailyQuests();
         }
-        await this.updateDailyQuests();
         if (this.questInfo.dailyQuest?.status === 'complete') {
             this.questStatus.dailyQuest = 'complete';
             if (this.dailyQuestNumber < 2) {

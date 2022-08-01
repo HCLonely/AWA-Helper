@@ -7,7 +7,7 @@
     "declaration": false,
     "declarationMap": false,
     "moduleResolution": "node",
-    "module": "commonjs",
+    "module": "CommonJS",
     "target": "es2021",
     "baseUrl": "./",
     "allowJs": true,

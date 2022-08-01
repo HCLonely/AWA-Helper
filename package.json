@@ -1,14 +1,16 @@
 {
   "name": "awa-helper",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "scripts": {
-    "test": "tsc && node build.js --pre && node dist/index.js",
-    "test2": "tsc && node test.js",
-    "start": "node dist/index.js",
+    "test": "node prebuild.js && tsc && node build.js --pre && cd dist && node index.js",
+    "test2": "nexe --build",
+    "start": "cd dist && node index.js",
+    "rollup": "rollup -c",
     "build": "node prebuild.js && tsc && node build.js --pre && pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe && node build.js",
-    "pkg": "pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe"
+    "pkg": "pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe",
+    "buildt": "node prebuild.js && tsc && node build.js --pre && pkg -t win dist/index.js --output output/AWA-Helper.exe && node build.js"
   },
   "keywords": [],
   "author": "HCLonely",
@@ -23,6 +25,7 @@
     "lzma": "2.3.2",
     "qs": "^6.10.3",
     "socks-proxy-agent": "^6.2.0",
+    "steam-user": "^4.24.6",
     "tunnel": "^0.0.6",
     "yaml": "^2.0.1",
     "yaml-lint": "^1.6.0"
@@ -40,8 +43,7 @@
     "fs-extra": "^9.1.0",
     "pkg": "^5.6.0",
     "puppeteer-core": "^14.1.1",
-    "steam-user": "^4.24.5",
-    "typescript": "^4.6.3",
+    "typescript": "^4.7.3",
     "zip-dir": "^2.0.0"
   },
   "pkg": {

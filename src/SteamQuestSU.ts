@@ -7,7 +7,7 @@ import * as chalk from 'chalk';
 import { log, netError, sleep, time, http as axios, formatProxy } from './tool';
 import * as SteamUser from 'steam-user';
 
-import 'lzma/src/lzma_worker.js';
+// import 'lzma/src/lzma_worker.js';
 // fs.readFileSync(process.cwd() + '/system.pem')
 
 class SteamQuestSU {
@@ -51,19 +51,18 @@ class SteamQuestSU {
   }
 
   init(): Promise<boolean> {
-    log(`${time()}正在登录${chalk.yellow('Steam')}...`, false);
-
-    this.suClint.logOn(this.suInfo);
-
-    this.suClint.on('loginKey', (key) => {
-      fs.writeFileSync('login-key.txt', key);
-    });
-
     return new Promise((resolve) => {
+      log(`${time()}正在登录${chalk.yellow('Steam')}...`, false);
+
+      this.suClint.on('loginKey', (key) => {
+        fs.writeFileSync('login-key.txt', key);
+      });
       this.suClint.on('loggedOn', () => {
         log(chalk.green(`登录成功[${chalk.gray(this.suClint.steamID?.getSteamID64())}]`));
         resolve(true);
       });
+
+      this.suClint.logOn(this.suInfo);
     });
   }
   async getSteamQuests(): Promise<boolean> {
@@ -274,6 +273,7 @@ class SteamQuestSU {
     if (!await this.getOwnedGames()) return false;
     if (this.ownedGames.length === 0) {
       log(time() + chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+      this.suClint.logOff();
       this.status = 'stopped';
       return false;
     }
@@ -288,6 +288,7 @@ class SteamQuestSU {
     if (this.status === 'stopped') return true;
     log(`${time()}正在停止挂游戏时长...`, false);
     this.suClint.gamesPlayed([]);
+    this.suClint.logOff();
     log(chalk.green('OK'));
     return true;
   }

@@ -5,6 +5,7 @@ import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
 import { SteamQuestSU } from './SteamQuestSU';
 import * as fs from 'fs';
+import { join, resolve } from 'path';
 import { parse } from 'yaml';
 import { sleep, log, time, checkUpdate } from './tool';
 import * as chalk from 'chalk';
@@ -45,8 +46,14 @@ import * as yamlLint from 'yaml-lint';
   logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
   log(logArr.join('\n'));
 
-  if (!fs.existsSync('config.yml')) {
-    log(chalk.red(`没有找到配置文件[${chalk.yellow('config.yml')}]!`));
+  let configPath = 'config.yml';
+  if (/dist$/.test(process.cwd())) {
+    if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
+      configPath = join('../', configPath);
+    }
+  }
+  if (!fs.existsSync(configPath)) {
+    log(chalk.red(`没有找到配置文件[${chalk.yellow(resolve(configPath))}]!`));
     return;
   }
 
@@ -64,7 +71,7 @@ import * as yamlLint from 'yaml-lint';
     awaQuests: ['dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
     asfProtocol: 'http'
   };
-  const configString = fs.readFileSync('config.yml').toString();
+  const configString = fs.readFileSync(configPath).toString();
   let config: config | null = null;
   await yamlLint
     .lint(configString)

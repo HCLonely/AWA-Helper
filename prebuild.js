@@ -4,7 +4,7 @@ const path = require('path');
 const dependencies = Object.keys(require('./package.json').dependencies);
 
 const replaceDir = (dir) => {
-  fs.writeFileSync(dir, fs.readFileSync(dir).toString().replace('__dirname', 'process.cwd()'));
+  fs.writeFileSync(dir, fs.readFileSync(dir).toString().replace(/__dirname/g, 'process.cwd()'));
   // fs.writeFileSync(dir, fs.readFileSync(dir).toString().replace('process.cwd()', '__dirname'));
 };
 
@@ -25,11 +25,13 @@ for (const dependenciesName of dependencies) {
 }
 
 const assets = [
-  ['node_modules/@doctormckay/steam-crypto/system.pem', 'output/system.pem'],
-  ['node_modules/lzma/src/lzma_worker.js', 'output/src/lzma_worker.js']
+  ['node_modules/@doctormckay/steam-crypto/system.pem', 'output/system.pem', 'dist/system.pem'],
+  ['node_modules/lzma/src/lzma_worker.js', 'output/src/lzma_worker.js', 'dist/src/lzma_worker.js']
 ];
 
 for (const asset of assets) {
   fs.ensureDirSync(path.join(asset[1], '../'));
   fs.copyFileSync(asset[0], asset[1]);
+  fs.ensureDirSync(path.join(asset[2], '../'));
+  fs.copyFileSync(asset[0], asset[2]);
 }

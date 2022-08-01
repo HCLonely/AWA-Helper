@@ -8,7 +8,7 @@
 
 1. 使用前请确保AWA帐号已关联Steam帐号且Steam帐号信息已设置为公开；
 2. 使用前请确保AWA帐号已关联Twitch帐号且Twitch帐号已给AWA扩展授权;
-3. 如需多开，请将本程序复制到不同文件夹运行。
+3. \[不建议\]如需多开，请将本程序复制到不同文件夹运行。
 
 ### 通过源码运行
 
@@ -103,6 +103,8 @@ document.cookie.split(';').filter((e) => ['unique_id','auth-token'].includes(e.s
 ### Steam 任务配置
 
 > 挂Steam游戏时长的方式, 支持[ASF](https://github.com/JustArchiNET/ArchiSteamFarm)和[SU](https://github.com/DoctorMcKay/node-steam-user).
+>
+> **目前`SU`仅支持通过源码运行！！！**
 
 ```yml
 steamUse: 'ASF' # 'ASF'或'SU','SU'为模拟Steam客户端
