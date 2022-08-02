@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.formatProxy = exports.http = exports.ask = exports.netError = exports.checkUpdate = exports.time = exports.random = exports.sleep = exports.log = void 0;
 /* eslint-disable max-len */
-/* global proxy */
+/* global __, proxy */
 const chalk = require("chalk");
 const dayjs = require("dayjs");
 const fs = require("fs");
@@ -58,16 +58,16 @@ exports.time = time;
 // eslint-disable-next-line
 const netError = (error) => {
     if (error.message.includes('ETIMEDOUT')) {
-        return `: ${chalk.yellow('连接超时，请尝试更换代理！')}`;
+        return `: ${chalk.yellow(__('timeout'))}`;
     }
     if (error.message.includes('ECONNREFUSED')) {
-        return `: ${chalk.yellow('连接被拒绝，请尝试更换代理！')}`;
+        return `: ${chalk.yellow(__('connRefused'))}`;
     }
     if (error.message.includes('hang up') || error.message.includes('ECONNRESET')) {
-        return `: ${chalk.yellow('连接被重置，请尝试更换代理！')}`;
+        return `: ${chalk.yellow(__('connReset'))}`;
     }
     if (error.message.includes('certificate') || error.message.includes('TLS') || error.message.includes('SSL')) {
-        return `: ${chalk.yellow('证书错误，请尝试更换代理！')}`;
+        return `: ${chalk.yellow(__('certificateError'))}`;
     }
     return '';
 };
@@ -123,7 +123,7 @@ const retryAdapterEnhancer = (adapter, options) => {
                 }
                 retryCount++;
                 log(chalk.red('Error'));
-                log(`${time()}${chalk.yellow(`正在重试第 ${chalk.blue(retryCount)} 次...`)}`, false);
+                log(`${time()}${chalk.yellow(__('retrying', chalk.blue(retryCount)))}`, false);
                 const delay = new Promise((resolve) => {
                     setTimeout(() => {
                         resolve(true);
@@ -143,7 +143,7 @@ const http = axios_1.default.create({
 });
 exports.http = http;
 const checkUpdate = async (version, proxy) => {
-    log(`${time()}正在检测更新...`, false);
+    log(`${time()}${__('checkingUpdating')}`, false);
     const options = {
         validateStatus: (status) => status === 302,
         maxRedirects: 0
@@ -161,11 +161,11 @@ const checkUpdate = async (version, proxy) => {
             if (latestVersionArr[0] > currentVersionArr[0] ||
                 (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] > currentVersionArr[1]) ||
                 (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] === currentVersionArr[1] && latestVersionArr[2] > currentVersionArr[2])) {
-                log(chalk.green('检测到最新版 ') + chalk.yellow(`V${latestVersion}`));
-                log(`${time()}最新版下载地址: ${chalk.yellow(response.headers.location)}`);
+                log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
+                log(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
                 return;
             }
-            log(chalk.green('当前为最新版！'));
+            log(chalk.green(__('noUpdate')));
             return;
         }
         log(chalk.red('Failed'));

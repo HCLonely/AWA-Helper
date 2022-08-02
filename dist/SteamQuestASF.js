@@ -29,7 +29,7 @@ class SteamQuestASF {
         }
     }
     init() {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在初始化${chalk.yellow('ASF')}...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('initing', chalk.yellow('ASF'))}`, false);
         const options = {
             url: this.asfUrl,
             method: 'POST',
@@ -65,7 +65,7 @@ class SteamQuestASF {
         });
     }
     async getSteamQuests() {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取${chalk.yellow('Steam')}任务信息...`);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`);
         const options = {
             url: `https://${this.awaHost}/steam/quests`,
             method: 'GET',
@@ -109,21 +109,21 @@ class SteamQuestASF {
                     });
                 }
                 this.gamesInfo = gamesInfo;
-                (0, tool_1.log)((0, tool_1.time)() + chalk.green(`获取${chalk.yellow('Steam')}任务信息成功`));
+                (0, tool_1.log)(`${(0, tool_1.time)()}${chalk.green(__('getSteamQuestInfoSuccess', chalk.yellow('Steam')))}`);
                 return true;
             }
-            (0, tool_1.log)((0, tool_1.time)() + chalk.red(`获取${chalk.yellow('Steam')}任务信息失败[Net Error]: ${response.status}`));
+            (0, tool_1.log)(`${(0, tool_1.time)()}${chalk.red(`${__('getSteamQuestInfoFailed', chalk.yellow('Steam'))}[Net Error]: ${response.status}`)}`);
             return false;
         })
             .catch((error) => {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.red(`获取${chalk.yellow('Steam')}任务信息失败`) + (0, tool_1.netError)(error));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.red(__('getSteamQuestInfoFailed', chalk.yellow('Steam'))) + (0, tool_1.netError)(error));
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             (0, tool_1.log)(error);
             return false;
         });
     }
     getQuestInfo(url) {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取Steam任务[${chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url)}]信息...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingSingleSteamQuestInfo', chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url))}`, false);
         const options = {
             url,
             method: 'GET',
@@ -143,15 +143,15 @@ class SteamQuestASF {
             .then((response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data.includes('You have completed this quest')) {
-                (0, tool_1.log)(chalk.green('此任务已完成'));
+                (0, tool_1.log)(chalk.green(__('steamQuestCompleted')));
                 return false;
             }
             if (response.data.includes('This quest requires that you own')) {
-                (0, tool_1.log)(chalk.yellow('未拥有此游戏，跳过'));
+                (0, tool_1.log)(chalk.yellow(__('steamQuestSkipped')));
                 return false;
             }
             if (response.data.includes('Launch Game')) {
-                (0, tool_1.log)(chalk.green('此任务已开始'));
+                (0, tool_1.log)(chalk.green(__('steamQuestStarted')));
                 return true;
             }
             if (response.data.includes('Start Quest')) {
@@ -169,7 +169,7 @@ class SteamQuestASF {
         });
     }
     startQuest(url) {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在开始Steam任务[${chalk.yellow(url)}]...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('startingSteamQuest', chalk.yellow(url))}`, false);
         const options = {
             url: url.replace('steam/quests', 'ajax/user/steam/quests/start'),
             method: 'GET',
@@ -202,7 +202,7 @@ class SteamQuestASF {
         if (this.status === 'stopped')
             return true;
         for (const index in this.taskStatus) {
-            (0, tool_1.log)(`${(0, tool_1.time)()}正在检测Steam任务[${chalk.yellow(this.taskStatus[index].link)}]进度...`, false);
+            (0, tool_1.log)(`${(0, tool_1.time)()}${__('checkingProgress', chalk.yellow(this.taskStatus[index].link))}`, false);
             const options = {
                 url: this.taskStatus[index].link,
                 method: 'GET',
@@ -228,10 +228,10 @@ class SteamQuestASF {
                         (0, tool_1.log)(chalk.yellow(`${progress}%`));
                         return true;
                     }
-                    (0, tool_1.log)(chalk.red('进度未找到'));
+                    (0, tool_1.log)(chalk.red(__('noProgress')));
                     return false;
                 }
-                (0, tool_1.log)(chalk.red('进度条未找到'));
+                (0, tool_1.log)(chalk.red(__('noProgressBar')));
                 return false;
             })
                 .catch((error) => {
@@ -242,7 +242,7 @@ class SteamQuestASF {
             });
         }
         if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('Steam') + chalk.green('挂时长任务完成！'));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
             this.resume();
             return true;
         }
@@ -254,7 +254,7 @@ class SteamQuestASF {
             return false;
         if (this.gamesInfo.length === 0)
             return true;
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在匹配${chalk.yellow('Steam')}游戏库...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
         const options = {
             url: this.asfUrl,
             method: 'POST',
@@ -298,11 +298,11 @@ class SteamQuestASF {
         if (!await this.getOwnedGames())
             return false;
         if (this.ownedGames.length === 0) {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(__('noGamesAlert')));
             this.status = 'stopped';
             return false;
         }
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在调用${chalk.yellow('ASF')}挂游戏时长...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('usingASF', chalk.yellow('ASF'))}`, false);
         const options = {
             url: this.asfUrl,
             method: 'POST',
@@ -341,15 +341,11 @@ class SteamQuestASF {
             return false;
         await (0, tool_1.sleep)(10 * 60);
         return await this.checkStatus();
-        // const mins = ((this.maxPlayTimes * 60) + 30);
-        // log(time() + chalk.green(`${chalk.yellow(mins)} 分钟后停止挂时长！`));
-        // await sleep(mins * 60);
-        // return this.resume();
     }
     async resume() {
         if (this.status === 'stopped')
             return true;
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在停止挂游戏时长...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('stoppingPlayingGames')}`, false);
         const options = {
             url: this.asfUrl,
             method: 'POST',

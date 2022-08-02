@@ -1,15 +1,14 @@
 /* eslint-disable no-var */
 /* eslint-disable no-unused-vars */
+import type { I18n } from 'i18n';
 declare global {
   interface config {
+    language: string
     awaCookie?: string
     awaHost: string,
-    awaUserId?: string,
-    awaBorderId?: string,
-    awaBadgeIds?: string,
-    awaAvatar?: string,
     awaBoosterNotice?: boolean,
     awaQuests: Array<string>,
+    awaDailyQuestType: Array<string>,
     twitchCookie?: string,
     steamUse?: 'ASF' | 'SU'
     asfProtocol: string,
@@ -56,6 +55,14 @@ declare global {
     steamQuest?: 'complete' | 'incomplete'
   }
 
+  interface awaInfo {
+    awaUserId: string
+    awaBorderId: string
+    awaBadgeIds: Array<string>
+    awaAvatar: string
+  }
   var secrets: string;
+  // eslint-disable-next-line no-underscore-dangle
+  var __: I18n['__'];
 }
 export {};

@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-/* global steamGameInfo, proxy */
+/* global __, steamGameInfo, proxy */
 import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
@@ -38,7 +38,7 @@ class SteamQuestASF {
   }
 
   init(): Promise<boolean> {
-    log(`${time()}正在初始化${chalk.yellow('ASF')}...`, false);
+    log(`${time()}${__('initing', chalk.yellow('ASF'))}`, false);
     const options: AxiosRequestConfig = {
       url: this.asfUrl,
       method: 'POST',
@@ -74,7 +74,7 @@ class SteamQuestASF {
       });
   }
   async getSteamQuests(): Promise<boolean> {
-    log(`${time()}正在获取${chalk.yellow('Steam')}任务信息...`);
+    log(`${time()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`);
     const options: AxiosRequestConfig = {
       url: `https://${this.awaHost}/steam/quests`,
       method: 'GET',
@@ -115,21 +115,21 @@ class SteamQuestASF {
             });
           }
           this.gamesInfo = gamesInfo;
-          log(time() + chalk.green(`获取${chalk.yellow('Steam')}任务信息成功`));
+          log(`${time()}${chalk.green(__('getSteamQuestInfoSuccess', chalk.yellow('Steam')))}`);
           return true;
         }
-        log(time() + chalk.red(`获取${chalk.yellow('Steam')}任务信息失败[Net Error]: ${response.status}`));
+        log(`${time()}${chalk.red(`${__('getSteamQuestInfoFailed', chalk.yellow('Steam'))}[Net Error]: ${response.status}`)}`);
         return false;
       })
       .catch((error) => {
-        log(time() + chalk.red(`获取${chalk.yellow('Steam')}任务信息失败`) + netError(error));
+        log(time() + chalk.red(__('getSteamQuestInfoFailed', chalk.yellow('Steam'))) + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         log(error);
         return false;
       });
   }
   getQuestInfo(url: string) {
-    log(`${time()}正在获取Steam任务[${chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url)}]信息...`, false);
+    log(`${time()}${__('gettingSingleSteamQuestInfo', chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url))}`, false);
     const options: AxiosRequestConfig = {
       url,
       method: 'GET',
@@ -149,15 +149,15 @@ class SteamQuestASF {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.includes('You have completed this quest')) {
-          log(chalk.green('此任务已完成'));
+          log(chalk.green(__('steamQuestCompleted')));
           return false;
         }
         if (response.data.includes('This quest requires that you own')) {
-          log(chalk.yellow('未拥有此游戏，跳过'));
+          log(chalk.yellow(__('steamQuestSkipped')));
           return false;
         }
         if (response.data.includes('Launch Game')) {
-          log(chalk.green('此任务已开始'));
+          log(chalk.green(__('steamQuestStarted')));
           return true;
         }
         if (response.data.includes('Start Quest')) {
@@ -175,7 +175,7 @@ class SteamQuestASF {
       });
   }
   startQuest(url: string) {
-    log(`${time()}正在开始Steam任务[${chalk.yellow(url)}]...`, false);
+    log(`${time()}${__('startingSteamQuest', chalk.yellow(url))}`, false);
     const options: AxiosRequestConfig = {
       url: url.replace('steam/quests', 'ajax/user/steam/quests/start'),
       method: 'GET',
@@ -206,7 +206,7 @@ class SteamQuestASF {
   async checkStatus(): Promise<boolean> {
     if (this.status === 'stopped') return true;
     for (const index in this.taskStatus) {
-      log(`${time()}正在检测Steam任务[${chalk.yellow(this.taskStatus[index].link)}]进度...`, false);
+      log(`${time()}${__('checkingProgress', chalk.yellow(this.taskStatus[index].link))}`, false);
       const options: AxiosRequestConfig = {
         url: this.taskStatus[index].link,
         method: 'GET',
@@ -231,10 +231,10 @@ class SteamQuestASF {
               log(chalk.yellow(`${progress}%`));
               return true;
             }
-            log(chalk.red('进度未找到'));
+            log(chalk.red(__('noProgress')));
             return false;
           }
-          log(chalk.red('进度条未找到'));
+          log(chalk.red(__('noProgressBar')));
           return false;
         })
         .catch((error) => {
@@ -245,7 +245,7 @@ class SteamQuestASF {
         });
     }
     if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
-      log(time() + chalk.yellow('Steam') + chalk.green('挂时长任务完成！'));
+      log(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
       this.resume();
       return true;
     }
@@ -255,7 +255,7 @@ class SteamQuestASF {
   async getOwnedGames(): Promise<boolean> {
     if (!await this.getSteamQuests()) return false;
     if (this.gamesInfo.length === 0) return true;
-    log(`${time()}正在匹配${chalk.yellow('Steam')}游戏库...`, false);
+    log(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
     const options: AxiosRequestConfig = {
       url: this.asfUrl,
       method: 'POST',
@@ -297,11 +297,11 @@ class SteamQuestASF {
   async playGames(): Promise<boolean> {
     if (!await this.getOwnedGames()) return false;
     if (this.ownedGames.length === 0) {
-      log(time() + chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+      log(time() + chalk.yellow(__('noGamesAlert')));
       this.status = 'stopped';
       return false;
     }
-    log(`${time()}正在调用${chalk.yellow('ASF')}挂游戏时长...`, false);
+    log(`${time()}${__('usingASF', chalk.yellow('ASF'))}`, false);
     const options: AxiosRequestConfig = {
       url: this.asfUrl,
       method: 'POST',
@@ -338,14 +338,10 @@ class SteamQuestASF {
     if (!started) return false;
     await sleep(10 * 60);
     return await this.checkStatus();
-    // const mins = ((this.maxPlayTimes * 60) + 30);
-    // log(time() + chalk.green(`${chalk.yellow(mins)} 分钟后停止挂时长！`));
-    // await sleep(mins * 60);
-    // return this.resume();
   }
   async resume(): Promise<boolean> {
     if (this.status === 'stopped') return true;
-    log(`${time()}正在停止挂游戏时长...`, false);
+    log(`${time()}${__('stoppingPlayingGames')}`, false);
     const options: AxiosRequestConfig = {
       url: this.asfUrl,
       method: 'POST',

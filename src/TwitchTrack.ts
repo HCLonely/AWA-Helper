@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/* global __ */
 import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
@@ -46,7 +47,7 @@ class TwitchTrack {
   }
 
   async init(): Promise<boolean> {
-    log(`${time()}正在初始化TwitchTrack...`, false);
+    log(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
     const options: AxiosRequestConfig = {
       url: 'https://www.twitch.tv/',
       method: 'GET',
@@ -90,7 +91,7 @@ class TwitchTrack {
     return await this.checkLinkedExt();
   }
   async checkLinkedExt(): Promise<boolean> {
-    log(`${time()}正在检测是否授权${chalk.yellow('Twitch')}扩展...`, false);
+    log(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
     const options: AxiosRequestConfig = {
       url: 'https://gql.twitch.tv/gql',
       method: 'POST',
@@ -106,10 +107,10 @@ class TwitchTrack {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e: any) => e.name === 'Arena Rewards Tracker');
         if (linkedExtension) {
-          log(chalk.green('已授权'));
+          log(chalk.green(__('authorized')));
           return true;
         }
-        log(chalk.red('未授权'));
+        log(chalk.red(__('notAuthorized')));
         return false;
       })
       .catch((error) => {
@@ -120,7 +121,7 @@ class TwitchTrack {
       });
   }
   async getAvailableStreams(): Promise<boolean> {
-    log(`${time()}正在获取可用直播信息...`, false);
+    log(`${time()}${__('gettingLiveInfo')}`, false);
     const options: AxiosRequestConfig = {
       url: `https://${this.awaHost}/twitch/live`,
       method: 'GET'
@@ -135,8 +136,8 @@ class TwitchTrack {
             ?.match(/www\.twitch\.tv\/(.+)/)?.[1])
             .filter((e) => e) as Array<string>;
           if (this.availableStreams.length === 0) {
-            log(chalk.blue('当前没有可用的直播！'));
-            log(time() + chalk.yellow('10 分钟后再次获取可用直播信息'));
+            log(chalk.blue(__('noLive')));
+            log(`${time()}${__('getLiveInfoAlert', chalk.green('10'))}`);
             await sleep(60 * 10);
             return await this.getAvailableStreams();
           }
@@ -163,7 +164,7 @@ class TwitchTrack {
       data: `[{"operationName":"ActiveWatchParty","variables":{"channelLogin":"${this.availableStreams[index]}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4a8156c97b19e3a36e081cf6d6ddb5dbf9f9b02ae60e4d2ff26ed70aebc80a30"}}}]`
     };
     if (this.httpsAgent) twitchOptions.httpsAgent = this.httpsAgent;
-    log(`${time()}正在获取直播频道[${chalk.yellow(this.availableStreams[index])}]信息...`, false);
+    log(`${time()}${__('gettingChannelInfo', chalk.yellow(this.availableStreams[index]))}`, false);
     return await axios(twitchOptions)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
@@ -189,7 +190,7 @@ class TwitchTrack {
       return false;
     }
     if (index >= this.availableStreams.length) return false;
-    log(`${time()}正在获取ART扩展信息...`, false);
+    log(`${time()}${__('gettingExtInfo')}`, false);
     const options: AxiosRequestConfig = {
       url: 'https://gql.twitch.tv/gql',
       method: 'POST',
@@ -205,17 +206,17 @@ class TwitchTrack {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
         if (!extensions?.length) {
-          log(chalk.red('Error: 在此频道没有找到扩展！'));
+          log(chalk.red(`Error: ${__('noExt')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
         const [ART_EXT] = extensions.filter((ext: any) => ext?.installation?.extension?.name === 'Arena Rewards Tracker');
         if (!ART_EXT) {
-          log(chalk.red('Error: 在此频道没有找到ART扩展！'));
+          log(chalk.red(`Error: ${__('noExt')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
         const { jwt } = ART_EXT.token;
         if (!ART_EXT) {
-          log(chalk.red('Error: 获取jwt失败！'));
+          log(chalk.red(`Error: ${__('getJwtFailed')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
         this.jwt = jwt;
@@ -233,7 +234,7 @@ class TwitchTrack {
     if (!this.channelId) {
       if (await this.getExtInfo() !== true) return;
     }
-    log(`${time()}正在发送${chalk.yellow('Twitch')}在线心跳...`, false);
+    log(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
     const options: AxiosRequestConfig = {
       url: 'https://www.alienwarearena.com/twitch/extensions/track',
       method: 'GET',
@@ -257,11 +258,11 @@ class TwitchTrack {
           switch (response.data.state) {
           case 'daily_cap_reached':
             this.complete = true;
-            log(time() + chalk.green(response.data.message || '今日ARP已获取！'));
+            log(time() + chalk.green(response.data.message || __('obtainedArp')));
             returnText = 'complete';
             break;
           case 'streamer_offline':
-            log(time() + chalk.blue(`此直播间[${chalk.yellow(this.channelId)}]已停止直播！`));
+            log(time() + chalk.blue(__('liveOffline', chalk.yellow(this.channelId))));
             returnText = 'offline';
             break;
           case 'streamer_online':

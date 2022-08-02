@@ -2,14 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SteamQuestSU = void 0;
 /* eslint-disable max-len */
-/* global steamGameInfo, proxy */
+/* global __, steamGameInfo, proxy */
 const fs = require("fs");
 const cheerio_1 = require("cheerio");
 const chalk = require("chalk");
 const tool_1 = require("./tool");
 const SteamUser = require("steam-user");
-// import 'lzma/src/lzma_worker.js';
-// fs.readFileSync(process.cwd() + '/system.pem')
 class SteamQuestSU {
     constructor({ awaCookie, awaHost, steamAccountName, steamPassword, proxy }) {
         this.ownedGames = [];
@@ -29,7 +27,7 @@ class SteamQuestSU {
             this.suInfo.loginKey = loginKey;
         }
         else {
-            (0, tool_1.log)(chalk.red(`检测到首次使用此方式[${chalk.blue('SU')}]登录Steam, 如果Steam启用了${chalk.gray('两步验证')}，请注意控制台提示输入两步验证码！`));
+            (0, tool_1.log)(chalk.red(__('firstSteamUserAlert', chalk.yellow('SU'), chalk.blue(__('2fa')))));
             this.suInfo.password = steamPassword;
         }
         if (proxy?.enable?.includes('steam') && proxy.host && proxy.port) {
@@ -41,19 +39,19 @@ class SteamQuestSU {
     }
     init() {
         return new Promise((resolve) => {
-            (0, tool_1.log)(`${(0, tool_1.time)()}正在登录${chalk.yellow('Steam')}...`, false);
+            (0, tool_1.log)(`${(0, tool_1.time)()}${__('loginingSteam', chalk.yellow('Steam'))}`, false);
             this.suClint.on('loginKey', (key) => {
                 fs.writeFileSync('login-key.txt', key);
             });
             this.suClint.on('loggedOn', () => {
-                (0, tool_1.log)(chalk.green(`登录成功[${chalk.gray(this.suClint.steamID?.getSteamID64())}]`));
+                (0, tool_1.log)(chalk.green(`${__('loginSuccess')}[${chalk.gray(this.suClint.steamID?.getSteamID64())}]`));
                 resolve(true);
             });
             this.suClint.logOn(this.suInfo);
         });
     }
     async getSteamQuests() {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取${chalk.yellow('Steam')}任务信息...`);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`);
         const options = {
             url: `https://${this.awaHost}/steam/quests`,
             method: 'GET',
@@ -97,21 +95,21 @@ class SteamQuestSU {
                     });
                 }
                 this.gamesInfo = gamesInfo;
-                (0, tool_1.log)((0, tool_1.time)() + chalk.green(`获取${chalk.yellow('Steam')}任务信息成功`));
+                (0, tool_1.log)(`${(0, tool_1.time)()}${chalk.green(__('getSteamQuestInfoSuccess', chalk.yellow('Steam')))}`);
                 return true;
             }
-            (0, tool_1.log)((0, tool_1.time)() + chalk.red(`获取${chalk.yellow('Steam')}任务信息失败[Net Error]: ${response.status}`));
+            (0, tool_1.log)(`${(0, tool_1.time)()}${chalk.red(`${__('getSteamQuestInfoFailed', chalk.yellow('Steam'))}[Net Error]: ${response.status}`)}`);
             return false;
         })
             .catch((error) => {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.red(`获取${chalk.yellow('Steam')}任务信息失败`) + (0, tool_1.netError)(error));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.red(__('getSteamQuestInfoFailed', chalk.yellow('Steam'))) + (0, tool_1.netError)(error));
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             (0, tool_1.log)(error);
             return false;
         });
     }
     getQuestInfo(url) {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取Steam任务[${chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url)}]信息...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingSingleSteamQuestInfo', chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url))}`, false);
         const options = {
             url,
             method: 'GET',
@@ -131,15 +129,15 @@ class SteamQuestSU {
             .then((response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data.includes('You have completed this quest')) {
-                (0, tool_1.log)(chalk.green('此任务已完成'));
+                (0, tool_1.log)(chalk.green(__('steamQuestCompleted')));
                 return false;
             }
             if (response.data.includes('This quest requires that you own')) {
-                (0, tool_1.log)(chalk.yellow('未拥有此游戏，跳过'));
+                (0, tool_1.log)(chalk.yellow(__('steamQuestSkipped')));
                 return false;
             }
             if (response.data.includes('Launch Game')) {
-                (0, tool_1.log)(chalk.green('此任务已开始'));
+                (0, tool_1.log)(chalk.green(__('steamQuestStarted')));
                 return true;
             }
             if (response.data.includes('Start Quest')) {
@@ -157,7 +155,7 @@ class SteamQuestSU {
         });
     }
     startQuest(url) {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在开始Steam任务[${chalk.yellow(url)}]...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('startingSteamQuest', chalk.yellow(url))}`, false);
         const options = {
             url: url.replace('steam/quests', 'ajax/user/steam/quests/start'),
             method: 'GET',
@@ -190,7 +188,7 @@ class SteamQuestSU {
         if (this.status === 'stopped')
             return true;
         for (const index in this.taskStatus) {
-            (0, tool_1.log)(`${(0, tool_1.time)()}正在检测Steam任务[${chalk.yellow(this.taskStatus[index].link)}]进度...`, false);
+            (0, tool_1.log)(`${(0, tool_1.time)()}${__('checkingProgress', chalk.yellow(this.taskStatus[index].link))}`, false);
             const options = {
                 url: this.taskStatus[index].link,
                 method: 'GET',
@@ -216,10 +214,10 @@ class SteamQuestSU {
                         (0, tool_1.log)(chalk.yellow(`${progress}%`));
                         return true;
                     }
-                    (0, tool_1.log)(chalk.red('进度未找到'));
+                    (0, tool_1.log)(chalk.red(__('noProgress')));
                     return false;
                 }
-                (0, tool_1.log)(chalk.red('进度条未找到'));
+                (0, tool_1.log)(chalk.red(__('noProgressBar')));
                 return false;
             })
                 .catch((error) => {
@@ -230,7 +228,7 @@ class SteamQuestSU {
             });
         }
         if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('Steam') + chalk.green('挂时长任务完成！'));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
             this.resume();
             return true;
         }
@@ -242,7 +240,7 @@ class SteamQuestSU {
             return false;
         if (this.gamesInfo.length === 0)
             return true;
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在匹配${chalk.yellow('Steam')}游戏库...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
         return await this.suClint.getUserOwnedApps(this.suClint.steamID?.getSteamID64(), {
             includePlayedFreeGames: true,
             filterAppids: this.gamesInfo.map((e) => parseInt(e.id, 10)),
@@ -267,12 +265,12 @@ class SteamQuestSU {
         if (!await this.getOwnedGames())
             return false;
         if (this.ownedGames.length === 0) {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('当前账号游戏库中没有任务中的游戏，停止挂游戏时长！'));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(__('noGamesAlert')));
             this.suClint.logOff();
             this.status = 'stopped';
             return false;
         }
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在挂游戏时长...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('playingGames')}`, false);
         this.suClint.gamesPlayed(this.ownedGames.map((e) => parseInt(e, 10)), true);
         (0, tool_1.log)(chalk.green('OK'));
         await (0, tool_1.sleep)(10 * 60);
@@ -281,7 +279,7 @@ class SteamQuestSU {
     async resume() {
         if (this.status === 'stopped')
             return true;
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在停止挂游戏时长...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('stoppingPlayingGames')}`, false);
         this.suClint.gamesPlayed([]);
         this.suClint.logOff();
         (0, tool_1.log)(chalk.green('OK'));

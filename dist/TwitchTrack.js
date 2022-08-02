@@ -32,7 +32,7 @@ class TwitchTrack {
         }
     }
     async init() {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在初始化TwitchTrack...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
         const options = {
             url: 'https://www.twitch.tv/',
             method: 'GET',
@@ -77,7 +77,7 @@ class TwitchTrack {
         return await this.checkLinkedExt();
     }
     async checkLinkedExt() {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在检测是否授权${chalk.yellow('Twitch')}扩展...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
         const options = {
             url: 'https://gql.twitch.tv/gql',
             method: 'POST',
@@ -94,10 +94,10 @@ class TwitchTrack {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e) => e.name === 'Arena Rewards Tracker');
             if (linkedExtension) {
-                (0, tool_1.log)(chalk.green('已授权'));
+                (0, tool_1.log)(chalk.green(__('authorized')));
                 return true;
             }
-            (0, tool_1.log)(chalk.red('未授权'));
+            (0, tool_1.log)(chalk.red(__('notAuthorized')));
             return false;
         })
             .catch((error) => {
@@ -108,7 +108,7 @@ class TwitchTrack {
         });
     }
     async getAvailableStreams() {
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取可用直播信息...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingLiveInfo')}`, false);
         const options = {
             url: `https://${this.awaHost}/twitch/live`,
             method: 'GET'
@@ -124,8 +124,8 @@ class TwitchTrack {
                     ?.match(/www\.twitch\.tv\/(.+)/)?.[1])
                     .filter((e) => e);
                 if (this.availableStreams.length === 0) {
-                    (0, tool_1.log)(chalk.blue('当前没有可用的直播！'));
-                    (0, tool_1.log)((0, tool_1.time)() + chalk.yellow('10 分钟后再次获取可用直播信息'));
+                    (0, tool_1.log)(chalk.blue(__('noLive')));
+                    (0, tool_1.log)(`${(0, tool_1.time)()}${__('getLiveInfoAlert', chalk.green('10'))}`);
                     await (0, tool_1.sleep)(60 * 10);
                     return await this.getAvailableStreams();
                 }
@@ -155,7 +155,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             twitchOptions.httpsAgent = this.httpsAgent;
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取直播频道[${chalk.yellow(this.availableStreams[index])}]信息...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingChannelInfo', chalk.yellow(this.availableStreams[index]))}`, false);
         return await (0, tool_1.http)(twitchOptions)
             .then(async (response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
@@ -182,7 +182,7 @@ class TwitchTrack {
         }
         if (index >= this.availableStreams.length)
             return false;
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在获取ART扩展信息...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingExtInfo')}`, false);
         const options = {
             url: 'https://gql.twitch.tv/gql',
             method: 'POST',
@@ -199,17 +199,17 @@ class TwitchTrack {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
             if (!extensions?.length) {
-                (0, tool_1.log)(chalk.red('Error: 在此频道没有找到扩展！'));
+                (0, tool_1.log)(chalk.red(`Error: ${__('noExt')}`));
                 return await this.getExtInfo(returnedIndex + 1);
             }
             const [ART_EXT] = extensions.filter((ext) => ext?.installation?.extension?.name === 'Arena Rewards Tracker');
             if (!ART_EXT) {
-                (0, tool_1.log)(chalk.red('Error: 在此频道没有找到ART扩展！'));
+                (0, tool_1.log)(chalk.red(`Error: ${__('noExt')}`));
                 return await this.getExtInfo(returnedIndex + 1);
             }
             const { jwt } = ART_EXT.token;
             if (!ART_EXT) {
-                (0, tool_1.log)(chalk.red('Error: 获取jwt失败！'));
+                (0, tool_1.log)(chalk.red(`Error: ${__('getJwtFailed')}`));
                 return await this.getExtInfo(returnedIndex + 1);
             }
             this.jwt = jwt;
@@ -228,7 +228,7 @@ class TwitchTrack {
             if (await this.getExtInfo() !== true)
                 return;
         }
-        (0, tool_1.log)(`${(0, tool_1.time)()}正在发送${chalk.yellow('Twitch')}在线心跳...`, false);
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
         const options = {
             url: 'https://www.alienwarearena.com/twitch/extensions/track',
             method: 'GET',
@@ -253,11 +253,11 @@ class TwitchTrack {
                 switch (response.data.state) {
                     case 'daily_cap_reached':
                         this.complete = true;
-                        (0, tool_1.log)((0, tool_1.time)() + chalk.green(response.data.message || '今日ARP已获取！'));
+                        (0, tool_1.log)((0, tool_1.time)() + chalk.green(response.data.message || __('obtainedArp')));
                         returnText = 'complete';
                         break;
                     case 'streamer_offline':
-                        (0, tool_1.log)((0, tool_1.time)() + chalk.blue(`此直播间[${chalk.yellow(this.channelId)}]已停止直播！`));
+                        (0, tool_1.log)((0, tool_1.time)() + chalk.blue(__('liveOffline', chalk.yellow(this.channelId))));
                         returnText = 'offline';
                         break;
                     case 'streamer_online':

@@ -1,27 +1,27 @@
 {
   "name": "awa-helper",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "scripts": {
     "test": "node prebuild.js && tsc && node build.js --pre && cd dist && node index.js",
-    "test2": "nexe --build",
     "start": "cd dist && node index.js",
-    "rollup": "rollup -c",
     "build": "node prebuild.js && tsc && node build.js --pre && pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe && node build.js",
-    "pkg": "pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe",
-    "buildt": "node prebuild.js && tsc && node build.js --pre && pkg -t win dist/index.js --output output/AWA-Helper.exe && node build.js"
+    "pkg": "pkg -t win dist/index.js --output output/AWA-Helper.exe --debug"
   },
   "keywords": [],
   "author": "HCLonely",
   "license": "MIT",
   "dependencies": {
     "@doctormckay/steam-crypto": "1.2.0",
+    "@messageformat/date-skeleton": "^1.0.1",
+    "@messageformat/number-skeleton": "^1.1.0",
     "axios": "^0.26.1",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.10",
     "dayjs": "^1.11.1",
     "form-data": "^4.0.0",
+    "i18n": "^0.15.0",
     "lzma": "2.3.2",
     "qs": "^6.10.3",
     "socks-proxy-agent": "^6.2.0",
@@ -31,6 +31,7 @@
     "yaml-lint": "^1.6.0"
   },
   "devDependencies": {
+    "@types/i18n": "^0.13.4",
     "@types/jquery": "^3.5.14",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^17.0.24",
@@ -42,7 +43,7 @@
     "eslint": "^8.13.0",
     "fs-extra": "^9.1.0",
     "pkg": "^5.6.0",
-    "puppeteer-core": "^14.1.1",
+    "rollup": "^2.77.2",
     "typescript": "^4.7.3",
     "zip-dir": "^2.0.0"
   },

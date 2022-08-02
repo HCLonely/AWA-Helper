@@ -1,26 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable max-len */
-/* global config */
+/* global config, __ */
 const DailyQuest_1 = require("./DailyQuest");
 const TwitchTrack_1 = require("./TwitchTrack");
 const SteamQuestASF_1 = require("./SteamQuestASF");
 const SteamQuestSU_1 = require("./SteamQuestSU");
 const fs = require("fs");
+const path = require("path");
 const path_1 = require("path");
 const yaml_1 = require("yaml");
 const tool_1 = require("./tool");
 const chalk = require("chalk");
 const yamlLint = require("yaml-lint");
+const i18n = require("i18n");
 (async () => {
+    i18n.configure({
+        locales: ['zh'],
+        directory: path.join(process.cwd(), '/locales'),
+        extension: '.json',
+        defaultLocale: 'zh',
+        register: globalThis
+    });
     if (fs.existsSync('lock')) {
         try {
             fs.unlinkSync('lock');
         }
         catch (e) {
-            (0, tool_1.log)(chalk.red('另一个AWA-Helper程序正在运行中！'));
-            (0, tool_1.log)(chalk.blue('如需多开，请将本程序复制到另一个文件夹运行！'));
-            (0, tool_1.log)('按任意键退出...');
+            (0, tool_1.log)(chalk.red(__('running')));
+            (0, tool_1.log)(chalk.blue(__('multipleAccountAlert')));
+            (0, tool_1.log)(__('exitAlert'));
             process.stdin.setRawMode(true);
             process.stdin.on('data', () => process.exit(0));
             return;
@@ -35,15 +44,15 @@ const yamlLint = require("yaml-lint");
         });
     });
     if (locked) {
-        (0, tool_1.log)(chalk.red('另一个AWA-Helper程序正在运行中！'));
-        (0, tool_1.log)(chalk.blue('如需多开，请将本程序复制到另一个文件夹运行！'));
-        (0, tool_1.log)('按任意键退出...');
+        (0, tool_1.log)(chalk.red(__('running')));
+        (0, tool_1.log)(chalk.blue(__('multipleAccountAlert')));
+        (0, tool_1.log)(__('exitAlert'));
         process.stdin.setRawMode(true);
         process.stdin.on('data', () => process.exit(0));
         return;
     }
     fs.writeFileSync('log.txt', '');
-    const version = 'V1.2.4 ';
+    const version = 'V1.3.0 ';
     const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
     logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
     (0, tool_1.log)(logArr.join('\n'));
@@ -54,20 +63,33 @@ const yamlLint = require("yaml-lint");
         }
     }
     if (!fs.existsSync(configPath)) {
-        (0, tool_1.log)(chalk.red(`没有找到配置文件[${chalk.yellow((0, path_1.resolve)(configPath))}]!`));
+        (0, tool_1.log)(chalk.red(`${__('configFileNotFound')}[${chalk.yellow((0, path_1.resolve)(configPath))}]!`));
         return;
     }
     if (!fs.existsSync('version') || (fs.readFileSync('version').toString() !== version && fs.existsSync('CHANGELOG.txt'))) {
-        (0, tool_1.log)(chalk.green('此版本更新内容：'));
+        (0, tool_1.log)(chalk.green(__('updateContent')));
         console.table(fs.readFileSync('CHANGELOG.txt').toString().trim()
             .split('\n')
             .map((e) => e.trim().replace('- ', '')));
         fs.writeFileSync('version', version);
     }
     const defaultConfig = {
+        language: 'zh',
         awaHost: 'www.alienwarearena.com',
         awaBoosterNotice: true,
         awaQuests: ['dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
+        awaDailyQuestType: [
+            'click',
+            'visitLink',
+            'openLink',
+            'changeBorder',
+            'changeBadge',
+            'changeAvatar',
+            'viewPost',
+            'viewNew',
+            'sharePost',
+            'replyPost'
+        ],
         asfProtocol: 'http'
     };
     const configString = fs.readFileSync(configPath).toString();
@@ -78,21 +100,19 @@ const yamlLint = require("yaml-lint");
         config = { ...defaultConfig, ...(0, yaml_1.parse)(configString) };
     })
         .catch((error) => {
-        (0, tool_1.log)((0, tool_1.time)() + chalk.red(`配置文件第 ${chalk.blue(error.mark.line + 1)} 行格式错误, ${chalk.yellow('以下是错误原因及错误位置')}`));
+        (0, tool_1.log)((0, tool_1.time)() + chalk.red(__('configFileErrorAlter', chalk.blue(error.mark.line + 1), chalk.yellow(__('configFileErrorLocation')))));
         (0, tool_1.log)(error.message);
     });
     if (!config) {
         return;
     }
-    const { awaCookie, awaHost, awaUserId, awaBorderId, awaBadgeIds, awaAvatar, awaBoosterNotice, awaQuests, twitchCookie, steamUse, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, steamAccountName, steamPassword, proxy } = config;
+    const { language, awaCookie, awaHost, awaBoosterNotice, awaQuests, awaDailyQuestType, twitchCookie, steamUse, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, steamAccountName, steamPassword, proxy } = config;
+    i18n.setLocale(language);
     const missingAwaParams = Object.entries({
-        awaCookie,
-        awaUserId,
-        awaBorderId,
-        awaBadgeIds
+        awaCookie
     }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
     if (missingAwaParams.length > 0) {
-        (0, tool_1.log)(chalk.red('缺少以下参数: '));
+        (0, tool_1.log)(chalk.red(__('missingParams')));
         (0, tool_1.log)(missingAwaParams);
         return;
     }
@@ -100,11 +120,8 @@ const yamlLint = require("yaml-lint");
     const quest = new DailyQuest_1.DailyQuest({
         awaCookie: awaCookie,
         awaHost: awaHost,
-        awaUserId: awaUserId,
-        awaBorderId: awaBorderId,
-        awaBadgeIds: awaBadgeIds,
-        awaAvatar: awaAvatar,
         awaBoosterNotice: awaBoosterNotice,
+        awaDailyQuestType,
         proxy
     });
     if (await quest.init() !== 200)
@@ -128,11 +145,11 @@ const yamlLint = require("yaml-lint");
                 }
             }
             else {
-                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(`缺少${chalk.blue('["twitchCookie"]')}参数，跳过Twitch相关任务！`));
+                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
             }
         }
         else {
-            (0, tool_1.log)((0, tool_1.time)() + chalk.green('Twitch在线任务已完成！'));
+            (0, tool_1.log)((0, tool_1.time)() + chalk.green(__('twitchTaskCompleted')));
         }
     }
     let steamQuest = null;
@@ -145,7 +162,7 @@ const yamlLint = require("yaml-lint");
         }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
         if (awaQuests.includes('steamQuest')) {
             if (missingAsfParams.length > 0) {
-                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
             }
             else {
                 steamQuest = new SteamQuestASF_1.SteamQuestASF({
@@ -172,7 +189,7 @@ const yamlLint = require("yaml-lint");
         }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
         if (awaQuests.includes('steamQuest')) {
             if (missingAsfParams.length > 0) {
-                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(`缺少${chalk.blue(JSON.stringify(missingAsfParams))}参数，跳过Steam相关任务！`));
+                (0, tool_1.log)((0, tool_1.time)() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
             }
             else {
                 steamQuest = new SteamQuestSU_1.SteamQuestSU({

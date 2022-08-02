@@ -35,3 +35,26 @@ for (const asset of assets) {
   fs.ensureDirSync(path.join(asset[2], '../'));
   fs.copyFileSync(asset[0], asset[2]);
 }
+
+const rollup = require('rollup');
+const nodeModulesDir = 'node_modules';
+const names = ['@messageformat/date-skeleton', '@messageformat/number-skeleton'];
+
+names.map(async (e) => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(nodeModulesDir, e, 'package.json')).toString());
+  const mainFile = packageJson.main;
+  if (/.*?\.bundle\.js/.test(mainFile)) {
+    return null;
+  }
+  packageJson.main = packageJson.main.replace('index.js', 'index.bundle.js');
+  packageJson.type = 'commonjs';
+  fs.writeFileSync(path.join(nodeModulesDir, e, 'package.json'), JSON.stringify(packageJson, null, 2));
+  const options = {
+    input: path.join(nodeModulesDir, e, mainFile),
+    output: {
+      file: path.join(nodeModulesDir, e, mainFile.replace('index.js', 'index.bundle.js')),
+      format: 'cjs'
+    }
+  };
+  await rollup.rollup(options).write(options);
+});
