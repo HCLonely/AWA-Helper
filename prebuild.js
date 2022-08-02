@@ -56,5 +56,5 @@ names.map(async (e) => {
       format: 'cjs'
     }
   };
-  await rollup.rollup(options).write(options);
+  await (await rollup.rollup(options)).write(options);
 });
