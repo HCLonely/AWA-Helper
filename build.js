@@ -16,6 +16,8 @@
   const locales = fs.readdirSync('src/locales');
   locales.map((e) => {
     const convertedText = parse(fs.readFileSync(path.join('src/locales', e)).toString());
+    fs.ensureDirSync('dist/locales');
+    fs.ensureDirSync('output/locales');
     fs.writeFileSync(path.join('dist/locales', e.replace('.yml', '.json')), JSON.stringify(convertedText, null, 2));
     fs.writeFileSync(path.join('output/locales', e.replace('.yml', '.json')), JSON.stringify(convertedText, null, 2));
     return null;
