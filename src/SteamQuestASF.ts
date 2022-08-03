@@ -37,7 +37,7 @@ class SteamQuestASF {
     }
   }
 
-  init(): Promise<boolean> {
+  async init(): Promise<boolean> {
     log(`${time()}${__('initing', chalk.yellow('ASF'))}`, false);
     const options: AxiosRequestConfig = {
       url: this.asfUrl,
@@ -86,7 +86,7 @@ class SteamQuestASF {
       }
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
+    return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
@@ -128,7 +128,7 @@ class SteamQuestASF {
         return false;
       });
   }
-  getQuestInfo(url: string) {
+  async getQuestInfo(url: string): Promise<boolean> {
     log(`${time()}${__('gettingSingleSteamQuestInfo', chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url))}`, false);
     const options: AxiosRequestConfig = {
       url,
@@ -174,7 +174,7 @@ class SteamQuestASF {
         return false;
       });
   }
-  startQuest(url: string) {
+  async startQuest(url: string): Promise<boolean> {
     log(`${time()}${__('startingSteamQuest', chalk.yellow(url))}`, false);
     const options: AxiosRequestConfig = {
       url: url.replace('steam/quests', 'ajax/user/steam/quests/start'),
@@ -246,7 +246,7 @@ class SteamQuestASF {
     }
     if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
       log(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
-      this.resume();
+      await this.resume();
       return true;
     }
     await sleep(60 * 10);
@@ -263,7 +263,7 @@ class SteamQuestASF {
       data: `{"Command":"!owns ${this.botname} ${this.gamesInfo.map((e) => e.id).join(',')}"}`
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
+    return axios(options)
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
@@ -349,7 +349,7 @@ class SteamQuestASF {
       data: `{"Command":"!resume ${this.botname}"}`
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
+    return axios(options)
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {

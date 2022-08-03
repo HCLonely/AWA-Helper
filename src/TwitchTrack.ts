@@ -102,7 +102,7 @@ class TwitchTrack {
       data: '[{"operationName":"Settings_Connections_ExtensionConnectionsList","variables":{},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"7de55e735212a90752672f9baf33016fe1c7f2b4bfdad94a6d8031a1633deaeb"}}}]'
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
+    return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e: any) => e.name === 'Arena Rewards Tracker');
@@ -127,7 +127,7 @@ class TwitchTrack {
       method: 'GET'
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
+    return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
@@ -165,7 +165,7 @@ class TwitchTrack {
     };
     if (this.httpsAgent) twitchOptions.httpsAgent = this.httpsAgent;
     log(`${time()}${__('gettingChannelInfo', chalk.yellow(this.availableStreams[index]))}`, false);
-    return await axios(twitchOptions)
+    return axios(twitchOptions)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const channelId = response.data?.[0]?.data?.user?.id;
@@ -201,7 +201,7 @@ class TwitchTrack {
       data: `[{"operationName":"ExtensionsForChannel","variables":{"channelID":"${this.channelId}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"37a5969f117f2f76bc8776a0b216799180c0ce722acb92505c794a9a4f9737e7"}}}]`
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return await axios(options)
+    return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;

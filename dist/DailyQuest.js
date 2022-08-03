@@ -31,7 +31,7 @@ class DailyQuest {
         this.awaBoosterNotice = awaBoosterNotice ?? true;
         this.headers = {
             cookie: awaCookie,
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/100.0.1185.39',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36 Edg/103.0.1264.77',
             'accept-encoding': 'gzip, deflate, br',
             'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
         };
@@ -53,6 +53,11 @@ class DailyQuest {
         if (this.headers.cookie.includes('REMEMBERME=deleted')) {
             return 402;
         }
+        console.log(this.headers);
+        const result = await this.updateDailyQuests(true);
+        if (result !== 200) {
+            return result;
+        }
         if (fs.existsSync('awa-info.json')) {
             const { awaUserId, awaBorderId, awaBadgeIds, awaAvatar } = JSON.parse(fs.readFileSync('awa-info.json').toString());
             this.userId = awaUserId;
@@ -69,7 +74,7 @@ class DailyQuest {
         else if (!(await this.getPersonalization() && await this.getAvatar())) {
             return 405;
         }
-        return this.updateDailyQuests(true);
+        return 200;
     }
     async listen(twitch, steamQuest, check = false) {
         if (await this.updateDailyQuests() === 200) {
@@ -102,7 +107,6 @@ class DailyQuest {
     }
     async updateCookie(REMEMBERME) {
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('updatingCookie', chalk.yellow('AWA Cookie'))}...`, false);
-        // log(`${time()}正在更新${chalk.yellow('AWA Cookie')}...`, false);
         const options = {
             url: `https://${this.host}/`,
             method: 'GET',
@@ -124,10 +128,19 @@ class DailyQuest {
                 return false;
             }
             if (response.status === 302 && response.headers['set-cookie']?.length) {
-                this.headers.cookie = `REMEMBERME=${Object.fromEntries(this.headers.cookie.trim().split(';').map((e) => e.split('='))).REMEMBERME};${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
+                const homeSite = response.headers['set-cookie'].find((e) => e.includes('home_site='))?.split(';')[0].split('=')[1]?.trim();
+                if (homeSite) {
+                    this.host = homeSite;
+                    (0, tool_1.log)(chalk.yellow(__('redirected')));
+                    return this.updateCookie(REMEMBERME);
+                }
+                this.headers.cookie = `${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
                 if (this.headers.cookie.includes('REMEMBERME=deleted')) {
                     (0, tool_1.log)(chalk.red(`Error: ${__('cookieExpired', chalk.yellow('awaCookie'))}`));
                     return false;
+                }
+                if (!this.headers.cookie.includes('REMEMBERME')) {
+                    this.headers.cookie = `${REMEMBERME};${this.headers.cookie}`;
                 }
                 (0, tool_1.log)(chalk.green('OK'));
                 return true;
@@ -499,7 +512,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data.success) {
@@ -549,7 +562,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (!link) {
@@ -591,7 +604,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then(async (response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.data === 'success') {
@@ -698,7 +711,7 @@ class DailyQuest {
             return false;
         });
     }
-    sharePost(postId) {
+    async sharePost(postId) {
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('sharingPost', chalk.yellow(postId))}`, false);
         const options = {
             url: `https://${this.host}/arp/quests/share/${postId}`,
@@ -776,7 +789,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
@@ -810,7 +823,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then(async (response) => {
             if (response.status === 200) {
                 (0, tool_1.log)(chalk.green('OK'));
@@ -871,7 +884,7 @@ class DailyQuest {
     async getPersonalization() {
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingUserInfo', chalk.yellow('Personalization'))}`, false);
         const options = {
-            url: 'https://www.alienwarearena.com/account/personalization',
+            url: `https://${this.host}/account/personalization`,
             method: 'GET',
             headers: {
                 ...this.headers,
@@ -880,7 +893,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
@@ -919,7 +932,7 @@ class DailyQuest {
     async getAvatar() {
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingUserInfo', chalk.yellow('Avatar'))}`, false);
         const options = {
-            url: 'https://www.alienwarearena.com/avatar/edit',
+            url: `https://${this.host}/avatar/edit`,
             method: 'GET',
             headers: {
                 ...this.headers,
@@ -928,7 +941,7 @@ class DailyQuest {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then((response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {

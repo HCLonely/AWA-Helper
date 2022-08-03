@@ -89,7 +89,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then(async (response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e) => e.name === 'Arena Rewards Tracker');
@@ -115,7 +115,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then(async (response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
@@ -156,7 +156,7 @@ class TwitchTrack {
         if (this.httpsAgent)
             twitchOptions.httpsAgent = this.httpsAgent;
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingChannelInfo', chalk.yellow(this.availableStreams[index]))}`, false);
-        return await (0, tool_1.http)(twitchOptions)
+        return (0, tool_1.http)(twitchOptions)
             .then(async (response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const channelId = response.data?.[0]?.data?.user?.id;
@@ -194,7 +194,7 @@ class TwitchTrack {
         };
         if (this.httpsAgent)
             options.httpsAgent = this.httpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then(async (response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;

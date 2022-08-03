@@ -69,6 +69,13 @@ const netError = (error) => {
     if (error.message.includes('certificate') || error.message.includes('TLS') || error.message.includes('SSL')) {
         return `: ${chalk.yellow(__('certificateError'))}`;
     }
+    if (error.message.includes('Maximum number of redirects exceeded') && error?.config?.url?.includes('alienwarearena.com')) {
+        const host = error.config.headers?.cookie?.match(/home_site=(.*?);/)?.[1];
+        if (host) {
+            return `: ${chalk.yellow(__('changeAwaHostAlert2', chalk.red('awaHost'), chalk.green('host')))}`;
+        }
+        return `: ${chalk.yellow(__('changeAwaHostAlert1', chalk.red('awaHost')))}`;
+    }
     return '';
 };
 exports.netError = netError;
@@ -136,6 +143,7 @@ const retryAdapterEnhancer = (adapter, options) => {
     };
 };
 const http = axios_1.default.create({
+    maxRedirects: 5,
     adapter: retryAdapterEnhancer(axios_1.default.defaults.adapter, {
         delay: 1000,
         times: 3

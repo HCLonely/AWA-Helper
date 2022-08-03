@@ -1,4 +1,1 @@
-- 配置文件更改较多，请详细查看配置文件！！！
-- `awaUserId`, `awaBorderId`, `awaBadgeIds`, `awaAvatar`等配置改为自动获取
-- 新增`awaDailyQuestType`配置项
-- 添加i18n支持
+- 修复BUG & 优化

@@ -64,7 +64,7 @@ class SteamQuestSU {
         };
         if (this.awaHttpsAgent)
             options.httpsAgent = this.awaHttpsAgent;
-        return await (0, tool_1.http)(options)
+        return (0, tool_1.http)(options)
             .then(async (response) => {
             globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
             if (response.status === 200) {
@@ -108,7 +108,7 @@ class SteamQuestSU {
             return false;
         });
     }
-    getQuestInfo(url) {
+    async getQuestInfo(url) {
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingSingleSteamQuestInfo', chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url))}`, false);
         const options = {
             url,
@@ -154,7 +154,7 @@ class SteamQuestSU {
             return false;
         });
     }
-    startQuest(url) {
+    async startQuest(url) {
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('startingSteamQuest', chalk.yellow(url))}`, false);
         const options = {
             url: url.replace('steam/quests', 'ajax/user/steam/quests/start'),
@@ -241,7 +241,7 @@ class SteamQuestSU {
         if (this.gamesInfo.length === 0)
             return true;
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
-        return await this.suClint.getUserOwnedApps(this.suClint.steamID?.getSteamID64(), {
+        return this.suClint.getUserOwnedApps(this.suClint.steamID?.getSteamID64(), {
             includePlayedFreeGames: true,
             filterAppids: this.gamesInfo.map((e) => parseInt(e.id, 10)),
             includeFreeSub: true
@@ -276,7 +276,7 @@ class SteamQuestSU {
         await (0, tool_1.sleep)(10 * 60);
         return await this.checkStatus();
     }
-    async resume() {
+    resume() {
         if (this.status === 'stopped')
             return true;
         (0, tool_1.log)(`${(0, tool_1.time)()}${__('stoppingPlayingGames')}`, false);

@@ -3,7 +3,7 @@
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
 import * as fs from 'fs';
-import axios, { AxiosAdapter, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 import { parse } from 'yaml';
@@ -63,7 +63,7 @@ const sleep = (time: number): Promise<true> => new Promise((resolve) => {
 const random = (minNum: number, maxNum: number): number => Math.floor((Math.random() * (maxNum - minNum + 1)) + minNum);
 const time = (): string => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
 // eslint-disable-next-line
-const netError = (error: Error): string => {
+const netError = (error: AxiosError): string => {
   if (error.message.includes('ETIMEDOUT')) {
     return `: ${chalk.yellow(__('timeout'))}`;
   }
@@ -75,6 +75,13 @@ const netError = (error: Error): string => {
   }
   if (error.message.includes('certificate') || error.message.includes('TLS') || error.message.includes('SSL')) {
     return `: ${chalk.yellow(__('certificateError'))}`;
+  }
+  if (error.message.includes('Maximum number of redirects exceeded') && error?.config?.url?.includes('alienwarearena.com')) {
+    const host = (error.config.headers?.cookie as string)?.match(/home_site=(.*?);/)?.[1];
+    if (host) {
+      return `: ${chalk.yellow(__('changeAwaHostAlert2', chalk.red('awaHost'), chalk.green('host')))}`;
+    }
+    return `: ${chalk.yellow(__('changeAwaHostAlert1', chalk.red('awaHost')))}`;
   }
   return '';
 };
@@ -150,6 +157,7 @@ const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOption
 };
 
 const http = axios.create({
+  maxRedirects: 5,
   adapter: retryAdapterEnhancer(axios.defaults.adapter as AxiosAdapter, {
     delay: 1000,
     times: 3

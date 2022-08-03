@@ -75,7 +75,7 @@ class SteamQuestSU {
       }
     };
     if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
-    return await axios(options)
+    return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
@@ -117,7 +117,7 @@ class SteamQuestSU {
         return false;
       });
   }
-  getQuestInfo(url: string) {
+  async getQuestInfo(url: string): Promise<boolean> {
     log(`${time()}${__('gettingSingleSteamQuestInfo', chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url))}`, false);
     const options: AxiosRequestConfig = {
       url,
@@ -163,7 +163,7 @@ class SteamQuestSU {
         return false;
       });
   }
-  startQuest(url: string) {
+  async startQuest(url: string): Promise<boolean> {
     log(`${time()}${__('startingSteamQuest', chalk.yellow(url))}`, false);
     const options: AxiosRequestConfig = {
       url: url.replace('steam/quests', 'ajax/user/steam/quests/start'),
@@ -246,7 +246,7 @@ class SteamQuestSU {
     if (this.gamesInfo.length === 0) return true;
     log(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
 
-    return await this.suClint.getUserOwnedApps(this.suClint.steamID?.getSteamID64() as string, {
+    return this.suClint.getUserOwnedApps(this.suClint.steamID?.getSteamID64() as string, {
       includePlayedFreeGames: true,
       filterAppids: this.gamesInfo.map((e) => parseInt(e.id, 10)),
       includeFreeSub: true
@@ -281,7 +281,7 @@ class SteamQuestSU {
     await sleep(10 * 60);
     return await this.checkStatus();
   }
-  async resume(): Promise<boolean> {
+  resume(): boolean {
     if (this.status === 'stopped') return true;
     log(`${time()}${__('stoppingPlayingGames')}`, false);
     this.suClint.gamesPlayed([]);
