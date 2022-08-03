@@ -53,7 +53,6 @@ class DailyQuest {
         if (this.headers.cookie.includes('REMEMBERME=deleted')) {
             return 402;
         }
-        console.log(this.headers);
         const result = await this.updateDailyQuests(true);
         if (result !== 200) {
             return result;
