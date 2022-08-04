@@ -59,7 +59,7 @@ class SteamQuestSU {
                 accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
                 'accept-encoding': 'gzip, deflate, br',
                 'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44'
+                'user-agent': globalThis.userAgent
             }
         };
         if (this.awaHttpsAgent)
@@ -108,8 +108,47 @@ class SteamQuestSU {
             return false;
         });
     }
-    async getQuestInfo(url) {
-        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingSingleSteamQuestInfo', chalk.yellow(url.match(/steam\/quests\/(.+)/)?.[1] || url))}`, false);
+    async awaCheckOwnedGames(name) {
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('recheckingOwnedGames', chalk.yellow(name))}`, false);
+        const taskUrl = `https://www.alienwarearena.com/steam/quests/${name}`;
+        const options = {
+            url: `https://www.alienwarearena.com/ajax/user/steam/quests/check-owned-games/${name}`,
+            method: 'GET',
+            headers: {
+                cookie: this.awaCookie,
+                accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                'accept-encoding': 'gzip, deflate, br',
+                'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+                'user-agent': globalThis.userAgent,
+                referer: taskUrl
+            }
+        };
+        if (this.awaHttpsAgent)
+            options.httpsAgent = this.awaHttpsAgent;
+        return (0, tool_1.http)(options)
+            .then(async (response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            if (response.status === 200) {
+                if (response.data?.installed === true) {
+                    (0, tool_1.log)(chalk.green(__('owned')));
+                    return this.getQuestInfo(taskUrl, true);
+                }
+                (0, tool_1.log)(chalk.yellow(__('notOwned')));
+                return false;
+            }
+            (0, tool_1.log)(chalk.red(`Error: ${response.status}`));
+            return false;
+        })
+            .catch((error) => {
+            (0, tool_1.log)(chalk.red('Error') + (0, tool_1.netError)(error));
+            globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e) => e && e.length > 5)])].join('|');
+            (0, tool_1.log)(error);
+            return false;
+        });
+    }
+    async getQuestInfo(url, isRetry = false) {
+        const name = url.match(/steam\/quests\/(.+)/)?.[1];
+        (0, tool_1.log)(`${(0, tool_1.time)()}${__('gettingSingleSteamQuestInfo', chalk.yellow(name || url))}`, false);
         const options = {
             url,
             method: 'GET',
@@ -119,7 +158,7 @@ class SteamQuestSU {
                 accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
                 'accept-encoding': 'gzip, deflate, br',
                 'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
+                'user-agent': globalThis.userAgent,
                 referer: 'https://www.alienwarearena.com/steam/quests'
             }
         };
@@ -133,6 +172,10 @@ class SteamQuestSU {
                 return false;
             }
             if (response.data.includes('This quest requires that you own')) {
+                if (name && !isRetry) {
+                    (0, tool_1.log)(chalk.yellow(__('steamQuestRecheck')));
+                    return this.awaCheckOwnedGames(name);
+                }
                 (0, tool_1.log)(chalk.yellow(__('steamQuestSkipped')));
                 return false;
             }
@@ -161,7 +204,7 @@ class SteamQuestSU {
             method: 'GET',
             headers: {
                 cookie: this.awaCookie,
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/100.0.1185.39',
+                'user-agent': globalThis.userAgent,
                 referer: url
             }
         };
@@ -198,7 +241,7 @@ class SteamQuestSU {
                     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
                     'accept-encoding': 'gzip, deflate, br',
                     'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
+                    'user-agent': globalThis.userAgent,
                     referer: 'https://www.alienwarearena.com/steam/quests'
                 }
             };

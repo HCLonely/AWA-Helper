@@ -31,7 +31,7 @@ class DailyQuest {
         this.awaBoosterNotice = awaBoosterNotice ?? true;
         this.headers = {
             cookie: awaCookie,
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36 Edg/103.0.1264.77',
+            'user-agent': globalThis.userAgent,
             'accept-encoding': 'gzip, deflate, br',
             'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
         };
@@ -652,7 +652,7 @@ class DailyQuest {
             if (response.status === 200) {
                 const $ = (0, cheerio_1.load)(response.data);
                 const topicPost = $('.card-title a.forums__topic-link').toArray()
-                    .filter((e) => /Daily[\s]*?Quest/gi.test($(e).text()))
+                    .filter((e) => /Daily[\s]*?Quest/gi.test($(e).text()) && $(e).prev().attr('title') !== 'Locked')
                     .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])
                     .filter((e) => e);
                 if (topicPost.length > 0) {

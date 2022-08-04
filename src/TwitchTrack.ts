@@ -38,7 +38,7 @@ class TwitchTrack {
       Host: 'gql.twitch.tv',
       Origin: 'https://www.twitch.tv',
       Referer: 'https://www.twitch.tv/',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
+      'User-Agent': globalThis.userAgent,
       'X-Device-Id': this.formatedCookie.unique_id
     };
     if (proxy?.enable?.includes('twitch') && proxy.host && proxy.port) {
@@ -54,7 +54,7 @@ class TwitchTrack {
       headers: {
         Cookie: this.formatedCookie['auth-token'],
         Host: 'www.twitch.tv',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44'
+        'User-Agent': globalThis.userAgent
       }
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
@@ -241,7 +241,7 @@ class TwitchTrack {
       headers: {
         origin: `https://${this.extensionID}.ext-twitch.tv`,
         referer: `https://${this.extensionID}.ext-twitch.tv/`,
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44',
+        'user-agent': globalThis.userAgent,
         'x-extension-channel': this.channelId,
         'x-extension-jwt': this.jwt
       }

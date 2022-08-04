@@ -62,6 +62,7 @@ declare global {
     awaAvatar: string
   }
   var secrets: string;
+  var userAgent: string;
   // eslint-disable-next-line no-underscore-dangle
   var __: I18n['__'];
 }
