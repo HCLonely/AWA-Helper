@@ -152,6 +152,8 @@ proxy:
 
 ## TODO
 
+- [ ] AWA回帖保护(需AWA实现[回帖记录功能](https://www.alienwarearena.com/ucf/show/2163377))
+
 ## 鸣谢
 
 - [axios](https://github.com/axios/axios)

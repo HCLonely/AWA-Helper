@@ -658,7 +658,7 @@ class DailyQuest {
         if (response.status === 200) {
           const $ = load(response.data);
           const topicPost = $('.card-title a.forums__topic-link').toArray()
-            .filter((e) => /Daily[\s]*?Quest/gi.test($(e).text()))
+            .filter((e) => /Daily[\s]*?Quest/gi.test($(e).text()) && $(e).prev().attr('title') !== 'Locked')
             .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])
             .filter((e) => e);
           if (topicPost.length > 0) {
