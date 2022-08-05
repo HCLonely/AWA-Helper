@@ -56,6 +56,9 @@ skipped: 已跳过
 timeOnSite: AWA在线任务
 watchTwitch: Twitch在线任务
 steamQuest: Steam任务
+matchingDailyQuestDb: 正在匹配AWA每日任务数据库...
+notMatchedDailyQuest: 没有匹配到今日任务，将逐一进行尝试
+success: 成功
 
 ### TwitchTrack.ts ###
 initing: 正在初始化 %s...

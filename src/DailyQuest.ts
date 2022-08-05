@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-/* global __, questStatus, proxy, awaInfo */
+/* global __, questStatus, proxy, awaInfo, dailyQuestDb */
 import { AxiosRequestConfig, AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
@@ -40,6 +40,8 @@ class DailyQuest {
     'sharePost',
     'replyPost'
   ];
+  dailyQuestName!: string;
+  done:Array<string> = [];
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaHost, awaDailyQuestType, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaDailyQuestType?: Array<string>,  awaBoosterNotice:boolean, proxy?: proxy }) {
@@ -252,6 +254,9 @@ class DailyQuest {
           const [status, arp] = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
               .toLowerCase());
+          this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-title')
+            .text()
+            .trim();
           this.questInfo.dailyQuest = {
             status, arp
           };
@@ -344,7 +349,7 @@ class DailyQuest {
     }
     if (this.questInfo.dailyQuest?.status === 'complete') {
       this.questStatus.dailyQuest = 'complete';
-      return log(time() + chalk.green(__('dailyQuestSkipped')));
+      return log(time() + chalk.green(__('dailyQuestCompleted')));
     }
     if (this.awaDailyQuestType.includes('click') && this.clickQuestId) {
       await this.questAward(this.clickQuestId);
@@ -361,36 +366,67 @@ class DailyQuest {
     if (this.questInfo.dailyQuest?.status === 'complete') {
       this.questStatus.dailyQuest = 'complete';
       if (this.dailyQuestNumber < 2) {
-        return log(time() + chalk.green(__('dailyQuestSkipped')));
+        return log(time() + chalk.green(__('dailyQuestCompleted')));
       }
     }
-    if (this.awaDailyQuestType.includes('changeBorder')) await this.changeBorder();
-    if (this.awaDailyQuestType.includes('changeBadge')) await this.changeBadge();
-    if (this.awaDailyQuestType.includes('changeAvatar')) await this.changeAvatar();
-    if (this.awaDailyQuestType.includes('viewPost')) await this.viewPosts();
-    if (this.awaDailyQuestType.includes('viewNews')) await this.viewNews();
-    if (this.awaDailyQuestType.includes('sharePost')) await this.sharePosts();
-    if (this.awaDailyQuestType.includes('openLink')) {
-      await this.openLink(`https://${this.host}/rewards/leaderboard`);
-      await sleep(random(1, 3));
-      await this.openLink(`https://${this.host}/rewards`);
-      await sleep(random(1, 3));
-      await this.openLink(`https://${this.host}/marketplace/`);
+    for (const quest of this.matchQuest()) {
+      // @ts-ignore
+      if (this[quest]) {
+        // @ts-ignore
+        await this[quest]();
+      } else if (quest === 'leaderboard') {
+        await this.openLink(`https://${this.host}/rewards/leaderboard`);
+      } else if (quest === 'marketplace') {
+        await this.openLink(`https://${this.host}/marketplace/`);
+      } else if (quest === 'rewards') {
+        await this.openLink(`https://${this.host}/rewards`);
+      } else if (quest === 'video') {
+        await this.openLink(`https://${this.host}/ucf/Video`);
+      }
+      this.done.push(quest);
+      await sleep(random(1, 2));
     }
     await this.updateDailyQuests();
     if (this.questInfo.dailyQuest?.status === 'complete') {
       this.questStatus.dailyQuest = 'complete';
       if (this.dailyQuestNumber < 2) {
-        return log(time() + chalk.green(__('dailyQuestSkipped')));
+        return log(time() + chalk.green(__('dailyQuestCompleted')));
       }
     }
-    if (this.awaDailyQuestType.includes('replyPost')) {
+
+    if (this.awaDailyQuestType.includes('changeBorder') && !this.done.includes('changeBorder')) await this.changeBorder();
+    if (this.awaDailyQuestType.includes('changeBadge') && !this.done.includes('changeBadge')) await this.changeBadge();
+    if (this.awaDailyQuestType.includes('changeAvatar') && !this.done.includes('changeAvatar')) await this.changeAvatar();
+    // if (this.awaDailyQuestType.includes('viewPost') && !this.done.includes('viewPost')) await this.viewPosts();
+    if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) await this.viewNews();
+    if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePosts')) await this.sharePosts();
+    if (this.awaDailyQuestType.includes('openLink')) {
+      if (!this.done.includes('leaderboard')) {
+        await this.openLink(`https://${this.host}/rewards/leaderboard`);
+        await sleep(random(1, 3));
+      }
+      if (!this.done.includes('rewards')) {
+        await this.openLink(`https://${this.host}/rewards`);
+        await sleep(random(1, 3));
+      }
+      if (!this.done.includes('marketplace')) {
+        await this.openLink(`https://${this.host}/marketplace/`);
+      }
+    }
+    await this.updateDailyQuests();
+    if (this.questInfo.dailyQuest?.status === 'complete') {
+      this.questStatus.dailyQuest = 'complete';
+      if (this.dailyQuestNumber < 2) {
+        return log(time() + chalk.green(__('dailyQuestCompleted')));
+      }
+    }
+    if (this.awaDailyQuestType.includes('replyPost') && !this.done.includes('replyPost')) {
       await this.replyPost();
       await this.updateDailyQuests();
       if (this.questInfo.dailyQuest?.status === 'complete') {
         this.questStatus.dailyQuest = 'complete';
         if (this.dailyQuestNumber < 2) {
-          return log(time() + chalk.green(__('dailyQuestSkipped')));
+          return log(time() + chalk.green(__('dailyQuestCompleted')));
         }
       }
     }
@@ -995,6 +1031,35 @@ class DailyQuest {
         log(error);
         return false;
       });
+  }
+  matchQuest(): Array<string> {
+    log(`${time()}${__('matchingDailyQuestDb')}`, false);
+    if (!this.dailyQuestName) {
+      log(chalk.yellow(__('notMatchedDailyQuest')));
+      return [];
+    }
+    if (!fs.existsSync('dailyQuestDb.json')) {
+      log(chalk.yellow(__('notMatchedDailyQuest')));
+      return [];
+    }
+    const { quests } = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString()) as dailyQuestDb;
+    let matchedQuest = Object.entries(quests).map(([key, value]) => (value.includes(this.dailyQuestName) ? key : '')).filter((e) => e);
+    if (matchedQuest.length > 0) {
+      log(chalk.green(__('success')));
+      return matchedQuest;
+    }
+    matchedQuest = Object.entries(quests).map(([key, value]) => (value.map((e) => e.toLowerCase()).includes(this.dailyQuestName.toLowerCase()) ? key : '')).filter((e) => e);
+    if (matchedQuest.length > 0) {
+      log(chalk.green(__('success')));
+      return matchedQuest;
+    }
+    matchedQuest = Object.entries(quests).map(([key, value]) => (value.map((e) => e.toLowerCase().replace(/,|\.|\/|\\|'|"|:|;|!|#|\*|\?|<|>|\[|\]|\{|\}|\+|-|=|`|@|\$|%|\^|&|\(|~|\)|\||[\s]/g, '')).includes(this.dailyQuestName.toLowerCase().replace(/,|\.|\/|\\|'|"|:|;|!|#|\*|\?|<|>|\[|\]|\{|\}|\+|-|=|`|@|\$|%|\^|&|\(|~|\)|\||[\s]/g, '')) ? key : '')).filter((e) => e);
+    if (matchedQuest.length > 0) {
+      log(chalk.green(__('success')));
+      return matchedQuest;
+    }
+    log(chalk.yellow(__('notMatchedDailyQuest')));
+    return [];
   }
   formatQuestInfo() {
     return {

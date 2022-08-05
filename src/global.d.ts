@@ -61,6 +61,22 @@ declare global {
     awaBadgeIds: Array<string>
     awaAvatar: string
   }
+  interface dailyQuestDb {
+    version: string
+    quests: {
+      changeBorder: Array<string>
+      changeBadge: Array<string>
+      changeAvatar: Array<string>
+      viewNews: Array<string>
+      sharePost: Array<string>
+      replyPost: Array<string>
+      leaderboard: Array<string>
+      marketplace: Array<string>
+      rewards: Array<string>
+      video: Array<string>
+      other: Array<string>
+    }
+  }
   var secrets: string;
   var userAgent: string;
   // eslint-disable-next-line no-underscore-dangle
