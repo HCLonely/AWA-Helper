@@ -791,7 +791,7 @@ class DailyQuest {
         if (!posts?.length) {
             return false;
         }
-        for (const post of posts.slice(0, 3)) {
+        for (const post of posts.slice(0, 2)) {
             await this.sharePost(post);
             await (0, tool_1.sleep)((0, tool_1.random)(1, 5));
         }
