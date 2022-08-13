@@ -70,7 +70,7 @@ awaDailyQuestType: # Daily quest type, you don't need to delete or comment it ou
 
 ### Twitch configuration (optional)
 
-> Required to do Twitch quests, if you don't want to do this task, you can leave it blank. Before doing Twitch tasks automatically, you need to grant access to the AWA ARP widget on Twitch first, you only need to grant access it once.
+> Required to do Twitch quests, if you don't want to do this task, you can leave it blank. Before doing Twitch tasks automatically, you need to grant access to the AWA ARP widget on Twitch first. You only need to do this once.
 
 #### Twitch parameter description
 
