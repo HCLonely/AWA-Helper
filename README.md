@@ -2,6 +2,9 @@
 
 外星人论坛自动做任务。
 
+[简体中文](/README.md) •
+[English](/README_EN.md)
+
 ## 使用说明
 
 ### 用前说明
@@ -34,7 +37,7 @@
 #### AWA 参数说明
 
 ```yml
-language: 'zh' # 程序显示语言，目前仅支持中文(zh)
+language: 'zh' # 程序显示语言，目前支持中文 (zh) 和 English (en)
 awaCookie: '' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
 awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienwarearena.com`和`na.alienwarearena.com`, 默认的没问题就不要改
 awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！

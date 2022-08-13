@@ -6,9 +6,12 @@ AWA-Helper.exe
 output/
 log.txt
 version
-test*
 chrome-win
 USDailyQuest*
 lock
 login-key.txt
 awa-info.json
+
+test.js
+test.ts
+test.exe

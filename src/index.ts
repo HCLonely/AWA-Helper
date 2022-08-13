@@ -15,7 +15,7 @@ import * as i18n from 'i18n';
 
 (async () => {
   i18n.configure({
-    locales: ['zh'],
+    locales: ['zh', 'en'],
     directory: path.join(process.cwd(), '/locales'),
     extension: '.json',
     defaultLocale: 'zh',

@@ -1,12 +1,12 @@
 ### index.ts ###
-running: Another AWA-Helper.exe process is already running！
-multipleAccountAlert: If you want to use more than one account, copy the program to another folder！
+running: Another AWA-Helper.exe process is already running!
+multipleAccountAlert: If you want to use more than one account, copy the program to another folder!
 exitAlert: Press any key to exit...
 configFileNotFound: Config file cannot be found
 updateContent: New content added in this update：
 configFileErrorAlter: Configuration file line %s is wrong, %s
-configFileErrorLocation: The following line is causing an error:
-missingAwaParams: The following parameters are missing:
+configFileErrorLocation: 'The following line is causing an error:'
+missingAwaParams: 'The following parameters are missing:'
 missingTwitchParams: Missing %s parameters, skipping Twitch related quests!
 twitchTaskCompleted: Twitch Task Completed!
 missingSteamParams: Missing %s parameters, skipping Steam related quests!
@@ -15,20 +15,20 @@ missingSteamParams: Missing %s parameters, skipping Steam related quests!
 noREMEMBERMEAlert: Detected that there are no %s parameters, which may result in an error in obtaining the number of consecutive days checked-in. However, it does not affect other functionality
 allTaskCompleted: All quests are completed today!
 updatingCookie: Updating %s
-ipBanned: The current IP is blocked from accessing, please try another proxy！
+ipBanned: The current IP is blocked from accessing, please try another proxy!
 redirected: Redirected
-cookieExpired: %s is expired, please get another one！
+cookieExpired: '%s is expired, please get another one!'
 verifyingToken: Verifying %s...
 gettingTaskInfo: Getting quests info...
 tokenExpired: Token has expired
 consecutiveLoginsAlert: Logged in for %s consecutive days, got %s ARP
 monthlyLoginsARPAlert: Logged in for %s days this month, got %s ARP
 monthlyLoginsItemAlert: Logged in for %s days this month, got %s ARP
-promotionalAlert: It has been detected that there's current activities in the AWA Forum, please log in to the website to complete！
+promotionalAlert: It has been detected that there's current activities in the AWA Forum, please log in to the website to complete!
 boosterAlert: More than 1 unfinished quest was detected. Please confirm whether to %s(%s). Press \\n to continue the task or press %s to skip the daily task
 booster: ARP Booster
 selfOpen: You need to activate by yourself
-taskInfo: Current quests information:
+taskInfo: 'Current quests information:'
 dailyQuestSkipped: Daily Quest skipped!
 dailyQuestCompleted: Daily Quest completed!
 dailyQuestNotCompleted: Daily Quest not completed!
@@ -61,19 +61,19 @@ notMatchedDailyQuest: There is no match for today's quest, will try one by one
 success: Success
 
 ### TwitchTrack.ts ###
-initing: initializing %s...
+initing: Initializing %s...
 checkAuthorization: Detecting authorization for %s widget...
 authorized: Authorized
 notAuthorized: Unauthorized
 gettingLiveInfo: Getting available Live information...
 noLive: There are currently no Live Streaming available!
-getLiveInfoAlert: %s Get available Live Streaming information again in minutes
+getLiveInfoAlert: '%s Get available Live Streaming information again in minutes'
 gettingChannelInfo: Fetching Live Channels [%s] information...
 gettingExtInfo: Getting ART widget info...
 noExt: No widget found on this channel!
 getJwtFailed: Failed to get jwt!
 obtainedArp: Today's ARP has been obtained!
-liveOffline: This streamer [%s] has stopped streaming！
+liveOffline: This streamer [%s] has stopped streaming!
 
 ### SteamQuestASF.ts ###
 gettingSteamQuestInfo: Getting %s quest info...
@@ -89,7 +89,7 @@ noProgress: progress not found
 noProgressBar: progress bar not found
 steamQuestFinished: Steam Quest finished!
 matchingGames: Matching %s game library...
-noGamesAlert: There is no game from the quest in the Library of the current account！
+noGamesAlert: There is no game from the quest in the Library of the current account!
 usingASF: Waiting %s game time...
 stoppingPlayingGames: Stopping the game from running...
 steamQuestRecheck: Checking again
@@ -113,6 +113,6 @@ changeAwaHostAlert1: Too many redirections, try changing the %s configuration!
 changeAwaHostAlert2: Too many redirections, try changing %s configuration to %s
 retrying: Retrying %s...
 checkingUpdating: Checking for updates...
-newVersion: New version detected: %s
-downloadLink: Download link for the latest version: %s
+newVersion: 'New version detected: %s'
+downloadLink: 'Download link for the latest version: %s'
 noUpdate: No updates found!

@@ -2,6 +2,9 @@
 
 Automatically does AWA quests.
 
+[简体中文](/README.md) •
+[English](/README_EN.md)
+
 ## Instructions
 
 ### Instructions before use

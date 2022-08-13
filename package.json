@@ -1,10 +1,10 @@
 {
   "name": "awa-helper",
-  "version": "1.3.5",
+  "version": "1.3.6",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "scripts": {
-    "test": "npm run build && cd dist && node index.js",
+    "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run compile",
     "start": "cd dist && node index.js",
     "build": "node prebuild.js && tsc && node build.js --pre && node build.js",
     "compile": "node prebuild.js && tsc && node build.js --pre && pkg -t win --compress GZip dist/index.js --output output/AWA-Helper.exe && node build.js --compile",
