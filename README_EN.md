@@ -6,8 +6,8 @@ Automatically does AWA quests.
 
 ### Instructions before use
 
-1. Before using it, please make sure that your AWA account has a Steam account linked and that the Steam profile settings has been set to public;
-2. Before using it, please make sure that your AWA account has a Twitch account linked and that the Twitch account has been granted access for the AWA ARP widget;
+1. Before using it, please make sure that your AWA account has a Steam account linked and that the Steam profile settings have been set to public;
+2. Before using it, please make sure that your AWA account has a Twitch account linked and that the Twitch account has been granted access to the AWA ARP widget;
 3. [Not recommended] If you want to use more than one account, copy the program to another folder to run multiple accounts.
 
 ### Run from the source
