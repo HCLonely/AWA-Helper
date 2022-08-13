@@ -15,7 +15,7 @@ Automatically does AWA quests.
 1. Prerequisite: Install [Git](https://git-scm.com/downloads) and [NodeJs](https://nodejs.org/zh-cn/download/);
 2. Clone this project `git clone https://github.com/HCLonely/AWA-Helper.git`;
 3. Install the dependencies`npm install -S`;
-4. Edit the configuration file, [check the description](https://github.com/MonolithOrchids/AWA-Helper/new/main#config-file-configuration);
+4. Edit the configuration file, [check the description](https://github.com/HCLonely/AWA-Helper#config-file-configuration);
 5. Run`npm start`.
 
 ### Download the compiled version
@@ -34,7 +34,7 @@ Automatically does AWA quests.
 #### AWA parameters description
 
 ```yml
-language: 'zh' # Program display language, currently only supports Chinese (zh)
+language: 'zh' # Program display language, currently supports Chinese (zh) and English (en)
 awaCookie: '' # AWA Cookie, it supports having only `REMEMBERME`, if there is no `REMEMBERME`, then you must have `PHPSESSID` and `sc`, but it will cause an error to get the number of consecutive login days, however it does not affect other functionalities
 awaHost: 'www.alienwarearena.com' # AWA Host, commonly used are `www.alienwarearena.com` and `na.alienwarearena.com`, the default doesn't have any problem, there's no need to change it
 awaBoosterNotice: true # When there are more than 1 quest on AWA, you will be asked whether or not to activate booster. You need to activate booster manually!!!
