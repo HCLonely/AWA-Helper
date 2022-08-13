@@ -2,7 +2,7 @@ Set-Location output
 if ( -not( Test-Path ./config.yml ))
 {
   $result = ./AWA-Helper
-  if ( $result -notmatch "config.yml]!" )
+  if ( ((-split $result) -join "" ) -notmatch "config.yml]!" )
   {
     Write-Output $result
     throw "Test failed!"
