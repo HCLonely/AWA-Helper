@@ -98,6 +98,7 @@ class SteamQuestASF {
               .attr('src')
               ?.match(/steam\/apps\/([\d]+)/)?.[1];
             if (!id) continue;
+            // await this.add2library(id);
             const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href') as string, `https://${this.awaHost}/`).href;
             const started = await this.getQuestInfo(questLink);
             if (!started) continue;
@@ -128,6 +129,45 @@ class SteamQuestASF {
         return false;
       });
   }
+  /*
+  async add2library(id: string):Promise<boolean> {
+    log(`${time()}${__('adding2library', chalk.yellow('ASF'), chalk.yellow(id))}`, false);
+    const options: AxiosRequestConfig = {
+      url: this.asfUrl,
+      method: 'POST',
+      headers: this.headers,
+      data: `{"Command":"!addlicense ${this.botname} app/${id}"}`
+      // data: `{"Command":"!addlicense ${this.botname} ${this.gamesInfo.map((e) => `app/${e.id}`).join(',')}"}`
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        if (response.status === 200) {
+          if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
+            console.log(response.data.Result);
+            log(chalk.green('OK'));
+            return true;
+          }
+          if (response.data.Message) {
+            log(chalk.blue(response.data.Message));
+            return false;
+          }
+          log(chalk.blue('Error'));
+          log(response.data);
+          return false;
+        }
+        log(chalk.red(`Error: ${response.status}`));
+        return false;
+      })
+      .catch((error) => {
+        log(chalk.red('Error'));
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        log(error);
+        return false;
+      });
+  }
+  */
   async awaCheckOwnedGames(name: string): Promise<boolean> {
     log(`${time()}${__('recheckingOwnedGames', chalk.yellow(name))}`, false);
     const taskUrl = `https://www.alienwarearena.com/steam/quests/${name}`;

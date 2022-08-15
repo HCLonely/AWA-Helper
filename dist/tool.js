@@ -36,7 +36,8 @@ const toJSON = (e) => {
     return (0, util_1.format)(e);
 };
 const log = (text, newLine = true) => {
-    fs.appendFileSync('log.txt', toJSON(text).replace(new RegExp(globalThis.secrets, 'gi'), '********')
+    fs.appendFileSync('log.txt', toJSON(text)
+        // .replace(new RegExp(globalThis.secrets, 'gi'), '********')
         .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********') + (newLine ? '\n' : ''));
     if (newLine)
         console.log(text);

@@ -96,6 +96,7 @@ steamQuestRecheck: 重新检测
 recheckingOwnedGames: 正在重新检测游戏[%s]是否拥有...
 owned: 已拥有
 notOwned: 未拥有
+adding2library: 正在调用 %s 入库游戏[%s]...
 
 ### SteamQuestSU.ts ###
 firstSteamUserAlert: 检测到首次使用此方式[%s]登录Steam, 如果Steam启用了%s，请注意控制台提示输入两步验证码！
