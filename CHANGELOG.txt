@@ -1,1 +1,1 @@
-- Add English support. Thanks @MonolithOrchids.
+- 过渡性更新

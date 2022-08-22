@@ -3,32 +3,63 @@
   const path = require('path');
   const zipdir = require('zip-dir');
   const { parse } = require('yaml');
+  const { marked } = require('marked');
+  const hljs = require('highlight.js');
 
-  if (process.argv.includes('--pre')) {
-    fs.writeFileSync('dist/index.js', fs.readFileSync('dist/index.js').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
-    return;
-  }
-  fs.copyFileSync('config.example.yml', 'dist/config.example.yml');
-  fs.copyFileSync('CHANGELOG.txt', 'dist/CHANGELOG.txt');
-  fs.copyFileSync('dailyQuestDb.json', 'dist/dailyQuestDb.json');
+  fs.writeFileSync('dist/index.js', fs.readFileSync('dist/index.js').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
+  const fileList = [
+    'config.example.yml',
+    'CHANGELOG.txt',
+    'dailyQuestDb.json',
+    'package.json',
+    'package-lock.json',
+    'scripts/modules_checker.js',
+    'scripts/node_checker.ps1'
+  ];
+  fileList.forEach((e) => {
+    fs.copySync(e, `dist/${e}`);
+  });
+
+  const readmeFileList = [
+    'README',
+    'README_EN'
+  ];
+
+  marked.setOptions({
+    renderer: new marked.Renderer(),
+    highlight(code, lang) {
+      if (lang === 'mermaid') {
+        return `<div class="mermaid">\n${code}\n</div>`;
+      }
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    },
+    langPrefix: 'hljs language-',
+    pedantic: false,
+    gfm: true,
+    breaks: false,
+    sanitize: false,
+    smartLists: true,
+    smartypants: false,
+    xhtml: false
+  });
+  readmeFileList.forEach((e) => {
+    const mainHtml = marked.parse(fs.readFileSync(`${e}.md`).toString().replace(/\/(README.*?)\.md/g, '$1.html'));
+    const mermaidJs = fs.readFileSync('static/mermaid.min.js').toString();
+    const highlightCss = fs.readFileSync('static/github-dark-dimmed.css').toString();
+    const highlightJs = fs.readFileSync('static/highlight.min.js').toString();
+    // eslint-disable-next-line max-len
+    fs.writeFileSync(`dist/${e}.html`, `<style>${highlightCss}pre code.hljs{width:fit-content;}</style>${mainHtml}<script>${mermaidJs}</script><script>${highlightJs}</script><script>mermaid.initialize({startOnLoad:true});</script>`);
+  });
 
   const locales = fs.readdirSync('src/locales');
   locales.map((e) => {
     const convertedText = parse(fs.readFileSync(path.join('src/locales', e)).toString());
     fs.ensureDirSync('dist/locales');
     fs.writeFileSync(path.join('dist/locales', e.replace('.yml', '.json')), JSON.stringify(convertedText, null, 2));
-    if (process.argv.includes('--compile')) {
-      fs.ensureDirSync('output/locales');
-      fs.writeFileSync(path.join('output/locales', e.replace('.yml', '.json')), JSON.stringify(convertedText, null, 2));
-    }
     return null;
   });
-
-  if (process.argv.includes('--compile')) {
-    fs.copyFileSync('CHANGELOG.txt', 'output/CHANGELOG.txt');
-    fs.copyFileSync('config.example.yml', 'output/config.example.yml');
-    fs.copyFileSync('dailyQuestDb.json', 'output/dailyQuestDb.json');
-    fs.writeFileSync('output/运行.bat', 'start cmd /k "AWA-Helper.exe"');
-    await zipdir('output', { saveTo: './AWA-Helper.zip' });
-  }
+  fs.writeFileSync('dist/运行.bat', 'start cmd /k "node index.js"');
+  fs.writeFileSync('dist/运行-auto.bat', 'cd scripts\npowershell -file "node_checker.ps1"');
+  await zipdir('dist', { saveTo: './AWA-Helper.zip' });
 })();

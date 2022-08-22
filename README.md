@@ -85,28 +85,60 @@ flowchart TD
 
 ### 用前说明
 
-1. 使用前请确保AWA帐号已关联Steam帐号且Steam帐号信息已设置为公开；
-2. 使用前请确保AWA帐号已关联Twitch帐号且Twitch帐号已给AWA扩展授权;
-3. \[不建议\]如需多开，请将本程序复制到不同文件夹运行。
+1. 使用前请确保AWA帐号已关联Steam帐号且Steam帐号信息已设置为公开
+2. 使用前请确保AWA帐号已关联Twitch帐号且Twitch帐号已给AWA扩展授权
+3. \[不建议\]如需多开，请将本程序复制到不同文件夹运行
 
-### 通过源码运行
+### 通过源码运行\[建议\]
 
-1. 前提条件: 安装[Git](https://git-scm.com/downloads)和[NodeJs](https://nodejs.org/zh-cn/download/);
-2. 克隆此项目`git clone https://github.com/HCLonely/AWA-Helper.git`;
-3. 安装依赖`npm install -S`;
-4. 编辑配置文件,[查看说明](#config文件配置);
-5. 运行`npm start`.
+#### 安装运行
 
-### 直接下载编译好的程序运行
+1. 前提条件: 安装[Git](https://git-scm.com/downloads)和[NodeJs](https://nodejs.org/zh-cn/download/) >= v16.0.0
+2. 克隆此项目`git clone https://github.com/HCLonely/AWA-Helper.git`
+3. 安装依赖`npm install`
+4. 编译文件`npm run build`
+5. 编辑配置文件,[查看说明](#config文件配置)
+6. 运行`npm start`
 
-1. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载编译好的压缩包；
-2. 解压；
-3. 编辑配置文件,[查看说明](#config文件配置)；
-4. 双击`运行.bat`运行。
+> **说明: 1-5步仅第一次安装时需要，之后每次运行只需要进行第6步即可！**
+
+#### 通过Git更新
+
+1. 拉取更新`git pull`
+2. 编译文件`npm run build`
+3. 运行`npm start`
+
+> **说明: 1-3步仅每次更新后第一次运行需要，之后每次运行只需要进行第6步即可！**
+
+### 下载打包好的程序运行
+
+#### 自动安装依赖\[建议\]
+
+> **此方法需Powershell支持!**
+
+1. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载打包好的压缩包
+2. 解压
+3. 编辑配置文件,[查看说明](#config文件配置)
+4. 双击`运行-auto.bat`运行(缺少依赖会自动安装)
+
+#### 自行安装依赖
+
+1. 安装[NodeJs](https://nodejs.org/zh-cn/download/) >= v16.0.0
+2. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载打包好的压缩包
+3. 解压
+4. 安装依赖`npm install --save`
+5. 编辑配置文件,[查看说明](#config文件配置)
+6. 双击`运行.bat`运行
+
+#### 更新
+
+1. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载最新版的压缩包
+2. 解压并覆盖
+3. 双击`运行.bat`运行
 
 ## config文件配置
 
-> **需要将`config.example.yml`文件重命名为`config.yml`!!!**
+> **需要复制一份`config.example.yml`文件并重命名为`config.yml`!!!**
 
 ### AWA 配置(必需)
 

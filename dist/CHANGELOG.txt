@@ -1,1 +1,0 @@
-- Add English support. Thanks @MonolithOrchids.
