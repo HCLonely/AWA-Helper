@@ -96,6 +96,7 @@ steamQuestRecheck: Checking again
 recheckingOwnedGames: Checking again if [%s] game is owned...
 owned: Owned
 notOwned: Not Owned
+adding2library: Adding %s game to library [%s]...
 
 ### SteamQuestSU.ts ###
 firstSteamUserAlert: It is detected that this method [%s] is used to log in to Steam for the first time. If %s is enabled in Steam, please enter the 2-step verification code in the console prompt!
