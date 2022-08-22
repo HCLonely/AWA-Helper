@@ -1,7 +1,7 @@
-Set-Location output
+Set-Location dist
 if ( -not( Test-Path ./config.yml ))
 {
-  $result = ./AWA-Helper
+  $result = node index.js
   if ( ((-split $result) -join "" ) -notmatch "config.yml]!" )
   {
     Write-Output $result
