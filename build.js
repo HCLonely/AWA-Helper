@@ -59,6 +59,9 @@
     fs.writeFileSync(path.join('dist/locales', e.replace('.yml', '.json')), JSON.stringify(convertedText, null, 2));
     return null;
   });
+
+  fs.copySync('src/webUI', 'dist/webUI', { filter: (fileName) => !/\.ts$/.test(fileName) });
+
   fs.writeFileSync('dist/运行.bat', 'start cmd /k "node index.js"');
   fs.writeFileSync('dist/运行-auto.bat', 'cd scripts\npowershell -file "node_checker.ps1"');
   await zipdir('dist', { saveTo: './AWA-Helper.zip' });

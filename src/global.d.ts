@@ -1,9 +1,21 @@
-/* eslint-disable no-var */
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-var, no-unused-vars */
+/* global WebSocketServer */
+import { AxiosRequestConfig } from 'axios';
 import type { I18n } from 'i18n';
+import type WebSocket from 'ws';
+import { Logger } from './tool';
+
 declare global {
+  interface pusher {
+    enable: boolean
+    platform: string
+    key: {
+      [name: string]: any
+    }
+  }
   interface config {
     language: string
+    timeout?: number
     awaCookie?: string
     awaHost: string,
     awaBoosterNotice?: boolean,
@@ -19,6 +31,11 @@ declare global {
     steamAccountName?: string,
     steamPassword?: string,
     proxy?: proxy
+    webUI?: {
+      enable: boolean
+      port?: number
+    }
+    pusher?: pusher
   }
   interface proxy {
     enable: Array<string>
@@ -77,8 +94,35 @@ declare global {
       other: Array<string>
     }
   }
+  interface retryAdapterOptions {
+    times?: number
+    delay?: number
+  }
+  interface myAxiosConfig extends AxiosRequestConfig {
+    retryTimes?: number
+    retryDelay?: number
+    Logger?: Logger
+  }
+  interface logs {
+    [name: string]: any
+  }
+  interface pushOptions {
+    name: string
+      config: {
+        key: {
+          [name: string]: any
+        }
+        proxy?: proxy
+      }
+  }
   var secrets: string;
   var userAgent: string;
+  var ws: WebSocket | null;
+  var webUI: boolean;
+  var logs: logs;
+  var language: string;
+  var pusher: pusher | undefined;
+  var pusherProxy: proxy;
   // eslint-disable-next-line no-underscore-dangle
   var __: I18n['__'];
 }

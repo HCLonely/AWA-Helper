@@ -89,7 +89,9 @@ flowchart TD
 2. 使用前请确保AWA帐号已关联Twitch帐号且Twitch帐号已给AWA扩展授权
 3. \[不建议\]如需多开，请将本程序复制到不同文件夹运行
 
-### 通过源码运行\[建议\]
+### 通过源码运行
+
+> 此方法会自动安装最新测试版本！
 
 #### 安装运行
 
@@ -98,7 +100,7 @@ flowchart TD
 3. 安装依赖`npm install`
 4. 编译文件`npm run build`
 5. 编辑配置文件,[查看说明](#config文件配置)
-6. 运行`npm start`
+6. 运行`npm start`/双击`AWA-Helper.bat`
 
 > **说明: 1-5步仅第一次安装时需要，之后每次运行只需要进行第6步即可！**
 
@@ -106,7 +108,7 @@ flowchart TD
 
 1. 拉取更新`git pull`
 2. 编译文件`npm run build`
-3. 运行`npm start`
+3. 运行`npm start`/双击`AWA-Helper.bat`
 
 > **说明: 1-3步仅每次更新后第一次运行需要，之后每次运行只需要进行第6步即可！**
 
@@ -140,12 +142,23 @@ flowchart TD
 
 > **需要复制一份`config.example.yml`文件并重命名为`config.yml`!!!**
 
+### 全局配置(必需)
+
+#### 全局配置参数说明
+
+```yml
+language: zh # 程序显示语言，目前支持中文 (zh) 和 English (en)
+webUI:
+  enable: true # 是否启用WebUI
+  port: 3456 # WebUI端口
+timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
+```
+
 ### AWA 配置(必需)
 
 #### AWA 参数说明
 
 ```yml
-language: 'zh' # 程序显示语言，目前支持中文 (zh) 和 English (en)
 awaCookie: '' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
 awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienwarearena.com`和`na.alienwarearena.com`, 默认的没问题就不要改
 awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
@@ -246,11 +259,26 @@ proxy:
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
     - steam # 在访问Steam时使用代理，不使用删掉此行
+    - pusher # 在推送时使用代理，不使用删掉此行
   protocol: 'http' # 代理协议，'http'或'socks'
   host: '127.0.0.1' # 代理host
   port: 1080 # 代理端口
   username: '' # 代理用户名，没有可留空
   password: '' # 代理密码，没有可留空
+```
+
+### 推送配置(可选)
+
+#### 推送配置参数说明
+
+```yml
+pusher:
+  enable: false # 是否启用推送，这里以GoCqhttp为例
+  platform: GoCqhttp # 推送平台，具体支持情况请查看 https://github.com/HCLonely/all-pusher-api#已支持平台
+  key: # 配置参数，以下参数不是固定的，请参考 https://github.com/HCLonely/all-pusher-api#参数
+    token: '******'
+    baseUrl: 'http://127.0.0.1:5700'
+    user_id: '******'
 ```
 
 ## 关于每日任务
@@ -280,3 +308,5 @@ proxy:
 - [node-fs-extra](https://github.com/jprichardson/node-fs-extra)
 - [eslint](https://github.com/eslint/eslint)
 - [yaml-lint](https://github.com/rasshofer/yaml-lint)
+- [express](https://github.com/expressjs/express)
+- [express-ws](https://github.com/HenningM/express-ws)

@@ -1,5 +1,11 @@
-#### AWA 配置(必需) ####
+#### 全局配置(必需) ####
 language: zh # 目前支持中文 (zh) 和 English (en)
+webUI:
+  enable: true # 是否启用WebUI
+  port: 3456 # WebUI端口
+timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
+
+#### AWA 配置(必需) ####
 awaCookie: '' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
 awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 默认的没问题就不要改
 awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
@@ -45,8 +51,18 @@ proxy:
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
     - steam # 在访问Steam时使用代理，不使用删掉此行
+    - pusher # 在推送时使用代理，不使用删掉此行
   protocol: 'http' # 代理协议，'http'|'https'|'socks4'|'socks5'
   host: '127.0.0.1' # 代理host
   port: 1080 # 代理端口
   username: '' # 代理用户名，没有可留空
   password: '' # 代理密码，没有可留空
+
+#### 推送设置(可选) ####
+pusher:
+  enable: false # 是否启用推送，这里以GoCqhttp为例
+  platform: GoCqhttp # 推送平台，具体支持情况请查看 https://github.com/HCLonely/all-pusher-api#已支持平台
+  key: # 配置参数，请参考 https://github.com/HCLonely/all-pusher-api#参数
+    token: '******'
+    baseUrl: 'http://127.0.0.1:5700'
+    user_id: '******'

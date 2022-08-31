@@ -8,10 +8,30 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { join, resolve } from 'path';
 import { parse } from 'yaml';
-import { sleep, log, time, checkUpdate } from './tool';
+import { sleep, Logger, time, checkUpdate, push } from './tool';
 import * as chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
+import { app as expressApp } from './webUI/index';
+
+process.on('SIGTERM', async () => {
+  new Logger(chalk.yellow(__('processWasKilled')));
+  await push(`${__('pushTitle')}\n${__('processWasKilled')}`);
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  new Logger(chalk.yellow(__('processWasInterrupted')));
+  await push(`${__('pushTitle')}\n${__('processWasInterrupted')}`);
+  process.exit(0);
+});
+
+process.on('uncaughtException', async (err) => {
+  new Logger(chalk.yellow(__('processError')));
+  await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}`);
+  new Logger(`Uncaught Exception: ${err.message}`);
+  process.exit(1);
+});
 
 (async () => {
   i18n.configure({
@@ -21,13 +41,15 @@ import * as i18n from 'i18n';
     defaultLocale: 'zh',
     register: globalThis
   });
+  globalThis.ws = null;
+  globalThis.webUI = true;
   if (fs.existsSync('lock')) {
     try {
       fs.unlinkSync('lock');
     } catch (e) {
-      log(chalk.red(__('running')));
-      log(chalk.blue(__('multipleAccountAlert')));
-      log(__('exitAlert'));
+      new Logger(chalk.red(__('running')));
+      new Logger(chalk.blue(__('multipleAccountAlert')));
+      new Logger(__('exitAlert'));
       process.stdin.setRawMode(true);
       process.stdin.on('data', () => process.exit(0));
       return;
@@ -42,9 +64,9 @@ import * as i18n from 'i18n';
     });
   });
   if (locked) {
-    log(chalk.red(__('running')));
-    log(chalk.blue(__('multipleAccountAlert')));
-    log(__('exitAlert'));
+    new Logger(chalk.red(__('running')));
+    new Logger(chalk.blue(__('multipleAccountAlert')));
+    new Logger(__('exitAlert'));
     process.stdin.setRawMode(true);
     process.stdin.on('data', () => process.exit(0));
     return;
@@ -53,7 +75,7 @@ import * as i18n from 'i18n';
   const version = 'V__VERSION__ ';
   const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
   logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
-  log(logArr.join('\n'));
+  new Logger(logArr.join('\n'));
 
   let configPath = 'config.yml';
   if (/dist$/.test(process.cwd())) {
@@ -62,12 +84,12 @@ import * as i18n from 'i18n';
     }
   }
   if (!fs.existsSync(configPath)) {
-    log(chalk.red(`${__('configFileNotFound')}[${chalk.yellow(resolve(configPath))}]!`));
+    new Logger(chalk.red(`${__('configFileNotFound')}[${chalk.yellow(resolve(configPath))}]!`));
     return;
   }
 
   if (!fs.existsSync('version') || (fs.readFileSync('version').toString() !== version && fs.existsSync('CHANGELOG.txt'))) {
-    log(chalk.green(__('updateContent')));
+    new Logger(chalk.green(__('updateContent')));
     console.table(fs.readFileSync('CHANGELOG.txt').toString().trim()
       .split('\n')
       .map((e) => e.trim().replace('- ', '')));
@@ -103,14 +125,15 @@ import * as i18n from 'i18n';
       config = { ...defaultConfig, ...parse(configString) };
     })
     .catch((error) => {
-      log(time() + chalk.red(__('configFileErrorAlter', chalk.blue(error.mark.line + 1), chalk.yellow(__('configFileErrorLocation')))));
-      log(error.message);
+      new Logger(time() + chalk.red(__('configFileErrorAlter', chalk.blue(error.mark.line + 1), chalk.yellow(__('configFileErrorLocation')))));
+      new Logger(error.message);
     });
   if (!config) {
     return;
   }
   const {
     language,
+    timeout,
     awaCookie,
     awaHost,
     awaBoosterNotice,
@@ -125,18 +148,44 @@ import * as i18n from 'i18n';
     asfBotname,
     steamAccountName,
     steamPassword,
-    proxy
+    proxy,
+    webUI,
+    pusher
   }: config = config;
+  globalThis.webUI = !!webUI?.enable;
+  globalThis.language = language || 'zh';
+  globalThis.pusher = pusher;
   i18n.setLocale(language);
+
+  if (proxy?.enable.includes('pusher')) {
+    globalThis.pusherProxy = proxy;
+  }
+
+  if (timeout && typeof timeout === 'number' && timeout > 0) {
+    setTimeout(async () => {
+      new Logger(chalk.yellow(__('processTimeout')));
+      await push(`${__('pushTitle')}\n${__('processTimeout')}`);
+      process.exit(0);
+    }, timeout * 1000);
+  }
+
+  if (webUI?.enable) {
+    const port = webUI.port || 3456;
+    expressApp.listen(port, () => {
+      new Logger(time() + __('webUIStart', chalk.yellow(`http://localhost:${port}`)));
+    });
+  }
+
   const missingAwaParams = Object.entries({
     awaCookie
   }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
   if (missingAwaParams.length > 0) {
-    log(chalk.red(__('missingParams')));
-    log(missingAwaParams);
+    new Logger(chalk.red(__('missingParams')));
+    new Logger(missingAwaParams);
     return;
   }
   await checkUpdate(version, proxy);
+
   const quest = new DailyQuest({
     awaCookie: awaCookie as string,
     awaHost: awaHost as string,
@@ -164,10 +213,10 @@ import * as i18n from 'i18n';
           await sleep(10);
         }
       } else {
-        log(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
+        new Logger(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
       }
     } else {
-      log(time() + chalk.green(__('twitchTaskCompleted')));
+      new Logger(time() + chalk.green(__('twitchTaskCompleted')));
     }
   }
 
@@ -181,7 +230,7 @@ import * as i18n from 'i18n';
     }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
     if (awaQuests.includes('steamQuest')) {
       if (missingAsfParams.length > 0) {
-        log(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
+        new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
       } else {
         steamQuest = new SteamQuestASF({
           awaCookie: quest.headers.cookie as string,
@@ -206,7 +255,7 @@ import * as i18n from 'i18n';
     }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
     if (awaQuests.includes('steamQuest')) {
       if (missingAsfParams.length > 0) {
-        log(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
+        new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
       } else {
         steamQuest = new SteamQuestSU({
           awaCookie: quest.headers.cookie as string,

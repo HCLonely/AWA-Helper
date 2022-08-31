@@ -10,6 +10,12 @@ missingAwaParams: 缺少以下参数：
 missingTwitchParams: 缺少 %s 参数，跳过Twitch相关任务！
 twitchTaskCompleted: Twitch在线任务已完成！
 missingSteamParams: 缺少 %s 参数，跳过Steam相关任务！
+pushTitle: 'AWA-Helper提醒:'
+processWasKilled: 任务进程被终止
+processWasInterrupted: 任务进程被人为终止
+processError: 任务进程异常退出
+errorMessage: 错误信息
+processTimeout: 运行超时，强制退出程序
 
 ### DailyQuest.ts ###
 noREMEMBERMEAlert: 检测到 %s 中没有 %s ，可能会导致连续签到天数获取错误，不影响其他功能
@@ -117,3 +123,17 @@ checkingUpdating: 正在检测更新...
 newVersion: 检测到最新版：%s
 downloadLink: 最新版下载地址：%s
 noUpdate: 当前为最新版！
+pushing: 正在推送...
+pushSuccess: 推送成功
+pushFailed: 推送失败
+
+### webUI ###
+webUIStart: webUI服务器已启动，请打开 %s 查看
+webUIConnect: webUI已连接
+webUIDisconnect: webUI已断开
+connectingWebUI: 正在连接webUI服务器...
+connectWebUISuccess: 连接服务器成功
+WebUIClosed: 服务器已关闭
+giveUpReconnectWebUI: 多次连接失败，放弃重连
+reconnectingWebUI: 连接出错，正在重新连接...
+log: 日志

@@ -67,7 +67,9 @@
       "Book worm",
       "Brush up",
       "Extra Extra! Read all about it.",
-      "Extra extra read all about it!"
+      "Extra extra read all about it!",
+      "Booksmarts",
+      "Studying up"
     ],
     "sharePosts": [
       "Town crier",
@@ -110,7 +112,8 @@
       "Town Talk",
       "Happy Valentine's Day!",
       "Lets chat!",
-      "Friendly neighborhood talk"
+      "Friendly neighborhood talk",
+      "Passing notes"
     ],
     "leaderboard": [
       "Climbing the ladder",
@@ -121,7 +124,8 @@
       "Who's #1?",
       "Compare notes",
       "Rank?",
-      "Climb the ranks"
+      "Climb the ranks",
+      "Compare notes"
     ],
     "marketplace": [
       "Going shopping!",
@@ -129,7 +133,8 @@
       "Mall trip"
     ],
     "rewards": [
-      "Give me the loot"
+      "Give me the loot",
+      "Show me the loot!"
     ],
     "video": [
       "Explore around",

@@ -1,13 +1,16 @@
 /* eslint-disable max-len */
-/* global __, proxy */
+/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, retryAdapterOptions */
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
 import * as fs from 'fs';
-import axios, { AxiosAdapter, AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosAdapter, AxiosError, AxiosResponse } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 import { parse } from 'yaml';
 import { format } from 'util';
+import { PushApi } from 'all-pusher-api';
+
+globalThis.logs = { type: 'logs' };
 
 const getSecertValue = (): string => {
   if (!fs.existsSync('config.yml')) {
@@ -40,19 +43,83 @@ globalThis.secrets = getSecertValue();
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
     // eslint-disable-next-line no-control-regex
-    return e.replace(/\x1B\[[\d]*?m/g, '');
+    return e.replace(/\x1B\[[\d]*?m/g, '')
+      .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********');
+  }
+
+  return format(e);
+};
+const toHtmlJSON = (e: any): string => {
+  if (typeof e === 'string') {
+    // eslint-disable-next-line no-control-regex
+    return e.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
+    // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[31m(.+?)\x1B\[39m/g, '<font class="red">$1</font>')
+    // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[32m(.+?)\x1B\[39m/g, '<font class="green">$1</font>')
+    // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[33m(.+?)\x1B\[39m/g, '<font class="yellow">$1</font>')
+    // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[34m(.+?)\x1B\[39m/g, '<font class="blue">$1</font>')
+    // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[90m(.+)/g, '<font class="gray">$1</font>')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[31m(.+)/g, '<font class="red">$1</font>')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[32m(.+)/g, '<font class="green">$1</font>')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[33m(.+)/g, '<font class="yellow">$1</font>')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[34m(.+)/g, '<font class="blue">$1</font>')
+      .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********')
+      .replace(/\n/g, '</br>');
   }
 
   return format(e);
 };
 
-const log = (text: any, newLine = true): void => {
-  fs.appendFileSync('log.txt', toJSON(text)
-    // .replace(new RegExp(globalThis.secrets, 'gi'), '********')
-    .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********') + (newLine ? '\n' : ''));
-  if (newLine) console.log(text);
-  else process.stdout.write(text);
-};
+class Logger {
+  id = Date.now();
+  data = '';
+
+  constructor(text: any, newLine = true) {
+    if (webUI) {
+      this.log(text, newLine);
+      return this;
+    }
+    Logger.consoleLog(text, newLine);
+  }
+  log(data: any, newLine = true): void {
+    if (data.type === 'questInfo') {
+      logs.questInfo = {
+        id: this.id,
+        data: data.data,
+        type: 'questInfo'
+      };
+      if (ws) {
+        ws.send(JSON.stringify(logs.questInfo));
+      }
+      return;
+    }
+    fs.appendFileSync('log.txt', toJSON(data) + (newLine ? '\n' : ''));
+    if (newLine) console.log(data);
+    else process.stdout.write(data);
+    this.data += data;
+    logs[this.id.toString()] = {
+      id: this.id,
+      data: toHtmlJSON(this.data),
+      type: 'log'
+    };
+    if (ws) {
+      ws.send(JSON.stringify(logs[this.id.toString()]));
+    }
+  }
+  static consoleLog(text: any, newLine = true): void {
+    fs.appendFileSync('log.txt', toJSON(text) + (newLine ? '\n' : ''));
+    if (newLine) console.log(text);
+    else process.stdout.write(text);
+  }
+}
 
 const sleep = (time: number): Promise<true> => new Promise((resolve) => {
   const timeout = setTimeout(() => {
@@ -121,21 +188,13 @@ const formatProxy = (proxy: proxy): any => {
   return agent;
 };
 
-interface retryAdapterOptions {
-  times?: number
-  delay?: number
-}
-interface myAxiosConfig extends AxiosRequestConfig {
-  retryTimes?: number
-  retryDelay?: number
-}
 const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOptions): AxiosAdapter => {
   const { times = 0, delay = 300 } = options;
 
   return async (config: myAxiosConfig): Promise<AxiosResponse> => {
     const { retryTimes = times, retryDelay = delay } = config;
     let retryCount = 0;
-    const request = async (): Promise<AxiosResponse> => {
+    const request = async (config: myAxiosConfig): Promise<AxiosResponse> => {
       try {
         return await adapter(config);
       } catch (err) {
@@ -143,17 +202,19 @@ const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOption
           return Promise.reject(err);
         }
         retryCount++;
-        log(chalk.red('Error'));
-        log(`${time()}${chalk.yellow(__('retrying', chalk.blue(retryCount)))}`, false);
+        if (config.Logger) {
+          config.Logger.log(chalk.red('Error'));
+          config.Logger = new Logger(`${time()}${chalk.yellow(__('retrying', chalk.blue(retryCount)))}`, false);
+        }
         const delay = new Promise((resolve) => {
           setTimeout(() => {
             resolve(true);
           }, retryDelay);
         });
-        return delay.then(() => request());
+        return delay.then(() => request(config));
       }
     };
-    return request();
+    return request(config);
   };
 };
 
@@ -166,10 +227,11 @@ const http = axios.create({
 });
 
 const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
-  log(`${time()}${__('checkingUpdating')}`, false);
-  const options: AxiosRequestConfig = {
+  const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
+  const options: myAxiosConfig = {
     validateStatus: (status: number) => status === 302,
-    maxRedirects: 0
+    maxRedirects: 0,
+    Logger: logger
   };
   if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
     options.httpsAgent = formatProxy(proxy);
@@ -177,7 +239,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
   return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then((response) => {
       globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-      const latestVersion = response.headers.location.match(/tag\/v([\d.]+)/)?.[1];
+      const latestVersion = response.headers.location.match(/tag\/v?([\d.]+)/)?.[1];
       if (latestVersion) {
         const currentVersionArr = version.replace('V', '').split('.').map((e) => parseInt(e, 10));
         const latestVersionArr = latestVersion.split('.').map((e) => parseInt(e, 10));
@@ -186,20 +248,20 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
           (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] > currentVersionArr[1]) ||
           (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] === currentVersionArr[1] && latestVersionArr[2] > currentVersionArr[2])
         ) {
-          log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
-          log(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
+          logger.log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
+          new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
           return;
         }
-        log(chalk.green(__('noUpdate')));
+        logger.log(chalk.green(__('noUpdate')));
         return;
       }
-      log(chalk.red('Failed'));
+      logger.log(chalk.red('Failed'));
       return;
     })
     .catch((error) => {
-      log(chalk.red('Error') + netError(error));
+      logger.log(chalk.red('Error') + netError(error));
       globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
-      log(error);
+      new Logger(error);
       return;
     });
 };
@@ -219,4 +281,28 @@ const ask = (question: string, answers?: Array<string>): Promise<string> => new 
   });
 });
 
-export { log, sleep, random, time, checkUpdate, netError, ask, http, formatProxy };
+const push = async (message: string) => {
+  if (!globalThis.pusher?.enable) {
+    return;
+  }
+  const logger = new Logger(`${time()}${__('pushing')}`, false);
+  const pushOptions: pushOptions = {
+    name: (pusher as pusher).platform,
+    config: {
+      key: (pusher as pusher).key
+    }
+  };
+  if (globalThis.pusherProxy) {
+    pushOptions.config.proxy = globalThis.pusherProxy;
+  }
+  const result = await new PushApi([pushOptions])
+    .send({ message });
+  if ((result[0].result?.status || 0) >= 200 && result[0].result.status < 300) {
+    logger.log(chalk.green(__('pushSuccess')));
+    return;
+  }
+  logger.log(chalk.red(__('pushFailed')));
+  new Logger(result[0].result);
+};
+
+export { Logger, sleep, random, time, checkUpdate, netError, ask, http, formatProxy, push };
