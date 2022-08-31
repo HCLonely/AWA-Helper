@@ -1,1 +1,1 @@
-npm start
+start cmd /k "npm start"
