@@ -115,6 +115,9 @@ class Logger {
     }
   }
   static consoleLog(text: any, newLine = true): void {
+    if (text.type === 'questInfo') {
+      return;
+    }
     fs.appendFileSync('log.txt', toJSON(text) + (newLine ? '\n' : ''));
     if (newLine) console.log(text);
     else process.stdout.write(text);
