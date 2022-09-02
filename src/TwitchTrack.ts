@@ -237,7 +237,11 @@ class TwitchTrack {
   }
   async sendTrack():Promise<void> {
     if (!this.channelId) {
-      if (await this.getExtInfo() !== true) return;
+      if (await this.getExtInfo() !== true) {
+        await sleep(60 * 5);
+        this.sendTrack();
+        return;
+      }
     }
     const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
     const options: myAxiosConfig = {
