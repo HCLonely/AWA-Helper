@@ -157,7 +157,7 @@ process.on('uncaughtException', async (err) => {
   globalThis.pusher = pusher;
   i18n.setLocale(language);
 
-  if (proxy?.enable.includes('pusher')) {
+  if (pusher?.enable && proxy?.enable?.includes('pusher')) {
     globalThis.pusherProxy = proxy;
   }
 
