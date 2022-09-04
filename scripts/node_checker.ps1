@@ -15,6 +15,11 @@ if ($node -notmatch 'v16\.')
   [Environment]::SetEnvironmentVariable('Path', $envPath, 'User')
 }
 
+$node1 = node -v
+if ($node1 -notmatch 'v16\.') {
+  Write-Host "Installing Failed" -ForegroundColor Red
+}
+
 Write-Host "Installed" -ForegroundColor Green
 
 Write-Output 'Checking if all dependencies are installed...'
