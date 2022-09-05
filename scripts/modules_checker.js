@@ -1,12 +1,15 @@
 const { spawn } = require('child_process');
+const path = require('path');
 
 const green = (text) => `\x1B[32m${text}\x1B[0m`;
 const red = (text) => `\x1B[31m${text}\x1B[0m`;
 
+const npmCommand = process.argv[2] ? path.resolve(`${process.argv[2]}npm`) : 'npm';
+
 // 安装模块
 const installDependencies = () => {
   console.log('Installing dependencies...');
-  const installProcess = spawn('npm', ['install', '--save'], {
+  const installProcess = spawn(npmCommand, ['install', '--save'], {
     shell: true
   });
   const stdout = [];
@@ -31,7 +34,7 @@ const installDependencies = () => {
 
 // 检测是否缺少模块
 const checkDependencies = () => {
-  const checkProcess = spawn('npm', ['ls', '--omit=dev'], {
+  const checkProcess = spawn(npmCommand, ['ls', '--omit=dev'], {
     shell: true
   });
   const stdout = [];
