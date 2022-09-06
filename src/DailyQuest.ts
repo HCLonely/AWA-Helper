@@ -206,7 +206,7 @@ class DailyQuest {
                 const consecutiveLogins = JSON.parse(consecutiveLoginsText);
                 const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
                 if (rewardArp) {
-                  new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(consecutiveLogins.count), chalk.green(rewardArp))}`);
+                  new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(rewardArp))}`);
                 }
               } catch (e) {
                 //
@@ -419,6 +419,9 @@ class DailyQuest {
       }
       if (!this.done.includes('marketplace')) {
         await this.openLink(`https://${this.host}/marketplace/`);
+      }
+      if (!this.done.includes('marketplace')) {
+        await this.openLink(`https://${this.host}/ucf/Video`);
       }
     }
     await this.updateDailyQuests();
