@@ -104,14 +104,14 @@ class SteamQuestSU {
             });
           }
           this.gamesInfo = gamesInfo;
-          logger.log(`${time()}${chalk.green(__('getSteamQuestInfoSuccess', chalk.yellow('Steam')))}`);
+          ((response.config as myAxiosConfig)?.Logger || logger).log(`${time()}${chalk.green(__('getSteamQuestInfoSuccess', chalk.yellow('Steam')))}`);
           return true;
         }
-        logger.log(`${time()}${chalk.red(`${__('getSteamQuestInfoFailed', chalk.yellow('Steam'))}[Net Error]: ${response.status}`)}`);
+        ((response.config as myAxiosConfig)?.Logger || logger).log(`${time()}${chalk.red(`${__('getSteamQuestInfoFailed', chalk.yellow('Steam'))}[Net Error]: ${response.status}`)}`);
         return false;
       })
       .catch((error) => {
-        logger.log(time() + chalk.red(__('getSteamQuestInfoFailed', chalk.yellow('Steam'))) + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(time() + chalk.red(__('getSteamQuestInfoFailed', chalk.yellow('Steam'))) + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -139,17 +139,17 @@ class SteamQuestSU {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           if (response.data?.installed === true) {
-            logger.log(chalk.green(__('owned')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('owned')));
             return this.getQuestInfo(taskUrl, true);
           }
-          logger.log(chalk.yellow(__('notOwned')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('notOwned')));
           return false;
         }
-        logger.log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -178,30 +178,30 @@ class SteamQuestSU {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.includes('You have completed this quest')) {
-          logger.log(chalk.green(__('steamQuestCompleted')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('steamQuestCompleted')));
           return false;
         }
         if (response.data.includes('This quest requires that you own')) {
           if (name && !isRetry) {
-            logger.log(chalk.yellow(__('steamQuestRecheck')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('steamQuestRecheck')));
             return this.awaCheckOwnedGames(name);
           }
-          logger.log(chalk.yellow(__('steamQuestSkipped')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('steamQuestSkipped')));
           return false;
         }
         if (response.data.includes('Launch Game')) {
-          logger.log(chalk.green(__('steamQuestStarted')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('steamQuestStarted')));
           return true;
         }
         if (response.data.includes('Start Quest')) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return this.startQuest(url);
         }
-        logger.log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -224,14 +224,14 @@ class SteamQuestSU {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red(`Error: ${response.data.message || response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.data.message || response.status}`));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -263,17 +263,17 @@ class SteamQuestSU {
             const progress = response.data.match(/aria-valuenow="([\d]+?)"/)?.[1];
             if (progress) {
               this.taskStatus[index].progress = progress;
-              logger.log(chalk.yellow(`${progress}%`));
+              ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(`${progress}%`));
               return true;
             }
-            logger.log(chalk.red(__('noProgress')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('noProgress')));
             return false;
           }
-          logger.log(chalk.red(__('noProgressBar')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('noProgressBar')));
           return false;
         })
         .catch((error) => {
-          logger.log(chalk.red('Error') + netError(error));
+          ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
           globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
           new Logger(error);
           return false;

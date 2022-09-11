@@ -67,23 +67,23 @@ class TwitchTrack {
           const $ = load(response.data);
           const optionScript = $('script').filter((i, e) => !!$(e).html()?.includes('clientId'));
           if (optionScript.length === 0) {
-            logger.log(chalk.red('Error: optionScript not found!'));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error: optionScript not found!'));
             return false;
           }
           const clientId = optionScript.html()?.trim()?.match(/clientId="(.+?)"/)?.[1];
           if (!clientId) {
-            logger.log(chalk.red('Error: clientId not found!'));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error: clientId not found!'));
             return false;
           }
           this.clientId = clientId;
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -109,14 +109,14 @@ class TwitchTrack {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e: any) => e.name === 'Arena Rewards Tracker');
         if (linkedExtension) {
-          logger.log(chalk.green(__('authorized')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('authorized')));
           return true;
         }
-        logger.log(chalk.red(__('notAuthorized')));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('notAuthorized')));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -139,19 +139,19 @@ class TwitchTrack {
             ?.match(/www\.twitch\.tv\/(.+)/)?.[1])
             .filter((e) => e) as Array<string>;
           if (this.availableStreams.length === 0) {
-            logger.log(chalk.blue(__('noLive')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(__('noLive')));
             new Logger(`${time()}${__('getLiveInfoAlert', chalk.green('10'))}`);
             await sleep(60 * 10);
             return await this.getAvailableStreams();
           }
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red(`Net Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Net Error: ${response.status}`));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -174,11 +174,11 @@ class TwitchTrack {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const channelId = response.data?.[0]?.data?.user?.id;
         if (!channelId) {
-          logger.log(chalk.red('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
           return await this.getChannelInfo(index + 1);
         }
         this.channelId = channelId;
-        logger.log(chalk.green('OK'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
         return index;
       })
       .catch(async (error) => {
@@ -211,21 +211,21 @@ class TwitchTrack {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
         if (!extensions?.length) {
-          logger.log(chalk.red(`Error: ${__('noExt')}`));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noExt')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
         const [ART_EXT] = extensions.filter((ext: any) => ext?.installation?.extension?.name === 'Arena Rewards Tracker');
         if (!ART_EXT) {
-          logger.log(chalk.red(`Error: ${__('noExt')}`));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noExt')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
         const { jwt } = ART_EXT.token;
         if (!jwt) {
-          logger.log(chalk.red(`Error: ${__('getJwtFailed')}`));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('getJwtFailed')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
         this.jwt = jwt;
-        logger.log(chalk.green('OK'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
         return true;
       })
       .catch(async (error) => {
@@ -261,7 +261,7 @@ class TwitchTrack {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           this.trackError = 0;
           this.trackTimes++;
           let returnText: boolean | string = true;
@@ -282,13 +282,13 @@ class TwitchTrack {
           }
           return returnText;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response.data?.message || response.statusText);
         this.trackError++;
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;

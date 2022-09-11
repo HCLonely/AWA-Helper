@@ -15,19 +15,19 @@ import * as i18n from 'i18n';
 import { app as expressApp } from './webUI/index';
 
 process.on('SIGTERM', async () => {
-  new Logger(chalk.yellow(__('processWasKilled')));
+  new Logger(time() + chalk.yellow(__('processWasKilled')));
   await push(`${__('pushTitle')}\n${__('processWasKilled')}`);
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  new Logger(chalk.yellow(__('processWasInterrupted')));
+  new Logger(time() + chalk.yellow(__('processWasInterrupted')));
   await push(`${__('pushTitle')}\n${__('processWasInterrupted')}`);
   process.exit(0);
 });
 
 process.on('uncaughtException', async (err) => {
-  new Logger(chalk.yellow(__('processError')));
+  new Logger(time() + chalk.yellow(__('processError')));
   await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}`);
   new Logger(`Uncaught Exception: ${err.message}`);
   process.exit(1);
@@ -64,8 +64,8 @@ process.on('uncaughtException', async (err) => {
     });
   });
   if (locked) {
-    new Logger(chalk.red(__('running')));
-    new Logger(chalk.blue(__('multipleAccountAlert')));
+    new Logger(time() + chalk.red(__('running')));
+    new Logger(time() + chalk.blue(__('multipleAccountAlert')));
     new Logger(__('exitAlert'));
     process.stdin.setRawMode(true);
     process.stdin.on('data', () => process.exit(0));

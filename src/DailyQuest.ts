@@ -140,33 +140,33 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200 && response.data.toLowerCase().includes('we have detected an issue with your network')) {
-          logger.log(chalk.red(__('ipBanned')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
           return false;
         }
         if (response.status === 302 && response.headers['set-cookie']?.length) {
           const homeSite = response.headers['set-cookie'].find((e) => e.includes('home_site='))?.split(';')[0].split('=')[1]?.trim();
           if (homeSite) {
             this.host = homeSite;
-            logger.log(chalk.yellow(__('redirected')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('redirected')));
             return this.updateCookie(REMEMBERME);
           }
           this.headers.cookie = `${response.headers['set-cookie'].map((e) => e.split(';')[0].trim()).join(';')}`;
           if (this.headers.cookie.includes('REMEMBERME=deleted')) {
-            logger.log(chalk.red(`Error: ${__('cookieExpired', chalk.yellow('awaCookie'))}`));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('cookieExpired', chalk.yellow('awaCookie'))}`));
             return false;
           }
           if (!this.headers.cookie.includes('REMEMBERME')) {
             this.headers.cookie = `${REMEMBERME};${this.headers.cookie}`;
           }
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -189,15 +189,15 @@ class DailyQuest {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.status === 200) {
           if (response.data.toLowerCase().includes('we have detected an issue with your network')) {
-            logger.log(chalk.red(__('ipBanned')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
             return 410;
           }
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
-            logger.log(chalk.red(__('tokenExpired')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
             return 401;
           }
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           if (verify) {
             // 连续签到
             const consecutiveLoginsText = response.data.match(/consecutive_logins.*?=.*?({.+?})/)?.[1];
@@ -331,11 +331,11 @@ class DailyQuest {
           }
           return 200;
         }
-        logger.log(chalk.red('Net Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
         return response.status;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return 0;
@@ -461,15 +461,15 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -496,15 +496,15 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -531,15 +531,15 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -566,15 +566,15 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -620,12 +620,12 @@ class DailyQuest {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (!link) {
           if (response.data.success) {
-            if (logger) logger.log(chalk.green('OK'));
+            if (logger) ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             this.trackError = 0;
             this.trackTimes++;
             return true;
           }
-          if (logger) logger.log(chalk.red('Error'));
+          if (logger) ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
           if (logger) new Logger(response.data?.message || response);
           this.trackError++;
           return false;
@@ -634,7 +634,7 @@ class DailyQuest {
       })
       .catch((error) => {
         if (!link) {
-          if (logger) logger.log(chalk.red('Error'));
+          if (logger) ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
           globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
           if (logger) new Logger(error);
           this.trackError++;
@@ -664,15 +664,15 @@ class DailyQuest {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data === 'success') {
           await this.sendTrack(`https://${this.host}/ucf/show/${postId}`);
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response.data || response.statusText);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -713,17 +713,17 @@ class DailyQuest {
             .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])
             .filter((e) => e);
           if (topicPost.length > 0) {
-            logger.log(chalk.green('OK'));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return topicPost[0];
           }
-          logger.log(chalk.gray(__('noRelatedPosts')));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.gray(__('noRelatedPosts')));
           return false;
         }
-        logger.log(chalk.red('Net Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -749,7 +749,7 @@ class DailyQuest {
         ...form.getHeaders()
       },
       data: form,
-      Logger: logger
+      Logger: logger1
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
 
@@ -757,15 +757,15 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         if (response.data.success) {
-          logger1.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger1).log(chalk.green('OK'));
           return true;
         }
-        logger1.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger1).log(chalk.red('Error'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        logger1.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger1).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -792,20 +792,20 @@ class DailyQuest {
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         try {
           if (JSON.stringify(response.data) === '{}') {
-            logger.log(chalk.green('OK'));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
-          logger.log(chalk.red('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
           new Logger(response.data);
           return false;
         } catch {
-          logger.log(chalk.red('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
           new Logger(response.data);
           return false;
         }
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -855,17 +855,17 @@ class DailyQuest {
         if (response.status === 200) {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
-            logger.log(chalk.red(__('tokenExpired')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
             return;
           }
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return;
         }
-        logger.log(chalk.red('Net Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
         return;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return;
@@ -888,15 +888,15 @@ class DailyQuest {
     return axios(options)
       .then(async (response) => {
         if (response.status === 200) {
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(response.data || response.statusText);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -962,7 +962,7 @@ class DailyQuest {
         if (response.status === 200) {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
-            logger.log(chalk.red(__('tokenExpired')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
             return false;
           }
           const [, , awaUserId] = response.data.match(/(var|let)[\s]+?user_id[\s]*?=[\s]*?([\d]+);/);
@@ -977,15 +977,15 @@ class DailyQuest {
             awaBadgeIds: this.badgeIds,
             awaAvatar: this.avatar
           }));
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        logger.log(chalk.red('Net Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
         new Logger(response.data || response.statusText);
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;
@@ -1010,7 +1010,7 @@ class DailyQuest {
         if (response.status === 200) {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
-            logger.log(chalk.red(__('tokenExpired')));
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
             return false;
           }
           const awaAvatar = JSON.stringify({
@@ -1033,7 +1033,7 @@ class DailyQuest {
               return [slotType, data];
             }))
           });
-          logger.log(chalk.green('OK'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           this.avatar = awaAvatar;
           fs.writeFileSync('awa-info.json', JSON.stringify({
             awaUserId: this.userId,
@@ -1043,11 +1043,11 @@ class DailyQuest {
           }));
           return true;
         }
-        logger.log(chalk.red('Net Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
         return false;
       })
       .catch((error) => {
-        logger.log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
         return false;

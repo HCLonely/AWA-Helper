@@ -114,7 +114,8 @@
       "Happy Valentine's Day!",
       "Lets chat!",
       "Friendly neighborhood talk",
-      "Passing notes"
+      "Passing notes",
+      "Talk sweet"
     ],
     "leaderboard": [
       "Climbing the ladder",
@@ -142,6 +143,9 @@
       "Explore around",
       "Grab the popcorn",
       "Hit the flicks"
+    ],
+    "personalization": [
+      "Personalize, stylize"
     ],
     "other": [
       "Explore the realm",

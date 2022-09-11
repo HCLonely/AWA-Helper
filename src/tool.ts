@@ -251,18 +251,18 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
           (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] > currentVersionArr[1]) ||
           (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] === currentVersionArr[1] && latestVersionArr[2] > currentVersionArr[2])
         ) {
-          logger.log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
           new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
           return;
         }
-        logger.log(chalk.green(__('noUpdate')));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
         return;
       }
-      logger.log(chalk.red('Failed'));
+      ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Failed'));
       return;
     })
     .catch((error) => {
-      logger.log(chalk.red('Error') + netError(error));
+      ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
       globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
       new Logger(error);
       return;

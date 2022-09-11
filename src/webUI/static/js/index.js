@@ -97,20 +97,20 @@ function connectWebUIServer(retry = 0) {
         const logEle = $(`#log-${value.id}`);
         if (logEle.length > 0) {
           logEle.html(value.data);
-          logEle[0].scrollTo();
+          logEle[0].scrollIntoView();
           continue;
         }
         $('#log-area').append(`<li id="log-${value.id}">${value.data}</li>`);
-        $(`#log-${value.id}`)[0].scrollTo();
+        $(`#log-${value.id}`)[0].scrollIntoView();
       }
     } else if (data.type === 'log') {
       const logEle = $(`#log-${data.id}`);
       if (logEle.length > 0) {
         logEle.html(data.data);
-        logEle[0].scrollTo();
+        logEle[0].scrollIntoView();
       } else {
         $('#log-area').append(`<li id="log-${data.id}">${data.data}</li>`);
-        $(`#log-${data.id}`)[0].scrollTo();
+        $(`#log-${data.id}`)[0].scrollIntoView();
       }
     } else if (data.type === 'questInfo') {
       generateTaskInfo(data.data);
