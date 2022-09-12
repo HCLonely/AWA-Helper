@@ -107,10 +107,11 @@ flowchart TD
 #### 通过Git更新
 
 1. 拉取更新`git pull`
-2. 编译文件`npm run build`
-3. 运行`npm start`/双击`AWA-Helper.bat`
+2. 安装依赖`npm install`
+3. 编译文件`npm run build`
+4. 运行`npm start`/双击`AWA-Helper.bat`
 
-> **说明: 1-3步仅每次更新后第一次运行需要，之后每次运行只需要进行第6步即可！**
+> **说明: 1-3步仅每次更新后第一次运行需要，之后每次运行只需要进行第4步即可！**
 
 ### 下载打包好的程序运行
 
@@ -241,8 +242,8 @@ asfBotname: '' # 要挂游戏的ASF Bot名称
 #### SU 参数说明
 
 ```yml
-steamAccountName: ''
-steamPassword: ''
+steamAccountName: '' # Steam用户名
+steamPassword: '' # Steam密码
 ```
 
 ### proxy 配置(可选)
