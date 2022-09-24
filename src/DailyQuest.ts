@@ -362,6 +362,10 @@ class DailyQuest {
     if (this.awaDailyQuestType.includes('click') && this.clickQuestId) {
       await this.questAward(this.clickQuestId);
       await this.updateDailyQuests();
+      if (this.questInfo.dailyQuest?.status === 'complete') {
+        this.questStatus.dailyQuest = 'complete';
+        return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
+      }
     }
     if (this.awaDailyQuestType.includes('visitLink') && this.dailyQuestLink) {
       await this.openLink(this.dailyQuestLink);
@@ -370,6 +374,10 @@ class DailyQuest {
         await this.viewPost(postId);
       }
       await this.updateDailyQuests();
+      if (this.questInfo.dailyQuest?.status === 'complete') {
+        this.questStatus.dailyQuest = 'complete';
+        return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
+      }
     }
     if (this.questInfo.dailyQuest?.status === 'complete') {
       this.questStatus.dailyQuest = 'complete';
@@ -408,6 +416,15 @@ class DailyQuest {
     // if (this.awaDailyQuestType.includes('viewPost') && !this.done.includes('viewPost')) await this.viewPosts();
     if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) await this.viewNews();
     if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePosts')) await this.sharePosts();
+
+    await this.updateDailyQuests();
+    if (this.questInfo.dailyQuest?.status === 'complete') {
+      this.questStatus.dailyQuest = 'complete';
+      if (this.dailyQuestNumber < 2) {
+        return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
+      }
+    }
+
     if (this.awaDailyQuestType.includes('openLink')) {
       if (!this.done.includes('leaderboard')) {
         await this.openLink(`https://${this.host}/rewards/leaderboard`);
