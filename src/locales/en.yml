@@ -8,8 +8,14 @@ configFileErrorAlter: Configuration file line %s is wrong, %s
 configFileErrorLocation: 'The following line is causing an error:'
 missingAwaParams: 'The following parameters are missing:'
 missingTwitchParams: Missing %s parameters, skipping Twitch related quests!
-twitchTaskCompleted: Twitch Task Completed!
+twitchTaskCompleted: Twitch Quest Completed!
 missingSteamParams: Missing %s parameters, skipping Steam related quests!
+pushTitle: 'AWA-Helper Reminder:'
+processWasKilled: Task process terminated
+processWasInterrupted: The task process was manually terminated
+processError: The task process exited abnormally
+errorMessage: Error message
+processTimeout: Run timeout. Force quit the program
 
 ### DailyQuest.ts ###
 noREMEMBERMEAlert: Detected that there are no %s parameters, which may result in an error in obtaining the number of consecutive days checked-in. However, it does not affect other functionality
@@ -25,7 +31,7 @@ consecutiveLoginsAlert: Logged in for %s consecutive days, got %s ARP
 monthlyLoginsARPAlert: Logged in for %s days this month, got %s ARP
 monthlyLoginsItemAlert: Logged in for %s days this month, got %s ARP
 promotionalAlert: It has been detected that there's current activities in the AWA Forum, please log in to the website to complete!
-boosterAlert: More than 1 unfinished quest was detected. Please confirm whether to %s(%s). Press \\n to continue the task or press %s to skip the daily task
+boosterAlert: More than 1 unfinished quest was detected. Please confirm whether to %s(%s). Press %s to continue the quest or press %s to skip the daily quest
 booster: ARP Booster
 selfOpen: You need to activate by yourself
 taskInfo: 'Current quests information:'
@@ -117,3 +123,17 @@ checkingUpdating: Checking for updates...
 newVersion: 'New version detected: %s'
 downloadLink: 'Download link for the latest version: %s'
 noUpdate: No updates found!
+pushing: Pushing...
+pushSuccess: Push Successful
+pushFailed: Push failed
+
+### webUI ###
+webUIStart: webUI server started, Please open %s to view
+webUIConnect: webUI is connected
+webUIDisconnect: webUI is disconnected
+connectingWebUI: Connecting to webUI server...
+connectWebUISuccess: Successfully connected to the server
+WebUIClosed: Server is closed
+giveUpReconnectWebUI: Multiple connections failed, stopping reconnection
+reconnectingWebUI: Error connecting, reconnecting...
+log: log
