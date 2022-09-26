@@ -2,8 +2,82 @@
 
 Automatically does AWA quests.
 
-[简体中文](/README.md) •
-[English](/README_EN.md)
+## Function
+
+### Daily Quests
+
+```mermaid
+flowchart TD
+  A([Start]) --> B{Is the task completed}
+  B --> |Yes| C([Stop])
+  B --> |No| D{"Whether if it's a quest to open a page"}
+  D --> |Yes| E[Perform the task]
+  E --> F{Is the task completed}
+  F --> |Yes| C
+  F --> |No| G{"It's a quest with a task in a page (with a link)"}
+  D --> |No| G
+  G --> |Yes| H[Perform the task]
+  H --> I{Is the task completed}
+  I --> |Yes| C
+  I --> |No| J{Is there/This quest exist in the database}
+  J --> |Yes| K[Perform the task]
+  K --> L{Is the task completed}
+  L --> |Yes| C
+  L & J --> |No| M["Change border/Change badge/Change avatar/Read News/Check Leaderboard/Check Rewards/Check Store page/Check Video page"]
+  M --> N{Is the task completed}
+  N --> |Yes| C
+  N --> |No| O[Reply to post]
+  O --> P{Is the task completed}
+  P --> |Yes| C
+  P --> |No| C
+```
+
+### AWA Online
+
+
+```mermaid
+flowchart TD
+  A([Start]) --> B{Is the task completed}
+  B --> |Yes| C([Stop])
+  B --> |No| D[Send request repeatedly]
+  D -.-> E[Is the task completed] -. Finish .-> C
+```
+
+### Twitch Quest
+
+```mermaid
+flowchart TD
+  A([Start]) --> B{Is the task completed}
+  B --> |Yes| C([Stop])
+  B --> |No| D[Get Available Live stream]
+  D --> E{Is there a live stream available}
+  E --> |Yes| F[Get the live stream ID]
+  E --> |No| G[Wait 10 minutes]
+  F --> |失败| K{There's other live streams available}
+  K --> |Yes| H[Change to another live stream]
+  K --> |No| C
+  H --> F
+  F --> |成功| I[Get ART widget info]
+  I --> |失败| K
+  I --> |成功| J[Send request repeatedly]
+  J -.-> L[Is the task completed] -. Finish .-> C
+```
+
+### Steam Quest
+
+```mermaid
+flowchart TD
+  A([Start]) --> B[Get Quest info]
+  B --> C[Get details of each quest]
+  C --> |Not Owned| D["Try again\n(Equivalent to click in the 'Check Games' button)"]
+  D --> |Not Owned| F([Skip this quest])
+  C & D --> |Owned| E["Start this quest\n(Equivalent to click in the 'Start Quest' button)"]
+  E --> F{Request ASF detection whether if there are games available on account from the Steam Quest}
+  C --> |Started| F
+  F --> |Yes| G[ASF will idle]
+  F --> |No| H([Stop])
+  G -.-> I[Is the task completed] -. Finish .-> H
+```
 
 ## Instructions
 
@@ -15,18 +89,53 @@ Automatically does AWA quests.
 
 ### Run from the source
 
-1. Prerequisite: Install [Git](https://git-scm.com/downloads) and [NodeJs](https://nodejs.org/zh-cn/download/);
-2. Clone this project `git clone https://github.com/HCLonely/AWA-Helper.git`;
-3. Install the dependencies`npm install -S`;
-4. Edit the configuration file, [check the description](https://github.com/HCLonely/AWA-Helper#config-file-configuration);
-5. Run`npm start`.
+> This method automatically installs the latest beta version!
 
-### Download the compiled version
+#### Install and run
 
-1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the zip with the compiled version;
-2. Extract;
-3. Edit the configuration file, view the description;
-4. Double-click on`运行.bat` to run.
+1. Prerequisites: Install [Git](https://git-scm.com/downloads) and [NodeJs](https://nodejs.org/zh-cn/download/) >= v16.0.0
+2. Clone this repository`git clone https://github.com/HCLonely/AWA-Helper.git`
+3. Install dependencies`npm install`
+4. Build`npm run build`
+5. Edit configuration file [view instructions](#config-file-configuration)
+6. Run`npm start`/double click`AWA-Helper.bat`
+
+> Note: Steps 1-5 are only required for the first installation, only step 6 is required for each run after that!
+
+#### Update via Git
+
+1. Pull update`git pull`
+2. Install dependencies`npm install`
+3. Build`npm run build`
+4. Run`npm start`/double click`AWA-Helper.bat`
+
+> Note: Steps 1-3 are only required for the first run after each update, only step 4 is required for each run after that!
+
+### Download the compressed program and run
+
+#### Automatically install dependencies (Recommended)
+
+> **This method requires Powershell!**
+
+1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
+2. Extract
+3. Edit configuration file,[View instructions](#config-file-configuration)
+4. Double click`运行-auto.bat`to run(Missing dependencies are automatically installed)
+
+#### Install dependencies on your own
+
+1. Install [NodeJs](https://nodejs.org/zh-cn/download/) >= v16.0.0
+2. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
+3. Extract
+4. Install dependencies`npm install --save`
+5. Edit configuration file [view instructions](#config-file-configuration)
+6. Double click`运行.bat`to run
+
+#### Update
+
+1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
+2. Extract and overwrite it
+3. Double click`运行.bat`to run
 
 ## config (File configuration)
 
@@ -38,6 +147,17 @@ Automatically does AWA quests.
 
 ```yml
 language: 'zh' # Program display language, currently supports Chinese (zh) and English (en)
+webUI:
+  enable: true # Whether to enable WebUI
+  port: 3456 # WebUI port
+timeout: 0 # timeout setting，Unit: seconds, 0 means without limit. If the program is still running after this time, close the program.
+```
+
+### AWA configuration (Required)
+
+#### AWA Parameter Description
+
+```yml
 awaCookie: '' # AWA Cookie, it supports having only `REMEMBERME`, if there is no `REMEMBERME`, then you must have `PHPSESSID` and `sc`, but it will cause an error to get the number of consecutive login days, however it does not affect other functionalities
 awaHost: 'www.alienwarearena.com' # AWA Host, commonly used are `www.alienwarearena.com` and `na.alienwarearena.com`, the default doesn't have any problem, there's no need to change it
 awaBoosterNotice: true # When there are more than 1 quest on AWA, you will be asked whether or not to activate booster. You need to activate booster manually!!!
@@ -143,6 +263,20 @@ proxy:
   port: 1080 # proxy port
   username: '' # Proxy username, if none can be left blank
   password: '' # Proxy password, if none can be left blank
+```
+
+### Push configuration (optional)
+
+#### Description of push configuration parameters
+
+```yml
+pusher:
+  enable: false # Whether to enable push，Here is an example of GoCqhttp
+  platform: GoCqhttp # Push platform, please check the specific support https://github.com/HCLonely/all-pusher-api#已支持平台
+  key: # Configuration parameters，The following parameters are not fixed，Please refer to https://github.com/HCLonely/all-pusher-api#参数
+    token: '******'
+    baseUrl: 'http://127.0.0.1:5700'
+    user_id: '******'
 ```
 
 ## About Daily Quests
