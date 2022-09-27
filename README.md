@@ -179,6 +179,7 @@ awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注�
   - viewNews # 浏览新闻
   - sharePost # 分享帖子
   - replyPost # 回复帖子
+awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个
 ```
 
 #### AWA 参数获取方式

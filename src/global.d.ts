@@ -21,6 +21,7 @@ declare global {
     awaBoosterNotice?: boolean,
     awaQuests: Array<string>,
     awaDailyQuestType: Array<string>,
+    awaDailyQuestNumber1?: boolean,
     twitchCookie?: string,
     steamUse?: 'ASF' | 'SU'
     asfProtocol: string,
@@ -45,11 +46,12 @@ declare global {
     username?: string
     password?: string
   }
+  interface dailyQuest {
+    status: string
+    arp: string
+  }
   interface questInfo {
-    dailyQuest?: {
-      status: string
-      arp: string
-    }
+    dailyQuest?: Array<dailyQuest>
     timeOnSite?: {
       maxArp: number
       addedArp: number

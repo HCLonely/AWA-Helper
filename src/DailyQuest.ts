@@ -9,6 +9,9 @@ import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
 import { SteamQuestSU } from './SteamQuestSU';
 import * as fs from 'fs';
+import { chunk } from 'lodash';
+import * as events from 'events';
+const EventEmitter = new events.EventEmitter();
 
 class DailyQuest {
   // eslint-disable-next-line no-undef
@@ -40,13 +43,16 @@ class DailyQuest {
     'sharePost',
     'replyPost'
   ];
-  dailyQuestName!: string;
+  dailyQuestName!: Array<string>;
   done:Array<string> = [];
+  EventEmitter = EventEmitter;
   listenTwitch = false;
   listenSteam = false;
+  listenAwa = false;
+  awaDailyQuestNumber1: boolean;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaHost, awaDailyQuestType, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaDailyQuestType?: Array<string>,  awaBoosterNotice:boolean, proxy?: proxy }) {
+  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaDailyQuestType?: Array<string>, awaDailyQuestNumber1: boolean | undefined, awaBoosterNotice:boolean, proxy?: proxy }) {
     this.host = awaHost || 'www.alienwarearena.com';
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.headers = {
@@ -55,6 +61,7 @@ class DailyQuest {
       'accept-encoding': 'gzip, deflate, br',
       'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
     };
+    this.awaDailyQuestNumber1 = awaDailyQuestNumber1 ?? true;
     if (awaDailyQuestType) {
       this.awaDailyQuestType = awaDailyQuestType;
     }
@@ -95,13 +102,21 @@ class DailyQuest {
   }
   async listen(twitch: TwitchTrack | null, steamQuest: SteamQuestASF | SteamQuestSU | null, check = false): Promise<void> {
     if (twitch && !this.listenTwitch) {
+      this.listenTwitch = true;
       twitch.EventEmitter.addListener('complete', () => {
-        this.listen(twitch, steamQuest);
+        this.listen(twitch, steamQuest, true);
       });
     }
     if (steamQuest && !this.listenSteam) {
+      this.listenSteam = true;
       steamQuest.EventEmitter.addListener('complete', () => {
-        this.listen(twitch, steamQuest);
+        this.listen(twitch, steamQuest, true);
+      });
+    }
+    if (!this.listenAwa) {
+      this.listenAwa = true;
+      this.EventEmitter.addListener('complete', () => {
+        this.listen(twitch, steamQuest, true);
       });
     }
 
@@ -118,7 +133,14 @@ class DailyQuest {
       if (twitch?.complete || (!check && !twitch)) {
         this.questStatus.watchTwitch = 'complete';
       }
-      if ((this.questStatus.dailyQuest === 'complete' || this.questStatus.dailyQuest === 'skip' || this.questInfo.dailyQuest?.status === 'complete') && (this.questStatus.timeOnSite === 'complete' || this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
+      if ((
+        this.questStatus.dailyQuest === 'complete' ||
+        this.questStatus.dailyQuest === 'skip' ||
+        (this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length
+      ) && (
+        this.questStatus.timeOnSite === 'complete' ||
+        this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp
+      ) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
         await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${Object.entries(this.formatQuestInfo()).map(([name, value]) => `${name}:  ${value[__('obtainedARP')]} ARP`).join('\n')}`);
         process.exit(0);
@@ -268,15 +290,17 @@ class DailyQuest {
           }
           */
           // 每日任务
-          const [status, arp] = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
+          const dailyQuests = chunk($('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
-              .toLowerCase());
+              .toLowerCase()), 2);
+          let dailyQuest = dailyQuests;
+          if (this.awaDailyQuestNumber1) {
+            dailyQuest = [dailyQuests[0]];
+          }
           this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-title')
-            .text()
-            .trim();
-          this.questInfo.dailyQuest = {
-            status, arp
-          };
+            .toArray()
+            .map((e) => $(e).text().trim());
+          this.questInfo.dailyQuest = dailyQuest.map((e) => ({ status: e[0], arp: e[1] }));
           this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
               .toLowerCase())
@@ -368,14 +392,14 @@ class DailyQuest {
     if (this.questStatus.dailyQuest === 'skip') {
       return new Logger(time() + chalk.yellow(__('dailyQuestSkipped')));
     }
-    if (this.questInfo.dailyQuest?.status === 'complete') {
+    if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
       this.questStatus.dailyQuest = 'complete';
       return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
     }
     if (this.awaDailyQuestType.includes('click') && this.clickQuestId) {
       await this.questAward(this.clickQuestId);
       await this.updateDailyQuests();
-      if (this.questInfo.dailyQuest?.status === 'complete') {
+      if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
         this.questStatus.dailyQuest = 'complete';
         return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }
@@ -387,36 +411,38 @@ class DailyQuest {
         await this.viewPost(postId);
       }
       await this.updateDailyQuests();
-      if (this.questInfo.dailyQuest?.status === 'complete') {
+      if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
         this.questStatus.dailyQuest = 'complete';
         return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }
     }
-    if (this.questInfo.dailyQuest?.status === 'complete') {
+    if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
       this.questStatus.dailyQuest = 'complete';
       if (this.dailyQuestNumber < 2) {
         return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }
     }
-    for (const quest of this.matchQuest()) {
+    for (const dailyQuestName of this.dailyQuestName) {
+      for (const quest of this.matchQuest(dailyQuestName)) {
       // @ts-ignore
-      if (this[quest]) {
+        if (this[quest]) {
         // @ts-ignore
-        await this[quest]();
-      } else if (quest === 'leaderboard') {
-        await this.openLink(`https://${this.host}/rewards/leaderboard`);
-      } else if (quest === 'marketplace') {
-        await this.openLink(`https://${this.host}/marketplace/`);
-      } else if (quest === 'rewards') {
-        await this.openLink(`https://${this.host}/rewards`);
-      } else if (quest === 'video') {
-        await this.openLink(`https://${this.host}/ucf/Video`);
+          await this[quest]();
+        } else if (quest === 'leaderboard') {
+          await this.openLink(`https://${this.host}/rewards/leaderboard`);
+        } else if (quest === 'marketplace') {
+          await this.openLink(`https://${this.host}/marketplace/`);
+        } else if (quest === 'rewards') {
+          await this.openLink(`https://${this.host}/rewards`);
+        } else if (quest === 'video') {
+          await this.openLink(`https://${this.host}/ucf/Video`);
+        }
+        this.done.push(quest);
+        await sleep(random(1, 2));
       }
-      this.done.push(quest);
-      await sleep(random(1, 2));
     }
     await this.updateDailyQuests();
-    if (this.questInfo.dailyQuest?.status === 'complete') {
+    if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
       this.questStatus.dailyQuest = 'complete';
       if (this.dailyQuestNumber < 2) {
         return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
@@ -431,7 +457,7 @@ class DailyQuest {
     if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePosts')) await this.sharePosts();
 
     await this.updateDailyQuests();
-    if (this.questInfo.dailyQuest?.status === 'complete') {
+    if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
       this.questStatus.dailyQuest = 'complete';
       if (this.dailyQuestNumber < 2) {
         return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
@@ -455,7 +481,7 @@ class DailyQuest {
       }
     }
     await this.updateDailyQuests();
-    if (this.questInfo.dailyQuest?.status === 'complete') {
+    if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
       this.questStatus.dailyQuest = 'complete';
       if (this.dailyQuestNumber < 2) {
         return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
@@ -464,7 +490,7 @@ class DailyQuest {
     if (this.awaDailyQuestType.includes('replyPost') && !this.done.includes('replyPost')) {
       await this.replyPost();
       await this.updateDailyQuests();
-      if (this.questInfo.dailyQuest?.status === 'complete') {
+      if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
         this.questStatus.dailyQuest = 'complete';
         if (this.dailyQuestNumber < 2) {
           return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
@@ -621,6 +647,7 @@ class DailyQuest {
       }
       if (this.questInfo.timeOnSite.addedArp >= this.questInfo.timeOnSite.maxArp) {
         this.questStatus.timeOnSite = 'complete';
+        this.EventEmitter.emit('complete');
         return new Logger(time() + chalk.green(__('timeOnSiteCompleted')));
       }
     }
@@ -1086,9 +1113,9 @@ class DailyQuest {
         return false;
       });
   }
-  matchQuest(): Array<string> {
+  matchQuest(dailyQuestName: string): Array<string> {
     const logger = new Logger(`${time()}${__('matchingDailyQuestDb')}`, false);
-    if (!this.dailyQuestName) {
+    if (!dailyQuestName) {
       logger.log(chalk.yellow(__('notMatchedDailyQuest')));
       return [];
     }
@@ -1097,17 +1124,17 @@ class DailyQuest {
       return [];
     }
     const { quests } = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString()) as dailyQuestDb;
-    let matchedQuest = Object.entries(quests).map(([key, value]) => (value.includes(this.dailyQuestName) ? key : '')).filter((e) => e);
+    let matchedQuest = Object.entries(quests).map(([key, value]) => (value.includes(dailyQuestName) ? key : '')).filter((e) => e);
     if (matchedQuest.length > 0) {
       logger.log(chalk.green(__('success')));
       return matchedQuest;
     }
-    matchedQuest = Object.entries(quests).map(([key, value]) => (value.map((e) => e.toLowerCase()).includes(this.dailyQuestName.toLowerCase()) ? key : '')).filter((e) => e);
+    matchedQuest = Object.entries(quests).map(([key, value]) => (value.map((e) => e.toLowerCase()).includes(dailyQuestName.toLowerCase()) ? key : '')).filter((e) => e);
     if (matchedQuest.length > 0) {
       logger.log(chalk.green(__('success')));
       return matchedQuest;
     }
-    matchedQuest = Object.entries(quests).map(([key, value]) => (value.map((e) => e.toLowerCase().replace(/,|\.|\/|\\|'|"|:|;|!|#|\*|\?|<|>|\[|\]|\{|\}|\+|-|=|`|@|\$|%|\^|&|\(|~|\)|\||[\s]/g, '')).includes(this.dailyQuestName.toLowerCase().replace(/,|\.|\/|\\|'|"|:|;|!|#|\*|\?|<|>|\[|\]|\{|\}|\+|-|=|`|@|\$|%|\^|&|\(|~|\)|\||[\s]/g, '')) ? key : '')).filter((e) => e);
+    matchedQuest = Object.entries(quests).map(([key, value]) => (value.map((e) => e.toLowerCase().replace(/,|\.|\/|\\|'|"|:|;|!|#|\*|\?|<|>|\[|\]|\{|\}|\+|-|=|`|@|\$|%|\^|&|\(|~|\)|\||[\s]/g, '')).includes(dailyQuestName.toLowerCase().replace(/,|\.|\/|\\|'|"|:|;|!|#|\*|\?|<|>|\[|\]|\{|\}|\+|-|=|`|@|\$|%|\^|&|\(|~|\)|\||[\s]/g, '')) ? key : '')).filter((e) => e);
     if (matchedQuest.length > 0) {
       logger.log(chalk.green(__('success')));
       return matchedQuest;
@@ -1116,12 +1143,12 @@ class DailyQuest {
     return [];
   }
   formatQuestInfo() {
-    return {
-      [__('dailyTask')]: {
+    const result = {
+      [`__('dailyTask')[${this.dailyQuestName[0]}]`]: {
         // eslint-disable-next-line no-nested-ternary
-        [__('status')]: this.questInfo.dailyQuest?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
-        [__('obtainedARP')]: parseInt(this.questInfo.dailyQuest?.arp || '0', 10),
-        [__('maxAvailableARP')]: parseInt(this.questInfo.dailyQuest?.arp || '0', 10)
+        [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
+        [__('obtainedARP')]: parseInt(this.questInfo.dailyQuest?.[0]?.arp || '0', 10),
+        [__('maxAvailableARP')]: parseInt(this.questInfo.dailyQuest?.[0]?.arp || '0', 10)
       },
       [__('timeOnSite')]: {
         [__('status')]: this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp ? __('done') : __('undone'),
@@ -1139,6 +1166,17 @@ class DailyQuest {
         [__('maxAvailableARP')]: '-'
       }
     };
+    if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
+      for (let i = 1; i < this.questInfo.dailyQuest.length; i++) {
+        result[`__('dailyTask')[${this.dailyQuestName[i]}]`] = {
+          // eslint-disable-next-line no-nested-ternary
+          [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
+          [__('obtainedARP')]: parseInt(this.questInfo.dailyQuest?.[i]?.arp || '0', 10),
+          [__('maxAvailableARP')]: parseInt(this.questInfo.dailyQuest?.[i]?.arp || '0', 10)
+        };
+      }
+    }
+    return result;
   }
 }
 

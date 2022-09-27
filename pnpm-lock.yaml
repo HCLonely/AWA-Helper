@@ -6,6 +6,7 @@ specifiers:
   '@types/i18n': ^0.13.4
   '@types/jquery': ^3.5.14
   '@types/js-yaml': ^4.0.5
+  '@types/lodash': ^4.14.185
   '@types/node': ^17.0.24
   '@types/qs': ^6.9.7
   '@types/steam-user': ^4.23.0
@@ -25,6 +26,7 @@ specifiers:
   fs-extra: ^9.1.0
   highlight.js: ^11.6.0
   i18n: ^0.15.0
+  lodash: ^4.17.21
   marked: ^4.0.19
   qs: ^6.10.3
   socks-proxy-agent: ^6.2.0
@@ -45,6 +47,7 @@ dependencies:
   express-ws: registry.npmmirror.com/express-ws/5.0.2_express@4.18.1
   form-data: registry.npmmirror.com/form-data/4.0.0
   i18n: registry.npmmirror.com/i18n/0.15.0
+  lodash: registry.npmmirror.com/lodash/4.17.21
   qs: registry.npmmirror.com/qs/6.11.0
   socks-proxy-agent: registry.npmmirror.com/socks-proxy-agent/6.2.1
   steam-user: registry.npmmirror.com/steam-user/4.24.6
@@ -58,6 +61,7 @@ devDependencies:
   '@types/i18n': registry.npmmirror.com/@types/i18n/0.13.4
   '@types/jquery': registry.npmmirror.com/@types/jquery/3.5.14
   '@types/js-yaml': registry.npmmirror.com/@types/js-yaml/4.0.5
+  '@types/lodash': registry.npmmirror.com/@types/lodash/4.14.185
   '@types/node': registry.npmmirror.com/@types/node/17.0.45
   '@types/qs': registry.npmmirror.com/@types/qs/6.9.7
   '@types/steam-user': registry.npmmirror.com/@types/steam-user/4.23.0
@@ -457,6 +461,12 @@ packages:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/json-schema/-/json-schema-7.0.11.tgz}
     name: '@types/json-schema'
     version: 7.0.11
+    dev: true
+
+  registry.npmmirror.com/@types/lodash/4.14.185:
+    resolution: {integrity: sha512-evMDG1bC4rgQg4ku9tKpuMh5iBNEwNa3tf9zRHdP1qlv+1WUg44xat4IxCE14gIpZRGUUWAx2VhItCZc25NfMA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/lodash/-/lodash-4.14.185.tgz}
+    name: '@types/lodash'
+    version: 4.14.185
     dev: true
 
   registry.npmmirror.com/@types/long/3.0.32:
@@ -2189,6 +2199,12 @@ packages:
     name: lodash.merge
     version: 4.6.2
     dev: true
+
+  registry.npmmirror.com/lodash/4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lodash/-/lodash-4.17.21.tgz}
+    name: lodash
+    version: 4.17.21
+    dev: false
 
   registry.npmmirror.com/loglevel/1.8.0:
     resolution: {integrity: sha512-G6A/nJLRgWOuuwdNuA6koovfEV1YpqqAG4pRUlFaz3jj2QNZ8M4vBqnVA+HBTmU/AMNUtlOsMmSpF6NyOjztbA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/loglevel/-/loglevel-1.8.0.tgz}
