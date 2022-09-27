@@ -312,3 +312,4 @@ pusher:
 - [yaml-lint](https://github.com/rasshofer/yaml-lint)
 - [express](https://github.com/expressjs/express)
 - [express-ws](https://github.com/HenningM/express-ws)
+- [lodash](https://github.com/lodash/lodash)
