@@ -5,7 +5,7 @@ import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy } from './tool';
 import * as SteamUser from 'steam-user';
-import events from 'events';
+import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 
 class SteamQuestSU {
