@@ -5,6 +5,8 @@ import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy } from './tool';
 import * as SteamUser from 'steam-user';
+import events from 'events';
+const EventEmitter = new events.EventEmitter();
 
 class SteamQuestSU {
   awaCookie: string;
@@ -23,6 +25,7 @@ class SteamQuestSU {
     loginKey?: string
     rememberPassword: boolean
   };
+  EventEmitter = EventEmitter;
 
   constructor({ awaCookie, awaHost, steamAccountName, steamPassword, proxy }: { awaCookie: string, awaHost: string, steamAccountName: string, steamPassword: string, proxy?: proxy }) {
     this.awaCookie = awaCookie;
@@ -280,6 +283,7 @@ class SteamQuestSU {
         });
     }
     if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
+      this.EventEmitter.emit('complete');
       new Logger(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
       this.resume();
       return true;

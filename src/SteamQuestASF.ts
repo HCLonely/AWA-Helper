@@ -4,6 +4,8 @@ import { AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy } from './tool';
+import events from 'events';
+const EventEmitter = new events.EventEmitter();
 
 class SteamQuestASF {
   awaCookie: string;
@@ -18,6 +20,7 @@ class SteamQuestASF {
   status = 'none';
   taskStatus!: Array<steamGameInfo>;
   awaHost: string;
+  EventEmitter = EventEmitter;
 
   constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy ?: proxy }) {
     this.awaCookie = awaCookie;
@@ -333,6 +336,7 @@ class SteamQuestASF {
         });
     }
     if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
+      this.EventEmitter.emit('complete');
       new Logger(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
       await this.resume();
       return true;

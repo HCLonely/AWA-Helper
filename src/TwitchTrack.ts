@@ -4,6 +4,8 @@ import { AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, sleep, time, netError, http as axios, formatProxy } from './tool';
+import events from 'events';
+const EventEmitter = new events.EventEmitter();
 
 class TwitchTrack {
   channelId!: string;
@@ -22,6 +24,7 @@ class TwitchTrack {
   awaHost: string;
   availableStreams!: Array<string>;
   availableStreamsInfo!: Array<string>;
+  EventEmitter = EventEmitter;
 
   // eslint-disable-next-line no-undef
   constructor({ awaHost, cookie, proxy }: { awaHost: string, cookie: string, proxy?: proxy }) {
@@ -268,6 +271,7 @@ class TwitchTrack {
           switch (response.data.state) {
           case 'daily_cap_reached':
             this.complete = true;
+            this.EventEmitter.emit('complete');
             new Logger(time() + chalk.green(response.data.message || __('obtainedArp')));
             returnText = 'complete';
             break;

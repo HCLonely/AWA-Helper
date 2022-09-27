@@ -42,6 +42,8 @@ class DailyQuest {
   ];
   dailyQuestName!: string;
   done:Array<string> = [];
+  listenTwitch = false;
+  listenSteam = false;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaHost, awaDailyQuestType, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaDailyQuestType?: Array<string>,  awaBoosterNotice:boolean, proxy?: proxy }) {
@@ -92,6 +94,17 @@ class DailyQuest {
     return 200;
   }
   async listen(twitch: TwitchTrack | null, steamQuest: SteamQuestASF | SteamQuestSU | null, check = false): Promise<void> {
+    if (twitch && !this.listenTwitch) {
+      twitch.EventEmitter.addListener('complete', () => {
+        this.listen(twitch, steamQuest);
+      });
+    }
+    if (steamQuest && !this.listenSteam) {
+      steamQuest.EventEmitter.addListener('complete', () => {
+        this.listen(twitch, steamQuest);
+      });
+    }
+
     if (await this.updateDailyQuests() === 200) {
       if (this.questInfo.steamQuest && steamQuest && parseInt(this.questInfo.steamQuest, 10) >= steamQuest.maxArp) {
         if (steamQuest.status === 'running') {

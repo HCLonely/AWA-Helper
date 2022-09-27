@@ -1,2 +1,3 @@
 - Update English Doc. Thanks @MonolithOrchids.
 - 每日任务数据库更新
+- 运行逻辑优化
