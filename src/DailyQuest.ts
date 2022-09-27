@@ -1144,7 +1144,7 @@ class DailyQuest {
   }
   formatQuestInfo() {
     const result = {
-      [`__('dailyTask')[${this.dailyQuestName[0]}]`]: {
+      [`${__('dailyTask')}[${this.dailyQuestName[0]}]`]: {
         // eslint-disable-next-line no-nested-ternary
         [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
         [__('obtainedARP')]: parseInt(this.questInfo.dailyQuest?.[0]?.arp || '0', 10),

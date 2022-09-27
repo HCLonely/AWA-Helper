@@ -198,7 +198,7 @@ process.on('uncaughtException', async (err) => {
   });
   if (await quest.init() !== 200) return;
   await quest.listen(null, null, true);
-  if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === quest.questInfo.dailyQuest?.length) {
+  if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
     await quest.do();
   }
   if (awaQuests.includes('timeOnSite') && quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {
