@@ -141,9 +141,9 @@ flowchart TD
 
 > **The`config.example.yml`file needs to be renamed to`config.yml`!!!**
 
-### AWA configuration (required)
+### Global configuration (required)
 
-#### AWA parameters description
+#### Global configuration parameters description
 
 ```yml
 language: 'zh' # Program display language, currently supports Chinese (zh) and English (en)
@@ -155,7 +155,7 @@ timeout: 0 # timeout setting，Unit: seconds, 0 means without limit. If the prog
 
 ### AWA configuration (Required)
 
-#### AWA Parameter Description
+#### AWA parameter description
 
 ```yml
 awaCookie: '' # AWA Cookie, it supports having only `REMEMBERME`, if there is no `REMEMBERME`, then you must have `PHPSESSID` and `sc`, but it will cause an error to get the number of consecutive login days, however it does not affect other functionalities
