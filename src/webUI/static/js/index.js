@@ -14,12 +14,21 @@ function __(text, ...argv) {
 }
 function generateTaskInfo(data) {
   if (data) {
-    $('#daily-quest').find('td').eq(0)
-      .text(data[__('dailyTask')][__('status')]);
-    $('#daily-quest').find('td').eq(1)
-      .text(data[__('dailyTask')][__('obtainedARP')]);
-    $('#daily-quest').find('td').eq(2)
-      .text(data[__('dailyTask')][__('maxAvailableARP')]);
+    Object.entries(data).filter(([name]) => name.includes(__('dailyTask'))).forEach(([name, value], index) => {
+      $(`#daily-quest-${index}`).find('th').text(name);
+      $(`#daily-quest-${index}`).find('td').eq(0)
+        .text(value[__('status')]);
+      $(`#daily-quest-${index}`).find('td').eq(1)
+        .text(value[__('obtainedARP')]);
+      $(`#daily-quest-${index}`).find('td').eq(2)
+        .text(value[__('maxAvailableARP')]);
+      $(`#daily-quest-${index}`).show();
+
+      if (value[__('obtainedARP')] > 0) {
+        $(`#daily-quest-${index}`).attr('class', 'table-success');
+      }
+    });
+
     $('#time-on-site').find('td').eq(0)
       .text(data[__('timeOnSite')][__('status')]);
     $('#time-on-site').find('td').eq(1)
@@ -38,9 +47,6 @@ function generateTaskInfo(data) {
       .text(data[__('steamQuest')][__('obtainedARP')]);
     $('#steam-quest').find('td').eq(2)
       .text(data[__('steamQuest')][__('maxAvailableARP')]);
-    if (data[__('dailyTask')][__('obtainedARP')] > 0) {
-      $('#daily-quest').attr('class', 'table-success');
-    }
     if (data[__('timeOnSite')][__('obtainedARP')] === data[__('timeOnSite')][__('maxAvailableARP')]) {
       $('#time-on-site').attr('class', 'table-success');
     }
@@ -55,7 +61,7 @@ function generateTaskInfo(data) {
     .text(__('obtainedARP'));
   $('#table-head').find('th').eq(3)
     .text(__('maxAvailableARP'));
-  $('#daily-quest').find('th').text(__('dailyTask'));
+  $('#daily-quest-0').find('th').text(__('dailyTask'));
   $('#time-on-site').find('th').text(__('timeOnSite'));
   $('#watch-twitch').find('th').text(__('watchTwitch'));
   $('#steam-quest').find('th').text(__('steamQuest'));
