@@ -300,7 +300,7 @@ class DailyQuest {
           this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-title')
             .toArray()
             .map((e) => $(e).text().trim());
-          this.questInfo.dailyQuest = dailyQuest.map((e) => ({ status: e[0], arp: e[1] }));
+          this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({ status, arp }));
           this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
               .toLowerCase())
@@ -423,29 +423,32 @@ class DailyQuest {
       }
     }
     for (const dailyQuestName of this.dailyQuestName) {
-      for (const quest of this.matchQuest(dailyQuestName)) {
-      // @ts-ignore
-        if (this[quest]) {
-        // @ts-ignore
-          await this[quest]();
-        } else if (quest === 'leaderboard') {
-          await this.openLink(`https://${this.host}/rewards/leaderboard`);
-        } else if (quest === 'marketplace') {
-          await this.openLink(`https://${this.host}/marketplace/`);
-        } else if (quest === 'rewards') {
-          await this.openLink(`https://${this.host}/rewards`);
-        } else if (quest === 'video') {
-          await this.openLink(`https://${this.host}/ucf/Video`);
+      const matchedQuest = this.matchQuest(dailyQuestName);
+      if (matchedQuest.length > 0) {
+        for (const quest of matchedQuest) {
+          // @ts-ignore
+          if (this[quest]) {
+            // @ts-ignore
+            await this[quest]();
+          } else if (quest === 'leaderboard') {
+            await this.openLink(`https://${this.host}/rewards/leaderboard`);
+          } else if (quest === 'marketplace') {
+            await this.openLink(`https://${this.host}/marketplace/`);
+          } else if (quest === 'rewards') {
+            await this.openLink(`https://${this.host}/rewards`);
+          } else if (quest === 'video') {
+            await this.openLink(`https://${this.host}/ucf/Video`);
+          }
+          this.done.push(quest);
+          await sleep(random(1, 2));
         }
-        this.done.push(quest);
-        await sleep(random(1, 2));
-      }
-    }
-    await this.updateDailyQuests();
-    if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
-      this.questStatus.dailyQuest = 'complete';
-      if (this.dailyQuestNumber < 2) {
-        return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
+        await this.updateDailyQuests();
+        if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
+          this.questStatus.dailyQuest = 'complete';
+          if (this.dailyQuestNumber < 2) {
+            return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
+          }
+        }
       }
     }
 
