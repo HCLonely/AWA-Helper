@@ -39,7 +39,7 @@ flowchart TD
 flowchart TD
   A([Start]) --> B{Is the task completed}
   B --> |Yes| C([Stop])
-  B --> |No| D[Send request repeatedly]
+  B --> |No| D[Send requests repeatedly]
   D -.-> E[Is the task completed] -. Finish .-> C
 ```
 
@@ -53,13 +53,13 @@ flowchart TD
   D --> E{Is there a live stream available}
   E --> |Yes| F[Get the live stream ID]
   E --> |No| G[Wait 10 minutes]
-  F --> |失败| K{There's other live streams available}
+  F --> |Fail| K{There's other live streams available}
   K --> |Yes| H[Change to another live stream]
   K --> |No| C
   H --> F
-  F --> |成功| I[Get ART widget info]
-  I --> |失败| K
-  I --> |成功| J[Send request repeatedly]
+  F --> |Success| I[Get ART widget info]
+  I --> |Fail| K
+  I --> |Success| J[Send requests repeatedly]
   J -.-> L[Is the task completed] -. Finish .-> C
 ```
 
@@ -177,6 +177,7 @@ awaDailyQuestType: # Daily quest type, you don't need to delete or comment it ou
   - viewNews # view news
   - sharePost # share post
   - replyPost # Reply to a post
+awaDailyQuestNumber1: true # Whether to only do the first quest when there are multiple daily quests
 ```
 
 #### How to get AWA parameters
@@ -212,8 +213,6 @@ document.cookie.split(';').filter((e) => ['unique_id','auth-token'].includes(e.s
 ### Steam Quest Configuration
 
 > How to idle Steam games, supports [ASF](https://github.com/JustArchiNET/ArchiSteamFarm) and [SU](https://github.com/DoctorMcKay/node-steam-user).
->
-> **`SU`is currently supported only if is running from source code!!!**
 
 ```yml
 steamUse: 'ASF' # 'ASF' or 'SU', 'SU' simulates Steam client
@@ -306,3 +305,6 @@ pusher:
 - [node-fs-extra](https://github.com/jprichardson/node-fs-extra)
 - [eslint](https://github.com/eslint/eslint)
 - [yaml-lint](https://github.com/rasshofer/yaml-lint)
+- [express](https://github.com/expressjs/express)
+- [express-ws](https://github.com/HenningM/express-ws)
+- [lodash](https://github.com/lodash/lodash)
