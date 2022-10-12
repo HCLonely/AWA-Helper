@@ -21,7 +21,6 @@ awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注�
   - changeBorder # 更换Border
   - changeBadge # 更换Badge
   - changeAvatar # 更换Avatar
-  - viewPost # 浏览帖子
   - viewNew # 浏览新闻
   - sharePost # 分享帖子
   - replyPost # 回复帖子

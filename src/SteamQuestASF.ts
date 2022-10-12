@@ -22,7 +22,7 @@ class SteamQuestASF {
   awaHost: string;
   EventEmitter = EventEmitter;
 
-  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy ?: proxy }) {
+  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy?: proxy }) {
     this.awaCookie = awaCookie;
     this.awaHost = awaHost || 'www.alienwarearena.com';
     this.botname = asfBotname;

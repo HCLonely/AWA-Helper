@@ -38,7 +38,6 @@ class DailyQuest {
     'changeBorder',
     'changeBadge',
     'changeAvatar',
-    'viewPost',
     'viewNew',
     'sharePost',
     'replyPost'
@@ -426,17 +425,20 @@ class DailyQuest {
       const matchedQuest = this.matchQuest(dailyQuestName);
       if (matchedQuest.length > 0) {
         for (const quest of matchedQuest) {
+          if (!this.awaDailyQuestType.includes(quest) || !this.awaDailyQuestType.includes(quest.replace(/s$/, ''))) {
+            continue;
+          }
           // @ts-ignore
-          if (this[quest]) {
+          if (this[quest] && (this.awaDailyQuestType.includes(quest) || this.awaDailyQuestType.includes(quest.replace(/s$/, '')))) {
             // @ts-ignore
             await this[quest]();
-          } else if (quest === 'leaderboard') {
+          } else if (quest === 'leaderboard' && this.awaDailyQuestType.includes('openLink')) {
             await this.openLink(`https://${this.host}/rewards/leaderboard`);
-          } else if (quest === 'marketplace') {
+          } else if (quest === 'marketplace' && this.awaDailyQuestType.includes('openLink')) {
             await this.openLink(`https://${this.host}/marketplace/`);
-          } else if (quest === 'rewards') {
+          } else if (quest === 'rewards' && this.awaDailyQuestType.includes('openLink')) {
             await this.openLink(`https://${this.host}/rewards`);
-          } else if (quest === 'video') {
+          } else if (quest === 'video' && this.awaDailyQuestType.includes('openLink')) {
             await this.openLink(`https://${this.host}/ucf/Video`);
           }
           this.done.push(quest);
