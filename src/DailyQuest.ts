@@ -38,7 +38,7 @@ class DailyQuest {
     'changeBorder',
     'changeBadge',
     'changeAvatar',
-    'viewNew',
+    'viewNews',
     'sharePost',
     'replyPost'
   ];
@@ -51,7 +51,7 @@ class DailyQuest {
   awaDailyQuestNumber1: boolean;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaDailyQuestType?: Array<string>, awaDailyQuestNumber1: boolean | undefined, awaBoosterNotice:boolean, proxy?: proxy }) {
+  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaDailyQuestType?: Array<string>, awaDailyQuestNumber1: boolean | undefined, awaBoosterNotice: boolean, proxy?: proxy }) {
     this.host = awaHost || 'www.alienwarearena.com';
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.headers = {
@@ -63,6 +63,9 @@ class DailyQuest {
     this.awaDailyQuestNumber1 = awaDailyQuestNumber1 ?? true;
     if (awaDailyQuestType) {
       this.awaDailyQuestType = awaDailyQuestType;
+      if (awaDailyQuestType.includes('viewNew')) {
+        this.awaDailyQuestType.push('viewNews');
+      }
     }
     if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
@@ -102,19 +105,22 @@ class DailyQuest {
   async listen(twitch: TwitchTrack | null, steamQuest: SteamQuestASF | SteamQuestSU | null, check = false): Promise<void> {
     if (twitch && !this.listenTwitch) {
       this.listenTwitch = true;
-      twitch.EventEmitter.addListener('complete', () => {
+      twitch.EventEmitter.addListener('complete', async () => {
+        await sleep(60);
         this.listen(twitch, steamQuest, true);
       });
     }
     if (steamQuest && !this.listenSteam) {
       this.listenSteam = true;
-      steamQuest.EventEmitter.addListener('complete', () => {
+      steamQuest.EventEmitter.addListener('complete', async () => {
+        await sleep(60);
         this.listen(twitch, steamQuest, true);
       });
     }
     if (!this.listenAwa) {
       this.listenAwa = true;
-      this.EventEmitter.addListener('complete', () => {
+      this.EventEmitter.addListener('complete', async () => {
+        await sleep(60);
         this.listen(twitch, steamQuest, true);
       });
     }
@@ -425,11 +431,8 @@ class DailyQuest {
       const matchedQuest = this.matchQuest(dailyQuestName);
       if (matchedQuest.length > 0) {
         for (const quest of matchedQuest) {
-          if (!this.awaDailyQuestType.includes(quest) || !this.awaDailyQuestType.includes(quest.replace(/s$/, ''))) {
-            continue;
-          }
           // @ts-ignore
-          if (this[quest] && (this.awaDailyQuestType.includes(quest) || this.awaDailyQuestType.includes(quest.replace(/s$/, '')))) {
+          if (this[quest] && this.awaDailyQuestType.includes(quest)) {
             // @ts-ignore
             await this[quest]();
           } else if (quest === 'leaderboard' && this.awaDailyQuestType.includes('openLink')) {

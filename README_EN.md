@@ -34,7 +34,6 @@ flowchart TD
 
 ### AWA Online
 
-
 ```mermaid
 flowchart TD
   A([Start]) --> B{Is the task completed}
