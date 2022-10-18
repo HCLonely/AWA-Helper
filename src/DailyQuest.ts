@@ -66,6 +66,9 @@ class DailyQuest {
       if (awaDailyQuestType.includes('viewNew')) {
         this.awaDailyQuestType.push('viewNews');
       }
+      if (awaDailyQuestType.includes('sharePost')) {
+        this.awaDailyQuestType.push('sharePosts');
+      }
     }
     if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
@@ -462,7 +465,7 @@ class DailyQuest {
     if (this.awaDailyQuestType.includes('changeAvatar') && !this.done.includes('changeAvatar')) await this.changeAvatar();
     // if (this.awaDailyQuestType.includes('viewPost') && !this.done.includes('viewPost')) await this.viewPosts();
     if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) await this.viewNews();
-    if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePosts')) await this.sharePosts();
+    if (this.awaDailyQuestType.includes('sharePosts') && !this.done.includes('sharePosts')) await this.sharePosts();
 
     await this.updateDailyQuests();
     if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
