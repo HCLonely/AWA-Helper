@@ -239,7 +239,7 @@ class TwitchTrack {
       });
   }
   async sendTrack():Promise<void> {
-    if (!this.channelId) {
+    if (!this.channelId || !this.jwt) {
       if (await this.getExtInfo() !== true) {
         await sleep(60 * 5);
         this.sendTrack();
