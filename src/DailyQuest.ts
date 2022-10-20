@@ -1037,9 +1037,21 @@ class DailyQuest {
             return false;
           }
           const [, , awaUserId] = response.data.match(/(var|let)[\s]+?user_id[\s]*?=[\s]*?([\d]+);/);
-          const [, , awaBorderId] = response.data.match(/(var|let)[\s]+?selectedBorder[\s]*?=[\s]*?([\d]+);/);
-          const [, , awaBadgeIds] = response.data.match(/(var|let)[\s]+?selectedBadges[\s]*?=[\s]*?\[(([\d]+)(,[\d]+)*?)\];/);
+          const [, , awaBorderId] = response.data.match(/(var|let)[\s]+?selectedBorder[\s]*?=[\s]*?([\d]+);/) || [];
+          const [, , awaBadgeIds] = response.data.match(/(var|let)[\s]+?selectedBadges[\s]*?=[\s]*?\[(([\d]+)(,[\d]+)*?)\];/) || [];
           this.userId = awaUserId;
+          if (!awaBorderId && !awaBadgeIds) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBorderAndBadges')}`));
+            return false;
+          }
+          if (!awaBorderId) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBorder')}`));
+            return false;
+          }
+          if (!awaBadgeIds) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBadges')}`));
+            return false;
+          }
           this.borderId = awaBorderId;
           this.badgeIds = awaBadgeIds.split(',');
           fs.writeFileSync('awa-info.json', JSON.stringify({

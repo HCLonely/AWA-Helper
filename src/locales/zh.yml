@@ -65,6 +65,9 @@ steamQuest: Steam任务
 matchingDailyQuestDb: 正在匹配AWA每日任务数据库...
 notMatchedDailyQuest: 没有匹配到今日任务，将逐一进行尝试
 success: 成功
+noBorder: 没有获取到正在佩戴的 Border, 请先在 Personalization 页面设置一次！
+noBadges: 没有获取到正在佩戴的 Badges, 请先在 Personalization 页面设置一次！
+noBorderAndBadges: 没有获取到正在佩戴的 Border 和 Badges, 请先在 Personalization 页面设置一次！
 
 ### TwitchTrack.ts ###
 initing: 正在初始化 %s...
