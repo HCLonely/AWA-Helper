@@ -122,9 +122,9 @@ class SteamQuestSU {
   }
   async awaCheckOwnedGames(name: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('recheckingOwnedGames', chalk.yellow(name))}`, false);
-    const taskUrl = `https://www.alienwarearena.com/steam/quests/${name}`;
+    const taskUrl = `https://${this.awaHost}/steam/quests/${name}`;
     const options: myAxiosConfig = {
-      url: `https://www.alienwarearena.com/ajax/user/steam/quests/check-owned-games/${name}`,
+      url: `https://${this.awaHost}/ajax/user/steam/quests/check-owned-games/${name}`,
       method: 'GET',
       headers: {
         cookie: this.awaCookie,
@@ -171,7 +171,7 @@ class SteamQuestSU {
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'user-agent': globalThis.userAgent,
-        referer: 'https://www.alienwarearena.com/steam/quests'
+        referer: `https://${this.awaHost}/steam/quests`
       },
       Logger: logger
     };
@@ -254,7 +254,7 @@ class SteamQuestSU {
           'accept-encoding': 'gzip, deflate, br',
           'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
           'user-agent': globalThis.userAgent,
-          referer: 'https://www.alienwarearena.com/steam/quests'
+          referer: `https://${this.awaHost}/steam/quests`
         },
         Logger: logger
       };

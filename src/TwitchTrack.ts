@@ -130,6 +130,9 @@ class TwitchTrack {
     const options: myAxiosConfig = {
       url: `https://${this.awaHost}/twitch/live`,
       method: 'GET',
+      headers: {
+        'User-Agent': globalThis.userAgent
+      },
       Logger: logger
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
@@ -167,7 +170,11 @@ class TwitchTrack {
     const twitchOptions: myAxiosConfig = {
       url: 'https://gql.twitch.tv/gql',
       method: 'POST',
-      headers: { Authorization: `OAuth ${this.formatedCookie['auth-token']}`, 'Client-Id': this.clientId },
+      headers: {
+        Authorization: `OAuth ${this.formatedCookie['auth-token']}`,
+        'Client-Id': this.clientId,
+        'User-Agent': globalThis.userAgent
+      },
       data: `[{"operationName":"ActiveWatchParty","variables":{"channelLogin":"${this.availableStreams[index]}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"4a8156c97b19e3a36e081cf6d6ddb5dbf9f9b02ae60e4d2ff26ed70aebc80a30"}}}]`,
       Logger: logger
     };
@@ -248,14 +255,15 @@ class TwitchTrack {
     }
     const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
     const options: myAxiosConfig = {
-      url: 'https://www.alienwarearena.com/twitch/extensions/track',
+      url: `https://${this.awaHost}/twitch/extensions/track`,
       method: 'GET',
       headers: {
         origin: `https://${this.extensionID}.ext-twitch.tv`,
         referer: `https://${this.extensionID}.ext-twitch.tv/`,
         'user-agent': globalThis.userAgent,
         'x-extension-channel': this.channelId,
-        'x-extension-jwt': this.jwt
+        'x-extension-jwt': this.jwt,
+        'User-Agent': globalThis.userAgent
       },
       Logger: logger
     };

@@ -61,6 +61,7 @@
   });
 
   fs.copySync('src/webUI', 'dist/webUI', { filter: (fileName) => !/\.ts$/.test(fileName) });
+  // fs.copySync('src/crts', 'dist/crts', { filter: (fileName) => !/\.ts$/.test(fileName) });
 
   fs.writeFileSync('dist/运行.bat', 'start cmd /k "node index.js"');
   fs.writeFileSync('dist/运行-auto.bat', 'powershell -file "scripts/node_checker.ps1"');
