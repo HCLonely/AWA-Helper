@@ -1191,7 +1191,7 @@ class DailyQuest {
     };
     if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
       for (let i = 1; i < this.questInfo.dailyQuest.length; i++) {
-        result[`__('dailyTask')[${this.dailyQuestName[i]}]`] = {
+        result[`${__('dailyTask')}[${this.dailyQuestName[i]}]`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
           [__('obtainedARP')]: parseInt(this.questInfo.dailyQuest?.[i]?.arp || '0', 10),
