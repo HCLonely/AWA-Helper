@@ -16,19 +16,31 @@ import { app as expressApp } from './webUI/index';
 
 process.on('SIGTERM', async () => {
   new Logger(time() + chalk.yellow(__('processWasKilled')));
-  await push(`${__('pushTitle')}\n${__('processWasKilled')}`);
+  try {
+    await push(`${__('pushTitle')}\n${__('processWasKilled')}${globalThis.quest?.formatQuestInfo ? `\n\n${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => `${name}:  ${value[__('obtainedARP')]} ARP`).join('\n')}` : ''}`);
+  } catch (e) {
+    await push(`${__('pushTitle')}\n${__('processWasKilled')}`);
+  }
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   new Logger(time() + chalk.yellow(__('processWasInterrupted')));
-  await push(`${__('pushTitle')}\n${__('processWasInterrupted')}`);
+  try {
+    await push(`${__('pushTitle')}\n${__('processWasInterrupted')}${globalThis.quest?.formatQuestInfo ? `\n\n${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => `${name}:  ${value[__('obtainedARP')]} ARP`).join('\n')}` : ''}`);
+  } catch (e) {
+    await push(`${__('pushTitle')}\n${__('processWasInterrupted')}`);
+  }
   process.exit(0);
 });
 
 process.on('uncaughtException', async (err) => {
   new Logger(time() + chalk.yellow(__('processError')));
-  await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}`);
+  try {
+    await push(`${__('pushTitle')}\n${__('processError')}${globalThis.quest?.formatQuestInfo ? `\n\n${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => `${name}:  ${value[__('obtainedARP')]} ARP`).join('\n')}` : ''}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}`);
+  } catch (e) {
+    await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}`);
+  }
   new Logger(`Uncaught Exception: ${err.message}`);
   process.exit(1);
 });
@@ -198,6 +210,7 @@ process.on('uncaughtException', async (err) => {
   });
   if (await quest.init() !== 200) return;
   await quest.listen(null, null, true);
+  globalThis.quest = quest;
   if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
     await quest.do();
   }
