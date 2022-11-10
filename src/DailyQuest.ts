@@ -82,7 +82,7 @@ class DailyQuest {
       new Logger(`${time()}${__('noREMEMBERMEAlert', chalk.yellow('awaCookie')), chalk.blue('REMEMBERME')}`);
     }
     if ((this.headers.cookie as string).includes('REMEMBERME=deleted')) {
-      return 402;
+      return 602;
     }
     const result = await this.updateDailyQuests(true);
     if (result !== 200) {
@@ -94,14 +94,20 @@ class DailyQuest {
       this.borderId = awaBorderId;
       this.avatar = awaAvatar;
       this.badgeIds = awaBadgeIds;
-      if (!(awaUserId && awaBorderId && awaBadgeIds) && !(await this.getPersonalization())) {
-        return 405;
+      if (!(awaUserId && awaBorderId && awaBadgeIds)) {
+        const result = await this.getPersonalization();
+        if (result !== 200) {
+          return result;
+        }
       }
-      if (!awaAvatar && !(await this.getAvatar())) {
-        return 405;
+      if (!awaAvatar) {
+        const result = await this.getAvatar();
+        if (result !== 200) {
+          return result;
+        }
       }
     } else if (!(await this.getPersonalization() && await this.getAvatar())) {
-      return 405;
+      return 603;
     }
     return 200;
   }
@@ -233,12 +239,12 @@ class DailyQuest {
         if (response.status === 200) {
           if (response.data.toLowerCase().includes('we have detected an issue with your network')) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
-            return 410;
+            return 610;
           }
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
-            return 401;
+            return 602;
           }
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           if (verify) {
@@ -1015,7 +1021,7 @@ class DailyQuest {
     if (!render) return false;
   }
   */
-  async getPersonalization(): Promise<boolean> {
+  async getPersonalization(): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingUserInfo', chalk.yellow('Personalization'))}`, false);
     const options: myAxiosConfig = {
       url: `https://${this.host}/account/personalization`,
@@ -1034,7 +1040,7 @@ class DailyQuest {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
-            return false;
+            return 602;
           }
           const [, , awaUserId] = response.data.match(/(var|let)[\s]+?user_id[\s]*?=[\s]*?([\d]+);/);
           const [, , awaBorderId] = response.data.match(/(var|let)[\s]+?selectedBorder[\s]*?=[\s]*?([\d]+);/) || [];
@@ -1042,15 +1048,15 @@ class DailyQuest {
           this.userId = awaUserId;
           if (!awaBorderId && !awaBadgeIds) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBorderAndBadges')}`));
-            return false;
+            return 603;
           }
           if (!awaBorderId) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBorder')}`));
-            return false;
+            return 604;
           }
           if (!awaBadgeIds) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBadges')}`));
-            return false;
+            return 405;
           }
           this.borderId = awaBorderId;
           this.badgeIds = awaBadgeIds.split(',');
@@ -1061,21 +1067,21 @@ class DailyQuest {
             awaAvatar: this.avatar
           }));
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
+          return 200;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
         new Logger(response.data || response.statusText);
-        return false;
+        return 0;
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
-        return false;
+        return 0;
       });
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getAvatar(): Promise<boolean> {
+  async getAvatar(): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingUserInfo', chalk.yellow('Avatar'))}`, false);
     const options: myAxiosConfig = {
       url: `https://${this.host}/avatar/edit`,
@@ -1094,7 +1100,7 @@ class DailyQuest {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
-            return false;
+            return 602;
           }
           const awaAvatar = JSON.stringify({
             body: null, hat: null, top: null, item: null, legs: null, ...Object.fromEntries($('.drag-drop').toArray().map((e) => {
@@ -1124,16 +1130,16 @@ class DailyQuest {
             awaBadgeIds: this.badgeIds,
             awaAvatar: this.avatar
           }));
-          return true;
+          return 200;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
-        return false;
+        return 0;
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
         new Logger(error);
-        return false;
+        return 0;
       });
   }
   matchQuest(dailyQuestName: string): Array<string> {

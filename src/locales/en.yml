@@ -14,8 +14,12 @@ pushTitle: 'AWA-Helper Reminder:'
 processWasKilled: Task process terminated
 processWasInterrupted: The task process was manually terminated
 processError: The task process exited abnormally
+processInitError: Task initialization error
 errorMessage: Error message
 processTimeout: Run timeout. Force quit the program
+unknownError: Unknown error
+netError: Net error
+checkLog: Check the log for details
 
 ### DailyQuest.ts ###
 noREMEMBERMEAlert: Detected that there are no %s parameters, which may result in an error in obtaining the number of consecutive days checked-in. However, it does not affect other functionality

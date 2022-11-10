@@ -14,8 +14,12 @@ pushTitle: 'AWA-Helper提醒:'
 processWasKilled: 任务进程被终止
 processWasInterrupted: 任务进程被人为终止
 processError: 任务进程异常退出
+processInitError: 任务初始化出错
 errorMessage: 错误信息
 processTimeout: 运行超时，强制退出程序
+unknownError: 未知错误
+netError: 网络错误
+checkLog: 详情请查看日志
 
 ### DailyQuest.ts ###
 noREMEMBERMEAlert: 检测到 %s 中没有 %s ，可能会导致连续签到天数获取错误，不影响其他功能

@@ -127,6 +127,7 @@ declare global {
   var pusher: pusher | undefined;
   var pusherProxy: proxy;
   var quest: DailyQuest;
+  var initError: string;
   // eslint-disable-next-line no-underscore-dangle
   var __: I18n['__'];
 }

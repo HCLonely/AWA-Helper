@@ -208,7 +208,25 @@ process.on('uncaughtException', async (err) => {
     awaDailyQuestNumber1,
     proxy
   });
-  if (await quest.init() !== 200) return;
+  const initResult = await quest.init();
+  if (initResult !== 200) {
+    const errorMap = {
+      0: __('netError'),
+      602: __('tokenExpired'),
+      603: __('noBorderAndBadges'),
+      604: __('noBorder'),
+      605: __('noBadges'),
+      610: __('ipBanned')
+    };
+    const initError = errorMap[initResult as keyof typeof errorMap] || __('unknownError');
+    try {
+      await push(`${__('pushTitle')}\n${__('processInitError')}\n\n${initError}, ${__('checkLog')}`);
+    } catch (e) {
+      await push(`${__('pushTitle')}\n${__('processInitError')}`);
+    }
+    process.exit(0);
+    return;
+  }
   await quest.listen(null, null, true);
   globalThis.quest = quest;
   if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
