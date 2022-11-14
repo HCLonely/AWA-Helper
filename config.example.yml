@@ -35,7 +35,7 @@ steamUse: 'ASF' # 'ASF'或'SU','SU'为模拟Steam客户端
 # steamUse为'ASF'时此配置有效
 asfProtocol: 'http'
 asfHost: '127.0.0.1'
-asfPort: '1242'
+asfPort: 1242
 asfPassword: ''
 asfBotname: ''
 #### Steam 配置 (此配置与ASF 配置二选一) ####

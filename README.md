@@ -142,6 +142,8 @@ flowchart TD
 ## config文件配置
 
 > **需要复制一份`config.example.yml`文件并重命名为`config.yml`!!!**
+>
+> 或直接用[参数生成器](https://configer.hclonely.com/?fileLink=https%3A%2F%2Fraw.githubusercontent.com%2FHCLonely%2FAWA-Helper%2Fmain%2Fconfiger%2Fconfiger.template.yml.js)生成配置文件
 
 ### 全局配置(必需)
 
