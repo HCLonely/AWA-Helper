@@ -142,11 +142,11 @@
       type: text
     steamAccountName:
       name: Steam 用户名
-      desp: 使用`SU`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
+      desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
       type: text
     steamPassword:
       name: Steam 密码
-      desp: 使用`SU`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
+      desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
       type: text
     proxy:
       name: 代理设置
