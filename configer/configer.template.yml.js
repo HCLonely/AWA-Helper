@@ -114,40 +114,45 @@
         - ASF
         - node-steam-user
       defaultValue: ASF
-    asfProtocol:
-      name: ASF 协议
-      desp: ASF使用的协议，一般都是`http`
-      type: single-select
-      options:
-        - http
-        - https
-      defaultValue: http
-    asfHost:
-      name: ASF 地址
-      desp: ASF使用的Host，本地运行一般是`127.0.0.1`
-      type: text
-      defaultValue: '127.0.0.1'
-    asfPort:
-      name: ASF 端口
-      desp: ASF使用的端口，默认是`1242`
-      type: text
-      inputType: number
-      defaultValue: 1242
-    asfPassword:
-      name: ASF 密码
-      type: text
-    asfBotname:
-      name: ASF Botname
-      desp: 要挂游戏的ASF Bot名称
-      type: text
-    steamAccountName:
-      name: Steam 用户名
-      desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
-      type: text
-    steamPassword:
-      name: Steam 密码
-      desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
-      type: text
+      bindValue:
+        type: object
+        body:
+          ASF:
+            asfProtocol:
+              name: ASF 协议
+              desp: ASF使用的协议，一般都是`http`
+              type: single-select
+              options:
+                - http
+                - https
+              defaultValue: http
+            asfHost:
+              name: ASF 地址
+              desp: ASF使用的Host，本地运行一般是`127.0.0.1`
+              type: text
+              defaultValue: '127.0.0.1'
+            asfPort:
+              name: ASF 端口
+              desp: ASF使用的端口，默认是`1242`
+              type: text
+              inputType: number
+              defaultValue: 1242
+            asfPassword:
+              name: ASF 密码
+              type: text
+            asfBotname:
+              name: ASF Botname
+              desp: 要挂游戏的ASF Bot名称
+              type: text
+          SU:
+            steamAccountName:
+              name: Steam 用户名
+              desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
+              type: text
+            steamPassword:
+              name: Steam 密码
+              desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
+              type: text
     proxy:
       name: 代理设置
       type: object
@@ -266,6 +271,7 @@
             - Zulip
           bindValue:
             type: object
+            isChildren: true
             body:
               Bark:
                 key:
