@@ -899,6 +899,27 @@ class DailyQuest {
     }
     return true;
   }
+  async promoView(id: string, token: string): Promise<void> {
+    const options: myAxiosConfig = {
+      url: `https://${this.host}/ajax/promo/view/${id}`,
+      method: 'POST',
+      headers: {
+        ...this.headers,
+        accept: '*/*',
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        origin: `https://${this.host}`,
+        referer: `https://${this.host}/ucf/show/2162951/boards/awa-information/News/arp-6-0`
+      },
+      data: `token=${token}`
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    await axios(options)
+      .then((response) => {
+        console.log(response);
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+      })
+      .catch(() => { });
+  }
   async viewNews(): Promise<void> {
     const options: myAxiosConfig = {
       url: `https://${this.host}/ucf/show/2162951/boards/awa-information/News/arp-6-0`,
@@ -910,7 +931,19 @@ class DailyQuest {
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     await axios(options)
-      .then((response) => globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|'))
+      .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        const $ = load(response.data);
+        const promoViewScriptHtml = $('script')
+          .filter((i, script) => !!$(script).html()?.includes('/ajax/promo/view/'))
+          .map((i, script) => $(script).html())
+          .toArray();
+        for (const scriptHtml of promoViewScriptHtml) {
+          const [, urlId] = scriptHtml.match(/"\/ajax\/promo\/view\/([\d]+?)"/) || [];
+          const [, token] = scriptHtml.match(/token:[\s]*?'(.+?)'/) || [];
+          await this.promoView(urlId, token);
+        }
+      })
       .catch(() => { });
     await this.viewPost('2162951');
   }
