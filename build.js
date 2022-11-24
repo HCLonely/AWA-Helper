@@ -64,6 +64,7 @@
   fs.copySync('configer/configer.template.yml.js', 'dist/configer.template.yml.js');
 
   fs.writeFileSync('dist/运行.bat', 'start cmd /k "node index.js"');
-  fs.writeFileSync('dist/运行-auto.bat', 'powershell -file "scripts/node_checker.ps1"');
+  // eslint-disable-next-line max-len
+  fs.writeFileSync('dist/运行-auto.bat', 'where "powershell" && powershell -file "scripts/node_checker.ps1" || where "pwsh" && pwsh -file "scripts/node_checker.ps1" || echo Powershell Not Found! && pause');
   await zipdir('dist', { saveTo: './AWA-Helper.zip' });
 })();
