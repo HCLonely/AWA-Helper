@@ -178,7 +178,7 @@ process.on('uncaughtException', async (err) => {
   if (timeout && typeof timeout === 'number' && timeout > 0) {
     setTimeout(async () => {
       new Logger(chalk.yellow(__('processTimeout')));
-      await push(`${__('pushTitle')}\n${__('processTimeout')}`);
+      await push(`${__('pushTitle')}\n${__('processTimeout')}${globalThis.quest?.formatQuestInfo ? `\n\n${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => `${name}:  ${value[__('obtainedARP')]} ARP`).join('\n')}` : ''}`);
       process.exit(0);
     }, timeout * 1000);
   }
