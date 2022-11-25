@@ -122,7 +122,7 @@ flowchart TD
 1. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载打包好的压缩包
 2. 解压
 3. 编辑配置文件,[查看说明](#config文件配置)
-4. 双击`运行-auto.bat`运行(缺少依赖会自动安装)
+4. Windows: 双击`运行-auto.bat`运行(缺少依赖会自动安装).Linux: `sudo ./run_auto.sh`
 
 #### 自行安装依赖
 
@@ -131,13 +131,13 @@ flowchart TD
 3. 解压
 4. 安装依赖`npm install --save`
 5. 编辑配置文件,[查看说明](#config文件配置)
-6. 双击`运行.bat`运行
+6. Windows: 双击`运行.bat`运行. Linux: `node index.js`
 
 #### 更新
 
 1. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载最新版的压缩包
 2. 解压并覆盖
-3. 双击`运行.bat`运行
+3. Windows: 双击`运行.bat`运行. Linux: `node index.js`
 
 ## config文件配置
 

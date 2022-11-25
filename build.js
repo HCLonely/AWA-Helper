@@ -14,7 +14,8 @@
     'package.json',
     'package-lock.json',
     'scripts/modules_checker.js',
-    'scripts/node_checker.ps1'
+    'scripts/node_checker.ps1',
+    'scripts/node_checker.sh'
   ];
   fileList.forEach((e) => {
     fs.copySync(e, `dist/${e}`);
@@ -66,5 +67,6 @@
   fs.writeFileSync('dist/运行.bat', 'start cmd /k "node index.js"');
   // eslint-disable-next-line max-len
   fs.writeFileSync('dist/运行-auto.bat', 'where "powershell" && powershell -file "scripts/node_checker.ps1" || where "pwsh" && pwsh -file "scripts/node_checker.ps1" || echo Powershell Not Found! && pause');
+  fs.writeFileSync('dist/run_auto.sh', './scripts/node_checker.sh');
   await zipdir('dist', { saveTo: './AWA-Helper.zip' });
 })();
