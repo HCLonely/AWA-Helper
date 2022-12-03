@@ -47,13 +47,15 @@ then
   echo 'Starting AWA-Helper...'
   node index.js
 else
-  if [ `./node-v18.12.1-win-x64/bin/node -v | grep "v18\."` != '' ];
+  if [ `./node-v18.12.1-linux-x64/bin/node -v | grep "v18\."` != '' ];
   then
     echo 'Checking if all dependencies are installed...'
-    ./node-v18.12.1-win-x64/bin/node scripts/modules_checker.js
+    ./node-v18.12.1-linux-x64/bin/node scripts/modules_checker.js  "./node-v18.12.1-linux-x64/"
     echo 'Starting AWA-Helper...'
-    ./node-v18.12.1-win-x64/bin/node index.js
+    ./node-v18.12.1-linux-x64/bin/node index.js
   else
     echo "\033[31mInstalling Failed\033[0m"
   fi
 fi
+
+rm -f node-v18.12.1-linux-x64.tar.xz

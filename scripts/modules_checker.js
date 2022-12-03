@@ -4,7 +4,7 @@ const path = require('path');
 const green = (text) => `\x1B[32m${text}\x1B[0m`;
 const red = (text) => `\x1B[31m${text}\x1B[0m`;
 
-const npmCommand = process.argv[2] ? path.resolve(`${process.argv[2]}npm`) : 'npm';
+const npmCommand = process.argv[2] ? `"${path.resolve(`${process.argv[2]}npm`)}"` : 'npm';
 
 // 安装模块
 const installDependencies = () => {
