@@ -118,7 +118,10 @@ declare global {
         proxy?: proxy
       }
   }
-  var secrets: string;
+  interface cookies {
+    [name: string]: string
+  }
+  var secrets: Array<string>;
   var userAgent: string;
   var ws: WebSocket | null;
   var webUI: boolean;

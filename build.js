@@ -12,7 +12,6 @@
     'CHANGELOG.txt',
     'dailyQuestDb.json',
     'package.json',
-    'package-lock.json',
     'scripts/modules_checker.js',
     'scripts/node_checker.ps1',
     'scripts/node_checker.sh',

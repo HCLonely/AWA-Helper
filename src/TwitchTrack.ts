@@ -3,7 +3,7 @@
 import { AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
-import { Logger, sleep, time, netError, http as axios, formatProxy } from './tool';
+import { Logger, sleep, time, netError, http as axios, formatProxy, Cookie } from './tool';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 
@@ -14,10 +14,7 @@ class TwitchTrack {
   extensionID!: string;
   trackError = 0;
   trackTimes = 0;
-  formatedCookie: {
-    [name: string]: string
-  } = {};
-  cookie: string;
+  cookie: Cookie;
   httpsAgent!: myAxiosConfig['httpsAgent'];
   headers: AxiosRequestHeaders;
   complete = false;
@@ -29,20 +26,15 @@ class TwitchTrack {
   // eslint-disable-next-line no-undef
   constructor({ awaHost, cookie, proxy }: { awaHost: string, cookie: string, proxy?: proxy }) {
     this.awaHost = awaHost || 'www.alienwarearena.com';
-    this.cookie = cookie;
-    cookie.split(';').map((e: string) => {
-      const [name, value] = e.split('=');
-      this.formatedCookie[name.trim()] = value?.trim();
-      return e;
-    });
+    this.cookie = new Cookie(cookie);
     this.headers = {
-      Authorization: `OAuth ${this.formatedCookie['auth-token']}`,
+      Authorization: `OAuth ${this.cookie.get('auth-token')}`,
       'Content-Type': 'text/plain;charset=UTF-8',
       Host: 'gql.twitch.tv',
       Origin: 'https://www.twitch.tv',
       Referer: 'https://www.twitch.tv/',
       'User-Agent': globalThis.userAgent,
-      'X-Device-Id': this.formatedCookie.unique_id
+      'X-Device-Id': this.cookie.get('unique_id') as string
     };
     if (proxy?.enable?.includes('twitch') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
@@ -55,7 +47,6 @@ class TwitchTrack {
       url: 'https://www.twitch.tv/',
       method: 'GET',
       headers: {
-        Cookie: this.formatedCookie['auth-token'],
         Host: 'www.twitch.tv',
         'User-Agent': globalThis.userAgent
       },
@@ -65,10 +56,10 @@ class TwitchTrack {
 
     const result = await axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
-          const optionScript = $('script').filter((i, e) => !!$(e).html()?.includes('clientId'));
+          const optionScript = $('script').filter((_, e) => !!$(e).html()?.includes('clientId'));
           if (optionScript.length === 0) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error: optionScript not found!'));
             return false;
@@ -87,7 +78,7 @@ class TwitchTrack {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -109,7 +100,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e: any) => e.name === 'Arena Rewards Tracker');
         if (linkedExtension) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('authorized')));
@@ -120,7 +111,7 @@ class TwitchTrack {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -138,7 +129,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           this.availableStreams = $('div.media a[href]').toArray().map((e) => $(e).attr('href')
@@ -158,7 +149,7 @@ class TwitchTrack {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -171,7 +162,7 @@ class TwitchTrack {
       url: 'https://gql.twitch.tv/gql',
       method: 'POST',
       headers: {
-        Authorization: `OAuth ${this.formatedCookie['auth-token']}`,
+        Authorization: `OAuth ${this.cookie.get('auth-token')}`,
         'Client-Id': this.clientId,
         'User-Agent': globalThis.userAgent
       },
@@ -181,7 +172,7 @@ class TwitchTrack {
     if (this.httpsAgent) twitchOptions.httpsAgent = this.httpsAgent;
     return axios(twitchOptions)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         const channelId = response.data?.[0]?.data?.user?.id;
         if (!channelId) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
@@ -193,7 +184,7 @@ class TwitchTrack {
       })
       .catch(async (error) => {
         logger.log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return await this.getChannelInfo(index + 1);
       });
@@ -218,7 +209,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
         if (!extensions?.length) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noExt')}`));
@@ -240,7 +231,7 @@ class TwitchTrack {
       })
       .catch(async (error) => {
         logger.log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return await this.getExtInfo((returnedIndex as number) + 1);
       });
@@ -270,7 +261,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     const status = await axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           this.trackError = 0;
@@ -301,7 +292,7 @@ class TwitchTrack {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });

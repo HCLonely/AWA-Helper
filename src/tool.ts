@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, retryAdapterOptions */
+/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, retryAdapterOptions, cookies */
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
 import * as fs from 'fs';
@@ -12,29 +12,29 @@ import { PushApi } from 'all-pusher-api';
 
 globalThis.logs = { type: 'logs' };
 
-const getSecertValue = (): string => {
+const getSecertValue = (): Array<string> => {
   if (!fs.existsSync('config.yml')) {
-    return '__________';
+    return [];
   }
   try {
     const {
-      awaCookie = '__________',
-      twitchCookie = '__________',
-      asfPassword = '__________',
+      awaCookie,
+      twitchCookie,
+      asfPassword,
       proxy: {
-        host = '__________',
-        username = '__________',
-        password = '__________'
+        host,
+        username,
+        password
       },
-      asfHost = '__________'
+      asfHost
     } = parse(fs.readFileSync('config.yml').toString());
     const secrets = [];
-    secrets.push(...awaCookie.split(';').map((e: string) => e.split('=')[1]).filter((e: any) => e));
-    secrets.push(...twitchCookie.split(';').map((e: string) => e.split('=')[1]).filter((e: any) => e));
+    secrets.push(...Object.values(Cookie.ToJson(awaCookie || '')));
+    secrets.push(...Object.values(Cookie.ToJson(twitchCookie || '')));
     secrets.push(asfPassword, host, username, password, asfHost);
-    return [...new Set(secrets)].join('|');
+    return [...new Set(secrets)];
   } catch {
-    return '__________';
+    return [];
   }
 };
 
@@ -42,9 +42,10 @@ globalThis.secrets = getSecertValue();
 
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
+    const secretsRegexp = new RegExp(globalThis.secrets.filter((secret) => secret && secret.length > 5).join('|'), 'gi');
     // eslint-disable-next-line no-control-regex
     return e.replace(/\x1B\[[\d]*?m/g, '')
-      .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********');
+      .replace(secretsRegexp, '********');
   }
 
   return format(e);
@@ -241,7 +242,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
   }
   return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then((response) => {
-      globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+      globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
       const latestVersion = response.headers.location.match(/tag\/v?([\d.]+)/)?.[1];
       if (latestVersion) {
         const currentVersionArr = version.replace('V', '').split('.').map((e) => parseInt(e, 10));
@@ -263,7 +264,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     })
     .catch((error) => {
       ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-      globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+      globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
       new Logger(error);
       return;
     });
@@ -308,4 +309,64 @@ const push = async (message: string) => {
   new Logger(result[0].result);
 };
 
-export { Logger, sleep, random, time, checkUpdate, netError, ask, http, formatProxy, push };
+class Cookie {
+  cookie: cookies;
+
+  static ToJson(data: string | Array<string> | null | undefined): cookies {
+    if (typeof data === 'string') {
+      return Object.fromEntries(data.split(';').filter((cookies) => cookies.trim()).map((cookies) => cookies.trim().split('=').map(((str) => str.trim()))));
+    }
+    if (Array.isArray(data)) {
+      return Object.fromEntries(data.map((ck) => Object.entries(this.ToJson(ck.split(';')[0]))));
+    }
+    return {};
+  }
+  static ToString(data: object | Array<string>): string {
+    if (Array.isArray(data)) {
+      data = this.ToJson(data);
+    }
+    if (typeof data === 'object') {
+      return Object.entries(data).map(([name, value]) => `${name}=${value}`).join(';');
+    }
+    return '';
+  }
+
+  constructor(data: string | Array<string> | { [name: string]: string }) {
+    if (typeof data === 'string' || Array.isArray(data)) {
+      this.cookie = Cookie.ToJson(data);
+      return;
+    }
+    if (typeof data === 'object') {
+      this.cookie = data;
+      return;
+    }
+    this.cookie = {};
+  }
+  parse() {
+    return this.cookie;
+  }
+  stringify() {
+    return Cookie.ToString(this.cookie);
+  }
+  update(data: string | Array<string> | cookies) {
+    if (typeof data === 'string' || Array.isArray(data)) {
+      data = Cookie.ToJson(data);
+    }
+    this.cookie = {
+      ...this.cookie,
+      ...data
+    };
+    return this;
+  }
+  remove(name: string) {
+    if (this.cookie[name]) {
+      delete this.cookie[name];
+    }
+    return this;
+  }
+  get(name: string): string | null {
+    return this.cookie[name];
+  }
+}
+
+export { Logger, sleep, random, time, checkUpdate, netError, ask, http, formatProxy, push, Cookie };

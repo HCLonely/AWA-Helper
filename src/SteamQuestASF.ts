@@ -3,12 +3,12 @@
 import { AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
-import { Logger, netError, sleep, time, http as axios, formatProxy } from './tool';
+import { Logger, netError, sleep, time, http as axios, formatProxy, Cookie } from './tool';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 
 class SteamQuestASF {
-  awaCookie: string;
+  awaCookie: Cookie;
   asfUrl: string;
   httpsAgent!: myAxiosConfig['httpsAgent'];
   headers: AxiosRequestHeaders;
@@ -23,7 +23,7 @@ class SteamQuestASF {
   EventEmitter = EventEmitter;
 
   constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy?: proxy }) {
-    this.awaCookie = awaCookie;
+    this.awaCookie = new Cookie(awaCookie);
     this.awaHost = awaHost || 'www.alienwarearena.com';
     this.botname = asfBotname;
     this.asfUrl = `${asfProtocol}://${asfHost}:${asfPort}/Api/Command`;
@@ -53,7 +53,7 @@ class SteamQuestASF {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
@@ -72,7 +72,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -93,7 +93,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           const gamesInfo = [];
@@ -129,7 +129,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         new Logger(time() + chalk.red(__('getSteamQuestInfoFailed', chalk.yellow('Steam'))) + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -147,7 +147,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             console.log(response.data.Result);
@@ -167,7 +167,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         log(error);
         return false;
       });
@@ -180,7 +180,7 @@ class SteamQuestASF {
       url: `https://${this.awaHost}/ajax/user/steam/quests/check-owned-games/${name}`,
       method: 'GET',
       headers: {
-        cookie: this.awaCookie,
+        cookie: this.awaCookie.stringify(),
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
@@ -192,7 +192,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           if (response.data?.installed === true) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('owned')));
@@ -206,7 +206,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -219,7 +219,7 @@ class SteamQuestASF {
       method: 'GET',
       responseType: 'text',
       headers: {
-        cookie: this.awaCookie,
+        cookie: this.awaCookie.stringify(),
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
@@ -232,7 +232,7 @@ class SteamQuestASF {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.data.includes('You have completed this quest')) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('steamQuestCompleted')));
           return false;
@@ -258,7 +258,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -269,7 +269,7 @@ class SteamQuestASF {
       url: url.replace('steam/quests', 'ajax/user/steam/quests/start'),
       method: 'GET',
       headers: {
-        cookie: this.awaCookie,
+        cookie: this.awaCookie.stringify(),
         'user-agent': globalThis.userAgent,
         referer: url
       },
@@ -278,7 +278,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
@@ -288,7 +288,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -302,7 +302,7 @@ class SteamQuestASF {
         method: 'GET',
         responseType: 'text',
         headers: {
-          cookie: this.awaCookie,
+          cookie: this.awaCookie.stringify(),
           accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
           'accept-encoding': 'gzip, deflate, br',
           'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
@@ -314,7 +314,7 @@ class SteamQuestASF {
       if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
       await axios(options)
         .then((response) => {
-          globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
           if (response.data.includes('aria-valuenow')) {
             const progress = response.data.match(/aria-valuenow="([\d]+?)"/)?.[1];
             if (progress) {
@@ -330,7 +330,7 @@ class SteamQuestASF {
         })
         .catch((error) => {
           ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-          globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
           new Logger(error);
           return false;
         });
@@ -358,7 +358,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             this.ownedGames = [...new Set(response.data.Result.split('\n').filter((e: string) => e.includes('|')).map((e: string) => e.trim().match(/app\/([\d]+)/)?.[1])
@@ -382,7 +382,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -405,7 +405,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     const started = await axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             this.status = 'running';
@@ -425,7 +425,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
@@ -446,7 +446,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(response.headers['set-cookie'] || []).map((e) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             this.status = 'stopped';
@@ -466,7 +466,7 @@ class SteamQuestASF {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets.split('|'), ...(error.response?.headers?.['set-cookie'] || []).map((e: string) => e.split(';')[0].trim().split('=')[1]).filter((e: any) => e && e.length > 5)])].join('|');
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
