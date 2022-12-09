@@ -105,7 +105,7 @@ awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注�
   - sharePost # 分享帖子
   - replyPost # 回复帖子
 awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个
-boosterRule: 使用ARP Booster的规则，全都注释掉为不启用
+boosterRule: # 使用ARP Booster的规则，全都注释掉为不启用
   - 2x24h>0 # 此规则代表当2x 24hr ARP Booster数量大于0时使用2x 24hr ARP Booster
   - 2x48h>5 # 此规则代表当2x 48hr ARP Booster数量大于5时使用2x 48hr ARP Booster，上面的规则都不匹配时此规则才生效
 boosterCorn: '* * 8 * * 7' # 使用ARP Booster的时间（本地时间）
