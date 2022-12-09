@@ -6,7 +6,7 @@ webUI:
 timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
 
 #### AWA 配置(必需) ####
-awaCookie: '' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
+awaCookie: 'AWACOOKIEAUTOUPDATE' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
 awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 默认的没问题就不要改
 awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 awaQuests:
@@ -25,6 +25,24 @@ awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注�
   - sharePost # 分享帖子
   - replyPost # 回复帖子
 awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个
+boosterRule: 使用ARP Booster的规则，全都注释掉为不启用
+  - 2x24h>0 # 此规则代表当2x 24hr ARP Booster数量大于0时使用2x 24hr ARP Booster
+  - 2x48h>5 # 此规则代表当2x 48hr ARP Booster数量大于5时使用2x 48hr ARP Booster，上面的规则都不匹配时此规则才生效
+boosterCorn: '* * 8 * * 6' # 使用ARP Booster的时间（本地时间）
+#             ┬ ┬ ┬ ┬ ┬ ┬
+#             │ │ │ │ │ |
+#             │ │ │ │ │ └─────────────── 一周的第几天 (0 - 7, 1L - 7L) (0或7是周日) ┐
+#             │ │ │ │ └───────────────── 月份　　　　 (1 - 12)　 　　　             ├─ 日期
+#             │ │ │ └─────────────────── 每月的第几天 (1 - 31, L)　　　　           ┘
+#             │ │ └───────────────────── 小时 (0 - 23) ┐
+#             │ └─────────────────────── 分钟 (0 - 59) ├─ 时间
+#             └───────────────────────── 秒　 (0 - 59) ┘
+# 时间规则说明：当前日期和boosterCorn匹配的日期为同一天且当前时间大于boosterCorn匹配的时间时启用
+# 示例中的表达式代表每周六的8点后运行次程序时使用boosterRule规则进行匹配
+autoLogin: # 自动登录更新Cookies配置
+  enable: true # 是否启用
+  username: # AWA用户名
+  password: # AWA密码
 
 #### Twitch 配置 ####
 twitchCookie: '' # Twitch Cookie, 须包括`unique_id` 和 `auth-token`

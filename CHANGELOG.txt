@@ -1,2 +1,4 @@
-- 删除调试日志
-- 优化
+- 新增：自动登录AWA更新Cookie[`autoLogin`]
+- 新增：添加自动使用ARP Booster功能[`boosterRule`, `boosterCorn`]
+- 优化：删除调试日志
+- 优化：更新依赖

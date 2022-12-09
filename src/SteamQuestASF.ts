@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, steamGameInfo, proxy, myAxiosConfig */
-import { AxiosRequestHeaders } from 'axios';
+import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy, Cookie } from './tool';
@@ -11,7 +11,7 @@ class SteamQuestASF {
   awaCookie: Cookie;
   asfUrl: string;
   httpsAgent!: myAxiosConfig['httpsAgent'];
-  headers: AxiosRequestHeaders;
+  headers: RawAxiosRequestHeaders;
   botname!: string;
   ownedGames: Array<string> = [];
   maxPlayTimes = 2;
@@ -53,7 +53,7 @@ class SteamQuestASF {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
@@ -93,7 +93,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           const gamesInfo = [];
@@ -147,7 +147,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             console.log(response.data.Result);
@@ -192,7 +192,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data?.installed === true) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('owned')));
@@ -232,7 +232,7 @@ class SteamQuestASF {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.includes('You have completed this quest')) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('steamQuestCompleted')));
           return false;
@@ -278,7 +278,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
@@ -314,7 +314,7 @@ class SteamQuestASF {
       if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
       await axios(options)
         .then((response) => {
-          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
           if (response.data.includes('aria-valuenow')) {
             const progress = response.data.match(/aria-valuenow="([\d]+?)"/)?.[1];
             if (progress) {
@@ -358,7 +358,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             this.ownedGames = [...new Set(response.data.Result.split('\n').filter((e: string) => e.includes('|')).map((e: string) => e.trim().match(/app\/([\d]+)/)?.[1])
@@ -405,7 +405,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     const started = await axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             this.status = 'running';
@@ -446,7 +446,7 @@ class SteamQuestASF {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             this.status = 'stopped';

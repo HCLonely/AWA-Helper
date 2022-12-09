@@ -33,6 +33,21 @@
       desp: 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能。
       type: text
       required: true
+    autoLogin:
+      name: 自动登录配置
+      desp: 自动登录AWA更新Cookies。
+      type: object
+      body:
+        enable:
+          name: 是否启用
+          type: boolean
+          defaultValue: false
+        username:
+          name: AWA用户名[邮箱]
+          type: text
+        password:
+          name: AWA密码
+          type: text
     awaHost:
       name: 外星人论坛Host
       desp: 默认的没问题就不要改
@@ -100,6 +115,19 @@
       name: 每日任务有多个时是否只做第一个
       type: boolean
       defaultValue: true
+    boosterRule:
+      name: ARP Booster使用规则
+      desp: 可使用多个规则，做上面的优先级最高
+      type: array
+      body:
+        - name: 规则
+          desp: '例：2x24h>0，此规则代表当2x 24hr ARP Booster数量大于0时使用2x 24hr ARP Booster'
+          type: text
+          repeat: true
+    boosterCorn:
+      name: 使用ARP Booster的时间
+      desp: 此时间为本地时间，当前日期和boosterCorn匹配的日期为同一天且当前时间大于boosterCorn匹配的时间时启用。格式建议查看config.example.yml文件中的说明。
+      type: text
     twitchCookie:
       name: Twitch Cookie
       desp: 必须包括`unique_id` 和 `auth-token`

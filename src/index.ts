@@ -153,6 +153,8 @@ process.on('uncaughtException', async (err) => {
     awaQuests,
     awaDailyQuestType,
     awaDailyQuestNumber1,
+    boosterRule,
+    boosterCorn,
     twitchCookie,
     steamUse,
     asfProtocol,
@@ -164,7 +166,8 @@ process.on('uncaughtException', async (err) => {
     steamPassword,
     proxy,
     webUI,
-    pusher
+    pusher,
+    autoLogin
   }: config = config;
   globalThis.webUI = !!webUI?.enable;
   globalThis.language = language || 'zh';
@@ -206,7 +209,10 @@ process.on('uncaughtException', async (err) => {
     awaBoosterNotice: awaBoosterNotice as boolean,
     awaDailyQuestType,
     awaDailyQuestNumber1,
-    proxy
+    boosterRule,
+    boosterCorn,
+    proxy,
+    autoLogin
   });
   const initResult = await quest.init();
   if (initResult !== 200) {
@@ -227,6 +233,7 @@ process.on('uncaughtException', async (err) => {
     process.exit(0);
     return;
   }
+  fs.writeFileSync(configPath, configString.replace(awaCookie as string, quest.newCookie));
   await quest.listen(null, null, true);
   globalThis.quest = quest;
   if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
@@ -267,7 +274,7 @@ process.on('uncaughtException', async (err) => {
         new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
       } else {
         steamQuest = new SteamQuestASF({
-          awaCookie: quest.headers.cookie as string,
+          awaCookie: quest.newCookie,
           awaHost,
           asfProtocol,
           asfHost: asfHost as string,
@@ -292,7 +299,7 @@ process.on('uncaughtException', async (err) => {
         new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
       } else {
         steamQuest = new SteamQuestSU({
-          awaCookie: quest.headers.cookie as string,
+          awaCookie: quest.newCookie,
           awaHost,
           steamAccountName: steamAccountName as string,
           steamPassword: steamPassword as string,

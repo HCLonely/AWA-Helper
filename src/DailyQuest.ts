@@ -1,9 +1,10 @@
 /* eslint-disable max-len */
-/* global __, questStatus, proxy, awaInfo, dailyQuestDb, myAxiosConfig */
-import { AxiosRequestHeaders } from 'axios';
+/* global __, questStatus, proxy, awaInfo, dailyQuestDb, myAxiosConfig, boosters */
+import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import * as FormData from 'form-data';
+import * as cornParser from 'cron-parser';
 import { Logger, sleep, random, time, netError, ask, http as axios, formatProxy, push, Cookie } from './tool';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
@@ -12,6 +13,8 @@ import * as fs from 'fs';
 import { chunk } from 'lodash';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
+import * as dayjs from 'dayjs';
+import { chromium } from 'playwright';
 
 class DailyQuest {
   // eslint-disable-next-line no-undef
@@ -19,7 +22,7 @@ class DailyQuest {
   posts!: Array<string>;
   trackError = 0;
   trackTimes = 0;
-  headers: AxiosRequestHeaders;
+  headers: RawAxiosRequestHeaders;
   cookie: Cookie;
   httpsAgent!: myAxiosConfig['httpsAgent'];
   userId!: string;
@@ -50,11 +53,42 @@ class DailyQuest {
   listenSteam = false;
   listenAwa = false;
   awaDailyQuestNumber1: boolean;
+  boosters: {
+    [name: string]: Array<boosters>
+  } = {};
+  boosterRule: Array<string> = [];
+  boosterCorn?: cornParser.CronExpression;
+  userArpBoost?: {
+    title: string
+    end: string
+    image: string
+  };
+  #loginInfo?: {
+    enable: boolean
+    username: string
+    password: string
+  };
+  newCookie: string;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, awaBoosterNotice, proxy }: { awaCookie: string, awaHost?: string, awaDailyQuestType?: Array<string>, awaDailyQuestNumber1: boolean | undefined, awaBoosterNotice: boolean, proxy?: proxy }) {
+  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin }: {
+    awaCookie: string
+    awaHost?: string
+    awaDailyQuestType?: Array<string>
+    awaDailyQuestNumber1: boolean | undefined
+    boosterRule?: Array<string>
+    boosterCorn?: string
+    awaBoosterNotice: boolean
+    proxy?: proxy
+    autoLogin?: {
+      enable: boolean
+      username: string
+      password: string
+    }
+  }) {
     this.host = awaHost || 'www.alienwarearena.com';
     this.awaBoosterNotice = awaBoosterNotice ?? true;
+    this.newCookie = awaCookie;
     this.cookie = new Cookie(awaCookie);
     this.headers = {
       cookie: this.cookie.stringify(),
@@ -63,6 +97,15 @@ class DailyQuest {
       'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
     };
     this.awaDailyQuestNumber1 = awaDailyQuestNumber1 ?? true;
+    if (boosterRule) {
+      this.boosterRule = boosterRule;
+    }
+    if (boosterCorn) {
+      this.boosterCorn = cornParser.parseExpression(boosterCorn, {
+        currentDate: new Date(`${dayjs().add(-1, 'day')
+          .format('YYYY-MM-DD')} 23:59:59`)
+      });
+    }
     if (awaDailyQuestType) {
       this.awaDailyQuestType = awaDailyQuestType;
       if (awaDailyQuestType.includes('viewNew')) {
@@ -75,18 +118,32 @@ class DailyQuest {
     if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
     }
+    if (autoLogin?.enable) {
+      this.#loginInfo = autoLogin;
+    }
   }
-  async init(): Promise<number> {
-    const { REMEMBERME } = Cookie.ToJson(this.headers.cookie as string);
+  async init(first = true): Promise<number> {
+    const REMEMBERME = this.cookie.get('REMEMBERME');
     if (REMEMBERME) {
       await this.updateCookie(`REMEMBERME=${REMEMBERME}`);
     } else {
       new Logger(`${time()}${__('noREMEMBERMEAlert', chalk.yellow('awaCookie')), chalk.blue('REMEMBERME')}`);
     }
-    if (Cookie.ToJson(this.headers.cookie as string).REMEMBERME === 'deleted') {
-      return 602;
+    if (!this.cookie.get('REMEMBERME') || this.cookie.get('REMEMBERME') === 'deleted') {
+      if (!await this.login()) {
+        return 602;
+      }
     }
     const result = await this.updateDailyQuests(true);
+    if (result === 602) {
+      if (!await this.login()) {
+        return 602;
+      }
+      if (first) {
+        return this.init();
+      }
+      return 602;
+    }
     if (result !== 200) {
       return result;
     }
@@ -111,7 +168,68 @@ class DailyQuest {
     } else if (!(await this.getPersonalization() && await this.getAvatar())) {
       return 603;
     }
+    this.newCookie = `${this.cookie.get('REMEMBERME') ? `REMEMBERME=${this.cookie.get('REMEMBERME')}` : ''};${this.cookie.get('PHPSESSID') ? `PHPSESSID=${this.cookie.get('PHPSESSID')}` : ''};${this.cookie.get('sc') ? `sc=${this.cookie.get('sc')}` : ''};`;
     return 200;
+  }
+  async login(): Promise<boolean> {
+    try {
+      if (!this.#loginInfo?.enable) {
+        return false;
+      }
+      new Logger(`${time()}${__('updatingAwaCookies')}`);
+      const browser = await chromium.launch({
+        timeout: 3 * 60000
+      });
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(`https://${this.host}/`))}`, false);
+      await page.goto(`https://${this.host}/`);
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
+
+      logger = new Logger(`${time()}${__('loginingAWA')}`, false);
+      await page.locator('a.nav-link.nav-link-login').click();
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
+
+      logger = new Logger(`${time()}${__('inputingUsername')}`, false);
+      await page.locator('input#_username').fill(this.#loginInfo.username);
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
+
+      logger = new Logger(`${time()}${__('inputingPassword')}`, false);
+      await page.locator('input#_password').fill(this.#loginInfo.password);
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
+
+      logger = new Logger(`${time()}${__('checkingRememberMe')}`, false);
+      await page.locator('input#remember_me').setChecked(true);
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
+
+      logger = new Logger(`${time()}${__('clickingLogin')}`, false);
+      await page.locator('button#_login').click();
+      logger.log(chalk.green('OK'));
+
+      logger = new Logger(`${time()}${__('verifyingLogin')}`, false);
+      await page.waitForNavigation({ timeout: 3 * 60000 });
+      logger.log(chalk.green('OK'));
+
+      logger = new Logger(`${time()}${__('gettingCookied')}`, false);
+      const cookies = await context.cookies('https://.alienwarearena.com');
+      cookies.forEach((cookie) => {
+        if (['REMEMBERME', 'PHPSESSID', 'sc'].includes(cookie.name)) {
+          this.cookie.update(`${cookie.name}=${cookie.value}`);
+        }
+      });
+      logger.log(chalk.green('OK'));
+      await browser.close();
+      new Logger(`${time()}${__('updatingAwaCookiesSuccess')}`);
+      return true;
+    } catch (error) {
+      new Logger(`${time()}${__('updatingAwaCookiesError')}`);
+      return false;
+    }
   }
   async listen(twitch: TwitchTrack | null, steamQuest: SteamQuestASF | SteamQuestSU | null, check = false): Promise<void> {
     if (twitch && !this.listenTwitch) {
@@ -189,7 +307,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200 && response.data.toLowerCase().includes('we have detected an issue with your network')) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
           return false;
@@ -237,7 +355,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.toLowerCase().includes('we have detected an issue with your network')) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
@@ -305,6 +423,38 @@ class DailyQuest {
               }));
           }
           */
+
+          // Booster
+          const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
+          let boostEnabled = false;
+          if (userArpBoostText) {
+            try {
+              const userArpBoost = JSON.parse(userArpBoostText);
+              userArpBoost.end = new Date(userArpBoost.end.match(/"(.+?)"/));
+              if (new Date() < userArpBoost.end) {
+                boostEnabled = true;
+                this.userArpBoost = userArpBoost;
+              }
+            } catch (e) {
+              //
+            }
+          }
+          if (verify && !boostEnabled && this.boosterRule.length > 0 && this.boosterCorn) {
+            const nextTime = this.boosterCorn?.next()?.getTime();
+            if (nextTime && dayjs(nextTime).isSame(dayjs(nextTime).format('YYYY-MM-DD'), 'day') && nextTime < Date.now()) {
+              await this.getBoosters();
+              for (const rule of this.boosterRule) {
+                const [, ratio, time, numbers] = rule.replace(/[\s]/g, '').match(/([\d]+?)x([\d]+?)h>([\d]+)/i) || [];
+                if ((this.boosters[`${ratio}-${time}`] || []).length > parseInt(numbers, 10)) {
+                  const boosters = this.boosters[`${ratio}-${time}`].sort((a, b) => new Date(a.rewardedTime).getTime() - new Date(b.rewardedTime).getTime());
+                  if (await this.activateBooster(boosters[0])) {
+                    boostEnabled = true;
+                  }
+                }
+              }
+            }
+          }
+
           // 每日任务
           const dailyQuests = chunk($('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
@@ -322,18 +472,6 @@ class DailyQuest {
               .toLowerCase())
             .filter((i, e) => e === 'incomplete').length;
           if (verify && this.awaBoosterNotice && this.dailyQuestNumber > 1) {
-            const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
-            let boostEnabled = false;
-            if (userArpBoostText) {
-              try {
-                const userArpBoost = JSON.parse(userArpBoostText);
-                if (new Date() < userArpBoost.end) {
-                  boostEnabled = true;
-                }
-              } catch (e) {
-              //
-              }
-            }
             if (!boostEnabled) {
               const answer = await ask(__('boosterAlert', chalk.blue(__('booster')), chalk.yellow(__('selfOpen')), chalk.yellow('1'), chalk.yellow('2')), ['1', '2']);
               if (answer === '2') {
@@ -537,7 +675,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
@@ -572,7 +710,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
@@ -607,7 +745,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
@@ -642,7 +780,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
@@ -696,7 +834,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (!link) {
           if (response.data.success) {
             if (logger) ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
@@ -740,7 +878,7 @@ class DailyQuest {
 
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data === 'success') {
           await this.sendTrack(`https://${this.host}/ucf/show/${postId}`);
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
@@ -784,7 +922,7 @@ class DailyQuest {
 
     const post = postId || await axios(getOptions)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           const topicPost = $('.card-title a.forums__topic-link').toArray()
@@ -834,7 +972,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger1).log(chalk.green('OK'));
           return true;
@@ -868,7 +1006,7 @@ class DailyQuest {
 
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         try {
           if (JSON.stringify(response.data) === '{}') {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
@@ -917,7 +1055,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     await axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
       })
       .catch(() => { });
   }
@@ -933,7 +1071,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     await axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         const $ = load(response.data);
         const promoViewScriptHtml = $('script')
           .filter((i, script) => !!$(script).html()?.includes('/ajax/promo/view/'))
@@ -962,7 +1100,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
@@ -1030,7 +1168,7 @@ class DailyQuest {
 
     return axios(getOptions)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const render = response.data.match(/https:\/\/www\.google\.com\/recaptcha\/enterprise\.js\?render=(.*?)'/)?.[1];
           if (render) {
@@ -1069,7 +1207,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
@@ -1129,7 +1267,7 @@ class DailyQuest {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           if ($('a.nav-link-login').length > 0) {
@@ -1205,13 +1343,114 @@ class DailyQuest {
     logger.log(chalk.yellow(__('notMatchedDailyQuest')));
     return [];
   }
+  async getBoosters(page = 1): Promise<number> {
+    const logger = new Logger(`${time()}${__('gettingBoosters', chalk.yellow(page))}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${this.host}/account/my-rewards/arp_boost/${page}`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          const $ = load(response.data);
+          if ($('a.nav-link-login').length > 0) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
+            return 602;
+          }
+          $('#user-account__user-reward-list .user-account__user-reward-wrapper').toArray().forEach((el) => {
+            const [, ratio, time] = $(el).find('.align-self-start').text()
+              .trim()
+              .match(/([\d]+?)x[\s]*?([\d]+?)h/) || [];
+            const rewardedTime = $(el).find('.align-self-end').text()
+              .trim()
+              .match(/REWARDED[\s]*?([\d]+?-[\d]+?-[\d]+)/)?.[1];
+            const id = $(el).find('.user-account__user-reward').attr('data-id');
+            const activateId = $(el).find('.account-reward__activate').attr('href')
+              ?.match(/boosts\/activate\/([\d]+)/)?.[1];
+            if (!id || !ratio || !time || !rewardedTime || !activateId) {
+              return null;
+            }
+
+            const boosterInfo: boosters = {
+              id,
+              activateId,
+              ratio,
+              time,
+              rewardedTime
+            };
+
+            if (!this.boosters[`${ratio}-${time}`]) {
+              this.boosters[`${ratio}-${time}`] = [];
+            }
+
+            if (this.boosters[`${ratio}-${time}`].find((bst) => bst.id === boosterInfo.id)) {
+              return null;
+            }
+
+            this.boosters[`${ratio}-${time}`].push(boosterInfo);
+          });
+
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          if ($('.page-item.active').next().hasClass('next')) {
+            return 200;
+          }
+          return this.getBoosters(page + 1);
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
+        return 0;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return 0;
+      });
+  }
+  async activateBooster(info: boosters): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('activatingBoosters', chalk.yellow(`${info.ratio}x ${info.time}hr ARP Boost`), chalk.blue(`REWARDED ${info.rewardedTime}`))}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${this.host}/account/boosts/activate/${info.activateId}`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        referer: 'https://www.alienwarearena.com/account/my-rewards/arp_boost',
+        accept: '*/*'
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.data.success) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        new Logger(response.data?.message || response);
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
   formatQuestInfo() {
     const result = {
       [`${__('dailyTask')}[${this.dailyQuestName[0]}]`]: {
         // eslint-disable-next-line no-nested-ternary
         [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
-        [__('obtainedARP')]: parseInt(this.questInfo.dailyQuest?.[0]?.arp || '0', 10),
-        [__('maxAvailableARP')]: parseInt(this.questInfo.dailyQuest?.[0]?.arp || '0', 10)
+        [__('obtainedARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0,
+        [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
       },
       [__('timeOnSite')]: {
         [__('status')]: this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp ? __('done') : __('undone'),
@@ -1234,8 +1473,8 @@ class DailyQuest {
         result[`${__('dailyTask')}[${this.dailyQuestName[i]}]`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
-          [__('obtainedARP')]: parseInt(this.questInfo.dailyQuest?.[i]?.arp || '0', 10),
-          [__('maxAvailableARP')]: parseInt(this.questInfo.dailyQuest?.[i]?.arp || '0', 10)
+          [__('obtainedARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0,
+          [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
         };
       }
     }

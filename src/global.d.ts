@@ -18,26 +18,33 @@ declare global {
     language: string
     timeout?: number
     awaCookie?: string
-    awaHost: string,
-    awaBoosterNotice?: boolean,
-    awaQuests: Array<string>,
-    awaDailyQuestType: Array<string>,
-    awaDailyQuestNumber1?: boolean,
-    twitchCookie?: string,
+    awaHost: string
+    awaBoosterNotice?: boolean
+    awaQuests: Array<string>
+    awaDailyQuestType: Array<string>
+    awaDailyQuestNumber1?: boolean
+    boosterRule?: Array<string>
+    boosterCorn?: string
+    twitchCookie?: string
     steamUse?: 'ASF' | 'SU'
-    asfProtocol: string,
-    asfHost?: string,
-    asfPort?: number,
-    asfPassword?: string,
-    asfBotname?: string,
-    steamAccountName?: string,
-    steamPassword?: string,
+    asfProtocol: string
+    asfHost?: string
+    asfPort?: number
+    asfPassword?: string
+    asfBotname?: string
+    steamAccountName?: string
+    steamPassword?: string
     proxy?: proxy
     webUI?: {
       enable: boolean
       port?: number
     }
     pusher?: pusher
+    autoLogin?: {
+      enable: boolean
+      username: string
+      password: string
+    }
   }
   interface proxy {
     enable: Array<string>
@@ -120,6 +127,13 @@ declare global {
   }
   interface cookies {
     [name: string]: string
+  }
+  interface boosters {
+    id: string
+    activateId: string
+    ratio: string
+    time: string
+    rewardedTime: string
   }
   var secrets: Array<string>;
   var userAgent: string;

@@ -14,7 +14,7 @@ globalThis.logs = { type: 'logs' };
 
 const getSecertValue = (): Array<string> => {
   if (!fs.existsSync('config.yml')) {
-    return [];
+    return ['______________'];
   }
   try {
     const {
@@ -26,26 +26,32 @@ const getSecertValue = (): Array<string> => {
         username,
         password
       },
-      asfHost
+      asfHost,
+      autoLogin: {
+        username: username1,
+        password: password1
+      }
     } = parse(fs.readFileSync('config.yml').toString());
-    const secrets = [];
+    const secrets = ['______________'];
     secrets.push(...Object.values(Cookie.ToJson(awaCookie || '')));
     secrets.push(...Object.values(Cookie.ToJson(twitchCookie || '')));
-    secrets.push(asfPassword, host, username, password, asfHost);
+    secrets.push(asfPassword, host, username, password, asfHost, username1, password1);
     return [...new Set(secrets)];
   } catch {
-    return [];
+    return ['______________'];
   }
+};
+const hideSectets = (data: string): string => {
+  globalThis.secrets.filter((secret) => secret && secret.length > 5).forEach((secret) => data = data.replaceAll(secret, '********'));
+  return data;
 };
 
 globalThis.secrets = getSecertValue();
 
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
-    const secretsRegexp = new RegExp(globalThis.secrets.filter((secret) => secret && secret.length > 5).join('|'), 'gi');
     // eslint-disable-next-line no-control-regex
-    return e.replace(/\x1B\[[\d]*?m/g, '')
-      .replace(secretsRegexp, '********');
+    return hideSectets(e.replace(/\x1B\[[\d]*?m/g, ''));
   }
 
   return format(e);
@@ -53,7 +59,7 @@ const toJSON = (e: any): string => {
 const toHtmlJSON = (e: any): string => {
   if (typeof e === 'string') {
     // eslint-disable-next-line no-control-regex
-    return e.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
+    return hideSectets(e.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
     // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[31m(.+?)\x1B\[39m/g, '<font class="red">$1</font>')
     // eslint-disable-next-line no-control-regex
@@ -72,8 +78,7 @@ const toHtmlJSON = (e: any): string => {
       .replace(/\x1B\[33m(.+)/g, '<font class="yellow">$1</font>')
       // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[34m(.+)/g, '<font class="blue">$1</font>')
-      .replace(/(PHPSESSID|REMEMBERME|sc=)=[\w\d%.-]*/g, '********')
-      .replace(/\n/g, '</br>');
+      .replace(/\n/g, '</br>'));
   }
 
   return format(e);
@@ -242,8 +247,8 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
   }
   return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then((response) => {
-      globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
-      const latestVersion = response.headers.location.match(/tag\/v?([\d.]+)/)?.[1];
+      globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+      const latestVersion = response?.headers?.location?.match(/tag\/v?([\d.]+)/)?.[1];
       if (latestVersion) {
         const currentVersionArr = version.replace('V', '').split('.').map((e) => parseInt(e, 10));
         const latestVersionArr = latestVersion.split('.').map((e) => parseInt(e, 10));

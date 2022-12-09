@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, myAxiosConfig */
-import { AxiosRequestHeaders } from 'axios';
+import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, sleep, time, netError, http as axios, formatProxy, Cookie } from './tool';
@@ -16,7 +16,7 @@ class TwitchTrack {
   trackTimes = 0;
   cookie: Cookie;
   httpsAgent!: myAxiosConfig['httpsAgent'];
-  headers: AxiosRequestHeaders;
+  headers: RawAxiosRequestHeaders;
   complete = false;
   awaHost: string;
   availableStreams!: Array<string>;
@@ -56,7 +56,7 @@ class TwitchTrack {
 
     const result = await axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           const optionScript = $('script').filter((_, e) => !!$(e).html()?.includes('clientId'));
@@ -100,7 +100,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         const linkedExtension = response.data?.[0]?.data?.currentUser?.linkedExtensions?.find((e: any) => e.name === 'Arena Rewards Tracker');
         if (linkedExtension) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('authorized')));
@@ -129,7 +129,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
           this.availableStreams = $('div.media a[href]').toArray().map((e) => $(e).attr('href')
@@ -172,7 +172,7 @@ class TwitchTrack {
     if (this.httpsAgent) twitchOptions.httpsAgent = this.httpsAgent;
     return axios(twitchOptions)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         const channelId = response.data?.[0]?.data?.user?.id;
         if (!channelId) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
@@ -209,7 +209,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
         if (!extensions?.length) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noExt')}`));
@@ -261,7 +261,7 @@ class TwitchTrack {
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     const status = await axios(options)
       .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           this.trackError = 0;

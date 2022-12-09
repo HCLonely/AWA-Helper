@@ -5,7 +5,7 @@ import * as expressWs from 'express-ws';
 import * as fs from 'fs';
 import type WebSocket from 'ws';
 import { Logger, time } from '../tool';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 
 const app = express();
 app.use(express.static(`${__dirname}/static`));
