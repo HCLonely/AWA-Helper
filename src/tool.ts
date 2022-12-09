@@ -4,6 +4,7 @@ import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
 import * as fs from 'fs';
 import axios, { AxiosAdapter, AxiosError, AxiosResponse } from 'axios';
+import adapter from 'axios/lib/adapters/http';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 import { parse } from 'yaml';
@@ -229,7 +230,7 @@ const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOption
 
 const http = axios.create({
   maxRedirects: 5,
-  adapter: retryAdapterEnhancer(axios.defaults.adapter as AxiosAdapter, {
+  adapter: retryAdapterEnhancer(adapter, {
     delay: 1000,
     times: 3
   })
