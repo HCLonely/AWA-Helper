@@ -4,18 +4,16 @@ specifiers:
   '@types/express': ^4.17.14
   '@types/express-ws': ^3.0.1
   '@types/i18n': ^0.13.6
-  '@types/jquery': ^3.5.14
   '@types/js-yaml': ^4.0.5
   '@types/lodash': ^4.14.191
   '@types/node': ^18.11.11
-  '@types/qs': ^6.9.7
   '@types/steam-user': ^4.26.0
   '@types/tunnel': ^0.0.3
   '@types/ws': ^8.5.3
   '@typescript-eslint/eslint-plugin': ^5.45.1
   '@typescript-eslint/parser': ^5.45.1
   all-pusher-api: ^1.1.0
-  axios: ^1.2.1
+  axios: 0.27.2
   chalk: '4'
   cheerio: ^1.0.0-rc.12
   cron-parser: ^4.7.0
@@ -30,7 +28,6 @@ specifiers:
   lodash: ^4.17.21
   marked: ^4.2.3
   playwright: ^1.28.1
-  qs: ^6.11.0
   socks-proxy-agent: ^7.0.0
   steam-user: ^4.26.0
   tunnel: ^0.0.6
@@ -41,7 +38,7 @@ specifiers:
 
 dependencies:
   all-pusher-api: registry.npmmirror.com/all-pusher-api/1.1.0
-  axios: registry.npmmirror.com/axios/1.2.1
+  axios: registry.npmmirror.com/axios/0.27.2
   chalk: registry.npmmirror.com/chalk/4.1.2
   cheerio: registry.npmmirror.com/cheerio/1.0.0-rc.12
   cron-parser: registry.npmmirror.com/cron-parser/4.7.0
@@ -52,7 +49,6 @@ dependencies:
   i18n: registry.npmmirror.com/i18n/0.15.1
   lodash: registry.npmmirror.com/lodash/4.17.21
   playwright: registry.npmmirror.com/playwright/1.28.1
-  qs: registry.npmmirror.com/qs/6.11.0
   socks-proxy-agent: registry.npmmirror.com/socks-proxy-agent/7.0.0
   steam-user: registry.npmmirror.com/steam-user/4.26.0
   tunnel: registry.npmmirror.com/tunnel/0.0.6
@@ -63,11 +59,9 @@ devDependencies:
   '@types/express': registry.npmmirror.com/@types/express/4.17.14
   '@types/express-ws': registry.npmmirror.com/@types/express-ws/3.0.1
   '@types/i18n': registry.npmmirror.com/@types/i18n/0.13.6
-  '@types/jquery': registry.npmmirror.com/@types/jquery/3.5.14
   '@types/js-yaml': registry.npmmirror.com/@types/js-yaml/4.0.5
   '@types/lodash': registry.npmmirror.com/@types/lodash/4.14.191
   '@types/node': registry.npmmirror.com/@types/node/18.11.11
-  '@types/qs': registry.npmmirror.com/@types/qs/6.9.7
   '@types/steam-user': registry.npmmirror.com/@types/steam-user/4.26.0
   '@types/tunnel': registry.npmmirror.com/@types/tunnel/0.0.3
   '@types/ws': registry.npmmirror.com/@types/ws/8.5.3
@@ -404,14 +398,6 @@ packages:
     version: 0.13.6
     dev: true
 
-  registry.npmmirror.com/@types/jquery/3.5.14:
-    resolution: {integrity: sha512-X1gtMRMbziVQkErhTQmSe2jFwwENA/Zr+PprCkF63vFq+Yt5PZ4AlKqgmeNlwgn7dhsXEK888eIW2520EpC+xg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/jquery/-/jquery-3.5.14.tgz}
-    name: '@types/jquery'
-    version: 3.5.14
-    dependencies:
-      '@types/sizzle': registry.npmmirror.com/@types/sizzle/2.3.3
-    dev: true
-
   registry.npmmirror.com/@types/js-yaml/4.0.5:
     resolution: {integrity: sha512-FhpRzf927MNQdRZP0J5DLIdTXhjLYzeUTmLAu69mnVksLH9CJY3IuSeEgbKUki7GQZm0WqDkGzyxju2EZGD2wA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/js-yaml/-/js-yaml-4.0.5.tgz}
     name: '@types/js-yaml'
@@ -478,12 +464,6 @@ packages:
     dependencies:
       '@types/mime': registry.npmmirror.com/@types/mime/3.0.1
       '@types/node': registry.npmmirror.com/@types/node/18.11.11
-    dev: true
-
-  registry.npmmirror.com/@types/sizzle/2.3.3:
-    resolution: {integrity: sha512-JYM8x9EGF163bEyhdJBpR2QX1R5naCJHC8ucJylJ3w9/CVBaskdQ8WqBf8MmQrd1kRvp/a4TS8HJ+bxzR7ZJYQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/sizzle/-/sizzle-2.3.3.tgz}
-    name: '@types/sizzle'
-    version: 2.3.3
     dev: true
 
   registry.npmmirror.com/@types/steam-user/4.26.0:

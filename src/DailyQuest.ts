@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, questStatus, proxy, awaInfo, dailyQuestDb, myAxiosConfig, boosters */
-import { RawAxiosRequestHeaders } from 'axios';
+import { AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import * as FormData from 'form-data';
@@ -22,7 +22,7 @@ class DailyQuest {
   posts!: Array<string>;
   trackError = 0;
   trackTimes = 0;
-  headers: RawAxiosRequestHeaders;
+  headers: AxiosRequestHeaders;
   cookie: Cookie;
   httpsAgent!: myAxiosConfig['httpsAgent'];
   userId!: string;

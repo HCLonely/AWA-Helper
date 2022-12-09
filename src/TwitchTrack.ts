@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, myAxiosConfig */
-import { RawAxiosRequestHeaders } from 'axios';
+import { AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, sleep, time, netError, http as axios, formatProxy, Cookie } from './tool';
@@ -16,7 +16,7 @@ class TwitchTrack {
   trackTimes = 0;
   cookie: Cookie;
   httpsAgent!: myAxiosConfig['httpsAgent'];
-  headers: RawAxiosRequestHeaders;
+  headers: AxiosRequestHeaders;
   complete = false;
   awaHost: string;
   availableStreams!: Array<string>;

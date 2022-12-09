@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, steamGameInfo, proxy, myAxiosConfig */
-import { RawAxiosRequestHeaders } from 'axios';
+import { AxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy, Cookie } from './tool';
@@ -11,7 +11,7 @@ class SteamQuestASF {
   awaCookie: Cookie;
   asfUrl: string;
   httpsAgent!: myAxiosConfig['httpsAgent'];
-  headers: RawAxiosRequestHeaders;
+  headers: AxiosRequestHeaders;
   botname!: string;
   ownedGames: Array<string> = [];
   maxPlayTimes = 2;

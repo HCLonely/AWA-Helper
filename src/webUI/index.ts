@@ -17,7 +17,7 @@ fs.readdirSync('locales').forEach((e) => {
   langs[e.replace('.json', '') as string] = JSON.parse(fs.readFileSync(`locales/${e}`).toString());
 });
 
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.send(
     fs.readFileSync(`${__dirname}/index.html`).toString()
       .replace('__LANG__', language)
@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 });
 
 // @ts-ignore
-app.ws('/ws', (ws: WebSocket, req) => {
+app.ws('/ws', (ws: WebSocket, _) => {
   new Logger(time() + chalk.blue(__('webUIConnect')));
 
   globalThis.ws = ws;
