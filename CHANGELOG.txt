@@ -2,4 +2,3 @@
 - 新增：添加自动使用ARP Booster功能[`boosterRule`, `boosterCorn`]
 - 优化：更新依赖（如果运行不正常请删除`node_modules`文件夹并重新安装依赖！）
 - 优化：删除调试日志
-- 优化：更新依赖
