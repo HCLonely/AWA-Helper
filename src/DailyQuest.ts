@@ -255,7 +255,14 @@ class DailyQuest {
     }
 
     if (await this.updateDailyQuests() === 200) {
-      if (this.questInfo.steamQuest && steamQuest && parseInt(this.questInfo.steamQuest, 10) >= steamQuest.maxArp) {
+      // if (this.questInfo.steamQuest && steamQuest && parseInt(this.questInfo.steamQuest, 10) >= steamQuest.maxArp) {
+      if (
+        this.questInfo.steamQuest && steamQuest &&
+        (
+          steamQuest.taskStatus.length === 0 ||
+          (steamQuest.taskStatus.length > 0 && !steamQuest.taskStatus.find((e) => parseInt(e.progress || '0', 10) < 100))
+        )
+      ) {
         if (steamQuest.status === 'running') {
           await steamQuest.resume();
         }
