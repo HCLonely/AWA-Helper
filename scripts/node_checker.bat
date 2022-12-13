@@ -50,6 +50,8 @@ if /i "%global_node:~1,2%" geq "16" (
       ..\node\node "modules_checker.js" "%~dp0../node/"
       echo "Starting AWA-Helper..."
       cd ..
+      echo cd "%%~dp0" ^&^& start cmd /k ".\node\node index.js" > "./Run.bat"
+      echo cd "%%~dp0" ^&^& start cmd /k ".\node\node index.js" > "./运行.bat"
       .\node\node "index.js"
       exit "0"
     ) else (

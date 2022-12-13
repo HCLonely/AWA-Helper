@@ -30,6 +30,8 @@ if ($global_node -notmatch 'v1(6|8)\.') {
     Write-Output 'Checking if all dependencies are installed...'
     ./node/node scripts/modules_checker.js "./node/"
 
+    'cd "%~dp0" && start cmd /k "./node/node index.js"' | Out-File "./Run.bat"
+    'cd "%~dp0" && start cmd /k "./node/node index.js"' | Out-File "./运行.bat"
     Write-Output 'Starting AWA-Helper...'
     ./node/node index.js
 

@@ -39,29 +39,35 @@
 
 ### 下载打包好的程序运行
 
-#### 自动安装依赖\[建议\]
+#### 自动安装依赖
 
 > **此方法需Powershell支持!**
 
 1. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载打包好的压缩包
 2. 解压
 3. 编辑配置文件,[查看说明](#config文件配置)
-4. Windows: 双击`运行-auto.bat`运行(缺少依赖会自动安装).Linux: `sudo ./run_auto.sh`
+4. 首次运行:
+    - Windows: 双击`运行-auto.bat`/`Run-auto.bat`运行(缺少依赖会自动安装)
+    - Linux: `sudo ./run_auto_linux.sh`
+5. 非首次运行:
+    - Windows: 双击`运行.bat`/`Run.bat`运行.
+    - Linux: `node index.js`
 
-#### 自行安装依赖
+#### 自行安装依赖\[建议\]
 
 1. 安装[NodeJs](https://nodejs.org/zh-cn/download/) >= v16.0.0
 2. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载打包好的压缩包
 3. 解压
 4. 安装依赖`npm install --save`
 5. 编辑配置文件,[查看说明](#config文件配置)
-6. Windows: 双击`运行.bat`运行. Linux: `node index.js`
+6. Windows: 双击`运行.bat`/`Run.bat`运行. Linux: `node index.js`
 
 #### 更新
 
 1. [点此](https://github.com/HCLonely/AWA-Helper/releases/latest)下载最新版的压缩包
 2. 解压并覆盖
-3. Windows: 双击`运行.bat`运行. Linux: `node index.js`
+3. 安装依赖`npm install --save`
+4. Windows: 双击`运行.bat`/`Run.bat`运行. Linux: `node index.js`
 
 ## config文件配置
 
