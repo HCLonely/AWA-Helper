@@ -259,8 +259,8 @@ class DailyQuest {
       if (
         this.questInfo.steamQuest && steamQuest &&
         (
-          steamQuest.taskStatus.length === 0 ||
-          (steamQuest.taskStatus.length > 0 && !steamQuest.taskStatus.find((e) => parseInt(e.progress || '0', 10) < 100))
+          steamQuest.taskStatus?.length === 0 ||
+          (steamQuest.taskStatus?.length > 0 && !steamQuest.taskStatus.find((e) => parseInt(e.progress || '0', 10) < 100))
         )
       ) {
         if (steamQuest.status === 'running') {
