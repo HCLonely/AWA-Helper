@@ -15,6 +15,11 @@ import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 import * as dayjs from 'dayjs';
 import { chromium } from 'playwright';
+import { createInterface } from 'readline';
+const rl = createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 class DailyQuest {
   // eslint-disable-next-line no-undef
@@ -480,7 +485,7 @@ class DailyQuest {
             .filter((i, e) => e === 'incomplete').length;
           if (verify && this.awaBoosterNotice && this.dailyQuestNumber > 1) {
             if (!boostEnabled) {
-              const answer = await ask(__('boosterAlert', chalk.blue(__('booster')), chalk.yellow(__('selfOpen')), chalk.yellow('1'), chalk.yellow('2')), ['1', '2']);
+              const answer = await ask(rl, __('boosterAlert', chalk.blue(__('booster')), chalk.yellow(__('selfOpen')), chalk.yellow('1'), chalk.yellow('2')), ['1', '2']);
               if (answer === '2') {
                 this.questStatus.dailyQuest = 'skip';
               }

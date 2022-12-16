@@ -9,6 +9,7 @@ import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 import { parse } from 'yaml';
 import { format } from 'util';
 import { PushApi } from 'all-pusher-api';
+import type { Interface } from 'readline';
 
 globalThis.logs = { type: 'logs' };
 
@@ -275,15 +276,12 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     });
 };
 
-const ask = (question: string, answers?: Array<string>): Promise<string> => new Promise((resolve) => {
-  process.stdout.write(`${question}\n`);
-  process.stdin.resume();
-  process.stdin.setEncoding('utf-8');
-  process.stdin.on('data', async (chunk) => {
+const ask = (rl: Interface, question: string, answers?: Array<string>): Promise<string> => new Promise((resolve) => {
+  rl.question(`${question}`, (chunk) => {
     const answer = chunk.toString().trim();
     if (answers) {
       if (!answers.includes(answer)) {
-        return resolve(await ask(question, answers));
+        return resolve(ask(rl, question, answers));
       }
     }
     return resolve(answer);
