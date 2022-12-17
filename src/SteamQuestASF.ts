@@ -388,7 +388,10 @@ class SteamQuestASF {
       });
   }
   async playGames(): Promise<boolean> {
-    if (!await this.getOwnedGames()) return false;
+    if (!await this.getOwnedGames()) {
+      this.status = 'stopped';
+      return false;
+    }
     if (this.ownedGames.length === 0) {
       new Logger(time() + chalk.yellow(__('noGamesAlert')));
       this.status = 'stopped';
