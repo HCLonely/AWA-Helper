@@ -14,7 +14,7 @@ import { chunk } from 'lodash';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 import * as dayjs from 'dayjs';
-import { chromium } from 'playwright';
+import { chromium, LaunchOptions } from 'playwright';
 import { createInterface } from 'readline';
 const rl = createInterface({
   input: process.stdin,
@@ -74,6 +74,11 @@ class DailyQuest {
     password: string
   };
   newCookie: string;
+  proxy?: {
+    server: string
+    username?: string
+    password?: string
+  };
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin }: {
@@ -122,6 +127,13 @@ class DailyQuest {
     }
     if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
+      this.proxy = {
+        server: `${proxy.protocol || 'http'}://${proxy.host}:${proxy.port}`
+      };
+      if (proxy.username && proxy.password) {
+        this.proxy.username = proxy.username;
+        this.proxy.password = proxy.password;
+      }
     }
     if (autoLogin?.enable) {
       this.#loginInfo = autoLogin;
@@ -182,9 +194,13 @@ class DailyQuest {
         return false;
       }
       new Logger(`${time()}${__('updatingAwaCookies')}`);
-      const browser = await chromium.launch({
+      const launchOptions: LaunchOptions = {
         timeout: 3 * 60000
-      });
+      };
+      if (this.proxy) {
+        launchOptions.proxy = this.proxy;
+      }
+      const browser = await chromium.launch(launchOptions);
       const context = await browser.newContext();
       const page = await context.newPage();
       let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(`https://${this.host}/`))}`, false);
@@ -222,11 +238,13 @@ class DailyQuest {
 
       logger = new Logger(`${time()}${__('gettingCookied')}`, false);
       const cookies = await context.cookies('https://.alienwarearena.com');
+      this.cookie = new Cookie();
       cookies.forEach((cookie) => {
         if (['REMEMBERME', 'PHPSESSID', 'sc'].includes(cookie.name)) {
           this.cookie.update(`${cookie.name}=${cookie.value}`);
         }
       });
+      this.headers.cookie = this.cookie.stringify();
       logger.log(chalk.green('OK'));
       await browser.close();
       new Logger(`${time()}${__('updatingAwaCookiesSuccess')}`);

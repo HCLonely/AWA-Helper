@@ -334,7 +334,7 @@ class Cookie {
     return '';
   }
 
-  constructor(data: string | Array<string> | { [name: string]: string }) {
+  constructor(data?: string | Array<string> | { [name: string]: string }) {
     if (typeof data === 'string' || Array.isArray(data)) {
       this.cookie = Cookie.ToJson(data);
       return;
