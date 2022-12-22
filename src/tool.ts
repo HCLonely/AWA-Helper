@@ -320,7 +320,7 @@ class Cookie {
       return Object.fromEntries(data.split(';').filter((cookies) => cookies.trim()).map((cookies) => cookies.trim().split('=').map(((str) => str.trim()))));
     }
     if (Array.isArray(data)) {
-      return Object.fromEntries(data.map((ck) => Object.entries(this.ToJson(ck.split(';')[0]))));
+      return Object.fromEntries(data.map((ck) => Object.entries(this.ToJson(ck.split(';')[0]))[0]));
     }
     return {};
   }
