@@ -2,82 +2,6 @@
 
 Automatically does AWA quests.
 
-## Function
-
-### Daily Quests
-
-```mermaid
-flowchart TD
-  A([Start]) --> B{Is the task completed}
-  B --> |Yes| C([Stop])
-  B --> |No| D{"Whether if it's a quest to open a page"}
-  D --> |Yes| E[Perform the task]
-  E --> F{Is the task completed}
-  F --> |Yes| C
-  F --> |No| G{"It's a quest with a task in a page (with a link)"}
-  D --> |No| G
-  G --> |Yes| H[Perform the task]
-  H --> I{Is the task completed}
-  I --> |Yes| C
-  I --> |No| J{Is there/This quest exist in the database}
-  J --> |Yes| K[Perform the task]
-  K --> L{Is the task completed}
-  L --> |Yes| C
-  L & J --> |No| M["Change border/Change badge/Change avatar/Read News/Check Leaderboard/Check Rewards/Check Store page/Check Video page"]
-  M --> N{Is the task completed}
-  N --> |Yes| C
-  N --> |No| O[Reply to post]
-  O --> P{Is the task completed}
-  P --> |Yes| C
-  P --> |No| C
-```
-
-### AWA Online
-
-```mermaid
-flowchart TD
-  A([Start]) --> B{Is the task completed}
-  B --> |Yes| C([Stop])
-  B --> |No| D[Send requests repeatedly]
-  D -.-> E[Is the task completed] -. Finish .-> C
-```
-
-### Twitch Quest
-
-```mermaid
-flowchart TD
-  A([Start]) --> B{Is the task completed}
-  B --> |Yes| C([Stop])
-  B --> |No| D[Get Available Live stream]
-  D --> E{Is there a live stream available}
-  E --> |Yes| F[Get the live stream ID]
-  E --> |No| G[Wait 10 minutes]
-  F --> |Fail| K{There's other live streams available}
-  K --> |Yes| H[Change to another live stream]
-  K --> |No| C
-  H --> F
-  F --> |Success| I[Get ART widget info]
-  I --> |Fail| K
-  I --> |Success| J[Send requests repeatedly]
-  J -.-> L[Is the task completed] -. Finish .-> C
-```
-
-### Steam Quest
-
-```mermaid
-flowchart TD
-  A([Start]) --> B[Get Quest info]
-  B --> C[Get details of each quest]
-  C --> |Not Owned| D["Try again\n(Equivalent to click in the 'Check Games' button)"]
-  D --> |Not Owned| F([Skip this quest])
-  C & D --> |Owned| E["Start this quest\n(Equivalent to click in the 'Start Quest' button)"]
-  E --> F{Request ASF detection whether if there are games available on account from the Steam Quest}
-  C --> |Started| F
-  F --> |Yes| G[ASF will idle]
-  F --> |No| H([Stop])
-  G -.-> I[Is the task completed] -. Finish .-> H
-```
-
 ## Instructions
 
 ### Instructions before use
@@ -119,7 +43,12 @@ flowchart TD
 1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 2. Extract
 3. Edit configuration file,[View instructions](#config-file-configuration)
-4. Double click`运行-auto.bat`to run(Missing dependencies are automatically installed)
+4. First run:
+    - Windows: Double click`运行-auto.bat`/`Run-auto.bat`to run (Missing dependencies are automatically installed)
+    - Linux: `sudo ./run_auto_linux.sh`
+5. Non first run:
+    - Windows: Double click`运行.bat`/`Run.bat`to run.
+    - Linux: `node index.js`
 
 #### Install dependencies on your own
 
@@ -128,17 +57,20 @@ flowchart TD
 3. Extract
 4. Install dependencies`npm install --save`
 5. Edit configuration file [view instructions](#config-file-configuration)
-6. Double click`运行.bat`to run
+6. Windows: Double click`运行.bat`/`Run.bat`to run. Linux: `node index.js`
 
 #### Update
 
 1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 2. Extract and overwrite it
 3. Double click`运行.bat`to run
+4. Windows: Double click`运行.bat`/`Run.bat`to run. Linux: `node index.js`
 
 ## config (File configuration)
 
 > **The`config.example.yml`file needs to be renamed to`config.yml`!!!**
+>
+> Or use it the[parameter generator](https://configer.hclonely.com/?fileLink=https%3A%2F%2Fraw.githubusercontent.com%2FHCLonely%2FAWA-Helper%2Fmain%2Fconfiger%2Fconfiger.template.yml.js)configuration file generator
 
 ### Global configuration (required)
 
@@ -177,7 +109,32 @@ awaDailyQuestType: # Daily quest type, you don't need to delete or comment it ou
   - sharePost # share post
   - replyPost # Reply to a post
 awaDailyQuestNumber1: true # Whether to only do the first quest when there are multiple daily quests
+boosterRule: # Use the rules of the ARP Booster, comment it out to disable all
+  - 2x24h>0 # This rule means use 2x 24hr ARP Booster when the number of 2x 24hr ARP Booster is greater than 0
+  - 2x48h>5 # This rule means that when the number of 2x 48hr ARP Boosters is greater than 5, use 2x 48hr ARP Booster. This rule will only take effect when none of the above rules match
+boosterCorn: '* * 8 * * 7' # Time to use ARP Booster (local time)
+#             ┬ ┬ ┬ ┬ ┬ ┬
+#             │ │ │ │ │ |
+#             │ │ │ │ │ └─────────────── 一day of the week (0 - 7, 1L - 7L) (0 or 7 is Sunday) ┐
+#             │ │ │ │ └───────────────── month　　　　 (1 - 12)　 　　　             ├─ date
+#             │ │ │ └─────────────────── day of the month (1 - 31, L)　　　　           ┘
+#             │ │ └───────────────────── Hour (0 - 23) ┐
+#             │ └─────────────────────── minute (0 - 59) ├─ time
+#             └───────────────────────── second　 (0 - 59) ┘
+# Time rule description: Enable when the current date and the date are matched at the same day and the current time is greater than the time matched by boosterCorn
+# The expression in the example means that the boosterRule rule is used to match when the sub-program is run after 8:00 every Saturday
+autoLogin: # Automatically sign in to update the Cookies configuration
+  enable: true # Whether to enable
+  username: '' # AWA email account
+  password: '' # AWA password
 ```
+
+#### AWA parameter configuration methods
+
+##### Automatic update
+
+1. Enable and configure`autoLogin`；
+2. `awaCookie`fill in`AWACOOKIEAUTOUPDATE`.
 
 #### How to get AWA parameters
 
@@ -277,9 +234,81 @@ pusher:
     user_id: '******'
 ```
 
-## About Daily Quests
+## Function
 
-- If there are multiple daily quests, by default only the first quest will be completed!
+### Daily Quests
+
+```mermaid
+flowchart TD
+  A([Start]) --> B{Is the task completed}
+  B --> |Yes| C([Stop])
+  B --> |No| D{"Whether if it's a quest to open a page"}
+  D --> |Yes| E[Perform the task]
+  E --> F{Is the task completed}
+  F --> |Yes| C
+  F --> |No| G{"It's a quest with a task in a page (with a link)"}
+  D --> |No| G
+  G --> |Yes| H[Perform the task]
+  H --> I{Is the task completed}
+  I --> |Yes| C
+  I --> |No| J{Is there/This quest exist in the database}
+  J --> |Yes| K[Perform the task]
+  K --> L{Is the task completed}
+  L --> |Yes| C
+  L & J --> |No| M["Change border/Change badge/Change avatar/Read News/Check Leaderboard/Check Rewards/Check Store page/Check Video page"]
+  M --> N{Is the task completed}
+  N --> |Yes| C
+  N --> |No| O[Reply to post]
+  O --> P{Is the task completed}
+  P --> |Yes| C
+  P --> |No| C
+```
+
+### AWA Online
+
+```mermaid
+flowchart TD
+  A([Start]) --> B{Is the task completed}
+  B --> |Yes| C([Stop])
+  B --> |No| D[Send requests repeatedly]
+  D -.-> E[Is the task completed] -. Finish .-> C
+```
+
+### Twitch Quest
+
+```mermaid
+flowchart TD
+  A([Start]) --> B{Is the task completed}
+  B --> |Yes| C([Stop])
+  B --> |No| D[Get Available Live stream]
+  D --> E{Is there a live stream available}
+  E --> |Yes| F[Get the live stream ID]
+  E --> |No| G[Wait 10 minutes]
+  F --> |Fail| K{There's other live streams available}
+  K --> |Yes| H[Change to another live stream]
+  K --> |No| C
+  H --> F
+  F --> |Success| I[Get ART widget info]
+  I --> |Fail| K
+  I --> |Success| J[Send requests repeatedly]
+  J -.-> L[Is the task completed] -. Finish .-> C
+```
+
+### Steam Quest
+
+```mermaid
+flowchart TD
+  A([Start]) --> B[Get Quest info]
+  B --> C[Get details of each quest]
+  C --> |Not Owned| D["Try again\n(Equivalent to click in the 'Check Games' button)"]
+  D --> |Not Owned| F([Skip this quest])
+  C & D --> |Owned| E["Start this quest\n(Equivalent to click in the 'Start Quest' button)"]
+  E --> F{Request ASF detection whether if there are games available on account from the Steam Quest}
+  C --> |Started| F
+  F --> |Yes| G[ASF will idle]
+  F --> |No| H([Stop])
+  G -.-> I[Is the task completed] -. Finish .-> H
+```
 
 ## Example running
 
@@ -307,3 +336,4 @@ pusher:
 - [express](https://github.com/expressjs/express)
 - [express-ws](https://github.com/HenningM/express-ws)
 - [lodash](https://github.com/lodash/lodash)
+- [playwright](https://github.com/microsoft/playwright)
