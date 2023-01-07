@@ -79,9 +79,10 @@ class DailyQuest {
     username?: string
     password?: string
   };
+  autoUpdateDailyQuestDb = false;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin }: {
+  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb }: {
     awaCookie: string
     awaHost?: string
     awaDailyQuestType?: Array<string>
@@ -94,11 +95,13 @@ class DailyQuest {
       enable: boolean
       username: string
       password: string
-    }
+    },
+    autoUpdateDailyQuestDb?: boolean
   }) {
     this.host = awaHost || 'www.alienwarearena.com';
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.newCookie = awaCookie;
+    this.autoUpdateDailyQuestDb = !!autoUpdateDailyQuestDb;
     this.cookie = new Cookie(awaCookie);
     this.headers = {
       cookie: this.cookie.stringify(),
@@ -605,6 +608,10 @@ class DailyQuest {
       if (this.dailyQuestNumber < 2) {
         return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }
+    }
+
+    if (this.autoUpdateDailyQuestDb) {
+      await this.updateDailyQuestDb();
     }
     for (const dailyQuestName of this.dailyQuestName) {
       const matchedQuest = this.matchQuest(dailyQuestName);
@@ -1350,11 +1357,48 @@ class DailyQuest {
       logger.log(chalk.yellow(__('notMatchedDailyQuest')));
       return [];
     }
-    if (!fs.existsSync('dailyQuestDb.json')) {
+    let version = 0;
+    let versionCloud = 0;
+    let quests: dailyQuestDb['quests'] = {
+      changeBorder: [],
+      changeBadge: [],
+      changeAvatar: [],
+      viewNews: [],
+      sharePost: [],
+      replyPost: [],
+      leaderboard: [],
+      marketplace: [],
+      rewards: [],
+      video: [],
+      other: []
+    };
+    let questsCloud: dailyQuestDb['quests'] = {
+      changeBorder: [],
+      changeBadge: [],
+      changeAvatar: [],
+      viewNews: [],
+      sharePost: [],
+      replyPost: [],
+      leaderboard: [],
+      marketplace: [],
+      rewards: [],
+      video: [],
+      other: []
+    };
+
+    if (fs.existsSync('dailyQuestDb.json')) {
+      ({ version, quests } = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString()) as dailyQuestDb);
+    }
+    if (fs.existsSync('dailyQuestDbCloud.json')) {
+      ({ version: versionCloud, quests: questsCloud } = JSON.parse(fs.readFileSync('dailyQuestDbCloud.json').toString()) as dailyQuestDb);
+    }
+    if (!fs.existsSync('dailyQuestDb.json') && !fs.existsSync('dailyQuestDbCloud.json')) {
       logger.log(chalk.yellow(__('notMatchedDailyQuest')));
       return [];
     }
-    const { quests } = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString()) as dailyQuestDb;
+    if (versionCloud > version) {
+      quests = questsCloud;
+    }
     let matchedQuest = Object.entries(quests).map(([key, value]) => (value.includes(dailyQuestName) ? key : '')).filter((e) => e);
     if (matchedQuest.length > 0) {
       logger.log(chalk.green(__('success')));
@@ -1470,6 +1514,33 @@ class DailyQuest {
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+
+  async updateDailyQuestDb(): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('updatingDailyQuestDb')}`, false);
+    const options: myAxiosConfig = {
+      url: 'https://awa-helper.hclonely.com/dailyQuestDb.json',
+      method: 'GET',
+      responseType: 'json',
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then((response) => {
+        if (response.data) {
+          fs.writeFileSync('dailyQuestDbCloud.json', JSON.stringify(response.data));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        new Logger(response);
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
         new Logger(error);
         return false;
       });

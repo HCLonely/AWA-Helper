@@ -44,7 +44,8 @@ declare global {
       enable: boolean
       username: string
       password: string
-    }
+    },
+    autoUpdateDailyQuestDb?: boolean
   }
   interface proxy {
     enable: Array<string>
@@ -89,7 +90,7 @@ declare global {
     awaAvatar: string
   }
   interface dailyQuestDb {
-    version: string
+    version: number
     quests: {
       changeBorder: Array<string>
       changeBadge: Array<string>

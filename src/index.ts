@@ -167,7 +167,8 @@ process.on('uncaughtException', async (err) => {
     proxy,
     webUI,
     pusher,
-    autoLogin
+    autoLogin,
+    autoUpdateDailyQuestDb
   }: config = config;
   globalThis.webUI = !!webUI?.enable;
   globalThis.language = language || 'zh';
@@ -212,7 +213,8 @@ process.on('uncaughtException', async (err) => {
     boosterRule,
     boosterCorn,
     proxy,
-    autoLogin
+    autoLogin,
+    autoUpdateDailyQuestDb
   });
   const initResult = await quest.init();
   if (initResult !== 200) {
