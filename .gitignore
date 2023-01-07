@@ -17,6 +17,7 @@ node-v16.17.0-win-x64
 auto-close
 dist/
 crts/
+dailyQuestDbCloud.json
 
 test.js
 test.ts

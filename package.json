@@ -7,7 +7,8 @@
     "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run build",
     "start": "cd dist && node index.js",
     "build": "tsc && node build.js",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "updateDailyQuestDb": "node scripts/updateDailyQuestDb.js"
   },
   "keywords": [],
   "author": "HCLonely",
