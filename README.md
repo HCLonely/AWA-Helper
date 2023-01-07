@@ -129,6 +129,7 @@ autoLogin: # 自动登录更新Cookies配置
   enable: true # 是否启用
   username: '' # AWA用户名
   password: '' # AWA密码
+autoUpdateDailyQuestDb: false # 自动更新每日任务数据库
 ```
 
 #### AWA 参数获取方式

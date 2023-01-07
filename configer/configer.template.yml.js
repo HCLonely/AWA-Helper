@@ -128,6 +128,10 @@
       name: 使用ARP Booster的时间
       desp: 此时间为本地时间，当前日期和boosterCorn匹配的日期为同一天且当前时间大于boosterCorn匹配的时间时启用。格式建议查看config.example.yml文件中的说明。
       type: text
+    autoUpdateDailyQuestDb:
+      name: 自动更新每日任务数据库
+      type: boolean
+      defaultValue: false
     twitchCookie:
       name: Twitch Cookie
       desp: 必须包括`unique_id` 和 `auth-token`
