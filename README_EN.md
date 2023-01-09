@@ -127,6 +127,7 @@ autoLogin: # Automatically sign in to update the Cookies configuration
   enable: true # Whether to enable
   username: '' # AWA email account
   password: '' # AWA password
+ autoUpdateDailyQuestDb: false # Automatically update daily quests database
 ```
 
 #### AWA parameter configuration methods
