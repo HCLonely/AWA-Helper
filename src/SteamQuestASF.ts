@@ -63,15 +63,15 @@ class SteamQuestASF {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(response.data.Message));
             return false;
           }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
           new Logger(response.data);
           return false;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(2): ${response.status}`));
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -134,45 +134,6 @@ class SteamQuestASF {
         return false;
       });
   }
-  /*
-  async add2library(id: string):Promise<boolean> {
-    log(`${time()}${__('adding2library', chalk.yellow('ASF'), chalk.yellow(id))}`, false);
-    const options: myAxiosConfig = {
-      url: this.asfUrl,
-      method: 'POST',
-      headers: this.headers,
-      data: `{"Command":"!addlicense ${this.botname} app/${id}"}`
-      // data: `{"Command":"!addlicense ${this.botname} ${this.gamesInfo.map((e) => `app/${e.id}`).join(',')}"}`
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.status === 200) {
-          if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            console.log(response.data.Result);
-            log(chalk.green('OK'));
-            return true;
-          }
-          if (response.data.Message) {
-            log(chalk.blue(response.data.Message));
-            return false;
-          }
-          log(chalk.blue('Error'));
-          log(response.data);
-          return false;
-        }
-        log(chalk.red(`Error: ${response.status}`));
-        return false;
-      })
-      .catch((error) => {
-        log(chalk.red('Error'));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        log(error);
-        return false;
-      });
-  }
-  */
   async awaCheckOwnedGames(name: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('recheckingOwnedGames', chalk.yellow(name))}`, false);
     const taskUrl = `https://${this.awaHost}/steam/quests/${name}`;
@@ -201,11 +162,11 @@ class SteamQuestASF {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('notOwned')));
           return false;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -253,11 +214,11 @@ class SteamQuestASF {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return this.startQuest(url);
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -283,11 +244,11 @@ class SteamQuestASF {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.data.message || response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.data.message || response.status}`));
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -329,7 +290,7 @@ class SteamQuestASF {
           return false;
         })
         .catch((error) => {
-          ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+          ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
           globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
           new Logger(error);
           return false;
@@ -373,15 +334,15 @@ class SteamQuestASF {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(response.data.Message));
             return false;
           }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
           new Logger(response.data);
           return false;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(2): ${response.status}`));
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -419,15 +380,15 @@ class SteamQuestASF {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(response.data.Message));
             return false;
           }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
           new Logger(response.data);
           return false;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(2): ${response.status}`));
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -460,15 +421,15 @@ class SteamQuestASF {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(response.data.Message));
             return false;
           }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
           new Logger(response.data);
           return false;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${response.status}`));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(2): ${response.status}`));
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;

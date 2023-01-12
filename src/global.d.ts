@@ -59,8 +59,14 @@ declare global {
     status: string
     arp: string
   }
+  interface dailyQuestUS {
+    link: string
+    title: string
+    arp: string
+  }
   interface questInfo {
     dailyQuest?: Array<dailyQuest>
+    dailyQuestUS?: Array<dailyQuestUS>
     timeOnSite?: {
       maxArp: number
       addedArp: number

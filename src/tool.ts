@@ -351,6 +351,14 @@ class Cookie {
   stringify() {
     return Cookie.ToString(this.cookie);
   }
+  browserify() {
+    return Object.entries(this.cookie).map(([name, value]) => ({
+      name,
+      value,
+      domain: '.alienwarearena.com',
+      path: '/'
+    }));
+  }
   update(data: string | Array<string> | cookies) {
     if (typeof data === 'string' || Array.isArray(data)) {
       data = Cookie.ToJson(data);

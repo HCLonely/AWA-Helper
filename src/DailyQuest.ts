@@ -9,6 +9,7 @@ import { Logger, sleep, random, time, netError, ask, http as axios, formatProxy,
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
 import { SteamQuestSU } from './SteamQuestSU';
+import { DailyQuestUS } from './DailyQuestUS';
 import * as fs from 'fs';
 import { chunk } from 'lodash';
 import * as events from 'events';
@@ -80,9 +81,10 @@ class DailyQuest {
     password?: string
   };
   autoUpdateDailyQuestDb = false;
+  doTaskUS = false;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb }: {
+  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS }: {
     awaCookie: string
     awaHost?: string
     awaDailyQuestType?: Array<string>
@@ -97,6 +99,7 @@ class DailyQuest {
       password: string
     },
     autoUpdateDailyQuestDb?: boolean
+    doTaskUS?: boolean
   }) {
     this.host = awaHost || 'www.alienwarearena.com';
     this.awaBoosterNotice = awaBoosterNotice ?? true;
@@ -141,6 +144,7 @@ class DailyQuest {
     if (autoLogin?.enable) {
       this.#loginInfo = autoLogin;
     }
+    this.doTaskUS = !!doTaskUS;
   }
   async init(first = true): Promise<number> {
     const REMEMBERME = this.cookie.get('REMEMBERME');
@@ -363,12 +367,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -443,19 +447,20 @@ class DailyQuest {
               new Logger(`${time()}${chalk.green(__('promotionalAlert'))}`);
             }
           }
-          /*
+
           // 美区任务
-          const country = response.data.match(/user_country.*?=.*?([\w]+)/)?.[1];
-          if (country === 'US') {
-            this.USTaskInfo = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0).toArray()
+          if (this.doTaskUS) {
+            this.questInfo.dailyQuestUS = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0).toArray()
               .map((e) => ({
-                url: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${this.host}/`).href,
-                progress: $(e).find('.quest-item-progress').toArray()
+                link: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${this.host}/`).href,
+                title: $(e).find('.quest-title').text()
+                  .trim(),
+                arp: $(e).find('.quest-item-progress').toArray()
                   .map((e) => $(e).text().trim()
                     .toLowerCase())
+                  .at(-1) || '0'
               }));
           }
-          */
 
           // Booster
           const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
@@ -559,23 +564,13 @@ class DailyQuest {
         return response.status;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return 0;
       });
   }
   async do(): Promise<any> {
-    /*
-    if (this.USTaskInfo?.length) {
-      for (const { url, progress: [status] } of this.USTaskInfo) {
-        if (status === 'complete') {
-          continue;
-        }
-        await this.doUSTask(url);
-      }
-    }
-    */
     if (this.questStatus.dailyQuest === 'skip') {
       return new Logger(time() + chalk.yellow(__('dailyQuestSkipped')));
     }
@@ -694,6 +689,22 @@ class DailyQuest {
     this.questStatus.dailyQuest = 'complete';
     return new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
   }
+  async doQuestUS(): Promise<void> {
+    if (this.questInfo.dailyQuestUS?.length) {
+      const dailyQuestUS = new DailyQuestUS({
+        awaCookie: this.cookie,
+        awaHost: this.host,
+        httpsAgent: this.httpsAgent,
+        proxy: this.proxy
+      });
+      for (const { link, arp } of this.questInfo.dailyQuestUS) {
+        if (parseInt(arp, 10) > 0) {
+          continue;
+        }
+        await dailyQuestUS.doTask(link);
+      }
+    }
+  }
   async changeBorder(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Border'))}`, false);
     const options: myAxiosConfig = {
@@ -717,12 +728,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -752,12 +763,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -787,12 +798,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -822,12 +833,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -879,7 +890,7 @@ class DailyQuest {
             this.trackTimes++;
             return true;
           }
-          if (logger) ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+          if (logger) ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
           if (logger) new Logger(response.data?.message || response);
           this.trackError++;
           return false;
@@ -888,7 +899,7 @@ class DailyQuest {
       })
       .catch((error) => {
         if (!link) {
-          if (logger) ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+          if (logger) ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
           globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
           if (logger) new Logger(error);
           this.trackError++;
@@ -921,12 +932,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data || response.statusText);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -977,7 +988,7 @@ class DailyQuest {
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -1014,12 +1025,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger1).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger1).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger1).log(chalk.red('Error(1)'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger1).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger1).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -1049,17 +1060,17 @@ class DailyQuest {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
           new Logger(response.data);
           return false;
         } catch {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(2)'));
           new Logger(response.data);
           return false;
         }
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -1151,7 +1162,7 @@ class DailyQuest {
         return;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return;
@@ -1177,59 +1188,18 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data || response.statusText);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
       });
   }
 
-  /*
-  async getUSTaskInfo(url: string): Promise<string | false> {
-    log(`${time()}正在获取美区任务[${chalk.yellow(url.match(/[\d]+/)?.[0] || url)}] render...`, false);
-    const getOptions: myAxiosConfig = {
-      url,
-      method: 'GET',
-      headers: {
-        ...this.headers,
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*\/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        referer: `https://${this.host}/`
-      }
-    };
-    if (this.httpsAgent) getOptions.httpsAgent = this.httpsAgent;
-
-    return axios(getOptions)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.status === 200) {
-          const render = response.data.match(/https:\/\/www\.google\.com\/recaptcha\/enterprise\.js\?render=(.*?)'/)?.[1];
-          if (render) {
-            log(chalk.green('OK'));
-            return render;
-          }
-          log(chalk.red('Error'));
-          return false;
-        }
-        log(chalk.red('Net Error'));
-        return false;
-      })
-      .catch((error) => {
-        log(chalk.red('Error') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        log(error);
-        return false;
-      });
-  }
-  async doUSTask(url: string) {
-    const render = await this.getUSTaskInfo(url);
-    if (!render) return false;
-  }
-  */
   async getPersonalization(): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingUserInfo', chalk.yellow('Personalization'))}`, false);
     const options: myAxiosConfig = {
@@ -1283,7 +1253,7 @@ class DailyQuest {
         return 0;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return 0;
@@ -1345,7 +1315,7 @@ class DailyQuest {
         return 0;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return 0;
@@ -1481,7 +1451,7 @@ class DailyQuest {
         return 0;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return 0;
@@ -1507,12 +1477,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data?.message || response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;
@@ -1535,12 +1505,12 @@ class DailyQuest {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response);
         return false;
       })
       .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error'));
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
         new Logger(error);
         return false;
       });
@@ -1576,6 +1546,16 @@ class DailyQuest {
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
           [__('obtainedARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0,
           [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
+        };
+      }
+    }
+    if (this.questInfo.dailyQuestUS && this.questInfo.dailyQuestUS.length > 0) {
+      for (const questInfo of this.questInfo.dailyQuestUS) {
+        result[`${__('dailyTaskUS')}[${questInfo.title}]`] = {
+          // eslint-disable-next-line no-nested-ternary
+          [__('status')]: parseInt(questInfo.arp, 10) > 0 ? __('done') : __('undone'),
+          [__('obtainedARP')]: parseInt(questInfo.arp, 10),
+          [__('maxAvailableARP')]: '-'
         };
       }
     }

@@ -214,7 +214,8 @@ process.on('uncaughtException', async (err) => {
     boosterCorn,
     proxy,
     autoLogin,
-    autoUpdateDailyQuestDb
+    autoUpdateDailyQuestDb,
+    doTaskUS: awaQuests.includes('dailyQuestUS')
   });
   const initResult = await quest.init();
   if (initResult !== 200) {
@@ -240,6 +241,9 @@ process.on('uncaughtException', async (err) => {
   globalThis.quest = quest;
   if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
     await quest.do();
+  }
+  if (awaQuests.includes('dailyQuestUS') && (quest.questInfo.dailyQuestUS || []).filter((e) => parseInt(e.arp, 10) === 0).length > 0) {
+    await quest.doQuestUS();
   }
   if (awaQuests.includes('timeOnSite') && quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {
     quest.track();
