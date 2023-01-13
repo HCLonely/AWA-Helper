@@ -185,9 +185,8 @@ class DailyQuestUS {
       url: link,
       method: 'GET',
       headers: {
-        accept: '*/*',
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'accept-encoding': 'gzip, deflate, br',
-        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
         cookie: (this.gameCookie as Cookie).stringify(),
         origin: 'https://secure.cataboom.com',
         referer,
