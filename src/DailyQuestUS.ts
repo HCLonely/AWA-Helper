@@ -64,7 +64,7 @@ class DailyQuestUS {
       await page.goto(taskLink);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
-      const questTitle = await page.locator('.quest-title').innerText();
+      // const questTitle = await page.locator('.quest-title').innerText();
 
       logger = new Logger(`${time()}${__('startingQuest')}`, false);
       await page.locator('a.btn-play').click();
@@ -94,7 +94,7 @@ class DailyQuestUS {
           resolve(false);
         }, 3 * 60000);
         const checker = setInterval(() => {
-          if (/index\.html$/.test(gameFrame.url())) {
+          if (/index\.html$/.test(gameFrame.url()) || gameFrame.url().includes('prod-wt')) {
             clearTimeout(timeout);
             clearInterval(checker);
             resolve(gameFrame.url());
@@ -107,10 +107,21 @@ class DailyQuestUS {
         return false;
       }
 
-      if (!await this.gameGateway(gameUrl, questTitle)) {
-        new Logger(`${time()}${__('doTaskUSFailed')}`);
-        await browser.close();
-        return false;
+      if (/index\.html$/.test(gameFrame.url())) {
+        if (!await this.gameGateway(gameUrl)) {
+          new Logger(`${time()}${__('doTaskUSFailed')}`);
+          await browser.close();
+          return false;
+        }
+      } else if (gameFrame.url().includes('prod-wt')) {
+        new Logger(`${time()}${'Not supported at present'}`);
+        /*
+        if (!await this.gamePord(gameUrl)) {
+          new Logger(`${time()}${__('doTaskUSFailed')}`);
+          await browser.close();
+          return false;
+        }
+        */
       }
 
       await browser.close();
@@ -122,18 +133,20 @@ class DailyQuestUS {
       return false;
     }
   }
-  async gameGateway(link: string, questTitle: string): Promise<boolean> {
+  async gameGateway(link: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gameGateway')}`, false);
+    /*
     const questData: {
       [name: string]: string
     } = {
-      'Alien Invasion!': `gameclass=&picklist=&score=1&exit=0&result=0&gameresult%5Bscore%5D=0&gameresult%5Bplaytime%5D=${random(20, 40)}&gameresult%5Blevel%5D=0`
+      'Alien Invasion!': `gameclass=&picklist=&score=0&exit=0&result=0&gameresult%5Bscore%5D=0&gameresult%5Bplaytime%5D=${random(20, 40)}&gameresult%5Blevel%5D=0`
     };
     const postData = questData[questTitle];
     if (!postData) {
       logger.log(chalk.red('Unknown quest'));
       return false;
     }
+    */
     const options: myAxiosConfig = {
       url: link.replace('game', 'gateway').replace('/index.html', ''),
       method: 'POST',
@@ -146,7 +159,7 @@ class DailyQuestUS {
         referer: link,
         'user-agent': globalThis.userAgent
       },
-      data: postData,
+      data: `gameclass=&picklist=&score=0&exit=0&result=0&gameresult%5Bscore%5D=0&gameresult%5Bplaytime%5D=${random(20, 40)}&gameresult%5Blevel%5D=0`,
       Logger: logger
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
@@ -195,6 +208,46 @@ class DailyQuestUS {
           return true;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(2)'));
+        new Logger(response.data);
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+  /* todo
+  async gamePord(link: string): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('gamePord')}`, false);
+    return true;
+  }
+  */
+  async gamePordStart(link: string): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('startingGame')}`, false);
+    const options: myAxiosConfig = {
+      url: link.replace('dplay', 'event'),
+      method: 'POST',
+      headers: {
+        accept: '*/*',
+        'accept-encoding': 'gzip, deflate, br',
+        'content-type': 'application/json; charset=UTF-8',
+        cookie: (this.gameCookie as Cookie).stringify(),
+        origin: 'https://secure.cataboom.com',
+        referer: link,
+        'user-agent': globalThis.userAgent
+      },
+      data: { event: 'game-start' },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return await axios(options)
+      .then(async (response) => {
+        if (response.data === 'success') {
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data);
         return false;
       })
