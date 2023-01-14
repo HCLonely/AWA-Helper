@@ -23,7 +23,7 @@
 
   const readmeFileList = [
     'README',
-    'README_EN'
+    'README_en'
   ];
 
   marked.setOptions({
