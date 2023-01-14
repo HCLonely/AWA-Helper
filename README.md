@@ -5,6 +5,8 @@
 [简体中文](/README.md) •
 [English](/README_en.md)
 
+> **请到[这里](https://gitlocalize.com/repo/8263)帮助我们改进翻译**.
+
 ## 使用说明
 
 ### 用前说明
