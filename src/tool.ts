@@ -230,6 +230,7 @@ const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOption
 
 const http = axios.create({
   maxRedirects: 5,
+  timeout: 5 * 60 * 1000,
   adapter: retryAdapterEnhancer(axios.defaults.adapter as AxiosAdapter, {
     delay: 1000,
     times: 3

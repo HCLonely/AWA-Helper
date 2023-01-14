@@ -37,7 +37,6 @@ class DailyQuest {
   avatar!: string;
   questStatus: questStatus = {};
   dailyQuestLink!: string;
-  host: string;
   awaBoosterNotice: boolean;
   dailyQuestNumber = 0;
   clickQuestId?: string | undefined;
@@ -84,9 +83,8 @@ class DailyQuest {
   doTaskUS = false;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaHost, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS }: {
+  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS }: {
     awaCookie: string
-    awaHost?: string
     awaDailyQuestType?: Array<string>
     awaDailyQuestNumber1: boolean | undefined
     boosterRule?: Array<string>
@@ -101,7 +99,6 @@ class DailyQuest {
     autoUpdateDailyQuestDb?: boolean
     doTaskUS?: boolean
   }) {
-    this.host = awaHost || 'www.alienwarearena.com';
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.newCookie = awaCookie;
     this.autoUpdateDailyQuestDb = !!autoUpdateDailyQuestDb;
@@ -210,8 +207,8 @@ class DailyQuest {
       const browser = await chromium.launch(launchOptions);
       const context = await browser.newContext();
       const page = await context.newPage();
-      let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(`https://${this.host}/`))}`, false);
-      await page.goto(`https://${this.host}/`);
+      let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(`https://${globalThis.awaHost}/`))}`, false);
+      await page.goto(`https://${globalThis.awaHost}/`);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
 
@@ -330,7 +327,7 @@ class DailyQuest {
   async updateCookie(REMEMBERME: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('updatingCookie', chalk.yellow('AWA Cookie'))}...`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/`,
+      url: `https://${globalThis.awaHost}/`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -352,8 +349,8 @@ class DailyQuest {
         if (response.status === 302 && response.headers['set-cookie']?.length) {
           this.headers.cookie = this.cookie.update(response.headers['set-cookie']).stringify();
           const homeSite = this.cookie.get('home_site');
-          if (homeSite && this.host !== homeSite) {
-            this.host = homeSite;
+          if (homeSite && globalThis.awaHost !== homeSite) {
+            globalThis.awaHost = homeSite;
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('redirected')));
             return this.updateCookie(REMEMBERME);
           }
@@ -381,7 +378,7 @@ class DailyQuest {
   async updateDailyQuests(verify = false): Promise<number> {
     const logger = new Logger(time() + (verify ? __('verifyingToken', chalk.yellow('AWA Token')) : __('gettingTaskInfo')), false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/`,
+      url: `https://${globalThis.awaHost}/`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -452,7 +449,7 @@ class DailyQuest {
           if (this.doTaskUS) {
             this.questInfo.dailyQuestUS = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0).toArray()
               .map((e) => ({
-                link: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${this.host}/`).href,
+                link: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${globalThis.awaHost}/`).href,
                 title: $(e).find('.quest-title').text()
                   .trim(),
                 arp: $(e).find('.quest-item-progress').toArray()
@@ -556,7 +553,7 @@ class DailyQuest {
             .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])
             .filter((e) => e) as Array<string>;
           if ($('a.quest-title').length > 0) {
-            this.dailyQuestLink = new URL($('a.quest-title[href]').attr('href') as string, `https://${this.host}/`).href;
+            this.dailyQuestLink = new URL($('a.quest-title[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
           }
           return 200;
         }
@@ -617,13 +614,13 @@ class DailyQuest {
             // @ts-ignore
             await this[quest]();
           } else if (quest === 'leaderboard' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${this.host}/rewards/leaderboard`);
+            await this.openLink(`https://${globalThis.awaHost}/rewards/leaderboard`);
           } else if (quest === 'marketplace' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${this.host}/marketplace/`);
+            await this.openLink(`https://${globalThis.awaHost}/marketplace/`);
           } else if (quest === 'rewards' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${this.host}/rewards`);
+            await this.openLink(`https://${globalThis.awaHost}/rewards`);
           } else if (quest === 'video' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${this.host}/ucf/Video`);
+            await this.openLink(`https://${globalThis.awaHost}/ucf/Video`);
           }
           this.done.push(quest);
           await sleep(random(1, 2));
@@ -655,18 +652,18 @@ class DailyQuest {
 
     if (this.awaDailyQuestType.includes('openLink')) {
       if (!this.done.includes('leaderboard')) {
-        await this.openLink(`https://${this.host}/rewards/leaderboard`);
+        await this.openLink(`https://${globalThis.awaHost}/rewards/leaderboard`);
         await sleep(random(1, 3));
       }
       if (!this.done.includes('rewards')) {
-        await this.openLink(`https://${this.host}/rewards`);
+        await this.openLink(`https://${globalThis.awaHost}/rewards`);
         await sleep(random(1, 3));
       }
       if (!this.done.includes('marketplace')) {
-        await this.openLink(`https://${this.host}/marketplace/`);
+        await this.openLink(`https://${globalThis.awaHost}/marketplace/`);
       }
       if (!this.done.includes('marketplace')) {
-        await this.openLink(`https://${this.host}/ucf/Video`);
+        await this.openLink(`https://${globalThis.awaHost}/ucf/Video`);
       }
     }
     await this.updateDailyQuests();
@@ -693,7 +690,6 @@ class DailyQuest {
     if (this.questInfo.dailyQuestUS?.length) {
       const dailyQuestUS = new DailyQuestUS({
         awaCookie: this.cookie,
-        awaHost: this.host,
         httpsAgent: this.httpsAgent,
         proxy: this.proxy
       });
@@ -708,13 +704,13 @@ class DailyQuest {
   async changeBorder(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Border'))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/border/select`,
+      url: `https://${globalThis.awaHost}/border/select`,
       method: 'POST',
       headers: {
         ...this.headers,
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${this.host}`,
-        referer: `https://${this.host}/account/personalization`
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/account/personalization`
       },
       data: { id: this.borderId },
       Logger: logger
@@ -743,13 +739,13 @@ class DailyQuest {
   async changeBadge(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Badge'))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/badges/update/${this.userId}`,
+      url: `https://${globalThis.awaHost}/badges/update/${this.userId}`,
       method: 'POST',
       headers: {
         ...this.headers,
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${this.host}`,
-        referer: `https://${this.host}/account/personalization`
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/account/personalization`
       },
       data: JSON.stringify(this.badgeIds.slice(0, 5)),
       Logger: logger
@@ -778,13 +774,13 @@ class DailyQuest {
   async changeAvatar(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Avatar'))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/ajax/user/avatar/save/${this.userId}`,
+      url: `https://${globalThis.awaHost}/ajax/user/avatar/save/${this.userId}`,
       method: 'POST',
       headers: {
         ...this.headers,
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${this.host}`,
-        referer: `https://${this.host}/avatar/edit/hat`
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/avatar/edit/hat`
       },
       data: this.avatar,
       Logger: logger
@@ -813,12 +809,12 @@ class DailyQuest {
   async sendViewTrack(link: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('sendingViewTrack', chalk.yellow(link))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/tos/track`,
+      url: `https://${globalThis.awaHost}/tos/track`,
       method: 'POST',
       headers: {
         ...this.headers,
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${this.host}`,
+        origin: `https://${globalThis.awaHost}`,
         referer: link
       },
       data: JSON.stringify({ url: link }),
@@ -867,15 +863,15 @@ class DailyQuest {
 
   async sendTrack(link?: string, logger?: Logger): Promise<boolean> {
     const options: myAxiosConfig = {
-      url: `https://${this.host}/tos/track`,
+      url: `https://${globalThis.awaHost}/tos/track`,
       method: 'POST',
       headers: {
         ...this.headers,
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${this.host}`,
-        referer: link || `https://${this.host}/account/personalization`
+        origin: `https://${globalThis.awaHost}`,
+        referer: link || `https://${globalThis.awaHost}/account/personalization`
       },
-      data: JSON.stringify({ url: link || `https://${this.host}/account/personalization` }),
+      data: JSON.stringify({ url: link || `https://${globalThis.awaHost}/account/personalization` }),
       Logger: logger
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
@@ -910,15 +906,15 @@ class DailyQuest {
   }
 
   async viewPost(postId?: string): Promise<boolean> {
-    await this.openLink(`https://${this.host}/ucf/show/${postId}`);
+    await this.openLink(`https://${globalThis.awaHost}/ucf/show/${postId}`);
     const logger = new Logger(`${time()}${__('sendingViewRecord', chalk.yellow(postId))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/ucf/increment-views/${postId}`,
+      url: `https://${globalThis.awaHost}/ucf/increment-views/${postId}`,
       method: 'POST',
       headers: {
         ...this.headers,
-        origin: `https://${this.host}`,
-        referer: `https://${this.host}/ucf/show/${postId}`
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/ucf/show/${postId}`
       },
       Logger: logger
     };
@@ -928,7 +924,7 @@ class DailyQuest {
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data === 'success') {
-          await this.sendTrack(`https://${this.host}/ucf/show/${postId}`);
+          await this.sendTrack(`https://${globalThis.awaHost}/ucf/show/${postId}`);
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
@@ -957,12 +953,12 @@ class DailyQuest {
   async replyPost(postId?: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingRelatedPosts')}`, false);
     const getOptions: myAxiosConfig = {
-      url: `https://${this.host}/forums/board/113/awa-on-topic`,
+      url: `https://${globalThis.awaHost}/forums/board/113/awa-on-topic`,
       method: 'GET',
       headers: {
         ...this.headers,
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        referer: `https://${this.host}/`
+        referer: `https://${globalThis.awaHost}/`
       },
       Logger: logger
     };
@@ -1005,12 +1001,12 @@ class DailyQuest {
     form.append('topic_post[quotedPostIds]', '');
     form.append('topic_post[parentPost]', '');
     const options: myAxiosConfig = {
-      url: `https://${this.host}/comments/${post}/new/ucf`,
+      url: `https://${globalThis.awaHost}/comments/${post}/new/ucf`,
       method: 'POST',
       headers: {
         ...this.headers,
-        origin: `https://${this.host}`,
-        referer: `https://${this.host}/ucf/show/${post}`,
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/ucf/show/${post}`,
         ...form.getHeaders()
       },
       data: form,
@@ -1040,12 +1036,12 @@ class DailyQuest {
   async sharePost(postId: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('sharingPost', chalk.yellow(postId))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/arp/quests/share/${postId}`,
+      url: `https://${globalThis.awaHost}/arp/quests/share/${postId}`,
       method: 'POST',
       headers: {
         ...this.headers,
-        origin: `https://${this.host}`,
-        referer: `https://${this.host}/ucf/show/${postId}`
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/ucf/show/${postId}`
       },
       responseType: 'json',
       Logger: logger
@@ -1089,14 +1085,14 @@ class DailyQuest {
   }
   async promoView(id: string, token: string): Promise<void> {
     const options: myAxiosConfig = {
-      url: `https://${this.host}/ajax/promo/view/${id}`,
+      url: `https://${globalThis.awaHost}/ajax/promo/view/${id}`,
       method: 'POST',
       headers: {
         ...this.headers,
         accept: '*/*',
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${this.host}`,
-        referer: `https://${this.host}/ucf/show/2162951/boards/awa-information/News/arp-6-0`
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/ucf/show/2162951/boards/awa-information/News/arp-6-0`
       },
       data: `token=${token}`
     };
@@ -1109,7 +1105,7 @@ class DailyQuest {
   }
   async viewNews(): Promise<void> {
     const options: myAxiosConfig = {
-      url: `https://${this.host}/ucf/show/2162951/boards/awa-information/News/arp-6-0`,
+      url: `https://${globalThis.awaHost}/ucf/show/2162951/boards/awa-information/News/arp-6-0`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -1172,11 +1168,11 @@ class DailyQuest {
   async questAward(questId: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('doingTask', chalk.yellow(questId))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/ajax/user/quest-award/${questId}`,
+      url: `https://${globalThis.awaHost}/ajax/user/quest-award/${questId}`,
       method: 'get',
       headers: {
         ...this.headers,
-        referer: `https://${this.host}/`
+        referer: `https://${globalThis.awaHost}/`
       },
       Logger: logger
     };
@@ -1203,7 +1199,7 @@ class DailyQuest {
   async getPersonalization(): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingUserInfo', chalk.yellow('Personalization'))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/account/personalization`,
+      url: `https://${globalThis.awaHost}/account/personalization`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -1263,7 +1259,7 @@ class DailyQuest {
   async getAvatar(): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingUserInfo', chalk.yellow('Avatar'))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/avatar/edit`,
+      url: `https://${globalThis.awaHost}/avatar/edit`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -1390,7 +1386,7 @@ class DailyQuest {
   async getBoosters(page = 1): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingBoosters', chalk.yellow(page))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/account/my-rewards/arp_boost/${page}`,
+      url: `https://${globalThis.awaHost}/account/my-rewards/arp_boost/${page}`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -1460,7 +1456,7 @@ class DailyQuest {
   async activateBooster(info: boosters): Promise<boolean> {
     const logger = new Logger(`${time()}${__('activatingBoosters', chalk.yellow(`${info.ratio}x ${info.time}hr ARP Boost`), chalk.blue(`REWARDED ${info.rewardedTime}`))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.host}/account/boosts/activate/${info.activateId}`,
+      url: `https://${globalThis.awaHost}/account/boosts/activate/${info.activateId}`,
       method: 'GET',
       headers: {
         ...this.headers,

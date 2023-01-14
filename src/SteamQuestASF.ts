@@ -19,12 +19,10 @@ class SteamQuestASF {
   maxArp = 0;
   status = 'none';
   taskStatus!: Array<steamGameInfo>;
-  awaHost: string;
   EventEmitter = EventEmitter;
 
-  constructor({ awaCookie, awaHost, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, awaHost: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy?: proxy }) {
+  constructor({ awaCookie, asfProtocol, asfHost, asfPort, asfPassword, asfBotname, proxy }: { awaCookie: string, asfProtocol: string, asfHost: string, asfPort: number, asfPassword?: string, asfBotname: string, proxy?: proxy }) {
     this.awaCookie = new Cookie(awaCookie);
-    this.awaHost = awaHost || 'www.alienwarearena.com';
     this.botname = asfBotname;
     this.asfUrl = `${asfProtocol}://${asfHost}:${asfPort}/Api/Command`;
     this.headers = {
@@ -80,7 +78,7 @@ class SteamQuestASF {
   async getSteamQuests(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`);
     const options: myAxiosConfig = {
-      url: `https://${this.awaHost}/steam/quests`,
+      url: `https://${globalThis.awaHost}/steam/quests`,
       method: 'GET',
       headers: {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -104,7 +102,7 @@ class SteamQuestASF {
               ?.match(/steam\/apps\/([\d]+)/)?.[1];
             if (!id) continue;
             // await this.add2library(id);
-            const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href') as string, `https://${this.awaHost}/`).href;
+            const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
             const started = await this.getQuestInfo(questLink);
             if (!started) continue;
             const playTime = $row.find('.media-body p').text()
@@ -136,9 +134,9 @@ class SteamQuestASF {
   }
   async awaCheckOwnedGames(name: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('recheckingOwnedGames', chalk.yellow(name))}`, false);
-    const taskUrl = `https://${this.awaHost}/steam/quests/${name}`;
+    const taskUrl = `https://${globalThis.awaHost}/steam/quests/${name}`;
     const options: myAxiosConfig = {
-      url: `https://${this.awaHost}/ajax/user/steam/quests/check-owned-games/${name}`,
+      url: `https://${globalThis.awaHost}/ajax/user/steam/quests/check-owned-games/${name}`,
       method: 'GET',
       headers: {
         cookie: this.awaCookie.stringify(),
@@ -185,7 +183,7 @@ class SteamQuestASF {
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'user-agent': globalThis.userAgent,
-        referer: `https://${this.awaHost}/steam/quests`
+        referer: `https://${globalThis.awaHost}/steam/quests`
       },
       Logger: logger
     };
@@ -268,7 +266,7 @@ class SteamQuestASF {
           'accept-encoding': 'gzip, deflate, br',
           'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
           'user-agent': globalThis.userAgent,
-          referer: `https://${this.awaHost}/steam/quests`
+          referer: `https://${globalThis.awaHost}/steam/quests`
         },
         Logger: logger
       };

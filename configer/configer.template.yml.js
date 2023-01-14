@@ -65,11 +65,13 @@
       type: multi-select
       optionsName:
         - 每日任务
+        - 美区每日任务
         - AWA在线任务
         - Twitch直播间在线任务
         - Steam游戏时长任务
       options:
         - dailyQuest
+        - dailyQuestUS
         - timeOnSite
         - watchTwitch
         - steamQuest

@@ -18,14 +18,12 @@ class TwitchTrack {
   httpsAgent!: myAxiosConfig['httpsAgent'];
   headers: AxiosRequestHeaders;
   complete = false;
-  awaHost: string;
   availableStreams!: Array<string>;
   availableStreamsInfo!: Array<string>;
   EventEmitter = EventEmitter;
 
   // eslint-disable-next-line no-undef
-  constructor({ awaHost, cookie, proxy }: { awaHost: string, cookie: string, proxy?: proxy }) {
-    this.awaHost = awaHost || 'www.alienwarearena.com';
+  constructor({ cookie, proxy }: { cookie: string, proxy?: proxy }) {
     this.cookie = new Cookie(cookie);
     this.headers = {
       Authorization: `OAuth ${this.cookie.get('auth-token')}`,
@@ -119,7 +117,7 @@ class TwitchTrack {
   async getAvailableStreams(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingLiveInfo')}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.awaHost}/twitch/live`,
+      url: `https://${globalThis.awaHost}/twitch/live`,
       method: 'GET',
       headers: {
         'User-Agent': globalThis.userAgent
@@ -246,7 +244,7 @@ class TwitchTrack {
     }
     const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.awaHost}/twitch/extensions/track`,
+      url: `https://${globalThis.awaHost}/twitch/extensions/track`,
       method: 'GET',
       headers: {
         origin: `https://${this.extensionID}.ext-twitch.tv`,

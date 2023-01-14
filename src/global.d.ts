@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-var, no-unused-vars */
 /* global WebSocketServer */
 import { AxiosRequestConfig } from 'axios';
@@ -152,7 +153,7 @@ declare global {
   var pusherProxy: proxy;
   var quest: DailyQuest;
   var initError: string;
-  // eslint-disable-next-line no-underscore-dangle
+  var awaHost: string;
   var __: I18n['__'];
 }
 export {};

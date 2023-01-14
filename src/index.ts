@@ -173,6 +173,7 @@ process.on('uncaughtException', async (err) => {
   globalThis.webUI = !!webUI?.enable;
   globalThis.language = language || 'zh';
   globalThis.pusher = pusher;
+  globalThis.awaHost = awaHost || 'www.alienwarearena.com';
   i18n.setLocale(language);
 
   if (pusher?.enable && proxy?.enable?.includes('pusher')) {
@@ -206,7 +207,6 @@ process.on('uncaughtException', async (err) => {
 
   const quest = new DailyQuest({
     awaCookie: awaCookie as string,
-    awaHost: awaHost as string,
     awaBoosterNotice: awaBoosterNotice as boolean,
     awaDailyQuestType,
     awaDailyQuestNumber1,
@@ -254,7 +254,7 @@ process.on('uncaughtException', async (err) => {
   if (awaQuests.includes('watchTwitch')) {
     if (quest.questInfo.watchTwitch !== '15') {
       if (twitchCookie) {
-        twitch = new TwitchTrack({ awaHost, cookie: twitchCookie, proxy });
+        twitch = new TwitchTrack({ cookie: twitchCookie, proxy });
         if (await twitch.init() === true) {
           twitch.sendTrack();
           await sleep(10);
@@ -281,7 +281,6 @@ process.on('uncaughtException', async (err) => {
       } else {
         steamQuest = new SteamQuestASF({
           awaCookie: quest.newCookie,
-          awaHost,
           asfProtocol,
           asfHost: asfHost as string,
           asfPort: asfPort as number,
@@ -306,7 +305,6 @@ process.on('uncaughtException', async (err) => {
       } else {
         steamQuest = new SteamQuestSU({
           awaCookie: quest.newCookie,
-          awaHost,
           steamAccountName: steamAccountName as string,
           steamPassword: steamPassword as string,
           proxy
