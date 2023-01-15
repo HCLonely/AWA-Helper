@@ -5,7 +5,11 @@ import * as chalk from 'chalk';
 import { Logger, sleep, random, time, Cookie } from './tool';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
-import { chromium, Frame, LaunchOptions, Page } from 'playwright';
+import { chromium, Frame, LaunchOptions, Page, Locator } from 'playwright';
+import * as fs from 'fs';
+import * as path from 'path';
+import { PNG } from 'pngjs';
+import * as pixelmatch from 'pixelmatch';
 
 class DailyQuestUS {
   headers: AxiosRequestHeaders;
@@ -45,31 +49,36 @@ class DailyQuestUS {
     }
   }
   async getGameFrame(page: Page, taskLink: string, retry = 0): Promise<{
-    gameFrame: Frame | undefined, gameFramePage: Page | undefined, logger: Logger
+    gameFrame: Frame | undefined, gameFramePage: Page | undefined, logger?: Logger
   }> {
-    let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(taskLink))}`, false);
-    await page.goto(taskLink);
-    logger.log(chalk.green('OK'));
-    await sleep(random(3, 5));
+    try {
+      let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(taskLink))}`, false);
+      await page.goto(taskLink);
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
 
-    logger = new Logger(`${time()}${__('startingQuest')}`, false);
-    await page.locator('a.btn-play').click();
-    logger.log(chalk.green('OK'));
-    await sleep(random(3, 5));
+      logger = new Logger(`${time()}${__('startingQuest')}`, false);
+      await page.locator('a.btn-play').click();
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
 
-    logger = new Logger(`${time()}${__('waitingIFrame')}`, false);
+      logger = new Logger(`${time()}${__('waitingIFrame')}`, false);
 
-    await page.locator('iframe[#iFrameResizer0]');
-    const gameFrame = page.mainFrame().childFrames().find((frame) => frame.url().includes('https://secure.cataboom.com/'));
-    const gameFramePage = gameFrame?.page();
-    if (!gameFrame || !gameFramePage) {
-      logger.log(chalk.red('Error: GameFrame not found'));
-      if (retry >= 3) {
-        return { gameFrame, gameFramePage, logger };
+      await page.locator('iframe[#iFrameResizer0]');
+      const gameFrame = page.mainFrame().childFrames().find((frame) => frame.url().includes('https://secure.cataboom.com/'));
+      const gameFramePage = gameFrame?.page();
+      if (!gameFrame || !gameFramePage) {
+        logger.log(chalk.red('Error: GameFrame not found'));
+        if (retry >= 3) {
+          return { gameFrame, gameFramePage, logger };
+        }
+        return await this.getGameFrame(page, taskLink, retry + 1);
       }
-      return await this.getGameFrame(page, taskLink, retry + 1);
+      return { gameFrame, gameFramePage, logger };
+    } catch (error) {
+      new Logger(error);
+      return { gameFrame: undefined, gameFramePage: undefined };
     }
-    return { gameFrame, gameFramePage, logger };
   }
   async doTask(taskLink: string, retry = 0): Promise<boolean> {
     try {
@@ -94,8 +103,8 @@ class DailyQuestUS {
         await browser.close();
         return false;
       }
-      await gameFramePage.locator('#canvas');
-      prevLogger.log(chalk.green('OK'));
+      const gameFrameCanvas = await gameFramePage.locator('#canvas');
+      prevLogger?.log(chalk.green('OK'));
       await sleep(random(3, 5));
 
       let logger = new Logger(`${time()}${__('gettingGameUrl')}`, false);
@@ -126,6 +135,7 @@ class DailyQuestUS {
       logger.log(chalk.green('OK'));
 
       if (/index\.html$/.test(gameFrame.url())) {
+        // Game
         logger = new Logger(`${time()}${__('fulfillingGame')}`, false);
         // eslint-disable-next-line no-underscore-dangle
         await gameFrame.waitForFunction('typeof _INIT !== "undefined"');
@@ -150,6 +160,20 @@ class DailyQuestUS {
           new Logger(error);
         }
       } else if (gameFrame.url().includes('prod-wt')) {
+        // Click
+        logger = new Logger(`${time()}${__('boundingBox')}`, false);
+        const box = await gameFrameCanvas.boundingBox();
+        if (!box) {
+          logger.log(chalk.red(__('boundingBoxFailed')));
+          await browser.close();
+          return false;
+        }
+        logger.log(chalk.green('OK'));
+
+        await this.canvasClick(gameFrameCanvas, box);
+
+        await sleep(1000); // todo
+
         new Logger(`${time()}${'Not supported'}`);
         await browser.close();
         return false;
@@ -160,6 +184,51 @@ class DailyQuestUS {
       return true;
     } catch (error) {
       new Logger(`${time()}${__('doTaskUSError')}`);
+      new Logger(error);
+      return false;
+    }
+  }
+  async canvasClick(gameFrameCanvas: Locator, box: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }): Promise<boolean> {
+    try {
+      let logger = new Logger(`${time()}${__('screenshoting')}`, false);
+      const screenshot1Path = path.resolve('temp/screenshot1.png');
+      await gameFrameCanvas.screenshot({
+        path: screenshot1Path
+      });
+      logger.log(chalk.green('OK'));
+
+      logger = new Logger(`${time()}${__('clickingElement')}`, false);
+      gameFrameCanvas.click({
+        position: {
+          x: box.width * (random(10, 90) / 100),
+          y: box.height * (random(10, 90) / 100)
+        }
+      });
+      logger.log(chalk.green('OK'));
+
+      await sleep(random(15, 25));
+      logger = new Logger(`${time()}${__('screenshoting')}`, false);
+      const screenshot2Path = path.resolve('temp/screenshot2.png');
+      await gameFrameCanvas.screenshot({
+        path: screenshot2Path
+      });
+      logger.log(chalk.green('OK'));
+
+      logger = new Logger(`${time()}${__('comparingScreenshot')}`, false);
+      const img1 = PNG.sync.read(fs.readFileSync(screenshot1Path));
+      const img2 = PNG.sync.read(fs.readFileSync(screenshot2Path));
+      const { width, height } = img1;
+
+      if (pixelmatch(img1.data, img2.data, null, width, height) / (width * height) < 1e-5) {
+        return true;
+      }
+      return await this.canvasClick(gameFrameCanvas, box);
+    } catch (error) {
       new Logger(error);
       return false;
     }

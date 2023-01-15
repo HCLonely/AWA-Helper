@@ -7,6 +7,8 @@ specifiers:
   '@types/js-yaml': ^4.0.5
   '@types/lodash': ^4.14.191
   '@types/node': ^18.11.11
+  '@types/pixelmatch': ^5.2.4
+  '@types/pngjs': ^6.0.1
   '@types/steam-user': ^4.26.0
   '@types/tunnel': ^0.0.3
   '@types/ws': ^8.5.3
@@ -27,7 +29,9 @@ specifiers:
   i18n: ^0.15.1
   lodash: ^4.17.21
   marked: ^4.2.3
+  pixelmatch: ^5.3.0
   playwright: ^1.28.1
+  pngjs: ^6.0.0
   socks-proxy-agent: ^7.0.0
   steam-user: ^4.26.0
   tunnel: ^0.0.6
@@ -48,7 +52,9 @@ dependencies:
   form-data: registry.npmmirror.com/form-data/4.0.0
   i18n: registry.npmmirror.com/i18n/0.15.1
   lodash: registry.npmmirror.com/lodash/4.17.21
+  pixelmatch: registry.npmmirror.com/pixelmatch/5.3.0
   playwright: registry.npmmirror.com/playwright/1.28.1
+  pngjs: registry.npmmirror.com/pngjs/6.0.0
   socks-proxy-agent: registry.npmmirror.com/socks-proxy-agent/7.0.0
   steam-user: registry.npmmirror.com/steam-user/4.26.0
   tunnel: registry.npmmirror.com/tunnel/0.0.6
@@ -62,6 +68,8 @@ devDependencies:
   '@types/js-yaml': registry.npmmirror.com/@types/js-yaml/4.0.5
   '@types/lodash': registry.npmmirror.com/@types/lodash/4.14.191
   '@types/node': registry.npmmirror.com/@types/node/18.11.11
+  '@types/pixelmatch': registry.npmmirror.com/@types/pixelmatch/5.2.4
+  '@types/pngjs': registry.npmmirror.com/@types/pngjs/6.0.1
   '@types/steam-user': registry.npmmirror.com/@types/steam-user/4.26.0
   '@types/tunnel': registry.npmmirror.com/@types/tunnel/0.0.3
   '@types/ws': registry.npmmirror.com/@types/ws/8.5.3
@@ -438,6 +446,22 @@ packages:
     resolution: {integrity: sha512-KJ021B1nlQUBLopzZmPBVuGU9un7WJd/W4ya7Ih02B4Uwky5Nja0yGYav2EfYIk0RR2Q9oVhf60S2XR1BCWJ2g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/node/-/node-18.11.11.tgz}
     name: '@types/node'
     version: 18.11.11
+
+  registry.npmmirror.com/@types/pixelmatch/5.2.4:
+    resolution: {integrity: sha512-HDaSHIAv9kwpMN7zlmwfTv6gax0PiporJOipcrGsVNF3Ba+kryOZc0Pio5pn6NhisgWr7TaajlPEKTbTAypIBQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/pixelmatch/-/pixelmatch-5.2.4.tgz}
+    name: '@types/pixelmatch'
+    version: 5.2.4
+    dependencies:
+      '@types/node': registry.npmmirror.com/@types/node/18.11.11
+    dev: true
+
+  registry.npmmirror.com/@types/pngjs/6.0.1:
+    resolution: {integrity: sha512-J39njbdW1U/6YyVXvC9+1iflZghP8jgRf2ndYghdJb5xL49LYDB+1EuAxfbuJ2IBbWIL3AjHPQhgaTxT3YaYeg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/pngjs/-/pngjs-6.0.1.tgz}
+    name: '@types/pngjs'
+    version: 6.0.1
+    dependencies:
+      '@types/node': registry.npmmirror.com/@types/node/18.11.11
+    dev: true
 
   registry.npmmirror.com/@types/qs/6.9.7:
     resolution: {integrity: sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@types/qs/-/qs-6.9.7.tgz}
@@ -2548,6 +2572,15 @@ packages:
     version: 2.3.1
     engines: {node: '>=8.6'}
 
+  registry.npmmirror.com/pixelmatch/5.3.0:
+    resolution: {integrity: sha512-o8mkY4E/+LNUf6LzX96ht6k6CEDi65k9G2rjMtBe9Oo+VPKSvl+0GKHuH/AlG+GA5LPG/i5hrekkxUc3s2HU+Q==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/pixelmatch/-/pixelmatch-5.3.0.tgz}
+    name: pixelmatch
+    version: 5.3.0
+    hasBin: true
+    dependencies:
+      pngjs: registry.npmmirror.com/pngjs/6.0.0
+    dev: false
+
   registry.npmmirror.com/playwright-core/1.28.1:
     resolution: {integrity: sha512-3PixLnGPno0E8rSBJjtwqTwJe3Yw72QwBBBxNoukIj3lEeBNXwbNiKrNuB1oyQgTBw5QHUhNO3SteEtHaMK6ag==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/playwright-core/-/playwright-core-1.28.1.tgz}
     name: playwright-core
@@ -2565,6 +2598,13 @@ packages:
     requiresBuild: true
     dependencies:
       playwright-core: registry.npmmirror.com/playwright-core/1.28.1
+    dev: false
+
+  registry.npmmirror.com/pngjs/6.0.0:
+    resolution: {integrity: sha512-TRzzuFRRmEoSW/p1KVAmiOgPco2Irlah+bGFCeNfJXxxYGwSw7YwAOAcd7X28K/m5bjBWKsC29KyoMfHbypayg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/pngjs/-/pngjs-6.0.0.tgz}
+    name: pngjs
+    version: 6.0.0
+    engines: {node: '>=12.13.0'}
     dev: false
 
   registry.npmmirror.com/prelude-ls/1.2.1:
