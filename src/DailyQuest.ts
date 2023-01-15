@@ -63,11 +63,6 @@ class DailyQuest {
   } = {};
   boosterRule: Array<string> = [];
   boosterCorn?: cornParser.CronExpression;
-  userArpBoost?: {
-    title: string
-    end: string
-    image: string
-  };
   #loginInfo?: {
     enable: boolean
     username: string
@@ -462,15 +457,13 @@ class DailyQuest {
           }
 
           // Booster
-          const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({[\w\W]+?})/)?.[1];
+          const userArpBoostText = response.data.match(/userArpBoost[\s]*?=[\s]*?({[\w\W]+?})/)?.[1];
           let boostEnabled = false;
           if (userArpBoostText) {
             try {
-              const userArpBoost = JSON.parse(userArpBoostText);
-              userArpBoost.end = new Date(userArpBoost.end.match(/"(.+?)"/));
-              if (new Date() < userArpBoost.end) {
+              const userArpBoostEnd = new Date(userArpBoostText.match(/new Date\("(.+?)"/m)?.[1] || 0);
+              if (new Date() < userArpBoostEnd) {
                 boostEnabled = true;
-                this.userArpBoost = userArpBoost;
               }
             } catch (e) {
               //

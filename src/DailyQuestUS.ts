@@ -103,7 +103,6 @@ class DailyQuestUS {
         await browser.close();
         return false;
       }
-      const gameFrameCanvas = await gameFramePage.locator('#canvas');
       prevLogger?.log(chalk.green('OK'));
       await sleep(random(3, 5));
 
@@ -162,19 +161,22 @@ class DailyQuestUS {
       } else if (gameFrame.url().includes('prod-wt')) {
         // Click
         logger = new Logger(`${time()}${__('boundingBox')}`, false);
+        const gameFrameCanvas = gameFrame.locator('#canvas');
         const box = await gameFrameCanvas.boundingBox();
         if (!box) {
-          logger.log(chalk.red(__('boundingBoxFailed')));
+          logger.log(chalk.red('Error'));
           await browser.close();
           return false;
         }
         logger.log(chalk.green('OK'));
 
-        await this.canvasClick(gameFrameCanvas, box);
+        if (await this.canvasClick(gameFrameCanvas, box)) {
+          new Logger(`${time()}${__('doTaskUSSuccess')}`);
+          await browser.close();
+          return true;
+        }
 
-        await sleep(1000); // todo
-
-        new Logger(`${time()}${'Not supported'}`);
+        new Logger(`${time()}${__('doTaskUSFailed')}`);
         await browser.close();
         return false;
       }
@@ -224,7 +226,8 @@ class DailyQuestUS {
       const img2 = PNG.sync.read(fs.readFileSync(screenshot2Path));
       const { width, height } = img1;
 
-      if (pixelmatch(img1.data, img2.data, null, width, height) / (width * height) < 1e-5) {
+      const similarity = pixelmatch(img1.data, img2.data, null, width, height) / (width * height);
+      if (similarity < 1e-4) {
         return true;
       }
       return await this.canvasClick(gameFrameCanvas, box);
