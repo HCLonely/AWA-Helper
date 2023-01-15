@@ -2,6 +2,10 @@
 
 Automatically does AWA quests.
 
+[简体中文](/README.md) • [English](/README_en.md)
+
+> **Please help us improve the translation [here](https://gitlocalize.com/repo/8263)** .
+
 ## Instructions
 
 ### Instructions before use
@@ -16,14 +20,14 @@ Automatically does AWA quests.
 
 #### Install and run
 
-1. Prerequisites: Install [Git](https://git-scm.com/downloads) and [NodeJs](https://nodejs.org/zh-cn/download/) >= v16.0.0
+1. Prerequisites: Install [Git](https://git-scm.com/downloads) and [NodeJs](https://nodejs.org/zh-cn/download/) &gt;= v16.0.0
 2. Clone this repository`git clone https://github.com/HCLonely/AWA-Helper.git`
 3. Install dependencies`npm install`
 4. Build`npm run build`
 5. Edit configuration file [view instructions](#config-file-configuration)
 6. Run`npm start`/double click`AWA-Helper.bat`
 
-> Note: Steps 1-5 are only required for the first installation, only step 6 is required for each run after that!
+> **Note: Steps 1-5 are only required for the first installation, only step 6 is required for each run after that!**
 
 #### Update via Git
 
@@ -32,13 +36,13 @@ Automatically does AWA quests.
 3. Build`npm run build`
 4. Run`npm start`/double click`AWA-Helper.bat`
 
-> Note: Steps 1-3 are only required for the first run after each update, only step 4 is required for each run after that!
+> **Note: Steps 1-3 are only required for the first run after each update, only step 4 is required for each run after that!**
 
 ### Download the compressed program and run
 
 #### Automatically install dependencies (Recommended)
 
-> **This method requires Powershell!**
+> **The`config.example.yml`file needs to be renamed to`config.yml`!!!**
 
 1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 2. Extract
@@ -52,7 +56,7 @@ Automatically does AWA quests.
 
 #### Install dependencies on your own
 
-1. Install [NodeJs](https://nodejs.org/zh-cn/download/) >= v16.0.0
+1. Install [NodeJs](https://nodejs.org/zh-cn/download/) &gt;= v16.0.0
 2. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 3. Extract
 4. Install dependencies`npm install --save`
@@ -68,9 +72,9 @@ Automatically does AWA quests.
 
 ## config (File configuration)
 
-> **The`config.example.yml`file needs to be renamed to`config.yml`!!!**
+> **The `config.example.yml` file needs to be renamed to `config.yml`!!!**
 >
-> Or use it the[parameter generator](https://configer.hclonely.com/?fileLink=https%3A%2F%2Fraw.githubusercontent.com%2FHCLonely%2FAWA-Helper%2Fmain%2Fconfiger%2Fconfiger.template.yml.js)configuration file generator
+> Or use it the [parameter generator](https://configer.hclonely.com/?fileLink=https%3A%2F%2Fraw.githubusercontent.com%2FHCLonely%2FAWA-Helper%2Fmain%2Fconfiger%2Fconfiger.template.yml.js) configuration file generator
 
 ### Global configuration (required)
 
@@ -137,17 +141,15 @@ autoLogin: # Automatically sign in to update the Cookies configuration
 1. Enable and configure`autoLogin`；
 2. `awaCookie`fill in`AWACOOKIEAUTOUPDATE`.
 
-#### How to get AWA parameters
+##### How to get AWA parameters
 
-1. Open the [https://www.alienwarearena.com/account/personalization](https://www.alienwarearena.com/account/personalization) page, open browser console, find the Network tab, filter`personalization`, copy the part after`cookie:`in the Request Header, and paste it into the`awaCookie`part of the configuration file;
-    ![awaCookie](https://github.com/HCLonely/AWA-Helper/raw/main/static/SaMhNF92RY.png)
-2. [Optional & Recommended] Open browser console and enter the following, and replace `YOURCOOKIE` with the copied `cookie`. After pressing Enter, all the unnecessary parts will be removed.
+1. Open the [https://www.alienwarearena.com/account/personalization](https://www.alienwarearena.com/account/personalization) page, open browser console, find the Network tab, filter`personalization`, copy the part after`cookie:`in the Request Header, and paste it into the`awaCookie`part of the configuration file; ![awaCookie](https://github.com/HCLonely/AWA-Helper/raw/main/static/SaMhNF92RY.png)
+
+2. [Optional &amp; Recommended] Open browser console and enter the following, and replace `YOURCOOKIE` with the copied `cookie`. After pressing Enter, all the unnecessary parts will be removed.
 
     ```javascript
     console.log(`YOURCOOKIE`.split(';').map((e) => ['REMEMBERME','PHPSESSID','sc'].includes(e.trim().split('=')[0]) ? e.trim() : null).filter((e) => e).join(';'));
     ```
-
-[Optional] If you are using Firefox, you can skip the 2nd step.
 
 ### Twitch configuration (optional)
 
@@ -203,6 +205,8 @@ steamPassword: ''
 ```
 
 ### Proxy configuration (optional)
+
+> proxy parameter description
 
 #### proxy parameter description
 
