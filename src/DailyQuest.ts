@@ -205,7 +205,9 @@ class DailyQuest {
         launchOptions.proxy = this.proxy;
       }
       const browser = await chromium.launch(launchOptions);
-      const context = await browser.newContext();
+      const context = await browser.newContext({
+        userAgent: globalThis.userAgent
+      });
       const page = await context.newPage();
       let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(`https://${globalThis.awaHost}/`))}`, false);
       await page.goto(`https://${globalThis.awaHost}/`);
@@ -460,7 +462,7 @@ class DailyQuest {
           }
 
           // Booster
-          const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({.+?})/)?.[1];
+          const userArpBoostText = response.data.match(/userArpBoost.*?=.*?({[\w\W]+?})/)?.[1];
           let boostEnabled = false;
           if (userArpBoostText) {
             try {

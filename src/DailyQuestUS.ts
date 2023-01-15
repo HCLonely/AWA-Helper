@@ -71,7 +71,7 @@ class DailyQuestUS {
     }
     return { gameFrame, gameFramePage, logger };
   }
-  async doTask(taskLink: string): Promise<boolean> {
+  async doTask(taskLink: string, retry = 0): Promise<boolean> {
     try {
       new Logger(`${time()}${__('doingTaskUS', chalk.yellow(taskLink))}`);
       const launchOptions: LaunchOptions = {
@@ -98,7 +98,7 @@ class DailyQuestUS {
       prevLogger.log(chalk.green('OK'));
       await sleep(random(3, 5));
 
-      let logger = new Logger(`${time()}${__('gettingGameUrl')}`);
+      let logger = new Logger(`${time()}${__('gettingGameUrl')}`, false);
       const cookies = await context.cookies('https://secure.cataboom.com');
       this.gameCookie = new Cookie();
       cookies.forEach((cookie) => {
@@ -141,6 +141,11 @@ class DailyQuestUS {
             logger.log(chalk.blue(pageclass));
           }
         } catch (error) {
+          if (gameFrame.url() === gameUrl && retry < 3) {
+            logger.log(chalk.blue('Retry'));
+            await browser.close();
+            return await this.doTask(taskLink, retry + 1);
+          }
           logger.log(chalk.red(`Unknown Page[${chalk.yellow(gameFrame.url())}]`));
           new Logger(error);
         }
