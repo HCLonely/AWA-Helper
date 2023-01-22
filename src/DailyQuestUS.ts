@@ -84,7 +84,8 @@ class DailyQuestUS {
     try {
       new Logger(`${time()}${__('doingTaskUS', chalk.yellow(taskLink))}`);
       const launchOptions: LaunchOptions = {
-        timeout: 3 * 60000
+        timeout: 3 * 60000,
+        headless: false
       };
       if (this.proxy) {
         launchOptions.proxy = this.proxy;
@@ -138,7 +139,11 @@ class DailyQuestUS {
         logger = new Logger(`${time()}${__('fulfillingGame')}`, false);
         // eslint-disable-next-line no-underscore-dangle
         await gameFrame.waitForFunction('typeof _INIT !== "undefined"');
-        await gameFrame.evaluate(`_INIT.endGameButtonReleased(0, ${random(20, 40)})`);
+        await gameFrame.evaluate('_INIT.playButtonReleased()');
+        await sleep(random(5, 10));
+        gameFrame.locator('#canvas').click();
+        await sleep(random(5, 10));
+        await gameFrame.evaluate(`_INIT.endGameButtonReleased(${random(0, 10)}, ${random(20, 40)})`);
         try {
           await gameFrame.waitForURL((url) => url.href.includes('secure.cataboom.com/fulfill') || url.href.includes('secure.cataboom.com/message'));
           const link = gameFrame.url();
@@ -150,6 +155,12 @@ class DailyQuestUS {
             logger.log(chalk.blue(pageclass));
           }
         } catch (error) {
+          if (gameFrame.url().includes('chrome-error') || (error as Error).message.includes('ERR_BLOCKED_BY_RESPONSE')) {
+            logger.log(chalk.red('Error(1)'));
+            new Logger(error);
+            await browser.close();
+            return false;
+          }
           if (gameFrame.url() === gameUrl && retry < 3) {
             logger.log(chalk.blue('Retry'));
             await browser.close();
@@ -164,7 +175,7 @@ class DailyQuestUS {
         const gameFrameCanvas = gameFrame.locator('#canvas');
         const box = await gameFrameCanvas.boundingBox();
         if (!box) {
-          logger.log(chalk.red('Error'));
+          logger.log(chalk.red('Error(2)'));
           await browser.close();
           return false;
         }

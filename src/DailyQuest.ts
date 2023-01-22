@@ -508,9 +508,10 @@ class DailyQuest {
                 this.questStatus.dailyQuest = 'skip';
               }
             }
-
-            this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
           }
+
+          this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
+
           // AWA 在线任务
           const [maxArp, addedArp] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Time on Site')).find('center')
             .toArray()
@@ -690,7 +691,7 @@ class DailyQuest {
       });
       for (const { link, arp } of this.questInfo.dailyQuestUS) {
         if (parseInt(arp, 10) > 0) {
-          continue;
+          continue; // todo
         }
         await dailyQuestUS.doTask(link);
       }

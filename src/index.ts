@@ -242,7 +242,7 @@ process.on('uncaughtException', async (err) => {
   if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
     await quest.do();
   }
-  if (awaQuests.includes('dailyQuestUS') && (quest.questInfo.dailyQuestUS || []).filter((e) => parseInt(e.arp, 10) === 0).length > 0) {
+  if (awaQuests.includes('dailyQuestUS')) {
     await quest.doQuestUS();
   }
   if (awaQuests.includes('timeOnSite') && quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {

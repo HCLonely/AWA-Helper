@@ -1,5 +1,5 @@
 {
-  "version": 1673082066725,
+  "version": 1674369290763,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -23,7 +23,8 @@
       "House cleaning",
       "Sparkling sides",
       "Deck the halls",
-      "Paint the walls"
+      "Paint the walls",
+      "Redecorating"
     ],
     "changeBadge": [
       "New ice",
