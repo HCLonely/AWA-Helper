@@ -545,7 +545,7 @@ class DailyQuest {
             data: formatQuestInfo
           });
 
-          this.posts = $('.tile-slider__card a[href*="/ucf/show/"]').toArray()
+          this.posts = $('.featured-row-News a[href*="/ucf/show/"]').toArray()
             .map((e) => $(e).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1])
             .filter((e) => e) as Array<string>;
           if ($('a.quest-title').length > 0) {
