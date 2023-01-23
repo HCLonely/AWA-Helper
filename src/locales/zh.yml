@@ -20,6 +20,7 @@ processTimeout: 运行超时，强制退出程序
 unknownError: 未知错误
 netError: 网络错误
 checkLog: 详情请查看日志
+announcement: 公告：1.由于近期AWA论坛更新，可能会导致部分功能不稳定；\n2.美区任务功能正在测试中，可能会出现众多BUG，开启时请注意！
 
 ### DailyQuest.ts ###
 noREMEMBERMEAlert: 检测到 %s 中没有 %s ，可能会导致连续签到天数获取错误，不影响其他功能

@@ -139,6 +139,7 @@ class DailyQuestUS {
         logger = new Logger(`${time()}${__('fulfillingGame')}`, false);
         // eslint-disable-next-line no-underscore-dangle
         await gameFrame.waitForFunction('typeof _INIT !== "undefined"');
+        await sleep(random(5, 10));
         await gameFrame.evaluate('_INIT.playButtonReleased()');
         await sleep(random(5, 10));
         gameFrame.locator('#canvas').click();

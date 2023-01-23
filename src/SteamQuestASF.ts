@@ -11,6 +11,7 @@ class SteamQuestASF {
   awaCookie: Cookie;
   asfUrl: string;
   httpsAgent!: myAxiosConfig['httpsAgent'];
+  awaHttpsAgent!: myAxiosConfig['httpsAgent'];
   headers: AxiosRequestHeaders;
   botname!: string;
   ownedGames: Array<string> = [];
@@ -35,6 +36,9 @@ class SteamQuestASF {
     if (asfPassword) this.headers.Authentication = asfPassword;
     if (proxy?.enable?.includes('asf') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
+    }
+    if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
+      this.awaHttpsAgent = formatProxy(proxy);
     }
   }
 
@@ -88,7 +92,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
     return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
@@ -148,7 +152,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
     return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
@@ -187,7 +191,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
 
     return axios(options)
       .then((response) => {
@@ -270,7 +274,7 @@ class SteamQuestASF {
         },
         Logger: logger
       };
-      if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+      if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
       await axios(options)
         .then((response) => {
           globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
