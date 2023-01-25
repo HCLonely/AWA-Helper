@@ -9,7 +9,7 @@ import { Logger, sleep, random, time, netError, ask, http as axios, formatProxy,
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
 import { SteamQuestSU } from './SteamQuestSU';
-import { DailyQuestUS } from './DailyQuestUS';
+// import { DailyQuestUS } from './DailyQuestUS';
 import * as fs from 'fs';
 import { chunk } from 'lodash';
 import * as events from 'events';
@@ -683,6 +683,7 @@ class DailyQuest {
     return new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
   }
   async doQuestUS(): Promise<void> {
+    /*
     if (this.questInfo.dailyQuestUS?.length) {
       const dailyQuestUS = new DailyQuestUS({
         awaCookie: this.cookie,
@@ -696,6 +697,7 @@ class DailyQuest {
         await dailyQuestUS.doTask(link);
       }
     }
+    */
   }
   async changeBorder(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Border'))}`, false);

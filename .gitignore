@@ -18,6 +18,7 @@ auto-close
 dist/
 crts/
 dailyQuestDbCloud.json
+DailyQuestUS.ts
 
 test.js
 test.ts

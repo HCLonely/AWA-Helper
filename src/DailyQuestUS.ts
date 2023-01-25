@@ -90,10 +90,15 @@ class DailyQuestUS {
       if (this.proxy) {
         launchOptions.proxy = this.proxy;
       }
+      /*
       const browser = await chromium.launch(launchOptions);
       const context = await browser.newContext({
         userAgent: globalThis.userAgent
       });
+      */
+
+      const context = await chromium.launchPersistentContext(path.resolve(path.join(process.cwd(), '/cache')), launchOptions);
+      const browser = context;
       await context.addCookies(this.cookie.browserify());
       context.setDefaultTimeout(3 * 60000);
       const page = await context.newPage();
