@@ -238,7 +238,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
     return axios(options)
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
