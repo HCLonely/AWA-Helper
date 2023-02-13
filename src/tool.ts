@@ -108,7 +108,7 @@ class Logger {
       }
       return;
     }
-    fs.appendFileSync('log.txt', toJSON(data) + (newLine ? '\n' : ''));
+    fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(data) + (newLine ? '\n' : ''));
     if (newLine) console.log(data);
     else process.stdout.write(data);
     this.data += data;
@@ -125,7 +125,7 @@ class Logger {
     if (text.type === 'questInfo') {
       return;
     }
-    fs.appendFileSync('log.txt', toJSON(text) + (newLine ? '\n' : ''));
+    fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(text) + (newLine ? '\n' : ''));
     if (newLine) console.log(text);
     else process.stdout.write(text);
   }

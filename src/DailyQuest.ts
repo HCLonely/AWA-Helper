@@ -538,7 +538,7 @@ class DailyQuest {
           this.questInfo.steamQuest = steamArp;
           if (!verify) Logger.consoleLog(`${time()}${__('taskInfo')}`);
           const formatQuestInfo = this.formatQuestInfo();
-          fs.appendFileSync('log.txt', `${JSON.stringify(formatQuestInfo, null, 2)}\n`);
+          fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, `${JSON.stringify(formatQuestInfo, null, 2)}\n`);
           if (!verify) console.table(formatQuestInfo);
           new Logger({
             type: 'questInfo',

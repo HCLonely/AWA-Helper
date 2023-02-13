@@ -83,7 +83,6 @@ process.on('uncaughtException', async (err) => {
     process.stdin.on('data', () => process.exit(0));
     return;
   }
-  fs.writeFileSync('log.txt', '');
   const version = 'V__VERSION__ ';
   const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
   logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
@@ -93,6 +92,14 @@ process.on('uncaughtException', async (err) => {
   if (/dist$/.test(process.cwd())) {
     if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
       configPath = join('../', configPath);
+    }
+  }
+  if (!fs.existsSync(configPath)) {
+    configPath = 'config/config.yml';
+    if (/dist$/.test(process.cwd())) {
+      if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
+        configPath = join('../', configPath);
+      }
     }
   }
   if (!fs.existsSync(configPath)) {

@@ -2,7 +2,7 @@
 running: 另一个AWA-Helper程序正在运行中！
 multipleAccountAlert: 如需多开，请将本程序复制到另一个文件夹运行！
 exitAlert: 按任意键退出...
-configFileNotFound: 没有找到配置文件
+configFileNotFound: 没有找到配置文件(如果使用Docker运行，此路径非真实路径！)
 updateContent: 版本更新内容：
 configFileErrorAlter: 配置文件第 %s 行格式错误, %s
 configFileErrorLocation: 以下是错误原因及错误位置

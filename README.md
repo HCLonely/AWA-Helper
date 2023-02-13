@@ -71,6 +71,22 @@
 3. 安装依赖`npm install --save`
 4. Windows: 双击`运行.bat`/`Run.bat`运行. Linux: `node index.js`
 
+### 使用Docker
+
+#### 安装
+
+```shell
+docker pull hclonely/awa-helper
+```
+
+#### 运行
+
+```shell
+docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/config -v /data/awa-helper/logs:/usr/src/app/logs hclonely/awa-helper
+```
+
+> ps:容器内有两个挂载点：`/usr/src/app/config`和`/usr/src/app/logs`，分别对应于本地路径`/data/awa-helper/config`和`/data/awa-helper/logs`（可自定义修改），前者存放配置文件，后者是存放日志文件。
+
 ## config文件配置
 
 > **需要复制一份`config.example.yml`文件并重命名为`config.yml`!!!**

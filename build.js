@@ -63,6 +63,13 @@
 
   fs.copySync('src/webUI', 'dist/webUI', { filter: (fileName) => !/\.ts$/.test(fileName) });
   fs.copySync('configer/configer.template.yml.js', 'dist/configer.template.yml.js');
+  if (!fs.existsSync('dist/config')) {
+    fs.mkdirSync('dist/config');
+  }
+  if (!fs.existsSync('dist/logs')) {
+    fs.mkdirSync('dist/logs');
+  }
+  fs.copySync('config.example.yml', 'dist/config/config.example.yml');
 
   fs.writeFileSync('dist/运行.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
   fs.writeFileSync('dist/Run.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
@@ -71,5 +78,7 @@
   // eslint-disable-next-line max-len
   fs.writeFileSync('dist/Run-auto.bat', 'cd "%~dp0" && where "powershell" && powershell -file "scripts/node_checker.ps1" || where "pwsh" && pwsh -file "scripts/node_checker.ps1" || .\\scripts\\node_checker.bat && pause');
   fs.writeFileSync('dist/run_auto_linux.sh', './scripts/node_checker.sh');
-  await zipdir('dist', { saveTo: './AWA-Helper.zip' });
+  if (!process.argv.includes('--docker')) {
+    await zipdir('dist', { saveTo: './AWA-Helper.zip' });
+  }
 })();
