@@ -105,11 +105,8 @@ declare global {
       viewNews: Array<string>
       sharePost: Array<string>
       replyPost: Array<string>
-      leaderboard: Array<string>
-      marketplace: Array<string>
-      rewards: Array<string>
-      video: Array<string>
       other: Array<string>
+      [name: string]: Array<string>
     }
   }
   interface retryAdapterOptions {

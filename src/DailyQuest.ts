@@ -609,14 +609,8 @@ class DailyQuest {
           if (this[quest] && this.awaDailyQuestType.includes(quest)) {
             // @ts-ignore
             await this[quest]();
-          } else if (quest === 'leaderboard' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${globalThis.awaHost}/rewards/leaderboard`);
-          } else if (quest === 'marketplace' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${globalThis.awaHost}/marketplace/`);
-          } else if (quest === 'rewards' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${globalThis.awaHost}/rewards`);
-          } else if (quest === 'video' && this.awaDailyQuestType.includes('openLink')) {
-            await this.openLink(`https://${globalThis.awaHost}/ucf/Video`);
+          } else if (/^\//.test(quest)) {
+            await this.openLink(`https://${globalThis.awaHost}${quest}`);
           }
           this.done.push(quest);
           await sleep(random(1, 2));
@@ -647,19 +641,12 @@ class DailyQuest {
     }
 
     if (this.awaDailyQuestType.includes('openLink')) {
-      if (!this.done.includes('leaderboard')) {
-        await this.openLink(`https://${globalThis.awaHost}/rewards/leaderboard`);
-        await sleep(random(1, 3));
-      }
-      if (!this.done.includes('rewards')) {
-        await this.openLink(`https://${globalThis.awaHost}/rewards`);
-        await sleep(random(1, 3));
-      }
-      if (!this.done.includes('marketplace')) {
-        await this.openLink(`https://${globalThis.awaHost}/marketplace/`);
-      }
-      if (!this.done.includes('marketplace')) {
-        await this.openLink(`https://${globalThis.awaHost}/ucf/Video`);
+      const linksPathname = ['/rewards/leaderboard', '/rewards', '/marketplace/', '/ucf/Video', '/faq-contact', '/account/personalization'];
+      for (const pathname of linksPathname) {
+        if (!this.done.includes(pathname)) {
+          await this.openLink(`https://${globalThis.awaHost}/rewards/leaderboard`);
+          await sleep(random(1, 3));
+        }
       }
     }
     await this.updateDailyQuests();
@@ -1330,10 +1317,6 @@ class DailyQuest {
       viewNews: [],
       sharePost: [],
       replyPost: [],
-      leaderboard: [],
-      marketplace: [],
-      rewards: [],
-      video: [],
       other: []
     };
     let questsCloud: dailyQuestDb['quests'] = {
@@ -1343,10 +1326,6 @@ class DailyQuest {
       viewNews: [],
       sharePost: [],
       replyPost: [],
-      leaderboard: [],
-      marketplace: [],
-      rewards: [],
-      video: [],
       other: []
     };
 

@@ -133,7 +133,7 @@
       "Talk sweet",
       "Pretend to like one another, kids."
     ],
-    "leaderboard": [
+    "/rewards/leaderboard": [
       "Climbing the ladder",
       "I want to be the very best...",
       "See the stats",
@@ -146,23 +146,26 @@
       "Report posted",
       "Compare scores"
     ],
-    "marketplace": [
+    "/marketplace/": [
       "Going shopping!",
       "Window shopping",
       "Mall trip"
     ],
-    "rewards": [
+    "/rewards": [
       "Give me the loot",
       "Show me the loot!"
     ],
-    "video": [
+    "/ucf/Video": [
       "Explore around",
       "Grab the popcorn",
       "Hit the flicks",
       "Cinema time"
     ],
-    "personalization": [
+    "/account/personalization": [
       "Personalize, stylize"
+    ],
+    "/faq-contact": [
+      "???"
     ],
     "other": [
       "Explore the realm",
