@@ -1415,7 +1415,7 @@ class DailyQuest {
           });
 
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          if ($('.page-item.active').next().hasClass('next')) {
+          if ($('.page-item.active').next().hasClass('disabled') || $('.page-item.active>a.page-link').attr('data-page') !== `${page}`) {
             return 200;
           }
           return this.getBoosters(page + 1);
