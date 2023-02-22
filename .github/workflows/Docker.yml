@@ -33,4 +33,4 @@ jobs:
           push: true
           tags: |
             hclonely/awa-helper:latest
-            hclonely/awa-helper:2.1.9
+            hclonely/awa-helper:2.1.10

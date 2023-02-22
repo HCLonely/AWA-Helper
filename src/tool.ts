@@ -52,7 +52,7 @@ globalThis.secrets = getSecertValue();
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
     // eslint-disable-next-line no-control-regex
-    return hideSectets(e.replace(/\x1B\[[\d]*?m/g, ''));
+    return e.replace(/\x1B\[[\d]*?m/g, '');
   }
 
   return format(e);
@@ -82,7 +82,7 @@ const toHtmlJSON = (e: any): string => {
       .replace(/\n/g, '</br>'));
   }
 
-  return format(e);
+  return hideSectets(format(e));
 };
 
 class Logger {
