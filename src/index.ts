@@ -175,7 +175,8 @@ process.on('uncaughtException', async (err) => {
     webUI,
     pusher,
     autoLogin,
-    autoUpdateDailyQuestDb
+    autoUpdateDailyQuestDb,
+    awaSafeReply
   }: config = config;
   globalThis.webUI = !!webUI?.enable;
   globalThis.language = language || 'zh';
@@ -222,7 +223,8 @@ process.on('uncaughtException', async (err) => {
     proxy,
     autoLogin,
     autoUpdateDailyQuestDb,
-    doTaskUS: awaQuests.includes('dailyQuestUS')
+    doTaskUS: awaQuests.includes('dailyQuestUS'),
+    awaSafeReply
   });
   const initResult = await quest.init();
   if (initResult !== 200) {

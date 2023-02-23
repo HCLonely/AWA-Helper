@@ -24,7 +24,8 @@
       "Sparkling sides",
       "Deck the halls",
       "Paint the walls",
-      "Redecorating"
+      "Redecorating",
+      "New perspective"
     ],
     "changeBadge": [
       "New ice",
@@ -44,7 +45,8 @@
       "There's a new sheriff in town...",
       "Glittering gems",
       "Dazzle and Shine",
-      "Sparkling Goods"
+      "Sparkling Goods",
+      "New gems"
     ],
     "changeAvatar": [
       "New drip",
@@ -57,7 +59,8 @@
       "Switcharoo",
       "Get dressed!",
       "Bundle Up",
-      "Looking spiffy!"
+      "Looking spiffy!",
+      "Frills and Frocks"
     ],
     "viewNews": [
       "Librarian approved",
@@ -153,7 +156,8 @@
     ],
     "/rewards": [
       "Give me the loot",
-      "Show me the loot!"
+      "Show me the loot!",
+      "Treasure Trove"
     ],
     "/ucf/Video": [
       "Explore around",

@@ -76,9 +76,11 @@ class DailyQuest {
   };
   autoUpdateDailyQuestDb = false;
   doTaskUS = false;
+  postReplied: null | boolean = null;
+  safeReply = false;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS }: {
+  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply }: {
     awaCookie: string
     awaDailyQuestType?: Array<string>
     awaDailyQuestNumber1: boolean | undefined
@@ -93,6 +95,7 @@ class DailyQuest {
     },
     autoUpdateDailyQuestDb?: boolean
     doTaskUS?: boolean
+    awaSafeReply?: Boolean
   }) {
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.newCookie = awaCookie;
@@ -137,6 +140,7 @@ class DailyQuest {
       this.#loginInfo = autoLogin;
     }
     this.doTaskUS = !!doTaskUS;
+    this.safeReply = !!awaSafeReply;
   }
   async init(first = true): Promise<number> {
     const REMEMBERME = this.cookie.get('REMEMBERME');
@@ -644,7 +648,7 @@ class DailyQuest {
       const linksPathname = ['/rewards/leaderboard', '/rewards', '/marketplace/', '/ucf/Video', '/faq-contact', '/account/personalization'];
       for (const pathname of linksPathname) {
         if (!this.done.includes(pathname)) {
-          await this.openLink(`https://${globalThis.awaHost}/rewards/leaderboard`);
+          await this.openLink(`https://${globalThis.awaHost}${linksPathname}`);
           await sleep(random(1, 3));
         }
       }
@@ -657,12 +661,25 @@ class DailyQuest {
       }
     }
     if (this.awaDailyQuestType.includes('replyPost') && !this.done.includes('replyPost')) {
-      await this.replyPost();
-      await this.updateDailyQuests();
-      if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
-        this.questStatus.dailyQuest = 'complete';
-        if (this.dailyQuestNumber < 2) {
-          return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
+      if (
+        this.safeReply &&
+        (
+          this.postReplied === true ||
+          (
+            typeof this.postReplied !== 'boolean' &&
+            await this.replyChecker()
+          )
+        )
+      ) {
+        new Logger(time() + chalk.blue(__('repliedNotice')));
+      } else {
+        await this.replyPost();
+        await this.updateDailyQuests();
+        if ((this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length) {
+          this.questStatus.dailyQuest = 'complete';
+          if (this.dailyQuestNumber < 2) {
+            return new Logger(time() + chalk.green(__('dailyQuestCompleted')));
+          }
         }
       }
     }
@@ -1003,6 +1020,7 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
+          this.postReplied = true;
           ((response.config as myAxiosConfig)?.Logger || logger1).log(chalk.green('OK'));
           return true;
         }
@@ -1012,6 +1030,38 @@ class DailyQuest {
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger1).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+  async replyChecker(): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('checkingReply')}`, false);
+    const getOptions: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}/account/arp-log`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        referer: `https://${globalThis.awaHost}/`
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) getOptions.httpsAgent = this.httpsAgent;
+
+    return axios(getOptions)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          const $ = load(response.data);
+          this.postReplied = !!$('.table.account__table tr').toArray().find((e) => $(e).text().includes('Add Post') && $(e).text().includes(dayjs().format('YYYY-MM-DD')));
+          return this.postReplied;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return false;

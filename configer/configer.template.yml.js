@@ -117,6 +117,10 @@
       name: 每日任务有多个时是否只做第一个
       type: boolean
       defaultValue: true
+    awaSafeReply:
+      name: 今日回复过帖子则跳过回复帖子操作
+      type: boolean
+      defaultValue: false
     boosterRule:
       name: ARP Booster使用规则
       desp: 可使用多个规则，做上面的优先级最高
