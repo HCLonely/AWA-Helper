@@ -339,7 +339,7 @@ flowchart TD
 
 ## TODO
 
-- [ ] AWA回帖保护(需AWA实现[回帖记录功能](https://www.alienwarearena.com/ucf/show/2163377))
+- [x] AWA回帖保护(已通过ARP Log初步实现)
 
 ## 鸣谢
 
