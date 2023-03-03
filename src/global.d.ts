@@ -40,6 +40,10 @@ declare global {
     webUI?: {
       enable: boolean
       port?: number
+      ssl?: {
+        key?: string
+        cert?: string
+      }
     }
     pusher?: pusher
     autoLogin?: {

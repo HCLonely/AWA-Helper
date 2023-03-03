@@ -3,6 +3,9 @@ language: zh # 目前支持中文 (zh) 和 English (en)
 webUI:
   enable: true # 是否启用WebUI
   port: 3456 # WebUI端口
+  # ssl: # WebUI启用SSL
+    # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
+    # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
 timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
 
 #### AWA 配置(必需) ####

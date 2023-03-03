@@ -12,7 +12,7 @@ import { sleep, Logger, time, checkUpdate, push } from './tool';
 import * as chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
-import { app as expressApp } from './webUI/index';
+import { createServer } from './webUI/index';
 
 process.on('SIGTERM', async () => {
   new Logger(time() + chalk.yellow(__('processWasKilled')));
@@ -198,8 +198,30 @@ process.on('uncaughtException', async (err) => {
 
   if (webUI?.enable) {
     const port = webUI.port || 3456;
-    expressApp.listen(port, () => {
-      new Logger(time() + __('webUIStart', chalk.yellow(`http://localhost:${port}`)));
+    let options: undefined | {
+      key: Buffer,
+      cert: Buffer
+    } = undefined;
+    if (webUI.ssl?.key && webUI.ssl.cert) {
+      const keyPath = path.join(path.dirname(configPath), webUI.ssl.key);
+      const certPath = path.join(path.dirname(configPath), webUI.ssl.cert);
+      if (!fs.existsSync(keyPath)) {
+        new Logger(time() + chalk.yellow(__('missingSSLKey')));
+        return;
+      }
+      if (!fs.existsSync(certPath)) {
+        new Logger(time() + chalk.yellow(__('missingSSLCert')));
+        return;
+      }
+      options = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+      };
+    }
+    const server = createServer(options);
+
+    server.listen(port, () => {
+      new Logger(time() + __('webUIStart', chalk.yellow(`${webUI.ssl ? 'https' : 'http'}://localhost:${port}`)));
     });
   }
 
@@ -211,6 +233,7 @@ process.on('uncaughtException', async (err) => {
     new Logger(missingAwaParams);
     return;
   }
+
   await checkUpdate(version, proxy);
 
   const quest = new DailyQuest({

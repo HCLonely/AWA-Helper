@@ -22,6 +22,18 @@
           type: text
           inputType: number
           defaultValue: 3456
+        ssl:
+          name: SSL证书配置
+          type: object
+          body:
+            key:
+              name: SSL证书key文件名
+              type: text
+              defaultValue: ''
+            key:
+              name: SSL证书文件名
+              type: text
+              defaultValue: ''
     timeout:
       name: 超时设置
       desp: 如果程序运行超过此时间后还在运行，则终止此程序。单位：秒，0为不限制。
