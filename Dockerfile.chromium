@@ -1,0 +1,29 @@
+FROM node:18-alpine
+
+# Install Chrome
+USER root
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" > /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
+    && echo "http://dl-cdn.alpinelinux.org/alpine/v3.12/main" >> /etc/apk/repositories \
+    && apk upgrade -U -a \
+    && apk add chromium \
+    && rm -rf /var/cache/* \
+    && mkdir /var/cache/apk
+
+# Playwright
+ENV CHROME_BIN=/usr/bin/chromium-browser \
+    CHROME_PATH=/usr/lib/chromium/ \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+WORKDIR /usr/src/app
+COPY package.json ./
+RUN npm install
+COPY ./ ./
+RUN npm run build:docker
+
+VOLUME ["/usr/src/app/dist/config", "/usr/src/app/dist/logs"]
+EXPOSE 3456
+CMD [ "npm", "start" ]
+
+# docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/dist/config -v /data/awa-helper/logs:/usr/src/app/dist/logs hclonely/awa-helper

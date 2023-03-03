@@ -203,6 +203,9 @@ class DailyQuest {
       if (this.proxy) {
         launchOptions.proxy = this.proxy;
       }
+      if (process.env.CHROME_BIN) {
+        launchOptions.executablePath = process.env.CHROME_BIN;
+      }
       const browser = await chromium.launch(launchOptions);
       const context = await browser.newContext({
         userAgent: globalThis.userAgent
@@ -256,6 +259,7 @@ class DailyQuest {
       return true;
     } catch (error) {
       new Logger(`${time()}${__('updatingAwaCookiesError')}`);
+      new Logger(error);
       return false;
     }
   }
