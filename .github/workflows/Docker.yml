@@ -1,9 +1,9 @@
 name: Docker
 
 on:
-  push:
-    branches:
-      - "main"
+  release:
+    types: [created]
+
 env:
   version: 2.2.3
 
