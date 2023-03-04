@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  version: 2.2.4
+  version: 2.2.5
 
 jobs:
   docker:

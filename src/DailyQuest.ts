@@ -179,13 +179,16 @@ class DailyQuest {
           return result;
         }
       }
+      /*
       if (!awaAvatar) {
         const result = await this.getAvatar();
         if (result !== 200) {
           return result;
         }
       }
-    } else if (!(await this.getPersonalization() && await this.getAvatar())) {
+      */
+    // } else if (!(await this.getPersonalization() && await this.getAvatar())) {
+    } else if (!(await this.getPersonalization())) {
       return 603;
     }
     this.newCookie = `${this.cookie.get('REMEMBERME') ? `REMEMBERME=${this.cookie.get('REMEMBERME')}` : ''};${this.cookie.get('PHPSESSID') ? `PHPSESSID=${this.cookie.get('PHPSESSID')}` : ''};${this.cookie.get('sc') ? `sc=${this.cookie.get('sc')}` : ''};`;
@@ -778,6 +781,7 @@ class DailyQuest {
   }
 
   async changeAvatar(): Promise<boolean> {
+    await this.getAvatar();
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Avatar'))}`, false);
     const options: myAxiosConfig = {
       url: `https://${globalThis.awaHost}/ajax/user/avatar/save/${this.userId}`,
