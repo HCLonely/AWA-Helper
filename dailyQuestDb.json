@@ -25,7 +25,8 @@
       "Deck the halls",
       "Paint the walls",
       "Redecorating",
-      "New perspective"
+      "New perspective",
+      "Tidy up"
     ],
     "changeBadge": [
       "New ice",
@@ -46,7 +47,8 @@
       "Glittering gems",
       "Dazzle and Shine",
       "Sparkling Goods",
-      "New gems"
+      "New gems",
+      "Iced out"
     ],
     "changeAvatar": [
       "New drip",
@@ -60,7 +62,8 @@
       "Get dressed!",
       "Bundle Up",
       "Looking spiffy!",
-      "Frills and Frocks"
+      "Frills and Frocks",
+      "Jolly Doiiy"
     ],
     "viewNews": [
       "Librarian approved",
@@ -135,7 +138,8 @@
       "Friendly neighborhood talk",
       "Passing notes",
       "Talk sweet",
-      "Pretend to like one another, kids."
+      "Pretend to like one another, kids.",
+      "Chit-Chat"
     ],
     "/rewards/leaderboard": [
       "Climbing the ladder",
@@ -153,7 +157,8 @@
     "/marketplace/": [
       "Going shopping!",
       "Window shopping",
-      "Mall trip"
+      "Mall trip",
+      "Shopping Spree"
     ],
     "/rewards": [
       "Give me the loot",
