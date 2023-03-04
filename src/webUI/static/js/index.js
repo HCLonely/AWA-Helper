@@ -72,8 +72,13 @@ function time() {
 }
 function connectWebUIServer(retry = 0) {
   $('#log-area').append(`<li>${time()}${__('connectingWebUI')}</li>`);
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  let wsPort = '';
+  if (window.location.host === window.location.hostname) {
+    wsPort = window.location.protocol === 'https:' ? ':443' : ':80';
+  }
 
-  const ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`);
+  const ws = new WebSocket(`${wsProtocol}://${window.location.host}${wsPort}/ws`);
   ws.onopen = function () {
     console.log(__('connectWebUISuccess'));
     $('#log-area').html('');

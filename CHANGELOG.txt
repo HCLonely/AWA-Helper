@@ -1,1 +1,1 @@
-- 修复：webUI使用https无法连接到服务器[webUI.ssl]
+- 修复：webUI使用默认http(s)端口无法连接到服务器
