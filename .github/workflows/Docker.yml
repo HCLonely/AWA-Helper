@@ -3,6 +3,7 @@ name: Docker
 on:
   release:
     types: [created]
+  workflow_dispatch:
 
 env:
   version: 2.2.4
