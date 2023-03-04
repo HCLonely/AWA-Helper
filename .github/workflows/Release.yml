@@ -1,6 +1,8 @@
 name: Release
 on:
   workflow_dispatch:
+env:
+  version: 2.2.4
 jobs:
   release:
     runs-on: windows-latest
@@ -17,8 +19,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: false
-          tag_name: v2.2.0
-          name: 2.2.0
+          tag_name: v${{ env.version }}
+          name: ${{ env.version }}
           body_path: CHANGELOG.txt
           files: AWA-Helper.zip
           token: ${{ github.TOKEN }}
