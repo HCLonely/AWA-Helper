@@ -78,9 +78,15 @@ class DailyQuest {
   doTaskUS = false;
   postReplied: null | boolean = null;
   safeReply = false;
+  joinSteamCommunityEvent = false;
+  steamCommunityEventInfo?: {
+    status: string,
+    playedTime: string,
+    totalTime: string
+  };
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply }: {
+  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
     awaCookie: string
     awaDailyQuestType?: Array<string>
     awaDailyQuestNumber1: boolean | undefined
@@ -95,7 +101,8 @@ class DailyQuest {
     },
     autoUpdateDailyQuestDb?: boolean
     doTaskUS?: boolean
-    awaSafeReply?: Boolean
+    awaSafeReply?: boolean
+    joinSteamCommunityEvent?: boolean
   }) {
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.newCookie = awaCookie;
@@ -141,6 +148,7 @@ class DailyQuest {
     }
     this.doTaskUS = !!doTaskUS;
     this.safeReply = !!awaSafeReply;
+    this.joinSteamCommunityEvent = !!joinSteamCommunityEvent;
   }
   async init(first = true): Promise<number> {
     const REMEMBERME = this.cookie.get('REMEMBERME');
@@ -575,6 +583,9 @@ class DailyQuest {
       });
   }
   async do(): Promise<any> {
+    if (this.joinSteamCommunityEvent) {
+      await this.getSteamCommunityEvent();
+    }
     if (this.questStatus.dailyQuest === 'skip') {
       return new Logger(time() + chalk.yellow(__('dailyQuestSkipped')));
     }
@@ -1419,6 +1430,150 @@ class DailyQuest {
     logger.log(chalk.yellow(__('notMatchedDailyQuest')));
     return [];
   }
+  async getSteamCommunityEvent(): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}/steam/community-event/arena-community-event`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        referer: `https://${globalThis.awaHost}`
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          const $ = load(response.data);
+          let checkOwnedGamesStatus = false;
+          const playedTime = `${$('div.progress-bar.bg-info').attr('aria-valuenow')}h` || '-';
+          const totalTime = `${$('div.progress-bar.bg-info').attr('aria-valuemax')}h` || '-';
+          const gameName = $('a.btn-check-owned-games').parent().find('strong')
+            .text();
+          const gameLink = $('a.btn-check-owned-games').parent().find('a')
+            .eq(0)
+            .attr('href');
+          if ($('a.btn-check-owned-games').length > 0) {
+            if (!await this.checkOwnedGames(`[${gameName}](${gameLink})`)) {
+              ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(`${__('notOwnedGame', chalk.blue(`[${gameName}](${gameLink})`))}`));
+              this.steamCommunityEventInfo = {
+                status: __('notOwnedGame', `[${gameName}](${gameLink})`),
+                playedTime,
+                totalTime
+              };
+              return false;
+            }
+            checkOwnedGamesStatus = true;
+          }
+          if (checkOwnedGamesStatus || $('a.enter-event-btn.btn-steam-community-event').length > 0) {
+            if (await this.enterSteamCommunityEvent()) {
+              this.steamCommunityEventInfo = {
+                status: __('joined'),
+                playedTime,
+                totalTime
+              };
+              return true;
+            }
+            this.steamCommunityEventInfo = {
+              status: __('notJoined'),
+              playedTime,
+              totalTime
+            };
+            return false;
+          }
+          this.steamCommunityEventInfo = {
+            status: __('joined'),
+            playedTime,
+            totalTime
+          };
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+  async checkOwnedGames(gameInfo: string): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('checkingOwnedGames', gameInfo)}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/check-owned-games/arena-community-event`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/steam/community-event/arena-community-event`
+      },
+      responseType: 'json',
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          if (response.data?.installed === true) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('owned')));
+            return true;
+          }
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('notOwned')));
+          return false;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+  async enterSteamCommunityEvent(): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('enteringSteamCommunityEvent')}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/start/arena-community-event`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/steam/community-event/arena-community-event`
+      },
+      responseType: 'json',
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          if (response.data?.success === true) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__(response.data.message || 'OK')));
+            return true;
+          }
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__(response.data?.message || 'Error(2)')));
+          return false;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
   async getBoosters(page = 1): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingBoosters', chalk.yellow(page))}`, false);
     const options: myAxiosConfig = {
@@ -1569,6 +1724,11 @@ class DailyQuest {
         [__('status')]: '-',
         [__('obtainedARP')]: parseInt(this.questInfo.steamQuest || '0', 10),
         [__('maxAvailableARP')]: '-'
+      },
+      [__('steamCommunityEvent')]: {
+        [__('status')]: '-',
+        [__('obtainedARP')]: parseInt(this.questInfo.steamQuest || '0', 10),
+        [__('maxAvailableARP')]: '-'
       }
     };
     if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
@@ -1590,6 +1750,14 @@ class DailyQuest {
           [__('maxAvailableARP')]: '-'
         };
       }
+    }
+    if (this.steamCommunityEventInfo) {
+      result[`${__('steamCommunityEvent')}`] = {
+        // eslint-disable-next-line no-nested-ternary
+        [__('status')]: this.steamCommunityEventInfo.status,
+        [__('obtainedARP')]: this.steamCommunityEventInfo.playedTime,
+        [__('maxAvailableARP')]: this.steamCommunityEventInfo.totalTime
+      };
     }
     return result;
   }

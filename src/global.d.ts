@@ -24,7 +24,8 @@ declare global {
     awaQuests: Array<string>
     awaDailyQuestType: Array<string>
     awaDailyQuestNumber1?: boolean
-    awaSafeReply?: boolean
+    awaSafeReply?: boolean,
+    joinSteamCommunityEvent?: boolean
     boosterRule?: Array<string>
     boosterCorn?: string
     twitchCookie?: string

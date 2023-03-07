@@ -176,7 +176,8 @@ process.on('uncaughtException', async (err) => {
     pusher,
     autoLogin,
     autoUpdateDailyQuestDb,
-    awaSafeReply
+    awaSafeReply,
+    joinSteamCommunityEvent
   }: config = config;
   globalThis.webUI = !!webUI?.enable;
   globalThis.language = language || 'zh';
@@ -247,7 +248,8 @@ process.on('uncaughtException', async (err) => {
     autoLogin,
     autoUpdateDailyQuestDb,
     doTaskUS: awaQuests.includes('dailyQuestUS'),
-    awaSafeReply
+    awaSafeReply,
+    joinSteamCommunityEvent
   });
   const initResult = await quest.init();
   if (initResult !== 200) {
