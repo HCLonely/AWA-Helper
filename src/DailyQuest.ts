@@ -326,7 +326,7 @@ class DailyQuest {
         this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp
       ) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
-        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${Object.entries(this.formatQuestInfo()).map(([name, value]) => `${name}:  ${value[__('obtainedARP')]} ARP`).join('\n')}`);
+        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}`);
         process.exit(0);
         /*
         log('按任意键退出...');
@@ -1752,7 +1752,7 @@ class DailyQuest {
       }
     }
     if (this.steamCommunityEventInfo) {
-      result[`${__('steamCommunityEvent')}`] = {
+      result[__('steamCommunityEvent')] = {
         // eslint-disable-next-line no-nested-ternary
         [__('status')]: this.steamCommunityEventInfo.status,
         [__('obtainedARP')]: this.steamCommunityEventInfo.playedTime,
