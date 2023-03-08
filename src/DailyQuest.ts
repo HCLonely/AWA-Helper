@@ -570,6 +570,11 @@ class DailyQuest {
           if ($('a.quest-title').length > 0) {
             this.dailyQuestLink = new URL($('a.quest-title[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
           }
+
+          // Steam社区活动
+          if (this.joinSteamCommunityEvent) {
+            await this.getSteamCommunityEvent();
+          }
           return 200;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
@@ -583,9 +588,6 @@ class DailyQuest {
       });
   }
   async do(): Promise<any> {
-    if (this.joinSteamCommunityEvent) {
-      await this.getSteamCommunityEvent();
-    }
     if (this.questStatus.dailyQuest === 'skip') {
       return new Logger(time() + chalk.yellow(__('dailyQuestSkipped')));
     }
@@ -1721,11 +1723,6 @@ class DailyQuest {
         [__('maxAvailableARP')]: 15
       },
       [__('steamQuest')]: {
-        [__('status')]: '-',
-        [__('obtainedARP')]: parseInt(this.questInfo.steamQuest || '0', 10),
-        [__('maxAvailableARP')]: '-'
-      },
-      [__('steamCommunityEvent')]: {
         [__('status')]: '-',
         [__('obtainedARP')]: parseInt(this.questInfo.steamQuest || '0', 10),
         [__('maxAvailableARP')]: '-'
