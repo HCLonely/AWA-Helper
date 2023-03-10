@@ -668,7 +668,7 @@ class DailyQuest {
       const linksPathname = ['/rewards/leaderboard', '/rewards', '/marketplace/', '/ucf/Video', '/faq-contact', '/account/personalization'];
       for (const pathname of linksPathname) {
         if (!this.done.includes(pathname)) {
-          await this.openLink(`https://${globalThis.awaHost}${linksPathname}`);
+          await this.openLink(`https://${globalThis.awaHost}${pathname}`);
           await sleep(random(1, 3));
         }
       }
