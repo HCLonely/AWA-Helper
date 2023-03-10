@@ -1380,8 +1380,6 @@ class DailyQuest {
       logger.log(chalk.yellow(__('notMatchedDailyQuest')));
       return [];
     }
-    let version = 0;
-    let versionCloud = 0;
     let quests: dailyQuestDb['quests'] = {
       changeBorder: [],
       changeBadge: [],
@@ -1402,16 +1400,16 @@ class DailyQuest {
     };
 
     if (fs.existsSync('dailyQuestDb.json')) {
-      ({ version, quests } = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString()) as dailyQuestDb);
+      ({ quests } = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString()) as dailyQuestDb);
     }
     if (fs.existsSync('dailyQuestDbCloud.json')) {
-      ({ version: versionCloud, quests: questsCloud } = JSON.parse(fs.readFileSync('dailyQuestDbCloud.json').toString()) as dailyQuestDb);
+      ({ quests: questsCloud } = JSON.parse(fs.readFileSync('dailyQuestDbCloud.json').toString()) as dailyQuestDb);
     }
     if (!fs.existsSync('dailyQuestDb.json') && !fs.existsSync('dailyQuestDbCloud.json')) {
       logger.log(chalk.yellow(__('notMatchedDailyQuest')));
       return [];
     }
-    if (versionCloud > version) {
+    if (this.autoUpdateDailyQuestDb && questsCloud) {
       quests = questsCloud;
     }
     let matchedQuest = Object.entries(quests).map(([key, value]) => (value.includes(dailyQuestName) ? key : '')).filter((e) => e);
