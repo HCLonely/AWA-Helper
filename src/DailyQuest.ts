@@ -324,7 +324,10 @@ class DailyQuest {
       ) && (
         this.questStatus.timeOnSite === 'complete' ||
         this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp
-      ) && this.questStatus.watchTwitch === 'complete' && this.questStatus.steamQuest === 'complete') {
+      ) && (
+        this.questStatus.watchTwitch === 'complete' ||
+        parseInt(this.questInfo.watchTwitch || '0', 10) >= 15
+      ) && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
         await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}`);
         process.exit(0);
