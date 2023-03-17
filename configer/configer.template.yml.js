@@ -150,6 +150,11 @@
       name: 自动更新每日任务数据库
       type: boolean
       defaultValue: false
+    joinSteamCommunityEvent:
+      name: 自动加入Steam社区活动
+      desp: 只是加入活动，不挂时长！
+      type: boolean
+      defaultValue: false
     twitchCookie:
       name: Twitch Cookie
       desp: 必须包括`unique_id` 和 `auth-token`
