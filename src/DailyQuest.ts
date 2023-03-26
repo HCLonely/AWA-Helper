@@ -1196,7 +1196,8 @@ class DailyQuest {
       method: 'GET',
       headers: {
         ...this.headers,
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        referer: `https://${globalThis.awaHost}/`
       },
       Logger: logger
     };
