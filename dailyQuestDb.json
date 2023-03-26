@@ -93,7 +93,8 @@
       "Studying up",
       "Thinking cap",
       "Latest Update",
-      "Wise up"
+      "Wise up",
+      "Grab your readers"
     ],
     "sharePosts": [
       "Town crier",
@@ -168,14 +169,16 @@
     "/rewards": [
       "Give me the loot",
       "Show me the loot!",
-      "Treasure Trove"
+      "Treasure Trove",
+      "Prize Bag"
     ],
     "/ucf/Video": [
       "Explore around",
       "Grab the popcorn",
       "Hit the flicks",
       "Cinema time",
-      "Pop the corn"
+      "Pop the corn",
+      "Popcorn hour"
     ],
     "/account/personalization": [
       "Personalize, stylize"
