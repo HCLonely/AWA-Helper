@@ -326,7 +326,7 @@ class DailyQuest {
         this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp
       ) && (
         this.questStatus.watchTwitch === 'complete' ||
-        parseInt(this.questInfo.watchTwitch || '0', 10) >= 15
+        parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) >= 15
       ) && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
         await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}`);
@@ -547,11 +547,12 @@ class DailyQuest {
             };
           }
           // Twitch 在线任务
-          const twitchArp = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Watch Twitch')).find('center b')
+          const [twitchArp, twitchArpPlus] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Watch Twitch')).find('center b')
             .last()
             .text()
-            .trim();
-          this.questInfo.watchTwitch = twitchArp;
+            .split('+')
+            .map((e) => e.trim());
+          this.questInfo.watchTwitch = [twitchArp, twitchArpPlus];
           // Steam 挂机任务
           const steamArp = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
             .last()
@@ -1723,8 +1724,8 @@ class DailyQuest {
         [__('maxAvailableARP')]: this.questInfo.timeOnSite?.maxArp
       },
       [__('watchTwitch')]: {
-        [__('status')]: this.questInfo.watchTwitch === '15' ? __('done') : __('undone'),
-        [__('obtainedARP')]: parseInt(this.questInfo.watchTwitch || '0', 10),
+        [__('status')]: this.questInfo.watchTwitch?.[0] === '15' ? __('done') : __('undone'),
+        [__('obtainedARP')]: parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0'),
         [__('maxAvailableARP')]: 15
       },
       [__('steamQuest')]: {

@@ -78,7 +78,7 @@ declare global {
       maxArp: number
       addedArp: number
     }
-    watchTwitch?: string
+    watchTwitch?: Array<string>
     steamQuest?: string
   }
   interface steamGameInfo {

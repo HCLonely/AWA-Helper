@@ -286,7 +286,7 @@ process.on('uncaughtException', async (err) => {
 
   let twitch: TwitchTrack | null = null;
   if (awaQuests.includes('watchTwitch')) {
-    if (quest.questInfo.watchTwitch !== '15') {
+    if (quest.questInfo.watchTwitch?.[0] !== '15') {
       if (twitchCookie) {
         twitch = new TwitchTrack({ cookie: twitchCookie, proxy });
         if (await twitch.init() === true) {
