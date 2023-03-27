@@ -1451,6 +1451,9 @@ class DailyQuest {
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
+          if (response.data.includes('concluded')) {
+            return true;
+          }
           const $ = load(response.data);
           let checkOwnedGamesStatus = false;
           const playedTime = `${$('div.progress-bar.bg-info').attr('aria-valuenow')}h` || '-';
