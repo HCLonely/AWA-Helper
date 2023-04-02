@@ -520,7 +520,7 @@ class DailyQuest {
           }
           this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-title')
             .toArray()
-            .map((e) => $(e).text().trim());
+            .map((e) => $(e).text().trim()) || 'none';
           this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({ status, arp }));
           this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
