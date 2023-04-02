@@ -515,6 +515,9 @@ class DailyQuest {
           if (this.awaDailyQuestNumber1) {
             dailyQuest = [dailyQuests[0]];
           }
+          if (dailyQuests.length === 0) {
+            dailyQuest = [['none', '0']];
+          }
           this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-title')
             .toArray()
             .map((e) => $(e).text().trim());
