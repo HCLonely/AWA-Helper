@@ -48,7 +48,7 @@ autoLogin: # 自动登录更新Cookies配置
   username: '' # AWA用户名
   password: '' # AWA密码
 autoUpdateDailyQuestDb: false # 自动更新每日任务数据库
-joinSteamCommunityEvent: false # 自动加入Steam社区活动
+joinSteamCommunityEvent: false # 自动加入Steam社区活动，待测试！
 
 #### Twitch 配置 ####
 twitchCookie: '' # Twitch Cookie, 须包括`unique_id` 和 `auth-token`

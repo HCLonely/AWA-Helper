@@ -1,6 +1,7 @@
 - 新增：自动加入Steam社区活动（待测试）
 - 修复：云端数据库识别问题
 - 修复：执行任务逻辑
+- 修复：获取Boosters报错(#22)
 - 优化：WatchTwitch任务完成判断逻辑
 - 优化：WatchTwitch任务识别附加Arp
 - 优化：更换Avatar任务改为浏览页面(/avatar/edit)
