@@ -560,8 +560,10 @@ class DailyQuest {
           const steamArp = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
             .last()
             .text()
-            .trim();
-          this.questInfo.steamQuest = steamArp;
+            .split('+')
+            .map((e) => parseFloat(e.trim()))
+            .reduce((prev, curr) => prev + curr);
+          this.questInfo.steamQuest = `${steamArp}`;
           if (!verify) Logger.consoleLog(`${time()}${__('taskInfo')}`);
           const formatQuestInfo = this.formatQuestInfo();
           fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, `${JSON.stringify(formatQuestInfo, null, 2)}\n`);
