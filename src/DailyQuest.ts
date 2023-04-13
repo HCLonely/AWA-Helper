@@ -1461,6 +1461,12 @@ class DailyQuest {
             return true;
           }
           const $ = load(response.data);
+          const eventTime = $('#main h1').next('div.text-light').text()
+            .trim();
+          const [startTime, endTime] = eventTime.split('-').map((e) => e.trim());
+          if (dayjs().isAfter(dayjs(endTime)) || dayjs().isBefore(dayjs(startTime))) {
+            return true;
+          }
           let checkOwnedGamesStatus = false;
           const playedTime = `${$('div.progress-bar.bg-info').attr('aria-valuenow')}h` || '-';
           const totalTime = `${$('div.progress-bar.bg-info').attr('aria-valuemax')}h` || '-';
