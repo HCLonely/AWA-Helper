@@ -1,5 +1,5 @@
 {
-  "version": 1677220591810,
+  "version": 1682674727170,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -27,7 +27,8 @@
       "Redecorating",
       "New perspective",
       "Tidy up",
-      "Spring Cleaning"
+      "Spring Cleaning",
+      "Good Enough To Frame"
     ],
     "changeBadge": [
       "New ice",
