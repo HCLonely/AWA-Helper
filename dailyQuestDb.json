@@ -1,5 +1,5 @@
 {
-  "version": 1682674727170,
+  "version": 1682844174912,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -99,7 +99,8 @@
       "Wise up",
       "Grab your readers",
       "We want to know your merch ideas!",
-      "Reading Rainbow"
+      "Reading Rainbow",
+      "Stayin' Sharp"
     ],
     "sharePosts": [
       "Town crier",
@@ -189,7 +190,8 @@
       "Cinema time",
       "Pop the corn",
       "Popcorn hour",
-      "Rent a flick"
+      "Rent a flick",
+      "A Trip To The Theater"
     ],
     "/account/personalization": [
       "Personalize, stylize"
