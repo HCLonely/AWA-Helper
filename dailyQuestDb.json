@@ -1,5 +1,5 @@
 {
-  "version": 1682844174912,
+  "version": 1682914057184,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -164,7 +164,8 @@
       "Rank?",
       "Climb the ranks",
       "Report posted",
-      "Compare scores"
+      "Compare scores",
+      "On The Up and Up"
     ],
     "/marketplace/": [
       "Going shopping!",
