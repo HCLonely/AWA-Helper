@@ -1,5 +1,5 @@
 {
-  "version": 1682914057184,
+  "version": 1683003197323,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -50,7 +50,8 @@
       "Dazzle and Shine",
       "Sparkling Goods",
       "New gems",
-      "Iced out"
+      "Iced out",
+      "Change of Scenery"
     ],
     "/avatar/edit": [
       "New drip",
