@@ -1,5 +1,5 @@
 {
-  "version": 1683097680673,
+  "version": 1683371304494,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -28,7 +28,8 @@
       "New perspective",
       "Tidy up",
       "Spring Cleaning",
-      "Good Enough To Frame"
+      "Good Enough To Frame",
+      "Don't Box Me In!"
     ],
     "changeBadge": [
       "New ice",
