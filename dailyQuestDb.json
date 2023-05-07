@@ -1,5 +1,5 @@
 {
-  "version": 1683371304494,
+  "version": 1683455952420,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -195,7 +195,8 @@
       "Pop the corn",
       "Popcorn hour",
       "Rent a flick",
-      "A Trip To The Theater"
+      "A Trip To The Theater",
+      "Popcorn, Anyone?"
     ],
     "/account/personalization": [
       "Personalize, stylize"
