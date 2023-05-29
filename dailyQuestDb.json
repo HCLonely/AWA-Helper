@@ -1,5 +1,5 @@
 {
-  "version": 1683620833641,
+  "version": 1685349597431,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -181,7 +181,8 @@
       "Compare scores",
       "On The Up and Up",
       "You're a Star!",
-      "If You Ain't First..."
+      "If You Ain't First...",
+      "Staying Updated"
     ],
     "/marketplace/": [
       "Going shopping!",
@@ -215,7 +216,8 @@
       "A Trip To The Theater",
       "Popcorn, Anyone?",
       "Cinematic Masterpiece",
-      "Put It Up On The Projector"
+      "Put It Up On The Projector",
+      "To the Cinema!"
     ],
     "/account/personalization": [
       "Personalize, stylize"
