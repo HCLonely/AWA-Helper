@@ -84,6 +84,8 @@ class DailyQuest {
     playedTime: string,
     totalTime: string
   };
+  userProfileUrl!: string;
+  additionalTwitchARP = 0;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
@@ -326,7 +328,7 @@ class DailyQuest {
         this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp
       ) && (
         this.questStatus.watchTwitch === 'complete' ||
-        parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) >= 15
+        (parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0')) >= (15 + this.additionalTwitchARP)
       ) && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
         await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}`);
@@ -420,6 +422,9 @@ class DailyQuest {
             return 602;
           }
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          if (!this.userProfileUrl) {
+            this.userProfileUrl = response.data.match(/ser_profile_url.*?=.*?"(.+?)"/)?.[1];
+          }
           if (verify) {
             // 连续签到
             const consecutiveLoginsText = response.data.match(/consecutive_logins.*?=.*?({.+?})/)?.[1];
@@ -1670,7 +1675,7 @@ class DailyQuest {
       method: 'GET',
       headers: {
         ...this.headers,
-        referer: 'https://www.alienwarearena.com/account/my-rewards/arp_boost',
+        referer: `https://${globalThis.awaHost}/account/my-rewards/arp_boost`,
         accept: '*/*'
       },
       Logger: logger
@@ -1680,6 +1685,41 @@ class DailyQuest {
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.data.success) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
+        new Logger(response.data?.message || response);
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+  async getTwitchTech(): Promise<boolean> {
+    if (!this.userProfileUrl) return false;
+    const logger = new Logger(`${time()}${__('gettingTwitchTech')}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}${this.userProfileUrl}`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        referer: `${globalThis.awaHost}`
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        const { userActiveArtifacts } = JSON.parse(`{${response.data.match(/artifactsData.*?=.*?{(.+?)};/m)?.[1] || ''}}`) || {};
+        if (userActiveArtifacts) {
+          Object.values(userActiveArtifacts).forEach((artifact: any) => {
+            this.additionalTwitchARP += parseFloat(artifact.perkTextShort?.match(/Twitch quests by ([\d]+)/)?.[1] || '0');
+          });
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
@@ -1735,9 +1775,9 @@ class DailyQuest {
         [__('maxAvailableARP')]: this.questInfo.timeOnSite?.maxArp
       },
       [__('watchTwitch')]: {
-        [__('status')]: this.questInfo.watchTwitch?.[0] === '15' ? __('done') : __('undone'),
+        [__('status')]: (parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0')) >= (15 + this.additionalTwitchARP) ? __('done') : __('undone'),
         [__('obtainedARP')]: parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0'),
-        [__('maxAvailableARP')]: 15
+        [__('maxAvailableARP')]: 15 + this.additionalTwitchARP
       },
       [__('steamQuest')]: {
         [__('status')]: '-',

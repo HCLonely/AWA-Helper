@@ -292,9 +292,14 @@ class TwitchTrack {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
+        if (error.response?.status === 403) {
+          this.complete = true;
+          this.EventEmitter.emit('complete');
+          return 'Forbidden';
+        }
         return false;
       });
-    if (status === 'complete') {
+    if ((['complete', 'Forbidden'] as Array<string|boolean>).includes(status)) {
       return;
     }
     if (status === 'offline') {
