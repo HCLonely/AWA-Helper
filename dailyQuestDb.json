@@ -1,5 +1,5 @@
 {
-  "version": 1685962869977,
+  "version": 1686207683134,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -76,7 +76,8 @@
       "Wigging Out",
       "In The Eye Of The Beholder",
       "Sweater Season Is Over!",
-      "Do you like my hat?"
+      "Do you like my hat?",
+      "or The Season"
     ],
     "viewNews": [
       "Librarian approved",
@@ -186,7 +187,8 @@
       "On The Up and Up",
       "You're a Star!",
       "If You Ain't First...",
-      "Staying Updated"
+      "Staying Updated",
+      "In It To Win It"
     ],
     "/marketplace/": [
       "Going shopping!",
@@ -208,7 +210,8 @@
       "Prize Bag",
       "Curious Treasures",
       "So Shiny!",
-      "What's Behind Door #1?"
+      "What's Behind Door #1?",
+      "For a job well done"
     ],
     "/ucf/Video": [
       "Explore around",
