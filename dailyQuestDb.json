@@ -1,5 +1,5 @@
 {
-  "version": 1686207683134,
+  "version": 1686302585039,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -236,7 +236,8 @@
       "Query Logs",
       "Law of the Land",
       "I Was There When They Were Written",
-      "Hello?"
+      "Hello?",
+      "\"Hey\""
     ],
     "other": [
       "Explore the realm",
