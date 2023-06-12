@@ -19,6 +19,7 @@ dist/
 crts/
 dailyQuestDbCloud.json
 DailyQuestUS.ts
+installer/
 
 test.js
 test.ts
