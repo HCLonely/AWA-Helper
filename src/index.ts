@@ -13,6 +13,7 @@ import * as chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
 import { createServer } from './webUI/index';
+import * as dayjs from 'dayjs';
 
 process.on('SIGTERM', async () => {
   new Logger(time() + chalk.yellow(__('processWasKilled')));
@@ -119,6 +120,7 @@ process.on('uncaughtException', async (err) => {
 
   const defaultConfig: config = {
     language: 'zh',
+    logsExpire: 30,
     awaHost: 'www.alienwarearena.com',
     awaBoosterNotice: true,
     awaQuests: ['dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
@@ -154,6 +156,7 @@ process.on('uncaughtException', async (err) => {
   const {
     language,
     timeout,
+    logsExpire,
     awaCookie,
     awaHost,
     awaBoosterNotice,
@@ -185,6 +188,19 @@ process.on('uncaughtException', async (err) => {
   globalThis.awaHost = awaHost || 'www.alienwarearena.com';
   i18n.setLocale(language);
 
+  if (fs.existsSync('logs')) {
+    const logFiles = fs.readdirSync('logs');
+    if (logsExpire && logsExpire < logFiles.length) {
+      const logger = new Logger(`${time()}${__('clearingLogs')}`, false);
+      const now = dayjs();
+      logFiles.forEach((filename) => {
+        if (now.diff(filename.replace('.txt', ''), 'day') >= logsExpire) {
+          fs.unlinkSync(path.join('logs', filename));
+        }
+      });
+      logger.log(chalk.green('OK'));
+    }
+  }
   if (pusher?.enable && proxy?.enable?.includes('pusher')) {
     globalThis.pusherProxy = proxy;
   }

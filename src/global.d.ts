@@ -18,6 +18,7 @@ declare global {
   interface config {
     language: string
     timeout?: number
+    logsExpire?: number
     awaCookie?: string
     awaHost: string
     awaBoosterNotice?: boolean

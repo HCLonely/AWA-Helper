@@ -40,6 +40,12 @@
       type: text
       inputType: number
       defaultValue: 0
+    logsExpire:
+      name: 日志保留时间
+      desp: 日志保留时间，单位：天。默认30天，0为不限制。
+      type: text
+      inputType: number
+      defaultValue: 30
     awaCookie:
       name: 外星人论坛Cookie
       desp: 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能。
