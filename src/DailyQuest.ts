@@ -432,8 +432,9 @@ class DailyQuest {
               try {
                 const consecutiveLogins = JSON.parse(consecutiveLoginsText);
                 const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                const rewardBonusArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward .advent-calendar__reward-bonus`).text().trim();
                 if (rewardArp) {
-                  new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(rewardArp))}`);
+                  new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp}${rewardBonusArp || ''}`))}`);
                 }
               } catch (e) {
                 //
@@ -447,10 +448,11 @@ class DailyQuest {
                 if (monthlyLogins.count < 29) {
                   const week = Math.ceil(monthlyLogins.count / 7);
                   const rewardArp = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                  const rewardBonusArp = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward .advent-calendar__reward-bonus`).text().trim();
                   const rewardItem = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__day-overlay`).eq(0).text()
                     .trim();
                   if (rewardArp) {
-                    new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(rewardArp))}`);
+                    new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${rewardArp}${rewardBonusArp || ''}`))}`);
                   }
                   if (rewardItem) {
                     new Logger(`${time()}${__('monthlyLoginsItemAlert', chalk.yellow(monthlyLogins.count), chalk.green(rewardItem))}`);
