@@ -1,5 +1,5 @@
 {
-  "version": 1686733422395,
+  "version": 1686896878972,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -78,7 +78,8 @@
       "In The Eye Of The Beholder",
       "Sweater Season Is Over!",
       "Do you like my hat?",
-      "or The Season"
+      "or The Season",
+      "Laundry Day!"
     ],
     "viewNews": [
       "Librarian approved",
@@ -205,7 +206,8 @@
       "AWA...So Hot Right Now!",
       "Right in my basket",
       "Spring Shopping",
-      "Cha-Ching!"
+      "Cha-Ching!",
+      "Out For a Bargan"
     ],
     "/rewards": [
       "Give me the loot",
