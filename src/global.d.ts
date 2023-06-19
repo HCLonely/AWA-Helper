@@ -159,5 +159,6 @@ declare global {
   var initError: string;
   var awaHost: string;
   var __: I18n['__'];
+  var newVersionNotice: string;
 }
 export {};

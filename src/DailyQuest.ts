@@ -86,6 +86,10 @@ class DailyQuest {
   };
   userProfileUrl!: string;
   additionalTwitchARP = 0;
+  signArp: {
+    daily?: string,
+    monthly?: string
+  } = {};
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
@@ -331,7 +335,7 @@ class DailyQuest {
         (parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0')) >= (15 + this.additionalTwitchARP)
       ) && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
-        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}`);
+        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${this.signArp.daily ? __('dailySign', this.signArp.daily) : ''}${this.signArp.monthly ? __('monthlySign', this.signArp.monthly) : ''}${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}${globalThis.newVersionNotice}`);
         process.exit(0);
         /*
         log('按任意键退出...');
@@ -434,6 +438,7 @@ class DailyQuest {
                 const consecutiveLogins = JSON.parse(consecutiveLoginsText);
                 const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
                 if (rewardArp) {
+                  this.signArp.daily = `${rewardArp}+${rewardBonusArp || ''} ARP`;
                   new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp}+${rewardBonusArp || ''}`))}`);
                 }
               } catch (e) {
@@ -451,12 +456,15 @@ class DailyQuest {
                   const rewardItem = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__day-overlay`).eq(0).text()
                     .trim();
                   if (rewardArp) {
+                    this.signArp.monthly = `${rewardArp}+${rewardBonusArp || ''} ARP`;
                     new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${rewardArp}+${rewardBonusArp || ''}`))}`);
                   }
                   if (rewardItem) {
+                    this.signArp.monthly = rewardItem;
                     new Logger(`${time()}${__('monthlyLoginsItemAlert', chalk.yellow(monthlyLogins.count), chalk.green(rewardItem))}`);
                   }
                 } else {
+                  this.signArp.monthly = `${monthlyLogins.extra_arp} ARP`;
                   new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(monthlyLogins.extra_arp))}`);
                 }
               } catch (e) {
@@ -1464,6 +1472,7 @@ class DailyQuest {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.includes('concluded')) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
           const $ = load(response.data);
@@ -1471,6 +1480,7 @@ class DailyQuest {
             .trim();
           const [startTime, endTime] = eventTime.split('-').map((e) => e.trim());
           if (dayjs().isAfter(dayjs(endTime)) || dayjs().isBefore(dayjs(startTime))) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
           let checkOwnedGamesStatus = false;
@@ -1500,6 +1510,7 @@ class DailyQuest {
                 playedTime,
                 totalTime
               };
+              ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('joined')));
               return true;
             }
             this.steamCommunityEventInfo = {
@@ -1507,6 +1518,7 @@ class DailyQuest {
               playedTime,
               totalTime
             };
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('notJoined')));
             return false;
           }
           this.steamCommunityEventInfo = {

@@ -261,6 +261,7 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
         ) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
           new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
+          globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
           return;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));

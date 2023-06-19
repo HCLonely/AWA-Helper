@@ -2,7 +2,7 @@ name: Release
 on:
   workflow_dispatch:
 env:
-  version: 2.3.4
+  version: 2.3.5
 jobs:
   release:
     runs-on: windows-latest
