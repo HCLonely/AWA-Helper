@@ -1,8 +1,10 @@
-### index.ts ###
+---
 running: Another AWA-Helper.exe process is already running!
-multipleAccountAlert: If you want to use more than one account, copy the program to another folder!
+multipleAccountAlert: If you want to use more than one account, copy the program to
+  another folder!
 exitAlert: Press any key to exit...
-configFileNotFound: Config file cannot be found
+configFileNotFound: No configuration file found (if running with Docker, this path
+  is not the real path!)
 updateContent: New content added in this update：
 configFileErrorAlter: Configuration file line %s is wrong, %s
 configFileErrorLocation: 'The following line is causing an error:'
@@ -20,22 +22,30 @@ processTimeout: Run timeout. Force quit the program
 unknownError: Unknown error
 netError: Net error
 checkLog: Check the log for details
-
-### DailyQuest.ts ###
-noREMEMBERMEAlert: Detected that there are no %s parameters, which may result in an error in obtaining the number of consecutive days checked-in. However, it does not affect other functionality
+announcement: 公告：1.由于近期AWA论坛更新，可能会导致部分功能不稳定；\n2.美区任务功能正在测试中，可能会出现众多BUG，开启时请注意！
+missingSSLKey: The SSL certificate key file was not found, please put this file in
+  the same directory as config.yml!
+missingSSLCert: The SSL certificate cert file was not found, please put this file
+  in the same directory as config.yml!
+clearingLogs: Cleaning up log files...
+noREMEMBERMEAlert: Detected that there are no %s parameters, which may result in an
+  error in obtaining the number of consecutive days checked-in. However, it does not
+  affect other functionality
 allTaskCompleted: All quests are completed today!
 updatingCookie: Updating %s
 ipBanned: The current IP is blocked from accessing, please try another proxy!
 redirected: Redirected
-cookieExpired: '%s is expired, please get another one!'
+cookieExpired: "%s is expired, please get another one!"
 verifyingToken: Verifying %s...
 gettingTaskInfo: Getting quests info...
 tokenExpired: Token has expired
 consecutiveLoginsAlert: Logged in for %s consecutive days, got %s ARP
 monthlyLoginsARPAlert: Logged in for %s days this month, got %s ARP
 monthlyLoginsItemAlert: Logged in for %s days this month, got %s ARP
-promotionalAlert: It has been detected that there's current activities in the AWA Forum, please log in to the website to complete!
-boosterAlert: More than 1 unfinished quest was detected. Please confirm whether to %s(%s). Press %s to continue the quest or press %s to skip the daily quest
+promotionalAlert: It has been detected that there's current activities in the AWA
+  Forum, please log in to the website to complete!
+boosterAlert: More than 1 unfinished quest was detected. Please confirm whether to
+  %s(%s). Press %s to continue the quest or press %s to skip the daily quest
 booster: ARP Booster
 selfOpen: You need to activate by yourself
 taskInfo: 'Current quests information:'
@@ -46,7 +56,8 @@ changing: Changing %s...
 sendingViewTrack: Sending requests for browsing %s...
 noTimeOnSiteInfo: No information about Daily Online quest obtained, skip this quest
 timeOnSiteCompleted: Daily Online quest completed!
-trackError: Failed to send %s online requests more than 6 times in a row, skip this quest
+trackError: Failed to send %s online requests more than 6 times in a row, skip this
+  quest
 sendingOnlineTrack: Sending %s requests...
 sendingViewRecord: Sending browsing view post %s record...
 gettingRelatedPosts: Fetching posts related to the daily quest...
@@ -57,6 +68,7 @@ visitingPage: Browsing page[%s]...
 doingTask: Doing a quest %s...
 gettingUserInfo: Getting information for user %s...
 dailyTask: Daily Quests
+dailyTaskUS: Daily Quest(US)
 status: Status
 obtainedARP: ARP obtained
 maxAvailableARP: Maximum ARP available
@@ -69,9 +81,12 @@ steamQuest: Steam quest
 matchingDailyQuestDb: Matching AWA Daily Quest Database...
 notMatchedDailyQuest: There is no match for today's quest, will try one by one
 success: Success
-noBorder: Didn't managed set a Border, Please setup Personalization in the configuration file first
-noBadges: Didn't managed set any Badges, Please setup Personalization in the configuration file first
-noBorderAndBadges: Didn't managed set a Border and Badges, Please setup Personalization in the configuration file first
+noBorder: Didn't managed set a Border, Please setup Personalization in the configuration
+  file first
+noBadges: Didn't managed set any Badges, Please setup Personalization in the configuration
+  file first
+noBorderAndBadges: Didn't managed set a Border and Badges, Please setup Personalization
+  in the configuration file first
 gettingBoosters: Getting %s Boosters information...
 activatingBoosters: is using %s (%s)...
 updatingAwaCookies: Updating awaCookie |---->
@@ -85,23 +100,45 @@ verifyingLogin: Verifying successful login...
 gettingCookied: Retrieving Cookies...
 updatingAwaCookiesSuccess: Update awaCookie successful <-----|
 updatingAwaCookiesError: Failed to update awaCookie <-----|
+updatingDailyQuestDb: Updating daily tasks database...
+repliedNotice: Today's reply post record detected, skip!
+checkingReply: Looking for today's reply post records...
+gettingSteamCommunityEvent: Checking for Steam Community Events...
+notOwnedGame: Do not own this game %s
+joined: joined
+notJoined: not joined
+checkingOwnedGames: Detecting whether you own this event game %s...
+enteringSteamCommunityEvent: Joining this community event...
+steamCommunityEvent: Steam Community Events
+gettingTwitchTech: Getting Twitch task daily maximum ARP...
+dailySign: 'Daily sign: %s
 
-### TwitchTrack.ts ###
+  '
+monthlySign: 'Monthly sign: %s
+
+  '
+doingTaskUS: Doing the task(US) [%s] ...
+startingQuest: Starting task...
+waitingIFrame: Waiting to load tasks...
+gettingGameUrl: Getting game link...
+doTaskUSFailed: Failed to execute the task(US)!
+doTaskUSSuccess: The task(US) was successfully executed!
+doTaskUSError: The task(US) execution error!
+fulfillingGame: Finishing game...
+boundingBox: Binding canvas frame...
 initing: Initializing %s...
 checkAuthorization: Detecting authorization for %s widget...
 authorized: Authorized
 notAuthorized: Unauthorized
 gettingLiveInfo: Getting available Live information...
 noLive: There are currently no Live Streaming available!
-getLiveInfoAlert: '%s Get available Live Streaming information again in minutes'
+getLiveInfoAlert: "%s Get available Live Streaming information again in minutes"
 gettingChannelInfo: Fetching Live Channels [%s] information...
 gettingExtInfo: Getting ART widget info...
 noExt: No widget found on this channel!
 getJwtFailed: Failed to get jwt!
 obtainedArp: Today's ARP has been obtained!
 liveOffline: This streamer [%s] has stopped streaming!
-
-### SteamQuestASF.ts ###
 gettingSteamQuestInfo: Getting %s quest info...
 getSteamQuestInfoSuccess: Get %s quest information successfully
 getSteamQuestInfoFailed: Failed to get %s quest information
@@ -123,15 +160,13 @@ recheckingOwnedGames: Checking again if [%s] game is owned...
 owned: Owned
 notOwned: Not Owned
 adding2library: Adding %s game to library [%s]...
-
-### SteamQuestSU.ts ###
-firstSteamUserAlert: It is detected that this method [%s] is used to log in to Steam for the first time. If %s is enabled in Steam, please enter the 2-step verification code in the console prompt!
+firstSteamUserAlert: It is detected that this method [%s] is used to log in to Steam
+  for the first time. If %s is enabled in Steam, please enter the 2-step verification
+  code in the console prompt!
 2fa: 2FA
 loginingSteam: Logging in %s...
 loginSuccess: Login successful
 playingGames: Playing game...
-
-### tool.ts ###
 timeout: Connection timed out, try changing to another proxy!
 connRefused: Connection refused, try changing to another proxy!
 connReset: The connection has been reset, try changing to another proxy!
@@ -146,8 +181,6 @@ noUpdate: No updates found!
 pushing: Pushing...
 pushSuccess: Push Successful
 pushFailed: Push failed
-
-### webUI ###
 webUIStart: webUI server started, Please open %s to view
 webUIConnect: webUI is connected
 webUIDisconnect: webUI is disconnected
