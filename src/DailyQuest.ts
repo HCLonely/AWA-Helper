@@ -1457,7 +1457,7 @@ class DailyQuest {
   async getSteamCommunityEvent(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/steam/community-event/arena-community-event`,
+      url: `https://${globalThis.awaHost}/steam/community-event/apex-legends-community-event`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -1542,12 +1542,12 @@ class DailyQuest {
   async checkOwnedGames(gameInfo: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('checkingOwnedGames', gameInfo)}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/check-owned-games/arena-community-event`,
+      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/check-owned-games/apex-legends-community-event`,
       method: 'GET',
       headers: {
         ...this.headers,
         origin: `https://${globalThis.awaHost}`,
-        referer: `https://${globalThis.awaHost}/steam/community-event/arena-community-event`
+        referer: `https://${globalThis.awaHost}/steam/community-event/apex-legends-community-event`
       },
       responseType: 'json',
       Logger: logger
@@ -1578,12 +1578,12 @@ class DailyQuest {
   async enterSteamCommunityEvent(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('enteringSteamCommunityEvent')}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/start/arena-community-event`,
+      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/start/apex-legends-community-event`,
       method: 'GET',
       headers: {
         ...this.headers,
         origin: `https://${globalThis.awaHost}`,
-        referer: `https://${globalThis.awaHost}/steam/community-event/arena-community-event`
+        referer: `https://${globalThis.awaHost}/steam/community-event/apex-legends-community-event`
       },
       responseType: 'json',
       Logger: logger
