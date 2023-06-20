@@ -42,7 +42,7 @@ Automatically does AWA quests.
 
 #### Automatically install dependencies (Recommended)
 
-> **The`config.example.yml`file needs to be renamed to`config.yml`!!!**
+> **Powershell support required!**
 
 1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 2. Extract
@@ -54,12 +54,12 @@ Automatically does AWA quests.
     - Windows: Double click`运行.bat`/`Run.bat`to run.
     - Linux: `node index.js`
 
-#### Install dependencies on your own
+#### Install dependencies on your own[recommended]
 
 1. Install [NodeJs](https://nodejs.org/zh-cn/download/) &gt;= v16.0.0
 2. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 3. Extract
-4. Install dependencies`npm install --save`
+4. Install dependencies `npm install --save`
 5. Edit configuration file [view instructions](#config-file-configuration)
 6. Windows: Double click`运行.bat`/`Run.bat`to run. Linux: `node index.js`
 
@@ -67,8 +67,36 @@ Automatically does AWA quests.
 
 1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 2. Extract and overwrite it
-3. Double click`运行.bat`to run
+3. Install dependencies`npm install --save`
 4. Windows: Double click`运行.bat`/`Run.bat`to run. Linux: `node index.js`
+
+### Docker
+
+#### Install
+
+- Small size, does not support automatic login
+
+```shell
+docker pull hclonely/awa-helper
+```
+
+- or support automatic login:
+
+```shell
+docker pull hclonely/awa-helper-chromium
+```
+
+#### Run
+
+```shell
+docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/dist/config -v /data/awa-helper/logs:/usr/src/app/dist/logs hclonely/awa-helper
+```
+
+> ps1: There are two mount points in the container: `/usr/src/app/dist/config` and `/usr/src/app/dist/logs` , corresponding to the local path `/data/awa-helper/config` and `/data/awa-helper/logs` (can be customized and modified), the former stores configuration files, and the latter stores log files.
+>
+> ps2: The above command will only run AWA-Helper once, it is recommended to restart the container regularly in conjunction with the scheduled task!
+
+#### 定时任务
 
 ## config (File configuration)
 
@@ -81,11 +109,15 @@ Automatically does AWA quests.
 #### Global configuration parameters description
 
 ```yml
-language: 'zh' # Program display language, currently supports Chinese (zh) and English (en)
+language: zh # Program display language, currently supports Chinese (zh) and English (en)
 webUI:
-  enable: true # Whether to enable WebUI
-  port: 3456 # WebUI port
-timeout: 0 # timeout setting，Unit: seconds, 0 means without limit. If the program is still running after this time, close the program.
+enable: true # Whether to enable WebUI
+port: 3456 # WebUI port
+ssl: # WebUI enables SSL
+key: xxx.yyy-key.pem # SSL certificate key file name, put this file in the same directory as the config.yml configuration file!
+cert: xxx.yyy.pem # SSL certificate file name, put this file in the same directory as the config.yml configuration file!
+timeout: 0 # Timeout setting, unit: second, 0 means unlimited. If the program is still running after running for more than this time, the program will be terminated.
+logsExpire: 30 # Log retention time, unit: day, default is 30 days, 0 means unlimited.
 ```
 
 ### AWA configuration (Required)
@@ -93,45 +125,46 @@ timeout: 0 # timeout setting，Unit: seconds, 0 means without limit. If the prog
 #### AWA parameter description
 
 ```yml
-awaCookie: '' # AWA Cookie, it supports having only `REMEMBERME`, if there is no `REMEMBERME`, then you must have `PHPSESSID` and `sc`, but it will cause an error to get the number of consecutive login days, however it does not affect other functionalities
-awaHost: 'www.alienwarearena.com' # AWA Host, commonly used are `www.alienwarearena.com` and `na.alienwarearena.com`, the default doesn't have any problem, there's no need to change it
-awaBoosterNotice: true # When there are more than 1 quest on AWA, you will be asked whether or not to activate booster. You need to activate booster manually!!!
+awaCookie: '' # Alien Forum Cookie, you can only have `REMEMBERME`, if you don't have `REMEMBERME`, you must have `PHPSESSID` and `sc`, but it will lead to an error in obtaining the number of consecutive sign-in days, and will not affect other functions
+awaHost: 'www.alienwarearena.com' # Alienwarearena Host, the commonly used ones are `www.alienwarearena.com` and `na.alienwarearena.com`, don’t change the default if there is no problem
+awaBoosterNotice: true # When there are more than 1 task in the Alien Forum, it will ask whether to enable the booster. The booster needs to be activated by itself! ! !
 awaQuests:
-  - dailyQuest # Automatically does daily quests, it is not required to do this quest, delete or comment out this line
-  - timeOnSite # Automatically does AWA Online quests, it is not required to do this quest, delete or comment out this line
-  - watchTwitch # Automatically does Twitch Quests, it is not required to do this quest, delete or comment out this line
-  - steamQuest # Automatically does Steam Quests, it is not required to do this quest, delete or comment out this line
-awaDailyQuestType: # Daily quest type, you don't need to delete or comment it out, if you don't need to do daily quests, then delete or comment out the 'dailyQuest' line above
-  - click # Visiting the quest page, the quest title is the quest link that you need to click to complete the quest
-  - visitLink # Visiting the quest page, the quest title is the quest link that can only be completed by browsing a page
-  - openLink # Visiting the quest page, quest title has no link, it will try visiting leaderboards, rewards, marketplace...
-  - changeBorder # Change Border
-  - changeBadge # Change Badge
-  - changeAvatar # Change Avatar
-  - viewPost # view posts
-  - viewNews # view news
-  - sharePost # share post
-  - replyPost # Reply to a post
-awaDailyQuestNumber1: true # Whether to only do the first quest when there are multiple daily quests
-boosterRule: # Use the rules of the ARP Booster, comment it out to disable all
-  - 2x24h>0 # This rule means use 2x 24hr ARP Booster when the number of 2x 24hr ARP Booster is greater than 0
-  - 2x48h>5 # This rule means that when the number of 2x 48hr ARP Boosters is greater than 5, use 2x 48hr ARP Booster. This rule will only take effect when none of the above rules match
-boosterCorn: '* * 8 * * 7' # Time to use ARP Booster (local time)
-#             ┬ ┬ ┬ ┬ ┬ ┬
-#             │ │ │ │ │ |
-#             │ │ │ │ │ └─────────────── 一day of the week (0 - 7, 1L - 7L) (0 or 7 is Sunday) ┐
-#             │ │ │ │ └───────────────── month　　　　 (1 - 12)　 　　　             ├─ date
-#             │ │ │ └─────────────────── day of the month (1 - 31, L)　　　　           ┘
-#             │ │ └───────────────────── Hour (0 - 23) ┐
-#             │ └─────────────────────── minute (0 - 59) ├─ time
-#             └───────────────────────── second　 (0 - 59) ┘
-# Time rule description: Enable when the current date and the date are matched at the same day and the current time is greater than the time matched by boosterCorn
-# The expression in the example means that the boosterRule rule is used to match when the sub-program is run after 8:00 every Saturday
-autoLogin: # Automatically sign in to update the Cookies configuration
-  enable: true # Whether to enable
-  username: '' # AWA email account
-  password: '' # AWA password
- autoUpdateDailyQuestDb: false # Automatically update daily quests database
+- dailyQuest # Automatically do daily tasks, no need to do this task delete or comment out this line
+- timeOnSite # Automatically do AWA online tasks, do not need to delete or comment out this line
+- watchTwitch # Automatically do online tasks in the Twitch live room, no need to do this task delete or comment out this line
+- steamQuest # Automatically do steam game duration tasks, no need to do this task delete or comment out this line
+awaDailyQuestType: # The daily task type, you don’t need to comment it out, all comments = all open, if you don’t need to do daily tasks, please comment the above `dailyQuest`
+- click # Browse the task on the page, the title of the task is the task link, you need to click on the task to complete it
+- visitLink # Browse the page task, the task title is the task link, and the page can be completed
+- openLink # Browse page tasks, task titles have no links, try to browse leaderboards, rewards, store pages
+- changeBorder # Change Border
+- changeBadge # Change Badge
+- changeAvatar # Change Avatar
+- viewNews # view news
+- sharePost # share post
+- replyPost # reply post
+awaDailyQuestNumber1: true # Whether to do only the first one when there are multiple daily tasks
+awaSafeReply: false # If you have replied to a post today, you will skip the operation of replying to the post, which is not skipped by default (false)
+boosterRule: # Use ARP Booster rules, all commented out to disable
+- 2x24h>0 # This rule means to use 2x 24hr ARP Booster when the number of 2x 24hr ARP Booster is greater than 0
+- 2x48h>5 # This rule means that when the number of 2x 48hr ARP Boosters is greater than 5, use 2x 48hr ARP Booster. This rule will only take effect when none of the above rules match
+boosterCorn: '* * 8 * * 7' # Use ARP Booster time (local time)
+# ┬ ┬ ┬ ┬ ┬ ┬
+# │ │ │ │ │ |
+# │ │ │ │ │ └──────────────── Day of the week (0 - 7, 1L - 7L) (0 or 7 is Sunday) ┐
+# │ │ │ │ └────────────────── Month (1 - 12) ├─ Date
+# │ │ │ └──────────────────── Day of the month (1 - 31, L) ┘
+# │ │ └────────────────────── Hours (0 - 23) ┐
+# │ └────────────────────────────────────────── Minutes (0 - 59) ├─ Time
+# └────────────────────────────Seconds (0 - 59) ┘
+# Time rule description: Enable when the current date and the date matched by boosterCorn are the same day and the current time is greater than the time matched by boosterCorn
+# The expression in the example means that the boosterRule rule is used to match when the program is run after 8:00 every Saturday
+autoLogin: # Automatically log in to update Cookies configuration
+enable: true # Whether to enable
+username: '' # AWA username
+password: '' # AWA password
+autoUpdateDailyQuestDb: false # Automatically update the daily task database
+joinSteamCommunityEvent: false # Automatically join Steam community events
 ```
 
 #### AWA parameter configuration methods
@@ -141,7 +174,7 @@ autoLogin: # Automatically sign in to update the Cookies configuration
 1. Enable and configure`autoLogin`；
 2. `awaCookie`fill in`AWACOOKIEAUTOUPDATE`.
 
-##### How to get AWA parameters
+##### Get it yourself
 
 1. Open the [https://www.alienwarearena.com/account/personalization](https://www.alienwarearena.com/account/personalization) page, open browser console, find the Network tab, filter`personalization`, copy the part after`cookie:`in the Request Header, and paste it into the`awaCookie`part of the configuration file; ![awaCookie](https://github.com/HCLonely/AWA-Helper/raw/main/static/SaMhNF92RY.png)
 
@@ -321,7 +354,7 @@ flowchart TD
 
 ## TODO
 
-- [ ] Protection to replies on posts (requires AWA to [implement replies history feature](https://www.alienwarearena.com/ucf/show/2163377))
+- [x] AWA reply protection (preliminarily realized through ARP Log)
 
 ## Thanks
 
