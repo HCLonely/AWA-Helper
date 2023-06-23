@@ -1,5 +1,5 @@
 {
-  "version": 1687249927774,
+  "version": 1687517958956,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -32,7 +32,8 @@
       "Don't Box Me In!",
       "All Four Corners",
       "Frame it!",
-      "What a Nice Rectangle"
+      "What a Nice Rectangle",
+      "New Rims?"
     ],
     "changeBadge": [
       "New ice",
@@ -247,6 +248,9 @@
       "Hello?",
       "\"Hey\"",
       "Addressed to Whom?"
+    ],
+    "/steam/community-event/apex-legends-community-event": [
+      "Check out the Apex Legends Community Event"
     ],
     "other": [
       "Explore the realm",

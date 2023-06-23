@@ -79,6 +79,7 @@ class DailyQuest {
   postReplied: null | boolean = null;
   safeReply = false;
   joinSteamCommunityEvent = false;
+  steamCommunityEventPath?: string;
   steamCommunityEventInfo?: {
     status: string,
     playedTime: string,
@@ -476,6 +477,10 @@ class DailyQuest {
             if (getItemBtn.length > 0) {
               new Logger(`${time()}${chalk.green(__('promotionalAlert'))}`);
             }
+
+            // 社区挑战
+            this.steamCommunityEventPath = $('a[href*="/steam/community-event"]').attr('href')?.split('/')
+              ?.at(-1);
           }
 
           // 美区任务
@@ -596,7 +601,9 @@ class DailyQuest {
 
           // Steam社区活动
           if (this.joinSteamCommunityEvent) {
-            await this.getSteamCommunityEvent();
+            if (this.steamCommunityEventPath) {
+              await this.getSteamCommunityEvent();
+            }
           }
           return 200;
         }
@@ -1457,7 +1464,7 @@ class DailyQuest {
   async getSteamCommunityEvent(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/steam/community-event/apex-legends-community-event`,
+      url: `https://${globalThis.awaHost}/steam/community-event/${this.steamCommunityEventPath}`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -1542,12 +1549,12 @@ class DailyQuest {
   async checkOwnedGames(gameInfo: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('checkingOwnedGames', gameInfo)}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/check-owned-games/apex-legends-community-event`,
+      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/check-owned-games/${this.steamCommunityEventPath}`,
       method: 'GET',
       headers: {
         ...this.headers,
         origin: `https://${globalThis.awaHost}`,
-        referer: `https://${globalThis.awaHost}/steam/community-event/apex-legends-community-event`
+        referer: `https://${globalThis.awaHost}/steam/community-event/${this.steamCommunityEventPath}`
       },
       responseType: 'json',
       Logger: logger
@@ -1578,12 +1585,12 @@ class DailyQuest {
   async enterSteamCommunityEvent(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('enteringSteamCommunityEvent')}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/start/apex-legends-community-event`,
+      url: `https://${globalThis.awaHost}/ajax/user/steam/community-event/start/${this.steamCommunityEventPath}`,
       method: 'GET',
       headers: {
         ...this.headers,
         origin: `https://${globalThis.awaHost}`,
-        referer: `https://${globalThis.awaHost}/steam/community-event/apex-legends-community-event`
+        referer: `https://${globalThis.awaHost}/steam/community-event/${this.steamCommunityEventPath}`
       },
       responseType: 'json',
       Logger: logger
