@@ -233,48 +233,70 @@ class DailyQuest {
       await page.goto(`https://${globalThis.awaHost}/`);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
+      await page.screenshot({ path: 'temp/homepage.png', fullPage: true });
 
       logger = new Logger(`${time()}${__('loginingAWA')}`, false);
       await page.locator('a.nav-link.nav-link-login').click();
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
+      await page.screenshot({ path: 'temp/loginpage.png', fullPage: true });
 
       logger = new Logger(`${time()}${__('inputingUsername')}`, false);
       await page.locator('input#_username').fill(this.#loginInfo.username);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
+      await page.screenshot({ path: 'temp/username.png', fullPage: true });
 
       logger = new Logger(`${time()}${__('inputingPassword')}`, false);
       await page.locator('input#_password').fill(this.#loginInfo.password);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
+      await page.screenshot({ path: 'temp/passwordpage.png', fullPage: true });
 
       logger = new Logger(`${time()}${__('checkingRememberMe')}`, false);
       await page.locator('input#remember_me').setChecked(true);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
+      await page.screenshot({ path: 'temp/rememberpage.png', fullPage: true });
 
       logger = new Logger(`${time()}${__('clickingLogin')}`, false);
       await page.locator('button#_login').click();
       logger.log(chalk.green('OK'));
+      await page.screenshot({ path: 'temp/clickLoginpage.png', fullPage: true });
 
-      logger = new Logger(`${time()}${__('verifyingLogin')}`, false);
-      await page.waitForNavigation({ timeout: 3 * 60000 });
-      logger.log(chalk.green('OK'));
+      let result = false;
+      try {
+        logger = new Logger(`${time()}${__('verifyingLogin')}`, false);
+        await page.waitForNavigation({ timeout: 3 * 60000 });
+        logger.log(chalk.green('OK'));
+        await page.screenshot({ path: 'temp/loginedpage.png', fullPage: true });
+      } catch (e) {
+        logger.log(chalk.yellow(__('retry')));
+        logger = new Logger(`${time()}${__('clickingLogin')}`, false);
+        await page.locator('button#_login').click();
+        logger.log(chalk.green('OK'));
+        await page.screenshot({ path: 'temp/clickLoginpage2.png', fullPage: true });
 
-      logger = new Logger(`${time()}${__('gettingCookied')}`, false);
-      const cookies = await context.cookies('https://.alienwarearena.com');
-      this.cookie = new Cookie();
-      cookies.forEach((cookie) => {
-        if (['REMEMBERME', 'PHPSESSID', 'sc'].includes(cookie.name)) {
-          this.cookie.update(`${cookie.name}=${cookie.value}`);
-        }
-      });
-      this.headers.cookie = this.cookie.stringify();
-      logger.log(chalk.green('OK'));
-      await browser.close();
-      new Logger(`${time()}${__('updatingAwaCookiesSuccess')}`);
-      return true;
+        logger = new Logger(`${time()}${__('verifyingLogin')}`, false);
+        await page.waitForNavigation({ timeout: 3 * 60000 });
+        logger.log(chalk.green('OK'));
+        await page.screenshot({ path: 'temp/loginedpage2.png', fullPage: true });
+      } finally {
+        logger = new Logger(`${time()}${__('gettingCookied')}`, false);
+        const cookies = await context.cookies('https://.alienwarearena.com');
+        this.cookie = new Cookie();
+        cookies.forEach((cookie) => {
+          if (['REMEMBERME', 'PHPSESSID', 'sc'].includes(cookie.name)) {
+            this.cookie.update(`${cookie.name}=${cookie.value}`);
+          }
+        });
+        this.headers.cookie = this.cookie.stringify();
+        logger.log(chalk.green('OK'));
+        await browser.close();
+        new Logger(`${time()}${__('updatingAwaCookiesSuccess')}`);
+        result = true;
+      }
+      return result;
     } catch (error) {
       new Logger(`${time()}${__('updatingAwaCookiesError')}`);
       new Logger(error);

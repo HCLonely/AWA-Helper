@@ -103,6 +103,7 @@ steamCommunityEvent: Steam社区活动
 gettingTwitchTech: 正在获取Twitch任务每日最大 ARP...
 dailySign: "每日签到: %s\n"
 monthlySign: "月签到: %s\n"
+retry: "重试"
 
 ### DailyQuestUS.ts ###
 doingTaskUS: 正在做美区任务[%s]...
