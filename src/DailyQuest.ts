@@ -96,6 +96,7 @@ class DailyQuest {
     id: string | undefined,
     day: string
   };
+  taskType: string = 'New';
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
@@ -458,6 +459,8 @@ class DailyQuest {
             this.userProfileUrl = response.data.match(/ser_profile_url.*?=.*?"(.+?)"/)?.[1];
           }
           if (verify) {
+            this.taskType = response.data.match(/user_country.*?=.*?"(.+?)"/)?.[1] === 'US' ? 'US' : 'New';
+
             const rewardBonusArp = response.data.match(/bonusCalendarArp.*?=.*?([\d]+?)/)?.[1];
             // 连续签到
             const consecutiveLoginsText = response.data.match(/consecutive_logins.*?=.*?({.+?})/)?.[1];
@@ -508,21 +511,35 @@ class DailyQuest {
             // 社区挑战
             this.steamCommunityEventPath = $('a[href*="/steam/community-event"]').attr('href')?.split('/')
               ?.at(-1);
+
+            // 推广活动
+            const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM')).eq(0);
+            if (promotionalCalendar.length > 0) {
+              this.promotionalCalendarInfo = {
+                name: promotionalCalendar.find('div.promotional-calendar__day-label').text().trim(),
+                id: promotionalCalendar.find('button.promotional-calendar__day-claim').attr('data-id')?.trim(),
+                day: promotionalCalendar.find('div.promotional-calendar__day-date').text().trim()
+              };
+            }
+            // Steam社区活动
+            if (this.joinSteamCommunityEvent) {
+              if (this.steamCommunityEventPath) {
+                await this.getSteamCommunityEvent();
+              }
+            }
           }
 
-          // 美区任务
-          if (this.doTaskUS) {
-            this.questInfo.dailyQuestUS = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0).toArray()
-              .map((e) => ({
-                link: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${globalThis.awaHost}/`).href,
-                title: $(e).find('.quest-title').text()
-                  .trim(),
-                arp: $(e).find('.quest-item-progress').toArray()
-                  .map((e) => $(e).text().trim()
-                    .toLowerCase())
-                  .at(-1) || '0'
-              }));
-          }
+          // 每日任务 New
+          this.questInfo.dailyQuestUS = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0).toArray()
+            .map((e) => ({
+              link: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${globalThis.awaHost}/`).href,
+              title: $(e).find('.quest-title').text()
+                .trim(),
+              arp: $(e).find('.quest-item-progress').toArray()
+                .map((e) => $(e).text().trim()
+                  .toLowerCase())
+                .at(-1) || '0'
+            }));
 
           // Booster
           const userArpBoostText = response.data.match(/userArpBoost[\s]*?=[\s]*?({[\w\W]+?})/)?.[1];
@@ -626,21 +643,6 @@ class DailyQuest {
             this.dailyQuestLink = new URL($('a.quest-title[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
           }
 
-          // 推广活动
-          const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM')).eq(0);
-          if (promotionalCalendar.length > 0) {
-            this.promotionalCalendarInfo = {
-              name: promotionalCalendar.find('div.promotional-calendar__day-label').text().trim(),
-              id: promotionalCalendar.find('button.promotional-calendar__day-claim').attr('data-id')?.trim(),
-              day: promotionalCalendar.find('div.promotional-calendar__day-date').text().trim()
-            };
-          }
-          // Steam社区活动
-          if (this.joinSteamCommunityEvent) {
-            if (this.steamCommunityEventPath) {
-              await this.getSteamCommunityEvent();
-            }
-          }
           return 200;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
@@ -1826,7 +1828,7 @@ class DailyQuest {
   }
   formatQuestInfo() {
     const result = {
-      [`${__('dailyTask')}[${this.dailyQuestName[0]}]`]: {
+      [`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`]: {
         // eslint-disable-next-line no-nested-ternary
         [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
         [__('obtainedARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0,
@@ -1849,11 +1851,11 @@ class DailyQuest {
       }
     };
     if (!this.dailyQuestName[0]) {
-      delete result[`${__('dailyTask')}[${this.dailyQuestName[0]}]`];
+      delete result[`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`];
     }
     if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
       for (let i = 1; i < this.questInfo.dailyQuest.length; i++) {
-        result[`${__('dailyTask')}[${this.dailyQuestName[i]}]`] = {
+        result[`${__('dailyTask', '')}[${this.dailyQuestName[i]}]`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
           [__('obtainedARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0,
@@ -1863,7 +1865,7 @@ class DailyQuest {
     }
     if (this.questInfo.dailyQuestUS && this.questInfo.dailyQuestUS.length > 0) {
       for (const questInfo of this.questInfo.dailyQuestUS) {
-        result[`${__('dailyTaskUS')}[${questInfo.title}]`] = {
+        result[`${__('dailyTask', this.taskType)}[${questInfo.title}]`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: parseInt(questInfo.arp, 10) > 0 ? __('done') : __('undone'),
           [__('obtainedARP')]: parseInt(questInfo.arp, 10),
