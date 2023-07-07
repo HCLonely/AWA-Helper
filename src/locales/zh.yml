@@ -43,6 +43,7 @@ boosterAlert: 检测到未完成的每日任务大于1个，请确认是否要�
 booster: ARP 助推器
 selfOpen: 需要自行开启！！！
 taskInfo: 当前任务信息：
+noDailyQuest: 未检测到旧版每日任务
 dailyQuestSkipped: 已跳过每日任务！
 dailyQuestCompleted: 每日任务已完成！
 dailyQuestNotCompleted: 每日任务未完成！

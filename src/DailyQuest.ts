@@ -91,6 +91,11 @@ class DailyQuest {
     daily?: string,
     monthly?: string
   } = {};
+  promotionalCalendarInfo?: {
+    name: string,
+    id: string | undefined,
+    day: string
+  };
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
@@ -487,8 +492,8 @@ class DailyQuest {
                     new Logger(`${time()}${__('monthlyLoginsItemAlert', chalk.yellow(monthlyLogins.count), chalk.green(rewardItem))}`);
                   }
                 } else {
-                  this.signArp.monthly = `${monthlyLogins.extra_arp} ARP`;
-                  new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(monthlyLogins.extra_arp))}`);
+                  this.signArp.monthly = `${monthlyLogins.extra_arp}+${rewardBonusArp || ''} ARP`;
+                  new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${monthlyLogins.extra_arp}+${rewardBonusArp || ''}`))}`);
                 }
               } catch (e) {
                 //
@@ -549,7 +554,7 @@ class DailyQuest {
           }
 
           // 每日任务
-          const dailyQuests = chunk($('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
+          const dailyQuests = chunk($('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
               .toLowerCase()), 2);
           let dailyQuest = dailyQuests;
@@ -559,11 +564,11 @@ class DailyQuest {
           if (dailyQuests.length === 0) {
             dailyQuest = [['none', '0']];
           }
-          this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests/"]').length === 0).find('.quest-title')
+          this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0).find('.quest-title')
             .toArray()
-            .map((e) => $(e).text().trim()) || 'none';
+            .map((e) => $(e).text().trim()) || ['None'];
           this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({ status, arp }));
-          this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length === 0).find('.quest-item-progress')
+          this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
               .toLowerCase())
             .filter((i, e) => e === 'incomplete').length;
@@ -621,6 +626,15 @@ class DailyQuest {
             this.dailyQuestLink = new URL($('a.quest-title[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
           }
 
+          // 推广活动
+          const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM')).eq(0);
+          if (promotionalCalendar.length > 0) {
+            this.promotionalCalendarInfo = {
+              name: promotionalCalendar.find('div.promotional-calendar__day-label').text().trim(),
+              id: promotionalCalendar.find('button.promotional-calendar__day-claim').attr('data-id')?.trim(),
+              day: promotionalCalendar.find('div.promotional-calendar__day-date').text().trim()
+            };
+          }
           // Steam社区活动
           if (this.joinSteamCommunityEvent) {
             if (this.steamCommunityEventPath) {
@@ -640,6 +654,10 @@ class DailyQuest {
       });
   }
   async do(): Promise<any> {
+    if (!this.dailyQuestName[0]) {
+      this.questStatus.dailyQuest = 'complete';
+      return new Logger(time() + chalk.yellow(__('noDailyQuest')));
+    }
     if (this.questStatus.dailyQuest === 'skip') {
       return new Logger(time() + chalk.yellow(__('dailyQuestSkipped')));
     }
@@ -1776,6 +1794,9 @@ class DailyQuest {
         return false;
       });
   }
+  async getPromotionalCalendarItem() {
+
+  }
 
   async updateDailyQuestDb(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('updatingDailyQuestDb')}`, false);
@@ -1827,6 +1848,9 @@ class DailyQuest {
         [__('maxAvailableARP')]: '-'
       }
     };
+    if (!this.dailyQuestName[0]) {
+      delete result[`${__('dailyTask')}[${this.dailyQuestName[0]}]`];
+    }
     if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
       for (let i = 1; i < this.questInfo.dailyQuest.length; i++) {
         result[`${__('dailyTask')}[${this.dailyQuestName[i]}]`] = {
