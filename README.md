@@ -206,6 +206,8 @@ document.cookie.split(';').filter((e) => ['unique_id','auth-token'].includes(e.s
 ### Steam 任务配置
 
 > 挂Steam游戏时长的方式, 支持[ASF](https://github.com/JustArchiNET/ArchiSteamFarm)和[SU](https://github.com/DoctorMcKay/node-steam-user).
+>
+> 已支持自选Steam游戏任务，需在游戏选择页面同步游戏(`Sync Game`)一次。
 
 ```yml
 steamUse: 'ASF' # 'ASF'或'SU','SU'为模拟Steam客户端

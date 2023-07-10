@@ -84,13 +84,16 @@ class SteamQuestSU {
           const gamesInfo = [];
           for (const row of $('div.container>div.row').toArray()) {
             const $row = $(row);
+            /*
             const id = $row.find('img[src*="cdn.cloudflare.steamstatic.com/steam/apps/"]').eq(0)
               .attr('src')
               ?.match(/steam\/apps\/([\d]+)/)?.[1];
             if (!id) continue;
+            */
             const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
-            const started = await this.getQuestInfo(questLink);
-            if (!started) continue;
+            const [id, started] = await this.getQuestInfo(questLink);
+
+            if (!started || !id) continue;
             const playTime = $row.find('.media-body p').text()
               .trim()
               .match(/([\d]+)[\s]*hour/i)?.[1];
@@ -98,7 +101,7 @@ class SteamQuestSU {
               .trim()
               .match(/([\d]+)[\s]*ARP/i)?.[1];
             gamesInfo.push({
-              id,
+              id: id as string,
               time: playTime ? parseInt(playTime, 10) : 0,
               arp: arp ? parseInt(arp, 10) : 0,
               link: questLink
@@ -121,6 +124,10 @@ class SteamQuestSU {
   async awaCheckOwnedGames(name: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('recheckingOwnedGames', chalk.yellow(name))}`, false);
     const taskUrl = `https://${globalThis.awaHost}/steam/quests/${name}`;
+    if (name === 'choose-your-own-game') {
+      logger.log(chalk.green(__('owned')));
+      return (await this.getQuestInfo(taskUrl, true))[1] as boolean;
+    }
     const options: myAxiosConfig = {
       url: `https://${globalThis.awaHost}/ajax/user/steam/quests/check-owned-games/${name}`,
       method: 'GET',
@@ -141,7 +148,7 @@ class SteamQuestSU {
         if (response.status === 200) {
           if (response.data?.installed === true) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('owned')));
-            return this.getQuestInfo(taskUrl, true);
+            return (await this.getQuestInfo(taskUrl, true))[1] as boolean;
           }
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('notOwned')));
           return false;
@@ -156,7 +163,7 @@ class SteamQuestSU {
         return false;
       });
   }
-  async getQuestInfo(url: string, isRetry = false): Promise<boolean> {
+  async getQuestInfo(url: string, isRetry = false): Promise<Array<string | boolean>> {
     const name = url.match(/steam\/quests\/(.+)/)?.[1];
     const logger = new Logger(`${time()}${__('gettingSingleSteamQuestInfo', chalk.yellow(name || url))}`, false);
     const options: myAxiosConfig = {
@@ -176,29 +183,85 @@ class SteamQuestSU {
     if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
 
     return axios(options)
-      .then((response) => {
+      .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers['set-cookie']))])];
+        const $ = load(response.data);
+        const id = $('img[src*="cdn.cloudflare.steamstatic.com/steam/apps/"]').eq(0)
+          .attr('src')
+          ?.match(/steam\/apps\/([\d]+)/)?.[1] ||
+          response.data.match(/cdn\.cloudflare\.steamstatic\.com\/steam\/apps\/([\d]+)/)?.[1] || '';
         if (response.data.includes('You have completed this quest')) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('steamQuestCompleted')));
-          return false;
+          return [id, false];
         }
         if (response.data.includes('This quest requires that you own')) {
           if (name && !isRetry) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('steamQuestRecheck')));
-            return this.awaCheckOwnedGames(name);
+            return [id, await this.awaCheckOwnedGames(name)];
           }
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('steamQuestSkipped')));
-          return false;
+          return [id, false];
         }
         if (response.data.includes('Launch Game')) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('steamQuestStarted')));
-          return true;
+          return [id, true];
+        }
+        if (response.data.includes('Sync Games')) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('steamQuestNotChoose')));
+          if (isRetry) {
+            return [id, false];
+          }
+          const steamGameId = $('#userGames>option').eq(0).attr('value');
+          if (!steamGameId) {
+            new Logger(`${time()}${chalk.red(__('noSteamGames'))}`, false);
+            return [id, false];
+          }
+          await this.chooseOwnGame(url, steamGameId);
+          return await this.getQuestInfo(url, true);
         }
         if (response.data.includes('Start Quest')) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return this.startQuest(url);
+          return [id, await this.startQuest(url)];
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
+        return [id, false];
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return ['', false];
+      });
+  }
+  async chooseOwnGame(url: string, steamGameId: string): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('choosingOwnGame', chalk.yellow(steamGameId))}`, false);
+    const options: myAxiosConfig = {
+      url: url.replace('steam/quests', 'ajax/user/steam/quests/start-select-own'),
+      method: 'POST',
+      responseType: 'text',
+      headers: {
+        cookie: this.awaCookie.stringify(),
+        accept: '*/*',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'user-agent': globalThis.userAgent,
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        referer: url
+      },
+      data: steamGameId,
+      Logger: logger
+    };
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+
+    return axios(options)
+      .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
+        new Logger(response.data || response.statusText);
         return false;
       })
       .catch((error) => {
