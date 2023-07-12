@@ -18,7 +18,7 @@ import * as dayjs from 'dayjs';
 process.on('SIGTERM', async () => {
   new Logger(time() + chalk.yellow(__('processWasKilled')));
   try {
-    await push(`${__('pushTitle')}\n${__('processWasKilled')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}` : ''}${globalThis.newVersionNotice}`);
+    await push(`${__('pushTitle')}\n${__('processWasKilled')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`)).join('\n')}` : ''}${globalThis.newVersionNotice}`);
   } catch (e) {
     await push(`${__('pushTitle')}\n${__('processWasKilled')}${globalThis.newVersionNotice}`);
   }
@@ -28,7 +28,7 @@ process.on('SIGTERM', async () => {
 process.on('SIGINT', async () => {
   new Logger(time() + chalk.yellow(__('processWasInterrupted')));
   try {
-    await push(`${__('pushTitle')}\n${__('processWasInterrupted')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}` : ''}${globalThis.newVersionNotice}`);
+    await push(`${__('pushTitle')}\n${__('processWasInterrupted')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`)).join('\n')}` : ''}${globalThis.newVersionNotice}`);
   } catch (e) {
     await push(`${__('pushTitle')}\n${__('processWasInterrupted')}${globalThis.newVersionNotice}`);
   }
@@ -38,7 +38,7 @@ process.on('SIGINT', async () => {
 process.on('uncaughtException', async (err) => {
   new Logger(time() + chalk.yellow(__('processError')));
   try {
-    await push(`${__('pushTitle')}\n${__('processError')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}` : ''}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
+    await push(`${__('pushTitle')}\n${__('processError')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`)).join('\n')}` : ''}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
   } catch (e) {
     await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
   }
@@ -208,7 +208,7 @@ process.on('uncaughtException', async (err) => {
   if (timeout && typeof timeout === 'number' && timeout > 0) {
     setTimeout(async () => {
       new Logger(chalk.yellow(__('processTimeout')));
-      await push(`${__('pushTitle')}\n${__('processTimeout')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}` : ''}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}\n${__('processTimeout')}${globalThis.quest?.formatQuestInfo ? `\n\n${globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''}${globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''}${Object.entries(globalThis.quest.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`)).join('\n')}` : ''}${globalThis.newVersionNotice}`);
       process.exit(0);
     }, timeout * 1000);
   }

@@ -65,6 +65,7 @@ dailyTask: 每日任务%s
 dailyTaskUS: 每日任务US
 status: 状态
 obtainedARP: 已获得ARP
+extraARP: 额外获得ARP
 maxAvailableARP: 最大可获得ARP
 done: 已完成
 undone: 未完成

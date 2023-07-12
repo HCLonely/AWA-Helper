@@ -71,16 +71,18 @@ declare global {
     link: string
     title: string
     arp: string
+    extraArp?: string
   }
   interface questInfo {
     dailyQuest?: Array<dailyQuest>
     dailyQuestUS?: Array<dailyQuestUS>
     timeOnSite?: {
-      maxArp: number
-      addedArp: number
+      maxArp: string
+      addedArp: string
+      addedArpExtra?: string
     }
     watchTwitch?: Array<string>
-    steamQuest?: string
+    steamQuest?: Array<string>
   }
   interface steamGameInfo {
     id: string

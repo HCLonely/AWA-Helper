@@ -364,7 +364,7 @@ class DailyQuest {
         (parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0')) >= (15 + this.additionalTwitchARP)
       ) && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
-        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${this.signArp.daily ? __('dailySign', this.signArp.daily) : ''}${this.signArp.monthly ? __('monthlySign', this.signArp.monthly) : ''}${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]} ARP`)).join('\n')}${globalThis.newVersionNotice}`);
+        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${this.signArp.daily ? __('dailySign', this.signArp.daily) : ''}${this.signArp.monthly ? __('monthlySign', this.signArp.monthly) : ''}${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`)).join('\n')}${globalThis.newVersionNotice}`);
         process.exit(0);
         /*
         log('按任意键退出...');
@@ -470,7 +470,7 @@ class DailyQuest {
                 const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
                 if (rewardArp) {
                   this.signArp.daily = `${rewardArp}+${rewardBonusArp || ''} ARP`;
-                  new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp}+${rewardBonusArp || ''}`))}`);
+                  new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp} + ${rewardBonusArp || ''}`))}`);
                 }
               } catch (e) {
                 //
@@ -487,8 +487,8 @@ class DailyQuest {
                   const rewardItem = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__day-overlay`).eq(0).text()
                     .trim();
                   if (rewardArp) {
-                    this.signArp.monthly = `${rewardArp}+${rewardBonusArp || ''} ARP`;
-                    new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${rewardArp}+${rewardBonusArp || ''}`))}`);
+                    this.signArp.monthly = `${rewardArp} + ${rewardBonusArp || ''} ARP`;
+                    new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${rewardArp} + ${rewardBonusArp || ''}`))}`);
                   }
                   if (rewardItem) {
                     this.signArp.monthly = rewardItem;
@@ -496,7 +496,7 @@ class DailyQuest {
                   }
                 } else {
                   this.signArp.monthly = `${monthlyLogins.extra_arp}+${rewardBonusArp || ''} ARP`;
-                  new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${monthlyLogins.extra_arp}+${rewardBonusArp || ''}`))}`);
+                  new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${monthlyLogins.extra_arp} + ${rewardBonusArp || ''}`))}`);
                 }
               } catch (e) {
                 //
@@ -538,7 +538,13 @@ class DailyQuest {
               arp: $(e).find('.quest-item-progress').toArray()
                 .map((e) => $(e).text().trim()
                   .toLowerCase())
-                .at(-1) || '0'
+                .at(-1)
+                ?.split('+')?.[0]?.trim() || '0',
+              extraArp: $(e).find('.quest-item-progress').toArray()
+                .map((e) => $(e).text().trim()
+                  .toLowerCase())
+                .at(-1)
+                ?.split('+')?.[1]?.trim() || '0'
             }));
 
           // Booster
@@ -584,7 +590,7 @@ class DailyQuest {
           this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0).find('.quest-title')
             .toArray()
             .map((e) => $(e).text().trim()) || ['None'];
-          this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({ status, arp }));
+          this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({ status, arp: arp.split('+')[0].trim(), extraArp: arp.split('+')[1]?.trim() || '0' }));
           this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests"]').length === 0).find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
               .toLowerCase())
@@ -601,32 +607,34 @@ class DailyQuest {
           this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
 
           // AWA 在线任务
-          const [maxArp, addedArp] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Time on Site')).find('center')
-            .toArray()
-            .map((e) => parseInt($(e).text().trim()
-              .match(/[\d]+/)?.[0] || '0', 10));
+          const [maxArpEle, addedArpEle] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Time on Site')).find('center')
+            .toArray();
+          const maxArp = $(maxArpEle).text().trim()
+            .match(/[\d]+/)?.[0] || '0';
+          const [addedArp, addedArpExtra] = $(addedArpEle).text().trim()
+            .split('+')
+            .map((e) => e.match(/[\d]+/)?.[0]?.trim() || '0');
           if (this.questInfo.timeOnSite) {
             this.questInfo.timeOnSite.addedArp = addedArp;
-          } else if (maxArp !== 0) {
+          } else if (maxArp !== '0') {
             this.questInfo.timeOnSite = {
-              maxArp, addedArp
+              maxArp, addedArp, addedArpExtra
             };
           }
           // Twitch 在线任务
-          const [twitchArp, twitchArpPlus] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Watch Twitch')).find('center b')
+          const [twitchArp, twitchArpExtra] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Watch Twitch')).find('center b')
             .last()
             .text()
             .split('+')
             .map((e) => e.trim());
-          this.questInfo.watchTwitch = [twitchArp, twitchArpPlus];
+          this.questInfo.watchTwitch = [twitchArp, twitchArpExtra];
           // Steam 挂机任务
-          const steamArp = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
+          const [steamArp, steamArpExtra] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
             .last()
             .text()
             .split('+')
-            .map((e) => parseFloat(e.trim()))
-            .reduce((prev, curr) => prev + curr);
-          this.questInfo.steamQuest = `${steamArp}`;
+            .map((e) => e.trim());
+          this.questInfo.steamQuest = [steamArp, steamArpExtra];
           if (!verify) Logger.consoleLog(`${time()}${__('taskInfo')}`);
           const formatQuestInfo = this.formatQuestInfo();
           fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, `${JSON.stringify(formatQuestInfo, null, 2)}\n`);
@@ -1831,22 +1839,26 @@ class DailyQuest {
       [`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`]: {
         // eslint-disable-next-line no-nested-ternary
         [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
-        [__('obtainedARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0,
+        [__('obtainedARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[0] || '0',
+        [__('extraARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[1] || '0',
         [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
       },
       [__('timeOnSite')]: {
         [__('status')]: this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp ? __('done') : __('undone'),
         [__('obtainedARP')]: this.questInfo.timeOnSite?.addedArp,
+        [__('extraARP')]: this.questInfo.timeOnSite?.addedArpExtra,
         [__('maxAvailableARP')]: this.questInfo.timeOnSite?.maxArp
       },
       [__('watchTwitch')]: {
         [__('status')]: (parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0')) >= (15 + this.additionalTwitchARP) ? __('done') : __('undone'),
-        [__('obtainedARP')]: parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0'),
+        [__('obtainedARP')]: this.questInfo.watchTwitch?.[0] || '0',
+        [__('extraARP')]: this.questInfo.watchTwitch?.[1],
         [__('maxAvailableARP')]: 15 + this.additionalTwitchARP
       },
       [__('steamQuest')]: {
         [__('status')]: '-',
-        [__('obtainedARP')]: parseInt(this.questInfo.steamQuest || '0', 10),
+        [__('obtainedARP')]: this.questInfo.steamQuest?.[0],
+        [__('extraARP')]: this.questInfo.steamQuest?.[1],
         [__('maxAvailableARP')]: '-'
       }
     };
@@ -1858,7 +1870,8 @@ class DailyQuest {
         result[`${__('dailyTask', '')}[${this.dailyQuestName[i]}]`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
-          [__('obtainedARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0,
+          [__('obtainedARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.[0] || '0',
+          [__('extraARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.[1] || '0',
           [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
         };
       }
@@ -1868,7 +1881,8 @@ class DailyQuest {
         result[`${__('dailyTask', this.taskType)}[${questInfo.title}]`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: parseInt(questInfo.arp, 10) > 0 ? __('done') : __('undone'),
-          [__('obtainedARP')]: parseInt(questInfo.arp, 10),
+          [__('obtainedARP')]: questInfo.arp,
+          [__('extraARP')]: questInfo.extraArp || '0',
           [__('maxAvailableARP')]: '-'
         };
       }
@@ -1878,6 +1892,7 @@ class DailyQuest {
         // eslint-disable-next-line no-nested-ternary
         [__('status')]: this.steamCommunityEventInfo.status,
         [__('obtainedARP')]: this.steamCommunityEventInfo.playedTime,
+        [__('extraARP')]: '-',
         [__('maxAvailableARP')]: this.steamCommunityEventInfo.totalTime
       };
     }
