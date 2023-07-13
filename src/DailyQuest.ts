@@ -469,7 +469,7 @@ class DailyQuest {
                 const consecutiveLogins = JSON.parse(consecutiveLoginsText);
                 const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
                 if (rewardArp) {
-                  this.signArp.daily = `${rewardArp}+${rewardBonusArp || ''} ARP`;
+                  this.signArp.daily = `${rewardArp} + ${rewardBonusArp || ''} ARP`;
                   new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp} + ${rewardBonusArp || ''}`))}`);
                 }
               } catch (e) {
@@ -495,7 +495,7 @@ class DailyQuest {
                     new Logger(`${time()}${__('monthlyLoginsItemAlert', chalk.yellow(monthlyLogins.count), chalk.green(rewardItem))}`);
                   }
                 } else {
-                  this.signArp.monthly = `${monthlyLogins.extra_arp}+${rewardBonusArp || ''} ARP`;
+                  this.signArp.monthly = `${monthlyLogins.extra_arp} + ${rewardBonusArp || ''} ARP`;
                   new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${monthlyLogins.extra_arp} + ${rewardBonusArp || ''}`))}`);
                 }
               } catch (e) {
