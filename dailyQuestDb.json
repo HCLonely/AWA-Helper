@@ -1,5 +1,5 @@
 {
-  "version": 1687517958956,
+  "version": 1691993694753,
   "quests": {
     "changeBorder": [
       "New framework",
@@ -33,7 +33,8 @@
       "All Four Corners",
       "Frame it!",
       "What a Nice Rectangle",
-      "New Rims?"
+      "New Rims?",
+      "Change it up!"
     ],
     "changeBadge": [
       "New ice",
@@ -117,7 +118,8 @@
       "Where Are My Glasses?",
       "FYI",
       "Worth Considering",
-      "Brain food for the weekend"
+      "Brain food for the weekend",
+      "What's in the news?"
     ],
     "sharePosts": [
       "Town crier",
@@ -139,7 +141,8 @@
       "Share it around",
       "For all to hear",
       "...is Caring?",
-      "Who wants one?"
+      "Who wants one?",
+      "For the World To Behold!"
     ],
     "replyPost": [
       "Converse among yourselves",
@@ -196,7 +199,8 @@
       "If You Ain't First...",
       "Staying Updated",
       "In It To Win It",
-      "Who is King?"
+      "Who is King?",
+      "Who's the very best?"
     ],
     "/marketplace/": [
       "Going shopping!",
