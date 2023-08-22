@@ -11,8 +11,10 @@ if ($global_node -notmatch 'v((1[6-9])|([2-9]\d+))' -and $local_node -notmatch '
   Expand-Archive -Path "./node-v18.12.1-win-x64.zip" -DestinationPath "./" -Force
   # Set nodejs path to Environment
   $nodePath = Resolve-Path "./node-v18.12.1-win-x64"
+  $shortNodePath = Resolve-Path "./node"
+  New-Item -Path $shortNodePath -ItemType SymbolicLink -Value $nodePath
   $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
-  $envPath = $userPath + ';' + $nodePath
+  $envPath = $userPath + ';' + $shortNodePath
   [Environment]::SetEnvironmentVariable('Path', $envPath, 'User')
 }
 
@@ -28,7 +30,7 @@ if ($global_node -notmatch 'v((1[6-9])|([2-9]\d+))') {
     Remove-Item "./node-v18.12.1-win-x64.zip"
     Write-Host "Installed" -ForegroundColor Green
     Write-Output 'Checking if all dependencies are installed...'
-    ./node/node scripts/modules_checker.js "./node/"
+    ./node/node scripts/modules_checker_cn.js "./node/"
 
     'cd "%~dp0" && start cmd /k "./node/node index.js"' | Out-File "./Run.bat"
     'cd "%~dp0" && start cmd /k "./node/node index.js"' | Out-File "./运行.bat"
@@ -45,7 +47,7 @@ else
   Remove-Item "./node-v18.12.1-win-x64.zip"
   Write-Host "Installed" -ForegroundColor Green
   Write-Output 'Checking if all dependencies are installed...'
-  node scripts/modules_checker.js
+  node scripts/modules_checker_cn.js
 
   Write-Output 'Starting AWA-Helper...'
   node index.js

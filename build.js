@@ -12,10 +12,7 @@
     'CHANGELOG.txt',
     'dailyQuestDb.json',
     'package.json',
-    'scripts/modules_checker.js',
-    'scripts/node_checker.ps1',
-    'scripts/node_checker.sh',
-    'scripts/node_checker.bat'
+    'scripts/'
   ];
   fileList.forEach((e) => {
     fs.copySync(e, `dist/${e}`);
@@ -74,7 +71,7 @@
   fs.writeFileSync('dist/运行.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
   fs.writeFileSync('dist/Run.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
   // eslint-disable-next-line max-len
-  fs.writeFileSync('dist/运行-auto.bat', 'cd "%~dp0" && where "powershell" && powershell -file "scripts/node_checker.ps1" || where "pwsh" && pwsh -file "scripts/node_checker.ps1" || .\\scripts\\node_checker.bat && pause');
+  fs.writeFileSync('dist/运行-auto.bat', 'cd "%~dp0" && where "powershell" && powershell -file "scripts/node_checker_cn.ps1" || where "pwsh" && pwsh -file "scripts/node_checker_cn.ps1" || .\\scripts\\node_checker_cn.bat && pause');
   // eslint-disable-next-line max-len
   fs.writeFileSync('dist/Run-auto.bat', 'cd "%~dp0" && where "powershell" && powershell -file "scripts/node_checker.ps1" || where "pwsh" && pwsh -file "scripts/node_checker.ps1" || .\\scripts\\node_checker.bat && pause');
   fs.writeFileSync('dist/run_auto_linux.sh', './scripts/node_checker.sh');

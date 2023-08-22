@@ -111,13 +111,14 @@ docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src
 ```yml
 language: zh # Program display language, currently supports Chinese (zh) and English (en)
 webUI:
-enable: true # Whether to enable WebUI
-port: 3456 # WebUI port
-ssl: # WebUI enables SSL
-key: xxx.yyy-key.pem # SSL certificate key file name, put this file in the same directory as the config.yml configuration file!
-cert: xxx.yyy.pem # SSL certificate file name, put this file in the same directory as the config.yml configuration file!
+  enable: true # Whether to enable WebUI
+  port: 3456 # WebUI port
+  ssl: # WebUI enables SSL
+    key: xxx.yyy-key.pem # SSL certificate key file name, put this file in the same directory as the config.yml configuration file!
+    cert: xxx.yyy.pem # SSL certificate file name, put this file in the same directory as the config.yml configuration file!
 timeout: 0 # Timeout setting, unit: second, 0 means unlimited. If the program is still running after running for more than this time, the program will be terminated.
 logsExpire: 30 # Log retention time, unit: day, default is 30 days, 0 means unlimited.
+TLSRejectUnauthorized: true # Whether to enable TLSSocket library verification, enabled by default. If you have network problems using a proxy, try changing this!
 ```
 
 ### AWA configuration (Required)
@@ -127,38 +128,23 @@ logsExpire: 30 # Log retention time, unit: day, default is 30 days, 0 means unli
 ```yml
 awaCookie: '' # Alien Forum Cookie, you can only have `REMEMBERME`, if you don't have `REMEMBERME`, you must have `PHPSESSID` and `sc`, but it will lead to an error in obtaining the number of consecutive sign-in days, and will not affect other functions
 awaHost: 'www.alienwarearena.com' # Alienwarearena Host, the commonly used ones are `www.alienwarearena.com` and `na.alienwarearena.com`, don’t change the default if there is no problem
-awaBoosterNotice: true # When there are more than 1 task in the Alien Forum, it will ask whether to enable the booster. The booster needs to be activated by itself! ! !
 awaQuests:
-- dailyQuest # Automatically do daily tasks, no need to do this task delete or comment out this line
-- timeOnSite # Automatically do AWA online tasks, do not need to delete or comment out this line
-- watchTwitch # Automatically do online tasks in the Twitch live room, no need to do this task delete or comment out this line
-- steamQuest # Automatically do steam game duration tasks, no need to do this task delete or comment out this line
+  - dailyQuest # Automatically do daily tasks, no need to do this task delete or comment out this line
+  - timeOnSite # Automatically do AWA online tasks, do not need to delete or comment out this line
+  - watchTwitch # Automatically do online tasks in the Twitch live room, no need to do this task delete or comment out this line
+  - steamQuest # Automatically do steam game duration tasks, no need to do this task delete or comment out this line
 awaDailyQuestType: # The daily task type, you don’t need to comment it out, all comments = all open, if you don’t need to do daily tasks, please comment the above `dailyQuest`
-- click # Browse the task on the page, the title of the task is the task link, you need to click on the task to complete it
-- visitLink # Browse the page task, the task title is the task link, and the page can be completed
-- openLink # Browse page tasks, task titles have no links, try to browse leaderboards, rewards, store pages
-- changeBorder # Change Border
-- changeBadge # Change Badge
-- changeAvatar # Change Avatar
-- viewNews # view news
-- sharePost # share post
-- replyPost # reply post
+  - click # Browse the task on the page, the title of the task is the task link, you need to click on the task to complete it
+  - visitLink # Browse the page task, the task title is the task link, and the page can be completed
+  - openLink # Browse page tasks, task titles have no links, try to browse leaderboards, rewards, store pages
+  - changeBorder # Change Border
+  - changeBadge # Change Badge
+  - changeAvatar # Change Avatar
+  - viewNews # view news
+  - sharePost # share post
+  - replyPost # reply post
 awaDailyQuestNumber1: true # Whether to do only the first one when there are multiple daily tasks
 awaSafeReply: false # If you have replied to a post today, you will skip the operation of replying to the post, which is not skipped by default (false)
-boosterRule: # Use ARP Booster rules, all commented out to disable
-- 2x24h>0 # This rule means to use 2x 24hr ARP Booster when the number of 2x 24hr ARP Booster is greater than 0
-- 2x48h>5 # This rule means that when the number of 2x 48hr ARP Boosters is greater than 5, use 2x 48hr ARP Booster. This rule will only take effect when none of the above rules match
-boosterCorn: '* * 8 * * 7' # Use ARP Booster time (local time)
-# ┬ ┬ ┬ ┬ ┬ ┬
-# │ │ │ │ │ |
-# │ │ │ │ │ └──────────────── Day of the week (0 - 7, 1L - 7L) (0 or 7 is Sunday) ┐
-# │ │ │ │ └────────────────── Month (1 - 12) ├─ Date
-# │ │ │ └──────────────────── Day of the month (1 - 31, L) ┘
-# │ │ └────────────────────── Hours (0 - 23) ┐
-# │ └────────────────────────────────────────── Minutes (0 - 59) ├─ Time
-# └────────────────────────────Seconds (0 - 59) ┘
-# Time rule description: Enable when the current date and the date matched by boosterCorn are the same day and the current time is greater than the time matched by boosterCorn
-# The expression in the example means that the boosterRule rule is used to match when the program is run after 8:00 every Saturday
 autoLogin: # Automatically log in to update Cookies configuration
 enable: true # Whether to enable
 username: '' # AWA username

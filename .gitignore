@@ -5,6 +5,7 @@ config1.yml
 config2.yml
 AWA-Helper.exe
 *.zip
+!node-v18.17.1-win-x64.zip
 output/
 log.txt
 version
@@ -16,10 +17,12 @@ awa-info.json
 node-v16.17.0-win-x64
 auto-close
 dist/
+dist0/
 crts/
 dailyQuestDbCloud.json
 DailyQuestUS.ts
 installer/
+node-v18.17.1-win-x64/
 
 test.js
 test.ts

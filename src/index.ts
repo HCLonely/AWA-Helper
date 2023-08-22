@@ -180,8 +180,12 @@ process.on('uncaughtException', async (err) => {
     autoLogin,
     autoUpdateDailyQuestDb,
     awaSafeReply,
-    joinSteamCommunityEvent
+    joinSteamCommunityEvent,
+    TLSRejectUnauthorized
   }: config = config;
+  if (TLSRejectUnauthorized === false) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+  }
   globalThis.webUI = !!webUI?.enable;
   globalThis.language = language || 'zh';
   globalThis.pusher = pusher;

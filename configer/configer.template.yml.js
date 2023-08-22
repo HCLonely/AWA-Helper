@@ -40,6 +40,11 @@
       type: text
       inputType: number
       defaultValue: 0
+    TLSRejectUnauthorized:
+      name: 是否启用TLSSocket库校验
+      desp: 默认开启。如果使用代理出现网络问题，可尝试更改此项！
+      type: boolean
+      defaultValue: true
     logsExpire:
       name: 日志保留时间
       desp: 日志保留时间，单位：天。默认30天，0为不限制。
@@ -72,11 +77,6 @@
       type: text
       defaultValue: www.alienwarearena.com
       required: true
-    awaBoosterNotice:
-      name: 助推器提醒
-      desp: 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
-      type: boolean
-      defaultValue: true
     awaQuests:
       name: 需要做的任务类型
       desp: 按`Ctrl`多选
@@ -139,19 +139,6 @@
       name: 今日回复过帖子则跳过回复帖子操作
       type: boolean
       defaultValue: false
-    boosterRule:
-      name: ARP Booster使用规则
-      desp: 可使用多个规则，做上面的优先级最高
-      type: array
-      body:
-        - name: 规则
-          desp: '例：2x24h>0，此规则代表当2x 24hr ARP Booster数量大于0时使用2x 24hr ARP Booster'
-          type: text
-          repeat: true
-    boosterCorn:
-      name: 使用ARP Booster的时间
-      desp: 此时间为本地时间，当前日期和boosterCorn匹配的日期为同一天且当前时间大于boosterCorn匹配的时间时启用。格式建议查看config.example.yml文件中的说明。
-      type: text
     autoUpdateDailyQuestDb:
       name: 自动更新每日任务数据库
       type: boolean

@@ -1,12 +1,12 @@
 {
   "name": "awa-helper",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "scripts": {
     "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run build",
     "start": "cd dist && node index.js",
-    "build": "tsc && node build.js",
+    "build": "rm -rf dist/* & tsc && node build.js",
     "build:docker": "tsc && node build.js --docker",
     "tsc": "tsc",
     "updateDailyQuestDb": "node scripts/updateDailyQuestDb.js"

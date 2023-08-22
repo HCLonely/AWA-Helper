@@ -19,6 +19,7 @@ declare global {
     language: string
     timeout?: number
     logsExpire?: number
+    TLSRejectUnauthorized?: boolean
     awaCookie?: string
     awaHost: string
     awaBoosterNotice?: boolean
