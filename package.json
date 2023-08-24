@@ -1,8 +1,11 @@
 {
   "name": "awa-helper",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run build",
     "start": "cd dist && node index.js",
@@ -27,7 +30,7 @@
     "i18n": "^0.15.1",
     "lodash": "^4.17.21",
     "pixelmatch": "^5.3.0",
-    "playwright": "^1.28.1",
+    "playwright": "1.27.1",
     "pngjs": "^6.0.0",
     "socks-proxy-agent": "^7.0.0",
     "steam-user": "^4.26.0",
