@@ -314,6 +314,48 @@ const push = async (message: string) => {
   new Logger(result[0].result);
 };
 
+const pushQuestInfoFormat = () => {
+  if (!globalThis.quest?.formatQuestInfo) {
+    return '';
+  }
+  const otherTaskInfo = new Array(5);
+  const dailyTaskInfo:Array<any> = [];
+  Object.entries(globalThis.quest.formatQuestInfo()).forEach(
+    ([name, value]) => {
+      if (name === __('timeOnSite')) {
+        otherTaskInfo[0] = [name, value];
+      } else if (name === __('watchTwitch')) {
+        otherTaskInfo[1] = [name, value];
+      } else if (name === __('steamQuest')) {
+        otherTaskInfo[2] = [name, value];
+      } else if (name === __('promotionalCalendar')) {
+        otherTaskInfo[3] = [name, value];
+      } else if (name === __('steamCommunityEvent')) {
+        otherTaskInfo[4] = [name, value];
+      } else {
+        dailyTaskInfo.push([name, value]);
+      }
+    });
+  const sortedTaskInfo = [...dailyTaskInfo, ...otherTaskInfo].filter((e) => e);
+  return `${
+    globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''
+  }${
+    globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''
+  }---\n${
+    sortedTaskInfo.map(
+      ([name, value]) => {
+        if (name === __('steamCommunityEvent')) {
+          return `---\n${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}`;
+        }
+        if (name === __('promotionalCalendar')) {
+          return `---\n${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
+        }
+        return `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`;
+      })
+      .join('\n')
+  }`;
+};
+
 class Cookie {
   cookie: cookies;
 
@@ -382,4 +424,4 @@ class Cookie {
   }
 }
 
-export { Logger, sleep, random, time, checkUpdate, netError, ask, http, formatProxy, push, Cookie };
+export { Logger, sleep, random, time, checkUpdate, netError, ask, http, formatProxy, push, pushQuestInfoFormat, Cookie };

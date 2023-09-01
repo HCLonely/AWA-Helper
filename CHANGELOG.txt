@@ -1,1 +1,1 @@
-- 优化：锁定playwright版本
+- 新增：推广奖励提醒[`awaQuests[promotionalCalendar]`]

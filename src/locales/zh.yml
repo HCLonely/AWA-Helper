@@ -106,6 +106,9 @@ gettingTwitchTech: 正在获取Twitch任务每日最大 ARP...
 dailySign: "每日签到: %s\n"
 monthlySign: "月签到: %s\n"
 retry: "重试"
+gettingItem: "正在获取推广奖励..."
+gettingPromotionalCalendarItemError: "获取推广奖励失败！"
+promotionalCalendar: "推广奖励"
 
 ### DailyQuestUS.ts ###
 doingTaskUS: 正在做美区任务[%s]...

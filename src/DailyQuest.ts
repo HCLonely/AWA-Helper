@@ -5,7 +5,7 @@ import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import * as FormData from 'form-data';
 import * as cornParser from 'cron-parser';
-import { Logger, sleep, random, time, netError, ask, http as axios, formatProxy, push, Cookie } from './tool';
+import { Logger, sleep, random, time, netError, ask, http as axios, formatProxy, push, pushQuestInfoFormat, Cookie } from './tool';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
 import { SteamQuestSU } from './SteamQuestSU';
@@ -94,7 +94,8 @@ class DailyQuest {
   promotionalCalendarInfo?: {
     name: string,
     id: string | undefined,
-    day: string
+    day: string,
+    finished?: boolean
   };
   taskType: string = 'New';
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
@@ -234,6 +235,7 @@ class DailyQuest {
       const context = await browser.newContext({
         userAgent: globalThis.userAgent
       });
+      context.setDefaultTimeout(3 * 60000);
       const page = await context.newPage();
       let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(`https://${globalThis.awaHost}/`))}`, false);
       await page.goto(`https://${globalThis.awaHost}/`);
@@ -247,13 +249,19 @@ class DailyQuest {
       await sleep(random(3, 5));
       await page.screenshot({ path: 'temp/loginpage.png', fullPage: true });
 
+      // await page.waitForFunction(() => $('[name="_recaptcha_token"]').val());
+
       logger = new Logger(`${time()}${__('inputingUsername')}`, false);
+      await page.locator('input#_username').click();
+      await page.locator('input#_username').focus();
       await page.locator('input#_username').fill(this.#loginInfo.username);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
       await page.screenshot({ path: 'temp/username.png', fullPage: true });
 
       logger = new Logger(`${time()}${__('inputingPassword')}`, false);
+      await page.locator('input#_password').click();
+      await page.locator('input#_password').focus();
       await page.locator('input#_password').fill(this.#loginInfo.password);
       logger.log(chalk.green('OK'));
       await sleep(random(3, 5));
@@ -364,7 +372,7 @@ class DailyQuest {
         (parseInt(this.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(this.questInfo.watchTwitch?.[1] || '0')) >= (15 + this.additionalTwitchARP)
       ) && this.questStatus.steamQuest === 'complete') {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
-        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${this.signArp.daily ? __('dailySign', this.signArp.daily) : ''}${this.signArp.monthly ? __('monthlySign', this.signArp.monthly) : ''}${Object.entries(this.formatQuestInfo()).map(([name, value]) => (name === __('steamCommunityEvent') ? `${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}` : `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`)).join('\n')}${globalThis.newVersionNotice}`);
+        await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
         process.exit(0);
         /*
         log('按任意键退出...');
@@ -1528,8 +1536,8 @@ class DailyQuest {
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           if (response.data.includes('concluded')) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
           const $ = load(response.data);
@@ -1537,7 +1545,6 @@ class DailyQuest {
             .trim();
           const [startTime, endTime] = eventTime.split('-').map((e) => e.trim());
           if (dayjs().isAfter(dayjs(endTime)) || dayjs().isBefore(dayjs(startTime))) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
           let checkOwnedGamesStatus = false;
@@ -1550,7 +1557,7 @@ class DailyQuest {
             .attr('href');
           if ($('a.btn-check-owned-games').length > 0) {
             if (!await this.checkOwnedGames(`[${gameName}](${gameLink})`)) {
-              ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(`${__('notOwnedGame', chalk.blue(`[${gameName}](${gameLink})`))}`));
+              new Logger(chalk.yellow(`${__('notOwnedGame', chalk.blue(`[${gameName}](${gameLink})`))}`));
               this.steamCommunityEventInfo = {
                 status: __('notOwnedGame', `[${gameName}](${gameLink})`),
                 playedTime,
@@ -1567,7 +1574,6 @@ class DailyQuest {
                 playedTime,
                 totalTime
               };
-              ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('joined')));
               return true;
             }
             this.steamCommunityEventInfo = {
@@ -1575,7 +1581,6 @@ class DailyQuest {
               playedTime,
               totalTime
             };
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('notJoined')));
             return false;
           }
           this.steamCommunityEventInfo = {
@@ -1583,7 +1588,6 @@ class DailyQuest {
             playedTime,
             totalTime
           };
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
@@ -1804,9 +1808,6 @@ class DailyQuest {
         return false;
       });
   }
-  async getPromotionalCalendarItem() {
-
-  }
 
   async updateDailyQuestDb(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('updatingDailyQuestDb')}`, false);
@@ -1834,6 +1835,60 @@ class DailyQuest {
         return false;
       });
   }
+  async getPromotionalCalendarItem() {
+    try {
+      if (!this.promotionalCalendarInfo) {
+        return;
+      }
+      const launchOptions: LaunchOptions = {
+        // headless: false,
+        timeout: 3 * 60000
+      };
+      if (this.proxy) {
+        launchOptions.proxy = this.proxy;
+      }
+      if (process.env.CHROME_BIN) {
+        launchOptions.executablePath = process.env.CHROME_BIN;
+      }
+      const browser = await chromium.launch(launchOptions);
+      const context = await browser.newContext({
+        userAgent: globalThis.userAgent
+      });
+      context.setDefaultTimeout(3 * 60000);
+      await context.addCookies(this.cookie.browserify());
+
+      const page = await context.newPage();
+      let logger = new Logger(`${time()}${__('openingPage', chalk.yellow(`https://${globalThis.awaHost}/`))}`, false);
+      await page.goto(`https://${globalThis.awaHost}/`);
+      logger.log(chalk.green('OK'));
+      await sleep(random(3, 5));
+      await page.screenshot({ path: 'temp/homepage.png', fullPage: true });
+
+      logger = new Logger(`${time()}${__('gettingItem')}`, false);
+      await page.locator('button.promotional-calendar__day-claim:visible').click();
+      await page.screenshot({ path: 'temp/gettingItem.png', fullPage: true });
+      try {
+        // eslint-disable-next-line no-undef
+        await page.waitForFunction((selector) => !!document.querySelector(selector) && window.getComputedStyle(document.querySelector(selector) as Element).display !== 'none', `#claimed-${this.promotionalCalendarInfo.id}`);
+        // await page.locator(`#claimed-${this.promotionalCalendarInfo.id}:visible`).waitFor({ state: 'visible' });
+        await page.screenshot({ path: 'temp/gotItem.png', fullPage: true });
+      } catch (e) {
+        await page.locator('button.promotional-calendar__day-claim:visible').click();
+        await page.screenshot({ path: 'temp/gettingItem-1.png', fullPage: true });
+        // eslint-disable-next-line no-undef
+        await page.waitForFunction((selector) => !!document.querySelector(selector) && window.getComputedStyle(document.querySelector(selector) as Element).display !== 'none', `#claimed-${this.promotionalCalendarInfo.id}`);
+        // await page.locator(`#claimed-${this.promotionalCalendarInfo.id}:visible`).waitFor({ state: 'visible' });
+        await page.screenshot({ path: 'temp/gotItem-1.png', fullPage: true });
+      }
+      this.promotionalCalendarInfo.finished = true;
+      logger.log(chalk.green('OK'));
+      return true;
+    } catch (error) {
+      new Logger(`\n${time()}${__('gettingPromotionalCalendarItemError')}`);
+      new Logger(error);
+      return false;
+    }
+  }
   formatQuestInfo() {
     const result = {
       [`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`]: {
@@ -1846,7 +1901,7 @@ class DailyQuest {
       [__('timeOnSite')]: {
         [__('status')]: this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp ? __('done') : __('undone'),
         [__('obtainedARP')]: this.questInfo.timeOnSite?.addedArp,
-        [__('extraARP')]: this.questInfo.timeOnSite?.addedArpExtra,
+        [__('extraARP')]: this.questInfo.timeOnSite?.addedArpExtra || '0',
         [__('maxAvailableARP')]: this.questInfo.timeOnSite?.maxArp
       },
       [__('watchTwitch')]: {
@@ -1886,6 +1941,15 @@ class DailyQuest {
           [__('maxAvailableARP')]: '-'
         };
       }
+    }
+    if (this.promotionalCalendarInfo) {
+      result[__('promotionalCalendar')] = {
+        // eslint-disable-next-line no-nested-ternary
+        [__('status')]: this.promotionalCalendarInfo.finished ? __('done') : __('undone'),
+        [__('obtainedARP')]: this.promotionalCalendarInfo.name,
+        [__('extraARP')]: '-',
+        [__('maxAvailableARP')]: '-'
+      };
     }
     if (this.steamCommunityEventInfo) {
       result[__('steamCommunityEvent')] = {
