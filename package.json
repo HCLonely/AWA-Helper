@@ -9,7 +9,7 @@
   "scripts": {
     "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run build",
     "start": "cd dist && node index.js",
-    "build": "tsc && node build.js",
+    "build": "tsc && node build.js && tar zcvf AWA-Helper.tar.gz ./dist",
     "build:docker": "tsc && node build.js --docker",
     "tsc": "tsc",
     "updateDailyQuestDb": "node scripts/updateDailyQuestDb.js"

@@ -22,5 +22,7 @@ jobs:
           tag_name: v${{ env.version }}
           name: ${{ env.version }}
           body_path: CHANGELOG.txt
-          files: AWA-Helper.zip
+          files: |
+            AWA-Helper.zip
+            AWA-Helper.tar.gz
           token: ${{ github.TOKEN }}

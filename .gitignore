@@ -5,6 +5,8 @@ config1.yml
 config2.yml
 AWA-Helper.exe
 *.zip
+*.tar
+*.tar.gz
 !node-v18.17.1-win-x64.zip
 output/
 log.txt
@@ -27,3 +29,4 @@ node-v18.17.1-win-x64/
 test.js
 test.ts
 test.exe
+temp/
