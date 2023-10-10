@@ -30,7 +30,7 @@
               name: SSL证书key文件名
               type: text
               defaultValue: ''
-            key:
+            cert:
               name: SSL证书文件名
               type: text
               defaultValue: ''
