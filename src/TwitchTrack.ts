@@ -41,6 +41,14 @@ class TwitchTrack {
 
   async init(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
+    if (!this.cookie.get('unique_id')) {
+      logger.log(chalk.red('Error: missing "unique_id" in twitchCookie!'));
+      return false;
+    }
+    if (!this.cookie.get('auth-token')) {
+      logger.log(chalk.red('Error: missing "auth-token" in twitchCookie!'));
+      return false;
+    }
     const options: myAxiosConfig = {
       url: 'https://www.twitch.tv/',
       method: 'GET',

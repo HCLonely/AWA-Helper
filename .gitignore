@@ -25,8 +25,14 @@ dailyQuestDbCloud.json
 DailyQuestUS.ts
 installer/
 node-v18.17.1-win-x64/
+manager/
 
 test.js
 test.ts
 test.exe
 temp/
+
+# AWA-Manager
+server/
+tools/
+web/

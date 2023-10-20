@@ -34,7 +34,8 @@
       "Frame it!",
       "What a Nice Rectangle",
       "New Rims?",
-      "Change it up!"
+      "Change it up!",
+      "Decorating for the Holidays"
     ],
     "changeBadge": [
       "New ice",
@@ -119,7 +120,9 @@
       "FYI",
       "Worth Considering",
       "Brain food for the weekend",
-      "What's in the news?"
+      "What's in the news?",
+      "Quest not working? Watch this instead.",
+      "Brain Food"
     ],
     "sharePosts": [
       "Town crier",
@@ -142,7 +145,8 @@
       "For all to hear",
       "...is Caring?",
       "Who wants one?",
-      "For the World To Behold!"
+      "For the World To Behold!",
+      "Hear yee hear yee"
     ],
     "replyPost": [
       "Converse among yourselves",
@@ -200,7 +204,8 @@
       "Staying Updated",
       "In It To Win It",
       "Who is King?",
-      "Who's the very best?"
+      "Who's the very best?",
+      "So competitive..."
     ],
     "/marketplace/": [
       "Going shopping!",
@@ -214,7 +219,8 @@
       "Right in my basket",
       "Spring Shopping",
       "Cha-Ching!",
-      "Out For a Bargan"
+      "Out For a Bargan",
+      "Get In, We're Going Shopping!"
     ],
     "/rewards": [
       "Give me the loot",

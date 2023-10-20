@@ -1,1 +1,2 @@
-- 新增：推广奖励提醒[`awaQuests[promotionalCalendar]`]
+- 优化：twitchCookie格式错误提示
+- 更细：每日任务数据库

@@ -51,6 +51,29 @@
       type: text
       inputType: number
       defaultValue: 30
+    UA:
+      name: 浏览器UA
+      desp: 一般不需要修改
+      type: text
+      defaultValue: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47'
+    manager:
+      name: AWA-Manager配置
+      type: object
+      body:
+        secret:
+          name: AWA-Manager Secret
+          desp: AWA-Manager访问密钥，强烈建议修改
+          type: text
+          defaultValue: '{随机}'
+        local:
+          name: 是否仅内网可访问
+          type: boolean
+          defaultValue: false
+        port:
+          name: AWA-Manager端口
+          type: text
+          inputType: number
+          defaultValue: 2345
     awaCookie:
       name: 外星人论坛Cookie
       desp: 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能。

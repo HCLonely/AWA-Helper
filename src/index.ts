@@ -147,7 +147,7 @@ process.on('uncaughtException', async (err) => {
       config = { ...defaultConfig, ...parse(configString) };
     })
     .catch((error) => {
-      new Logger(time() + chalk.red(__('configFileErrorAlter', chalk.blue(error.mark.line + 1), chalk.yellow(__('configFileErrorLocation')))));
+      new Logger(time() + chalk.red(__('configFileErrorAlter', error.mark.line ? chalk.blue(error.mark.line + 1) : '???', chalk.yellow(__('configFileErrorLocation')))));
       new Logger(error.message);
     });
   if (!config) {

@@ -2,7 +2,7 @@ name: Release
 on:
   workflow_dispatch:
 env:
-  version: 2.4.3
+  version: 2.4.4
 jobs:
   release:
     runs-on: windows-latest
@@ -25,4 +25,6 @@ jobs:
           files: |
             AWA-Helper.zip
             AWA-Helper.tar.gz
+#            AWA-Manager.zip
+#            AWA-Manager.tar.gz
           token: ${{ github.TOKEN }}

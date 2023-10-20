@@ -77,5 +77,15 @@
   fs.writeFileSync('dist/run_auto_linux.sh', './scripts/node_checker.sh');
   if (!process.argv.includes('--docker')) {
     await zipdir('dist', { saveTo: './AWA-Helper.zip' });
+    /*
+    if (!fs.existsSync('manager')) {
+      fs.mkdirSync('manager');
+    }
+    fs.copySync('server', 'manager/server');
+    fs.copySync('tools', 'manager/tools');
+    fs.copySync('web', 'manager/web');
+    fs.copySync('package.json', 'manager/package.json');
+    await zipdir('manager', { saveTo: './AWA-Manager.zip' });
+    */
   }
 })();

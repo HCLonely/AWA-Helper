@@ -1792,7 +1792,7 @@ class DailyQuest {
         const { userActiveArtifacts } = JSON.parse(`{${response.data.match(/artifactsData.*?=.*?{(.+?)};/m)?.[1] || ''}}`) || {};
         if (userActiveArtifacts) {
           Object.values(userActiveArtifacts).forEach((artifact: any) => {
-            this.additionalTwitchARP += parseFloat(artifact.perkTextShort?.match(/Twitch quests by ([\d]+)/)?.[1] || '0');
+            this.additionalTwitchARP += parseFloat(artifact?.perkTextShort?.match(/Twitch quests by ([\d]+)/)?.[1] || '0');
           });
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;

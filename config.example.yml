@@ -9,6 +9,14 @@ webUI:
 timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
+UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
+
+#### AWA Manager配置(不使用可留空) ####
+# 暂未实现
+#manager:
+#  secret: '1cva9rq4fa3s1fc86as1ds' # AWA-Manager Secret，强烈建议修改
+#  local: false # 仅内网访问，false为开启外网访问
+#  port: 2345 # AWA Manager端口
 
 #### AWA 配置(必需) ####
 awaCookie: 'AWACOOKIEAUTOUPDATE' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
