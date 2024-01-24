@@ -5,7 +5,7 @@ import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import * as FormData from 'form-data';
 import * as cornParser from 'cron-parser';
-import { Logger, sleep, random, time, netError, ask, http as axios, formatProxy, push, pushQuestInfoFormat, Cookie } from './tool';
+import { Logger, sleep, random, time, netError, http as axios, formatProxy, push, pushQuestInfoFormat, Cookie } from './tool';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
 import { SteamQuestSU } from './SteamQuestSU';
@@ -16,11 +16,13 @@ import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 import * as dayjs from 'dayjs';
 import { chromium, LaunchOptions } from 'playwright';
+/*
 import { createInterface } from 'readline';
 const rl = createInterface({
   input: process.stdin,
   output: process.stdout
 });
+*/
 
 class DailyQuest {
   // eslint-disable-next-line no-undef
@@ -440,7 +442,7 @@ class DailyQuest {
   async updateDailyQuests(verify = false): Promise<number> {
     const logger = new Logger(time() + (verify ? __('verifyingToken', chalk.yellow('AWA Token')) : __('gettingTaskInfo')), false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/`,
+      url: `https://${globalThis.awaHost}/control-center`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -464,7 +466,7 @@ class DailyQuest {
           }
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           if (!this.userProfileUrl) {
-            this.userProfileUrl = response.data.match(/ser_profile_url.*?=.*?"(.+?)"/)?.[1];
+            this.userProfileUrl = response.data.match(/user_profile_url.*?=.*?"(.+?)"/)?.[1];
           }
           if (verify) {
             this.taskType = response.data.match(/user_country.*?=.*?"(.+?)"/)?.[1] === 'US' ? 'US' : 'New';
@@ -537,8 +539,33 @@ class DailyQuest {
             }
           }
 
+          // AWA 在线任务
+          const maxArp = $('#control-center__tos-max-arp').text().trim()
+            .match(/[\d]+/)?.[0] || '0';
+          if (!this.questInfo.timeOnSite) {
+            this.questInfo.timeOnSite = {
+              maxArp,
+              addedArp: '0',
+              addedArpExtra: '0'
+            };
+          }
+          const dailyArpDataRaw = response.data.match(/dailyArpData.*?=.*?({.+?}})/)?.[1];
+          console.log(dailyArpDataRaw);
+          if (dailyArpDataRaw) {
+            try {
+              const dailyArpData = JSON.parse(dailyArpDataRaw);
+              console.log(dailyArpData);
+              this.questInfo.timeOnSite.addedArp = `${dailyArpData.timeOnSiteArp}`;
+              this.questInfo.watchTwitch = [`${dailyArpData.twitchData.totalPoints}`, `${dailyArpData.twitchData.bonusPoints}`];
+            } catch (e) {
+              console.log(e);
+              //
+            }
+          }
           // 每日任务 New
-          this.questInfo.dailyQuestUS = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0).toArray()
+          this.questInfo.dailyQuestUS = $('div.user-profile__card-body').eq(0).find('.card-table-row')
+            .filter((i, e) => $(e).find('a[href^="/quests/"]').length > 0)
+            .toArray()
             .map((e) => ({
               link: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${globalThis.awaHost}/`).href,
               title: $(e).find('.quest-title').text()
@@ -547,14 +574,17 @@ class DailyQuest {
                 .map((e) => $(e).text().trim()
                   .toLowerCase())
                 .at(-1)
+                ?.match(/[\d\s+]+/)?.[0]
                 ?.split('+')?.[0]?.trim() || '0',
               extraArp: $(e).find('.quest-item-progress').toArray()
                 .map((e) => $(e).text().trim()
                   .toLowerCase())
                 .at(-1)
+                ?.match(/[\d\s+]+/)?.[0]
                 ?.split('+')?.[1]?.trim() || '0'
             }));
 
+          /*
           // Booster
           const userArpBoostText = response.data.match(/userArpBoost[\s]*?=[\s]*?({[\w\W]+?})/)?.[1];
           let boostEnabled = false;
@@ -583,11 +613,21 @@ class DailyQuest {
               }
             }
           }
+          */
 
           // 每日任务
-          const dailyQuests = chunk($('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0).find('.quest-item-progress')
-            .map((i, e) => $(e).text().trim()
-              .toLowerCase()), 2);
+          $('div.user-profile__card-body').eq(0).find('.card-table-row')
+            .each((i, e) => {
+              if ($('.quest-item-progress').length === 1) {
+                $(e).append('<span class="quest-item-progress">0 ARP</span>');
+              }
+            });
+          const dailyQuests = chunk(
+            $('div.user-profile__card-body').eq(0).find('.card-table-row')
+              .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
+              .find('.quest-item-progress')
+              .map((i, e) => $(e).text().trim()
+                .toLowerCase()), 2);
           let dailyQuest = dailyQuests;
           if (this.awaDailyQuestNumber1) {
             dailyQuest = [dailyQuests[0]];
@@ -595,14 +635,22 @@ class DailyQuest {
           if (dailyQuests.length === 0) {
             dailyQuest = [['none', '0']];
           }
-          this.dailyQuestName = $('div.quest-item').filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0).find('.quest-title')
+          this.dailyQuestName = $('div.user-profile__card-body').eq(0).find('.card-table-row')
+            .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
+            .find('.quest-title')
             .toArray()
             .map((e) => $(e).text().trim()) || ['None'];
-          this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({ status, arp: arp.split('+')[0].trim(), extraArp: arp.split('+')[1]?.trim() || '0' }));
-          this.dailyQuestNumber = $('div.quest-item').filter((i, e) => $(e).find('a[href^="/quests"]').length === 0).find('.quest-item-progress')
+          this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({
+            status, arp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[0].trim() || '0',
+            extraArp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[1]?.trim() || '0'
+          }));
+          this.dailyQuestNumber = $('div.user-profile__card-body').eq(0).find('.card-table-row')
+            .filter((i, e) => $(e).find('a[href^="/quests"]').length === 0)
+            .find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
               .toLowerCase())
             .filter((i, e) => e === 'incomplete').length;
+          /*
           if (verify && this.awaBoosterNotice && this.dailyQuestNumber > 1) {
             if (!boostEnabled) {
               const answer = await ask(rl, __('boosterAlert', chalk.blue(__('booster')), chalk.yellow(__('selfOpen')), chalk.yellow('1'), chalk.yellow('2')), ['1', '2']);
@@ -611,38 +659,18 @@ class DailyQuest {
               }
             }
           }
+          */
 
           this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
 
-          // AWA 在线任务
-          const [maxArpEle, addedArpEle] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Time on Site')).find('center')
-            .toArray();
-          const maxArp = $(maxArpEle).text().trim()
-            .match(/[\d]+/)?.[0] || '0';
-          const [addedArp, addedArpExtra] = $(addedArpEle).text().trim()
-            .split('+')
-            .map((e) => e.match(/[\d]+/)?.[0]?.trim() || '0');
-          if (this.questInfo.timeOnSite) {
-            this.questInfo.timeOnSite.addedArp = addedArp;
-          } else if (maxArp !== '0') {
-            this.questInfo.timeOnSite = {
-              maxArp, addedArp, addedArpExtra
-            };
-          }
-          // Twitch 在线任务
-          const [twitchArp, twitchArpExtra] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Watch Twitch')).find('center b')
-            .last()
-            .text()
-            .split('+')
-            .map((e) => e.trim());
-          this.questInfo.watchTwitch = [twitchArp, twitchArpExtra];
           // Steam 挂机任务
+          // todo:待修复
           const [steamArp, steamArpExtra] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
             .last()
             .text()
             .split('+')
             .map((e) => e.trim());
-          this.questInfo.steamQuest = [steamArp, steamArpExtra];
+          this.questInfo.steamQuest = [steamArp, steamArpExtra || '0'];
           if (!verify) Logger.consoleLog(`${time()}${__('taskInfo')}`);
           const formatQuestInfo = this.formatQuestInfo();
           fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, `${JSON.stringify(formatQuestInfo, null, 2)}\n`);
@@ -738,7 +766,7 @@ class DailyQuest {
     }
 
     if (this.awaDailyQuestType.includes('changeBorder') && !this.done.includes('changeBorder')) await this.changeBorder();
-    if (this.awaDailyQuestType.includes('changeBadge') && !this.done.includes('changeBadge')) await this.changeBadge();
+    // if (this.awaDailyQuestType.includes('changeBadge') && !this.done.includes('changeBadge')) await this.changeBadge();
     if (this.awaDailyQuestType.includes('changeAvatar') && !this.done.includes('changeAvatar')) await this.changeAvatar();
     // if (this.awaDailyQuestType.includes('viewPost') && !this.done.includes('viewPost')) await this.viewPosts();
     if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) await this.viewNews();
@@ -1364,22 +1392,26 @@ class DailyQuest {
           }
           const [, , awaUserId] = response.data.match(/(var|let)[\s]+?user_id[\s]*?=[\s]*?([\d]+);/);
           const [, , awaBorderId] = response.data.match(/(var|let)[\s]+?selectedBorder[\s]*?=[\s]*?([\d]+);/) || [];
-          const [, , awaBadgeIds] = response.data.match(/(var|let)[\s]+?selectedBadges[\s]*?=[\s]*?\[(([\d]+)(,[\d]+)*?)\];/) || [];
+          // const [, , awaBadgeIds] = response.data.match(/(var|let)[\s]+?selectedBadges[\s]*?=[\s]*?\[(([\d]+)(,[\d]+)*?)\];/) || [];
           this.userId = awaUserId;
+          /*
           if (!awaBorderId && !awaBadgeIds) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBorderAndBadges')}`));
             return 603;
           }
+          */
           if (!awaBorderId) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBorder')}`));
             return 604;
           }
+          /*
           if (!awaBadgeIds) {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBadges')}`));
             return 405;
           }
+          */
           this.borderId = awaBorderId;
-          this.badgeIds = awaBadgeIds.split(',');
+          // this.badgeIds = awaBadgeIds.split(',');
           fs.writeFileSync('awa-info.json', JSON.stringify({
             awaUserId: this.userId,
             awaBorderId: this.borderId,
@@ -1672,6 +1704,7 @@ class DailyQuest {
         return false;
       });
   }
+
   async getBoosters(page = 1): Promise<number> {
     const logger = new Logger(`${time()}${__('gettingBoosters', chalk.yellow(page))}`, false);
     const options: myAxiosConfig = {
@@ -1777,7 +1810,7 @@ class DailyQuest {
     if (!this.userProfileUrl) return false;
     const logger = new Logger(`${time()}${__('gettingTwitchTech')}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}${this.userProfileUrl}`,
+      url: `https://${globalThis.awaHost}${this.userProfileUrl}/artifacts`,
       method: 'GET',
       headers: {
         ...this.headers,

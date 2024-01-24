@@ -21,9 +21,10 @@ class TwitchTrack {
   availableStreams!: Array<string>;
   availableStreamsInfo!: Array<string>;
   EventEmitter = EventEmitter;
+  awaHeaders!: AxiosRequestHeaders;
 
   // eslint-disable-next-line no-undef
-  constructor({ cookie, proxy }: { cookie: string, proxy?: proxy }) {
+  constructor({ cookie, proxy, awaHeaders }: { cookie: string, awaHeaders: AxiosRequestHeaders, proxy?: proxy }) {
     this.cookie = new Cookie(cookie);
     this.headers = {
       Authorization: `OAuth ${this.cookie.get('auth-token')}`,
@@ -34,6 +35,7 @@ class TwitchTrack {
       'User-Agent': globalThis.userAgent,
       'X-Device-Id': this.cookie.get('unique_id') as string
     };
+    this.awaHeaders = awaHeaders;
     if (proxy?.enable?.includes('twitch') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
     }
@@ -125,10 +127,11 @@ class TwitchTrack {
   async getAvailableStreams(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingLiveInfo')}`, false);
     const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/twitch/live`,
+      url: `https://${globalThis.awaHost}/control-center`,
       method: 'GET',
       headers: {
-        'User-Agent': globalThis.userAgent
+        ...this.awaHeaders,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
       },
       Logger: logger
     };
@@ -138,7 +141,7 @@ class TwitchTrack {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           const $ = load(response.data);
-          this.availableStreams = $('div.media a[href]').toArray().map((e) => $(e).attr('href')
+          this.availableStreams = $('div.quest-list__stream-thumbnail a[href]').toArray().map((e) => $(e).attr('href')
             ?.match(/www\.twitch\.tv\/(.+)/)?.[1])
             .filter((e) => e) as Array<string>;
           if (this.availableStreams.length === 0) {

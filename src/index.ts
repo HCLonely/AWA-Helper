@@ -312,7 +312,7 @@ process.on('uncaughtException', async (err) => {
     await quest.getTwitchTech();
     if (quest.questInfo.watchTwitch?.[0] !== '15' || parseFloat(quest.questInfo.watchTwitch?.[1] || '0') < quest.additionalTwitchARP) {
       if (twitchCookie) {
-        twitch = new TwitchTrack({ cookie: twitchCookie, proxy });
+        twitch = new TwitchTrack({ cookie: twitchCookie, awaHeaders: quest.headers, proxy });
         if (await twitch.init() === true) {
           twitch.sendTrack();
           await sleep(10);
