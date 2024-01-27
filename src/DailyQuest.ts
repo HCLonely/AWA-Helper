@@ -550,7 +550,6 @@ class DailyQuest {
             };
           }
           const dailyArpDataRaw = response.data.match(/dailyArpData.*?=.*?({.+?}})/)?.[1];
-          console.log(dailyArpDataRaw);
           if (dailyArpDataRaw) {
             try {
               const dailyArpData = JSON.parse(dailyArpDataRaw);
@@ -664,13 +663,27 @@ class DailyQuest {
           this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
 
           // Steam 挂机任务
+          this.questInfo.steamQuest = $('div.user-profile__card-body').eq(1).find('.card-table-row')
+            .map((i, e) => ({
+              name: $(e).find('.quest-list__quest-details div').eq(0)
+                .text()
+                .trim(),
+              status: $(e).find('[id^=control-center__steam-quest-status-]').text()
+                .trim(),
+              arp: $(e).find('[id^=control-center__steam-quest-reward-]').text()
+                .match(/[\d\s+]+/)?.[0]
+                .trim() || '0'
+            }))
+            .toArray();
           // todo:待修复
+          /*
           const [steamArp, steamArpExtra] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
             .last()
             .text()
             .split('+')
             .map((e) => e.trim());
           this.questInfo.steamQuest = [steamArp, steamArpExtra || '0'];
+          */
           if (!verify) Logger.consoleLog(`${time()}${__('taskInfo')}`);
           const formatQuestInfo = this.formatQuestInfo();
           fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, `${JSON.stringify(formatQuestInfo, null, 2)}\n`);
@@ -1942,14 +1955,19 @@ class DailyQuest {
         [__('obtainedARP')]: this.questInfo.watchTwitch?.[0] || '0',
         [__('extraARP')]: this.questInfo.watchTwitch?.[1],
         [__('maxAvailableARP')]: 15 + this.additionalTwitchARP
-      },
-      [__('steamQuest')]: {
-        [__('status')]: '-',
-        [__('obtainedARP')]: this.questInfo.steamQuest?.[0],
-        [__('extraARP')]: this.questInfo.steamQuest?.[1],
-        [__('maxAvailableARP')]: '-'
       }
     };
+    if (this.questInfo.steamQuest && this.questInfo.steamQuest.length > 0) {
+      this.questInfo.steamQuest.forEach((questInfo) => {
+        result[`${__('steamQuest')}([${questInfo.name}])`] = {
+          // eslint-disable-next-line no-nested-ternary
+          [__('status')]: questInfo.status === 'complete' ? __('done') : __('undone'),
+          [__('obtainedARP')]: questInfo.arp?.split('+')?.[0] || '0',
+          [__('extraARP')]: questInfo.arp?.split('+')?.[1] || '0',
+          [__('maxAvailableARP')]: '-'
+        };
+      });
+    }
     if (!this.dailyQuestName[0]) {
       delete result[`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`];
     }

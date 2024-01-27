@@ -74,6 +74,7 @@ declare global {
     arp: string
     extraArp?: string
   }
+
   interface questInfo {
     dailyQuest?: Array<dailyQuest>
     dailyQuestUS?: Array<dailyQuestUS>
@@ -83,7 +84,11 @@ declare global {
       addedArpExtra?: string
     }
     watchTwitch?: Array<string>
-    steamQuest?: Array<string>
+    steamQuest?: Array<{
+      name: string
+      status: string
+      arp: string
+    }>
   }
   interface steamGameInfo {
     id: string
