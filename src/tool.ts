@@ -350,6 +350,9 @@ const pushQuestInfoFormat = () => {
         if (name === __('promotionalCalendar')) {
           return `---\n${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
         }
+        if (name.includes(__('dailyTask', ''))) {
+          return `---\n${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`;
+        }
         return `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`;
       })
       .join('\n')

@@ -87,7 +87,7 @@ declare global {
     steamQuest?: Array<{
       name: string
       status: string
-      arp: string
+      maxAvailableARP: string
     }>
   }
   interface steamGameInfo {

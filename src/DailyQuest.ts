@@ -477,7 +477,7 @@ class DailyQuest {
             if (consecutiveLoginsText) {
               try {
                 const consecutiveLogins = JSON.parse(consecutiveLoginsText);
-                const rewardArp = $(`#streak-days .advent-calendar__day[data-day="${consecutiveLogins.count}"] .advent-calendar__reward h1`).text().trim();
+                const rewardArp = $(`#streak-days .calendar-rewards__day[data-day="${consecutiveLogins.count}"] .calendar-rewards__reward h1`).text().trim();
                 if (rewardArp) {
                   this.signArp.daily = `${rewardArp} + ${rewardBonusArp || ''} ARP`;
                   new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp} + ${rewardBonusArp || ''}`))}`);
@@ -493,8 +493,8 @@ class DailyQuest {
                 const monthlyLogins = JSON.parse(monthlyLoginsText);
                 if (monthlyLogins.count < 29) {
                   const week = Math.ceil(monthlyLogins.count / 7);
-                  const rewardArp = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__reward h1`).text().trim();
-                  const rewardItem = $(`#monthly-days-${week} .advent-calendar__day[data-day="${monthlyLogins.count}"] .advent-calendar__day-overlay`).eq(0).text()
+                  const rewardArp = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__reward h1`).text().trim();
+                  const rewardItem = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__day-overlay`).eq(0).text()
                     .trim();
                   if (rewardArp) {
                     this.signArp.monthly = `${rewardArp} + ${rewardBonusArp || ''} ARP`;
@@ -553,7 +553,6 @@ class DailyQuest {
           if (dailyArpDataRaw) {
             try {
               const dailyArpData = JSON.parse(dailyArpDataRaw);
-              console.log(dailyArpData);
               this.questInfo.timeOnSite.addedArp = `${dailyArpData.timeOnSiteArp}`;
               this.questInfo.watchTwitch = [`${dailyArpData.twitchData.totalPoints}`, `${dailyArpData.twitchData.bonusPoints}`];
             } catch (e) {
@@ -669,13 +668,13 @@ class DailyQuest {
                 .text()
                 .trim(),
               status: $(e).find('[id^=control-center__steam-quest-status-]').text()
-                .trim(),
-              arp: $(e).find('[id^=control-center__steam-quest-reward-]').text()
+                .trim()
+                .toLowerCase(),
+              maxAvailableARP: $(e).find('[id^=control-center__steam-quest-reward-]').text()
                 .match(/[\d\s+]+/)?.[0]
                 .trim() || '0'
             }))
             .toArray();
-          // todo:待修复
           /*
           const [steamArp, steamArpExtra] = $('section.tutorial__um-community').filter((i, e) => $(e).text().includes('Steam Quests')).find('center b')
             .last()
@@ -1962,9 +1961,9 @@ class DailyQuest {
         result[`${__('steamQuest')}([${questInfo.name}])`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: questInfo.status === 'complete' ? __('done') : __('undone'),
-          [__('obtainedARP')]: questInfo.arp?.split('+')?.[0] || '0',
-          [__('extraARP')]: questInfo.arp?.split('+')?.[1] || '0',
-          [__('maxAvailableARP')]: '-'
+          [__('obtainedARP')]: questInfo.status === 'complete' ? (questInfo.maxAvailableARP?.split('+')?.[0] || '0') : '0',
+          [__('extraARP')]: questInfo.status === 'complete' ? (questInfo.maxAvailableARP?.split('+')?.[1] || '0') : '0',
+          [__('maxAvailableARP')]: questInfo.maxAvailableARP
         };
       });
     }
