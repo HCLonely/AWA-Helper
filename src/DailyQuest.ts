@@ -100,6 +100,7 @@ class DailyQuest {
     finished?: boolean
   };
   taskType: string = 'New';
+  dailyArp = '0';
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
   constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
@@ -518,10 +519,6 @@ class DailyQuest {
               new Logger(`${time()}${chalk.green(__('promotionalAlert'))}`);
             }
 
-            // 社区挑战
-            this.steamCommunityEventPath = $('a[href*="/steam/community-event"]').attr('href')?.split('/')
-              ?.at(-1);
-
             // 推广活动
             const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM')).eq(0);
             if (promotionalCalendar.length > 0) {
@@ -533,7 +530,7 @@ class DailyQuest {
             }
             // Steam社区活动
             if (this.joinSteamCommunityEvent) {
-              if (this.steamCommunityEventPath) {
+              if (await this.getSteamCommunityEventPath() && this.steamCommunityEventPath) {
                 await this.getSteamCommunityEvent();
               }
             }
@@ -555,6 +552,7 @@ class DailyQuest {
               const dailyArpData = JSON.parse(dailyArpDataRaw);
               this.questInfo.timeOnSite.addedArp = `${dailyArpData.timeOnSiteArp}`;
               this.questInfo.watchTwitch = [`${dailyArpData.twitchData.totalPoints}`, `${dailyArpData.twitchData.bonusPoints}`];
+              this.dailyArp = `${dailyArpData.dailyArp}`;
             } catch (e) {
               console.log(e);
               //
@@ -1562,6 +1560,46 @@ class DailyQuest {
     }
     logger.log(chalk.yellow(__('notMatchedDailyQuest')));
     return [];
+  }
+  async getSteamCommunityEventPath(): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('gettingSteamCommunityEventPath')}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}/steam/events`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        referer: `https://${globalThis.awaHost}`
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          if (response.data.includes('concluded')) {
+            return true;
+          }
+          const $ = load(response.data);
+          this.steamCommunityEventPath = $('a[href*="/steam/community-event"]').attr('href')?.split('/')
+            ?.at(-1);
+          if (this.steamCommunityEventPath) {
+            return true;
+          }
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Unknown Error'));
+          return false;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
   }
   async getSteamCommunityEvent(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);

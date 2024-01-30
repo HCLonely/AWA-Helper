@@ -337,7 +337,7 @@ const pushQuestInfoFormat = () => {
       }
     });
   const sortedTaskInfo = [...dailyTaskInfo, ...otherTaskInfo].filter((e) => e);
-  return `${
+  return `${__('dailyArp', globalThis.quest.dailyArp)}\n\n${
     globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''
   }${
     globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''
