@@ -1,6 +1,6 @@
 {
   "name": "awa-helper",
-  "version": "2.4.7",
+  "version": "2.4.8",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "engines": {
@@ -10,11 +10,11 @@
     "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run build",
     "start": "cd dist && node index.js",
     "build": "tsc && node build.js && tar -zcvf AWA-Helper.tar.gz ./dist",
-    "build:manager": "tsc && node build.js && tar -zcvf AWA-Helper.tar.gz ./dist && tar -zcvf AWA-Manager.tar.gz ./manager",
+    "build:manager": "tsc && node build.js && tar -zcvf AWA-Helper.tar.gz ./dist",
     "build:docker": "tsc && node build.js --docker",
     "tsc": "tsc",
     "updateDailyQuestDb": "node scripts/updateDailyQuestDb.js",
-    "manager": "node server/index.js"
+    "manager": "cd dist && node manager/index.js"
   },
   "keywords": [],
   "author": "HCLonely",

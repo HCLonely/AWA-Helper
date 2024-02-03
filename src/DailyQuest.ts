@@ -614,7 +614,7 @@ class DailyQuest {
           // 每日任务
           $('div.user-profile__card-body').eq(0).find('.card-table-row')
             .each((i, e) => {
-              if ($('.quest-item-progress').length === 1) {
+              if ($(e).find('.quest-item-progress').length === 1) {
                 $(e).append('<span class="quest-item-progress">0 ARP</span>');
               }
             });
