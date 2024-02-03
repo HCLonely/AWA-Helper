@@ -42,7 +42,7 @@ Automatically does AWA quests.
 
 #### Automatically install dependencies (Recommended)
 
-> **Powershell support required!**
+> **The `config.example.yml` file needs to be renamed to `config.yml`!!!**
 
 1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
 2. Extract
@@ -100,7 +100,7 @@ docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src
 
 ## config (File configuration)
 
-> **The `config.example.yml` file needs to be renamed to `config.yml`!!!**
+> **Copy the `config.example.yml` file and rename it `config.yml`!!**
 >
 > Or use it the [parameter generator](https://configer.hclonely.com/?fileLink=https%3A%2F%2Fraw.githubusercontent.com%2FHCLonely%2FAWA-Helper%2Fmain%2Fconfiger%2Fconfiger.template.yml.js) configuration file generator
 
@@ -126,28 +126,44 @@ TLSRejectUnauthorized: true # Whether to enable TLSSocket library verification, 
 #### AWA parameter description
 
 ```yml
-awaCookie: '' # Alien Forum Cookie, you can only have `REMEMBERME`, if you don't have `REMEMBERME`, you must have `PHPSESSID` and `sc`, but it will lead to an error in obtaining the number of consecutive sign-in days, and will not affect other functions
-awaHost: 'www.alienwarearena.com' # Alienwarearena Host, the commonly used ones are `www.alienwarearena.com` and `na.alienwarearena.com`, don’t change the default if there is no problem
+awaCookie: '' # Alien Forum Cookie, can only have `REMEMBERME`, without `REMEMBERME`, it must have `PHPSESSID` and `sc`, but it will cause an error in obtaining the number of consecutive check-in days, and will not affect other functions.
+awaHost: 'www.alienwarearena.com' # Alien forum Host, commonly used ones are `www.alienwarearena.com` and `na.alienwarearena.com`. If there is no problem with the default, do not change it.
+# awaBoosterNotice: true # Deprecated! When the Alien Forum has more than one task, it will ask whether to turn on the booster. The booster needs to be turned on by yourself! ! !
 awaQuests:
-  - dailyQuest # Automatically do daily tasks, no need to do this task delete or comment out this line
-  - timeOnSite # Automatically do AWA online tasks, do not need to delete or comment out this line
-  - watchTwitch # Automatically do online tasks in the Twitch live room, no need to do this task delete or comment out this line
-  - steamQuest # Automatically do steam game duration tasks, no need to do this task delete or comment out this line
-awaDailyQuestType: # The daily task type, you don’t need to comment it out, all comments = all open, if you don’t need to do daily tasks, please comment the above `dailyQuest`
-  - click # Browse the task on the page, the title of the task is the task link, you need to click on the task to complete it
-  - visitLink # Browse the page task, the task title is the task link, and the page can be completed
-  - openLink # Browse page tasks, task titles have no links, try to browse leaderboards, rewards, store pages
-  - changeBorder # Change Border
-  - changeBadge # Change Badge
-  - changeAvatar # Change Avatar
-  - viewNews # view news
-  - sharePost # share post
-  - replyPost # reply post
-awaDailyQuestNumber1: true # Whether to do only the first one when there are multiple daily tasks
-awaSafeReply: false # If you have replied to a post today, you will skip the operation of replying to the post, which is not skipped by default (false)
-autoLogin: # Automatically log in to update Cookies configuration
+- promotionalCalendar # Automatically receive promotional rewards (log in on the 7th). The Docker version requires the chromium version (hclonely/awa-helper-chromium). There is no need to delete or comment out this line for this task. Note: There is only the incomplete reminder function, which cannot be implemented due to human-machine verification!
+- dailyQuest # Automatically do daily tasks, no need to do this task. Delete or comment out this line.
+- timeOnSite # Automatically do AWA online tasks, no need to do this task. Delete or comment out this line.
+- watchTwitch # Automatically perform online tasks in the Twitch live broadcast room. You do not need to do this task. Delete or comment out this line.
+- steamQuest # Automatically do the Steam game duration task, you don’t need to do this task. Delete or comment out this line.
+awaDailyQuestType: # Daily task type, no need to comment it out, all comments = enable all, if you do not need to do daily tasks, please comment above `dailyQuest`
+- click # Browse the page task, the task title is the task link, you need to click the task to complete it
+- visitLink # Browse the page task, the task title is task link, and it can only be completed by browsing the page.
+- openLink # Browse page tasks, task title has no link, try to browse rankings, rewards, store page
+- changeBorder # Change Border
+- changeBadge # Change Badge
+- changeAvatar # Change Avatar
+- viewNews # Browse news
+- sharePost # Share post
+- replyPost # Reply to post
+awaDailyQuestNumber1: true # When there are multiple daily tasks, whether to only do the first one
+awaSafeReply: false # If you have replied to a post today, the reply to the post operation will be skipped. The default is not skipped (false)
+# boosterRule: # Deprecated! Comment out all the rules for using ARP Booster to disable them.
+# - 2x24h>0 # This rule means that when the number of 2x 24hr ARP Booster is greater than 0, use 2x 24hr ARP Booster
+# - 2x48h>5 # This rule means that when the number of 2x 48hr ARP Booster is greater than 5, 2x 48hr ARP Booster will be used. This rule will only take effect when none of the above rules match.
+# boosterCorn: '* * 8 * * 7' # Deprecated! Time to use ARP Booster (local time)
+# # ┬ ┬ ┬ ┬ ┬ ┬
+# # │ │ │ │ │ |
+# # │ │ │ │ │ └──────────────── Day of the week (0 - 7, 1L - 7L) (0 or 7 is Sunday) ┐
+# # │ │ │ │ └───────────────── Month (1 - 12) ├─ Date
+# # │ │ │ └─────────────────── Day of the month (1 - 31, L) ┘
+# # │ │ └──────────────────── Hours (0 - 23) ┐
+# # │ └────────────────────── Minutes (0 - 59) ├─ Time
+# # └───────────────────────── Seconds (0 - 59) ┘
+# # Time rule description: enabled when the current date and the date matched by boosterCorn are on the same day and the current time is greater than the time matched by boosterCorn
+# # The expression in the example represents the use of boosterRule rules for matching when running the program after 8 o'clock every Saturday.
+autoLogin: # Automatically log in and update Cookies configuration
 enable: true # Whether to enable
-username: '' # AWA username
+username: '' #AWA username
 password: '' # AWA password
 autoUpdateDailyQuestDb: false # Automatically update the daily task database
 joinSteamCommunityEvent: false # Automatically join Steam community events
@@ -191,6 +207,8 @@ document.cookie.split(';').filter((e) => ['unique_id','auth-token'].includes(e.s
 ### Steam Quest Configuration
 
 > How to idle Steam games, supports [ASF](https://github.com/JustArchiNET/ArchiSteamFarm) and [SU](https://github.com/DoctorMcKay/node-steam-user).
+>
+> Optional Steam Game quest is supported, and you need to Sync the game (`Sync Game`) once on the game selection page.
 
 ```yml
 steamUse: 'ASF' # 'ASF' or 'SU', 'SU' simulates Steam client
