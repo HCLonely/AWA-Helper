@@ -28,40 +28,40 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 ### Cookie synchronization
 
-1. 在配置文件中配置[managerServer](#AWA-Manager-%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E)和[webUI](#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E) , 并运行 AWA-Manager；
-2. 在浏览器中安装[Tampermonkey BETA](https://www.tampermonkey.net/index.php)扩展（**注意是红色的 BETA 版本，普通版无法获取 Cookie！！！**）；
-3. 安装[AWA-Manager](https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js)用户脚本；
-4. 打开[https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center)页面配置`ManagerServer`；
-5. 每次你打开浏览器页面时都会同步一次 Cookie.
+1. Configure [managerServer](#AWA-Manager-%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E) and [webUI](#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E) in the configuration file, and run AWA-Manager;
+2. Install [the Tampermonkey BETA](https://www.tampermonkey.net/index.php) extension in the browser ( **note that it is the red BETA version, the regular version cannot obtain cookies!!!** );
+3. Install [AWA-Manager](https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js) user script;
+4. Open the [https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center) page to configure `ManagerServer` ;
+5. Cookies are synchronized every time you open a browser page.
 
 ### Windows
 
 #### Install and run
 
-> 如果你的电脑全天运行不关机或在服务器上运行建议使用 AWA-Manager.
+> If your computer runs all day without shutting down or runs on a server, it is recommended to use AWA-Manager.
 
-1. 下载[AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
-2. 编辑配置文件,[查看说明](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
-3. 运行(以下两种二选一)：
-    - 运行 AWA-Helper: 双击`AWA-Helper.bat`;
-    - 运行 AWA-Manager: 双击`AWA-Manager.bat`运行 AWA-Manager;
+1. Download [AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
+2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+3. Run (choose one of the following two):
+    - Run AWA-Helper: Double-click `AWA-Helper.bat` ;
+    - Run AWA-Manager: Double-click `AWA-Manager.bat` to run AWA-Manager;
 
 #### Update
 
-- 自动更新: 在 config 文件中配置`autoUpdate: true`;
-- 手动更新: 双击'update.bat'.
+- Automatic update: Configure `autoUpdate: true` in the config file;
+- Manual update: Double-click 'update.bat'.
 
-### Linux/Macos
+### Linux/MacOS
 
-> PS1: MacOS 的兼容性未测试，不建议使用 MacOS 设备运行此程序！
+> PS1: MacOS compatibility has not been tested, and it is not recommended to use MacOS devices to run this program!
 >
-> PS2: 既然你使用 Linux 设备，以下为基于有一定 Linux 使用基础的说明！
+> PS2: Since you are using Linux equipment, the following are instructions based on a certain basic knowledge of Linux usage!
 
-#### 安装运行
+#### Install and run
 
-1. (仅首次安装需要)安装[NodeJs](https://nodejs.org/en/download/package-manager) &gt;= v16.0.0;
+1. (Only required for first time installation) Install [NodeJs](https://nodejs.org/en/download/package-manager) &gt;= v16.0.0;
 
-2. 下载[AWA-Helper-Linux.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
+2. Download [AWA-Helper-Linux.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
 
     ```bash
     curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v2.4.8/AWA-Helper-Linux.tar.gz # 注意替换版本号为最新版
@@ -70,23 +70,23 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
     cd AWA-Helper
     ```
 
-3. 编辑配置文件,[查看说明](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+3. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
 
     ```bash
     sudo cp config.example.yml config.yml
     ```
 
-4. 运行(以下两种二选一)：
+4. Run (choose one of the following two):
 
-    - 运行 AWA-Helper: `node main.js --helper`;
-    - 运行 AWA-Manager:
-        1. 安装`nodemon`: `sudo npm install -g nodemon`或`sudo npm install -g nodemon --registry=https://registry.npmmirror.com/`(第一种如果安装慢可以使用第二种)
-        2. 运行: `nodemon -w main.js -V -L main.js --manager`
+    - Run AWA-Helper: `node main.js --helper` ;
+    - Run AWA-Manager:
+        1. Install `nodemon` : `sudo npm install -g nodemon` or `sudo npm install -g nodemon --registry=https://registry.npmmirror.com/` (If the first method is slow to install, you can use the second method)
+        2. Run: `nodemon -w main.js -V -L main.js --manager`
 
-#### 更新
+#### renew
 
-- 自动更新: 在 config 文件中配置`autoUpdate: true`;
-- 手动更新: 待补充.
+- Automatic update: Configure `autoUpdate: true` in the config file;
+- Manual update: to be added.
 
 ### Docker
 
@@ -98,25 +98,25 @@ docker pull hclonely/awa-helper
 
 #### Run
 
-> !!! Docker 方式运行不要修改`managerServer`和`webUI`的`port`，并设置`autoUpdate`和`managerServer`的`local`为`false`!!!
+> !!! When running in Docker mode, do not modify `port` of `managerServer` and `webUI` , and set `autoUpdate` and `local` of `managerServer` to `false` !!!
 
-- AWA-Manager(建议)
+- AWA-Manager (recommended)
 
 ```shell
 docker run -d --name awa-helper -p 2345:2345 -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -e helperMode=manager hclonely/awa-helper:latest
 ```
 
-- 或 AWA-Helper
+- or AWA-Helper
 
 ```shell
 docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
 ```
 
-> ps:容器内有两个挂载点：`/usr/src/app/dist/config`和`/usr/src/app/dist/logs`，分别对应于本地路径`/data/awa-helper/config`和`/data/awa-helper/logs`（可自定义修改），前者存放配置文件，后者是存放日志文件。
+> ps: There are two mount points in the container: `/usr/src/app/dist/config` and `/usr/src/app/dist/logs` , corresponding to the local paths `/data/awa-helper/config` and `/data/awa-helper/logs` respectively. `/data/awa-helper/logs` (can be customized and modified), the former stores configuration files, and the latter stores log files.
 
 ## config (File configuration)
 
-> **The `config.example.yml` file needs to be renamed to `config.yml`!!!**
+> **You need to copy the `config.example.yml` file and rename it to `config.yml` !!!**
 
 ### Global configuration (required)
 
@@ -137,9 +137,9 @@ UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like G
 autoUpdate: true # 自动更新
 ```
 
-### AWA-Manager 配置
+### AWA-Manager configuration
 
-#### AWA-Manager 配置参数说明
+#### AWA-Manager configuration parameter description
 
 ```yml
 managerServer:
@@ -196,7 +196,7 @@ joinSteamCommunityEvent: true # 自动加入Steam社区活动
 
 ##### Automatic update
 
-参考[Cookie 同步](#cookie-%E5%90%8C%E6%AD%A5)。
+See [Cookie synchronization](#cookie-%E5%90%8C%E6%AD%A5) .
 
 ##### Get it yourself
 
@@ -366,7 +366,7 @@ flowchart TD
 
 ![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)
 
-## 感谢以下开源项目
+## Thanks to the following open source projects
 
 - [axios](https://github.com/axios/axios)
 - [chalk](https://github.com/chalk/chalk)
