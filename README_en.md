@@ -1,6 +1,6 @@
-# AWA-Helper
+# [AWA-Helper](https://github.com/HCLonely/AWA-Helper)
 
-Automatically does AWA quests.
+Automatically does AWA quests.<br>This document comes from machine translation
 
 [简体中文](/README.md) • [English](/README_en.md)
 
@@ -14,111 +14,153 @@ Automatically does AWA quests.
 2. Before using it, please make sure that your AWA account has a Twitch account linked and that the Twitch account has been granted access to the AWA ARP widget;
 3. [Not recommended] If you want to use more than one account, copy the program to another folder to run multiple accounts.
 
-### Run from the source
+### AWA-Manager
 
-> This method automatically installs the latest beta version!
+AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA-Helper on the browser. Its main functions include:
+
+- Cookie synchronization;
+- Configuration file parameter settings;
+- View AWA-Helper running status;
+- Control starting/terminating AWA-Helper
+- ...
+
+> It is recommended that users who do not shut down or mount to the server for a long time use this AWA-Manager.
+
+### Cookie synchronization
+
+1. 在配置文件中配置[managerServer](#AWA-Manager-%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E)和[webUI](#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E) , 并运行 AWA-Manager；
+2. 在浏览器中安装[Tampermonkey BETA](https://www.tampermonkey.net/index.php)扩展（**注意是红色的 BETA 版本，普通版无法获取 Cookie！！！**）；
+3. 安装[AWA-Manager](https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js)用户脚本；
+4. 打开[https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center)页面配置`ManagerServer`；
+5. 每次你打开浏览器页面时都会同步一次 Cookie.
+
+### Windows
 
 #### Install and run
 
-1. Prerequisites: Install [Git](https://git-scm.com/downloads) and [NodeJs](https://nodejs.org/zh-cn/download/) &gt;= v16.0.0
-2. Clone this repository`git clone https://github.com/HCLonely/AWA-Helper.git`
-3. Install dependencies`npm install`
-4. Build`npm run build`
-5. Edit configuration file [view instructions](#config-file-configuration)
-6. Run`npm start`/double click`AWA-Helper.bat`
+> 如果你的电脑全天运行不关机或在服务器上运行建议使用 AWA-Manager.
 
-> **Note: Steps 1-5 are only required for the first installation, only step 6 is required for each run after that!**
-
-#### Update via Git
-
-1. Pull update`git pull`
-2. Install dependencies`npm install`
-3. Build`npm run build`
-4. Run`npm start`/double click`AWA-Helper.bat`
-
-> **Note: Steps 1-3 are only required for the first run after each update, only step 4 is required for each run after that!**
-
-### Download the compressed program and run
-
-#### Automatically install dependencies (Recommended)
-
-> **The `config.example.yml` file needs to be renamed to `config.yml`!!!**
-
-1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
-2. Extract
-3. Edit configuration file,[View instructions](#config-file-configuration)
-4. First run:
-    - Windows: Double click`运行-auto.bat`/`Run-auto.bat`to run (Missing dependencies are automatically installed)
-    - Linux: `sudo ./run_auto_linux.sh`
-5. Non first run:
-    - Windows: Double click`运行.bat`/`Run.bat`to run.
-    - Linux: `node index.js`
-
-#### Install dependencies on your own[recommended]
-
-1. Install [NodeJs](https://nodejs.org/zh-cn/download/) &gt;= v16.0.0
-2. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
-3. Extract
-4. Install dependencies `npm install --save`
-5. Edit configuration file [view instructions](#config-file-configuration)
-6. Windows: Double click`运行.bat`/`Run.bat`to run. Linux: `node index.js`
+1. 下载[AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
+2. 编辑配置文件,[查看说明](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+3. 运行(以下两种二选一)：
+    - 运行 AWA-Helper: 双击`AWA-Helper.bat`;
+    - 运行 AWA-Manager: 双击`AWA-Manager.bat`运行 AWA-Manager;
 
 #### Update
 
-1. [Click here](https://github.com/HCLonely/AWA-Helper/releases/latest) to download the compressed program in zip
-2. Extract and overwrite it
-3. Install dependencies`npm install --save`
-4. Windows: Double click`运行.bat`/`Run.bat`to run. Linux: `node index.js`
+- 自动更新: 在 config 文件中配置`autoUpdate: true`;
+- 手动更新: 双击'update.bat'.
+
+### Linux/Macos
+
+> PS1: MacOS 的兼容性未测试，不建议使用 MacOS 设备运行此程序！
+>
+> PS2: 既然你使用 Linux 设备，以下为基于有一定 Linux 使用基础的说明！
+
+#### 安装运行
+
+1. (仅首次安装需要)安装[NodeJs](https://nodejs.org/en/download/package-manager) &gt;= v16.0.0;
+
+2. 下载[AWA-Helper-Linux.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
+
+    ```bash
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v2.4.8/AWA-Helper-Linux.tar.gz # 注意替换版本号为最新版
+    tar -xzvf AWA-Helper-linux.tar.gz
+    sudo mv dist AWA-Helper
+    cd AWA-Helper
+    ```
+
+3. 编辑配置文件,[查看说明](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+
+    ```bash
+    sudo cp config.example.yml config.yml
+    ```
+
+4. 运行(以下两种二选一)：
+
+    - 运行 AWA-Helper: `node main.js --helper`;
+    - 运行 AWA-Manager:
+        1. 安装`nodemon`: `sudo npm install -g nodemon`或`sudo npm install -g nodemon --registry=https://registry.npmmirror.com/`(第一种如果安装慢可以使用第二种)
+        2. 运行: `nodemon -w main.js -V -L main.js --manager`
+
+#### 更新
+
+- 自动更新: 在 config 文件中配置`autoUpdate: true`;
+- 手动更新: 待补充.
 
 ### Docker
 
 #### Install
 
-- Small size, does not support automatic login
-
 ```shell
 docker pull hclonely/awa-helper
 ```
 
-- or support automatic login:
-
-```shell
-docker pull hclonely/awa-helper-chromium
-```
-
 #### Run
 
+> !!! Docker 方式运行不要修改`managerServer`和`webUI`的`port`，并设置`autoUpdate`和`managerServer`的`local`为`false`!!!
+
+- AWA-Manager(建议)
+
 ```shell
-docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/dist/config -v /data/awa-helper/logs:/usr/src/app/dist/logs hclonely/awa-helper
+docker run -d --name awa-helper -p 2345:2345 -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -e helperMode=manager hclonely/awa-helper:latest
 ```
 
-> ps1: There are two mount points in the container: `/usr/src/app/dist/config` and `/usr/src/app/dist/logs` , corresponding to the local path `/data/awa-helper/config` and `/data/awa-helper/logs` (can be customized and modified), the former stores configuration files, and the latter stores log files.
->
-> ps2: The above command will only run AWA-Helper once, it is recommended to restart the container regularly in conjunction with the scheduled task!
+- 或 AWA-Helper
 
-#### 定时任务
+```shell
+docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
+```
+
+> ps:容器内有两个挂载点：`/usr/src/app/dist/config`和`/usr/src/app/dist/logs`，分别对应于本地路径`/data/awa-helper/config`和`/data/awa-helper/logs`（可自定义修改），前者存放配置文件，后者是存放日志文件。
 
 ## config (File configuration)
 
-> **Copy the `config.example.yml` file and rename it `config.yml`!!**
->
-> Or use it the [parameter generator](https://configer.hclonely.com/?fileLink=https%3A%2F%2Fraw.githubusercontent.com%2FHCLonely%2FAWA-Helper%2Fmain%2Fconfiger%2Fconfiger.template.yml.js) configuration file generator
+> **The `config.example.yml` file needs to be renamed to `config.yml`!!!**
 
 ### Global configuration (required)
 
 #### Global configuration parameters description
 
 ```yml
-language: zh # Program display language, currently supports Chinese (zh) and English (en)
+language: zh # 程序显示语言，目前支持中文 (zh) 和 English (en)
 webUI:
-  enable: true # Whether to enable WebUI
-  port: 3456 # WebUI port
-  ssl: # WebUI enables SSL
-    key: xxx.yyy-key.pem # SSL certificate key file name, put this file in the same directory as the config.yml configuration file!
-    cert: xxx.yyy.pem # SSL certificate file name, put this file in the same directory as the config.yml configuration file!
-timeout: 0 # Timeout setting, unit: second, 0 means unlimited. If the program is still running after running for more than this time, the program will be terminated.
-logsExpire: 30 # Log retention time, unit: day, default is 30 days, 0 means unlimited.
-TLSRejectUnauthorized: true # Whether to enable TLSSocket library verification, enabled by default. If you have network problems using a proxy, try changing this!
+  enable: true # 是否启用WebUI
+  port: 3456 # WebUI端口
+  ssl: # WebUI启用SSL
+    key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
+    cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
+timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
+logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
+TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
+UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
+autoUpdate: true # 自动更新
+```
+
+### AWA-Manager 配置
+
+#### AWA-Manager 配置参数说明
+
+```yml
+managerServer:
+  enable: false # 需同时启用webUI
+  secret: '' # AWA-Manager Secret，强烈建议修改
+  local: true # 仅内网访问，false为开启外网访问
+  port: 2345 # AWA managerServer端口
+  # ssl: # managerServer启用SSL
+    # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
+    # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
+  corn: '3 30 14,21 * * *' # 定时启动AWA-Helper，需开启managerServer
+#        ┬ ┬─ ──┬── ┬ ┬ ┬
+#        │ │    │   │ │ |
+#        │ │    │   │ │ └─────────────── 一周的第几天 (0 - 7, 1L - 7L) (0或7是周日) ┐
+#        │ │    │   │ └───────────────── 月份　　　　 (1 - 12)　 　　　             ├─ 日期
+#        │ │    │   └─────────────────── 每月的第几天 (1 - 31, L)　　　　           ┘
+#        │ │    └───────────────────── 小时 (0 - 23) ┐
+#        │ └────────────────────────── 分钟 (0 - 59) ├─ 时间
+#        └───────────────────────── ───秒　 (0 - 59) ┘
+# 示例中的表达式代表每天的14:30:03和21:30:03启动AWA-Helper
+# !! 注意每次运行的时间间隔要大于前面设置的timeout
 ```
 
 ### AWA configuration (Required)
@@ -126,55 +168,35 @@ TLSRejectUnauthorized: true # Whether to enable TLSSocket library verification, 
 #### AWA parameter description
 
 ```yml
-awaCookie: '' # Alien Forum Cookie, can only have `REMEMBERME`, without `REMEMBERME`, it must have `PHPSESSID` and `sc`, but it will cause an error in obtaining the number of consecutive check-in days, and will not affect other functions.
-awaHost: 'www.alienwarearena.com' # Alien forum Host, commonly used ones are `www.alienwarearena.com` and `na.alienwarearena.com`. If there is no problem with the default, do not change it.
-# awaBoosterNotice: true # Deprecated! When the Alien Forum has more than one task, it will ask whether to turn on the booster. The booster needs to be turned on by yourself! ! !
+awaCookie: '' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
+awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienwarearena.com`和`na.alienwarearena.com`, 默认的没问题就不要改
+# awaBoosterNotice: true # 已弃用！外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 awaQuests:
-- promotionalCalendar # Automatically receive promotional rewards (log in on the 7th). The Docker version requires the chromium version (hclonely/awa-helper-chromium). There is no need to delete or comment out this line for this task. Note: There is only the incomplete reminder function, which cannot be implemented due to human-machine verification!
-- dailyQuest # Automatically do daily tasks, no need to do this task. Delete or comment out this line.
-- timeOnSite # Automatically do AWA online tasks, no need to do this task. Delete or comment out this line.
-- watchTwitch # Automatically perform online tasks in the Twitch live broadcast room. You do not need to do this task. Delete or comment out this line.
-- steamQuest # Automatically do the Steam game duration task, you don’t need to do this task. Delete or comment out this line.
-awaDailyQuestType: # Daily task type, no need to comment it out, all comments = enable all, if you do not need to do daily tasks, please comment above `dailyQuest`
-- click # Browse the page task, the task title is the task link, you need to click the task to complete it
-- visitLink # Browse the page task, the task title is task link, and it can only be completed by browsing the page.
-- openLink # Browse page tasks, task title has no link, try to browse rankings, rewards, store page
-- changeBorder # Change Border
-- changeBadge # Change Badge
-- changeAvatar # Change Avatar
-- viewNews # Browse news
-- sharePost # Share post
-- replyPost # Reply to post
-awaDailyQuestNumber1: true # When there are multiple daily tasks, whether to only do the first one
-awaSafeReply: false # If you have replied to a post today, the reply to the post operation will be skipped. The default is not skipped (false)
-# boosterRule: # Deprecated! Comment out all the rules for using ARP Booster to disable them.
-# - 2x24h>0 # This rule means that when the number of 2x 24hr ARP Booster is greater than 0, use 2x 24hr ARP Booster
-# - 2x48h>5 # This rule means that when the number of 2x 48hr ARP Booster is greater than 5, 2x 48hr ARP Booster will be used. This rule will only take effect when none of the above rules match.
-# boosterCorn: '* * 8 * * 7' # Deprecated! Time to use ARP Booster (local time)
-# # ┬ ┬ ┬ ┬ ┬ ┬
-# # │ │ │ │ │ |
-# # │ │ │ │ │ └──────────────── Day of the week (0 - 7, 1L - 7L) (0 or 7 is Sunday) ┐
-# # │ │ │ │ └───────────────── Month (1 - 12) ├─ Date
-# # │ │ │ └─────────────────── Day of the month (1 - 31, L) ┘
-# # │ │ └──────────────────── Hours (0 - 23) ┐
-# # │ └────────────────────── Minutes (0 - 59) ├─ Time
-# # └───────────────────────── Seconds (0 - 59) ┘
-# # Time rule description: enabled when the current date and the date matched by boosterCorn are on the same day and the current time is greater than the time matched by boosterCorn
-# # The expression in the example represents the use of boosterRule rules for matching when running the program after 8 o'clock every Saturday.
-autoLogin: # Automatically log in and update Cookies configuration
-enable: true # Whether to enable
-username: '' #AWA username
-password: '' # AWA password
-autoUpdateDailyQuestDb: false # Automatically update the daily task database
-joinSteamCommunityEvent: false # Automatically join Steam community events
+  - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
+  - timeOnSite # 自动做AWA在线任务，不需要做此任务删除或注释掉此行
+  - watchTwitch # 自动做Twitch直播间在线任务，不需要做此任务删除或注释掉此行
+  - steamQuest # 自动做Steam游戏时长任务，不需要做此任务删除或注释掉此行
+awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注释=全部开启，如果不需要做每日任务请注释上面的`dailyQuest`
+  - click # 浏览页面任务，务标题为任务链接，需点击任务才能完成
+  - visitLink # 浏览页面任务，任务标题为任务链接，浏览页面才能完成
+  - openLink # 浏览页面任务，任务标题无链接，尝试浏览 排行榜，奖励，商店页面
+  - changeBorder # 更换Border
+  - changeBadge # 更换Badge
+  - changeAvatar # 更换Avatar
+  - viewNews # 浏览新闻
+  - sharePost # 分享帖子
+  - replyPost # 回复帖子
+awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个
+awaSafeReply: false # 今日回复过帖子则跳过回复帖子操作，默认不跳过(false)
+autoUpdateDailyQuestDb: false # 自动更新每日任务数据库
+joinSteamCommunityEvent: true # 自动加入Steam社区活动
 ```
 
 #### AWA parameter configuration methods
 
 ##### Automatic update
 
-1. Enable and configure`autoLogin`；
-2. `awaCookie`fill in`AWACOOKIEAUTOUPDATE`.
+参考[Cookie 同步](#cookie-%E5%90%8C%E6%AD%A5)。
 
 ##### Get it yourself
 
@@ -228,19 +250,6 @@ asfPassword: '' # ASF password
 asfBotname: '' # ASF Bot name to idle game
 ```
 
-### SU configuration (optional)
-
-> Using [SU](https://github.com/DoctorMcKay/node-steam-user) to idle Steam games requires extensive configuration. If you don’t want to do this part, you can leave it blank. Requires `steamUse` for `SU`.
->
-> If the Steam Guard Mobile or Steam Guard (e-mail) is enabled on Steam, please enter the two-step verification code as prompted by the console when using this method for the first time.
-
-#### SU parameters description
-
-```yml
-steamAccountName: ''
-steamPassword: ''
-```
-
 ### Proxy configuration (optional)
 
 > proxy parameter description
@@ -250,16 +259,17 @@ steamPassword: ''
 ```yml
 proxy:
   enable:
-    - github # It uses proxy when detecting updates, delete this line if not used
-    - twitch # It uses proxy when visiting Twitch website, delete this line if not used
-    - awa # It uses proxy when visiting AWA forum, delete this line if not used
-    - asf # It uses proxy when accessing ASF, delete this line if not used
-    - steam # It uses proxy when accessing Steam, delete this line if not used
-  protocol: 'http' # proxy protocol, 'http' or 'socks'
-  host: '127.0.0.1' # proxy host
-  port: 1080 # proxy port
-  username: '' # Proxy username, if none can be left blank
-  password: '' # Proxy password, if none can be left blank
+    - github # 在检测更新时使用代理，不使用删掉此行
+    - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
+    - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
+    - asf # 在访问ASF时使用代理，不使用删掉此行
+    - steam # 在访问Steam时使用代理，不使用删掉此行
+    - pusher # 在推送时使用代理，不使用删掉此行
+  protocol: 'http' # 代理协议，'http'或'socks'
+  host: '127.0.0.1' # 代理host
+  port: 7890 # 代理端口
+  username: '' # 代理用户名，没有可留空
+  password: '' # 代理密码，没有可留空
 ```
 
 ### Push configuration (optional)
@@ -356,26 +366,28 @@ flowchart TD
 
 ![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)
 
-## TODO
-
-- [x] AWA reply protection (preliminarily realized through ARP Log)
-
-## Thanks
+## 感谢以下开源项目
 
 - [axios](https://github.com/axios/axios)
 - [chalk](https://github.com/chalk/chalk)
 - [cheerio](https://github.com/cheeriojs/cheerio)
+- [cron-parser](https://github.com/harrisiirak/cron-parser)
 - [dayjs](https://github.com/iamkun/dayjs)
+- [decompress](https://github.com/kevva/decompress)
+- [express](https://github.com/expressjs/express)
+- [express-ws](https://github.com/HenningM/express-ws)
+- [form-data](https://github.com/form-data/form-data)
+- [i18n-node](https://github.com/mashpie/i18n-node)
+- [lodash](https://github.com/lodash/lodash)
+- [node-cron](https://github.com/node-cron/node-cron)
 - [node-tunnel](https://github.com/koichik/node-tunnel)
 - [node-socks-proxy-agent](https://github.com/TooTallNate/node-socks-proxy-agent)
 - [yaml](https://github.com/eemeli/yaml)
-- [pkg](https://github.com/vercel/pkg)
-- [node-steam-user](https://github.com/DoctorMcKay/node-steam-user)
-- [TypeScript](https://github.com/Microsoft/TypeScript)
-- [node-fs-extra](https://github.com/jprichardson/node-fs-extra)
-- [eslint](https://github.com/eslint/eslint)
 - [yaml-lint](https://github.com/rasshofer/yaml-lint)
-- [express](https://github.com/expressjs/express)
-- [express-ws](https://github.com/HenningM/express-ws)
-- [lodash](https://github.com/lodash/lodash)
-- [playwright](https://github.com/microsoft/playwright)
+- [eslint](https://github.com/eslint/eslint)
+- [node-fs-extra](https://github.com/jprichardson/node-fs-extra)
+- [highlight.js](https://github.com/highlightjs/highlight.js)
+- [marked](https://github.com/markedjs/marked)
+- [rollup](https://github.com/rollup/rollup)
+- [TypeScript](https://github.com/Microsoft/TypeScript)
+- [UglifyJS](https://github.com/mishoo/UglifyJS)
