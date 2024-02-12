@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, steamGameInfo, proxy, myAxiosConfig */
-import { AxiosRequestHeaders } from 'axios';
+import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy, Cookie } from './tool';
@@ -12,9 +12,10 @@ class SteamQuestASF {
   asfUrl: string;
   httpsAgent!: myAxiosConfig['httpsAgent'];
   awaHttpsAgent!: myAxiosConfig['httpsAgent'];
-  headers: AxiosRequestHeaders;
+  headers: RawAxiosRequestHeaders;
   botname!: string;
   ownedGames: Array<string> = [];
+  ownedAllGames: Array<string> = [];
   maxPlayTimes = 2;
   gamesInfo: Array<steamGameInfo> = [];
   maxArp = 0;
@@ -361,7 +362,7 @@ class SteamQuestASF {
           return false;
         });
     }
-    if (this.taskStatus.filter((e) => parseInt(e.progress || '0', 10) >= 100).length === this.taskStatus.length) {
+    if (this.taskStatus?.filter((e) => parseInt(e.progress || '0', 10) >= 100)?.length === this.taskStatus?.length && !globalThis.steamEventGameId) {
       this.EventEmitter.emit('complete');
       new Logger(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
       await this.resume();
@@ -372,13 +373,13 @@ class SteamQuestASF {
   }
   async getOwnedGames(): Promise<boolean> {
     if (!await this.getSteamQuests()) return false;
-    if (this.gamesInfo.length === 0) return true;
+    if (this.gamesInfo.length === 0 && !globalThis.steamEventGameId) return true;
     const logger = new Logger(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
     const options: myAxiosConfig = {
       url: this.asfUrl,
       method: 'POST',
       headers: this.headers,
-      data: `{"Command":"!owns ${this.botname} ${this.gamesInfo.map((e) => e.id).join(',')}"}`,
+      data: `{"Command":"!owns ${this.botname} ${this.gamesInfo.map((e) => e.id).join(',')}${globalThis.steamEventGameId ? `,${globalThis.steamEventGameId}` : ''}"}`,
       Logger: logger
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
@@ -387,11 +388,14 @@ class SteamQuestASF {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
         if (response.status === 200) {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
-            this.ownedGames = [...new Set(response.data.Result.split('\n').filter((e: string) => e.includes('|')).map((e: string) => e.trim().match(/app\/([\d]+)/)?.[1])
+            this.ownedAllGames = [...new Set(response.data.Result.split('\n').filter((e: string) => e.includes('|')).map((e: string) => e.trim().match(/app\/([\d]+)/)?.[1])
               .filter((e: undefined | string) => e))] as Array<string>;
-            this.maxArp = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.arp || 0).reduce((acr, cur) => acr + cur);
-            this.maxPlayTimes = Math.max(...this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.time || 2));
-            this.taskStatus = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)).filter((e) => e) as Array<steamGameInfo>;
+            this.ownedGames = this.ownedAllGames.filter((id) => id !== globalThis.steamEventGameId);
+            if (this.ownedGames.length > 0) {
+              this.maxArp = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.arp || 0).reduce((acr, cur) => acr + cur);
+              this.maxPlayTimes = Math.max(...this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)?.time || 2));
+              this.taskStatus = this.ownedGames.map((id) => this.gamesInfo.find((info) => info.id === id)).filter((e) => e) as Array<steamGameInfo>;
+            }
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
@@ -418,7 +422,7 @@ class SteamQuestASF {
       this.status = 'stopped';
       return false;
     }
-    if (this.ownedGames.length === 0) {
+    if (this.ownedAllGames.length === 0) {
       new Logger(time() + chalk.yellow(__('noGamesAlert')));
       this.status = 'stopped';
       return false;
@@ -428,7 +432,7 @@ class SteamQuestASF {
       url: this.asfUrl,
       method: 'POST',
       headers: this.headers,
-      data: `{"Command":"!play ${this.botname} ${this.ownedGames.join(',')}"}`,
+      data: `{"Command":"!play ${this.botname} ${this.ownedAllGames.join(',')}"}`,
       Logger: logger
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;

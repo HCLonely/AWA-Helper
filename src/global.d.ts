@@ -8,6 +8,12 @@ import type { DailyQuest } from './DailyQuest';
 import { Logger } from './tool';
 
 declare global {
+  interface Array<T> {
+    findLast(
+      predicate: (value: T, index: number, obj: T[]) => unknown,
+      thisArg?: any
+    ): T
+  }
   interface pusher {
     enable: boolean
     platform: string
@@ -20,6 +26,17 @@ declare global {
     timeout?: number
     logsExpire?: number
     TLSRejectUnauthorized?: boolean
+    autoUpdate?: boolean
+    managerServer?: {
+      enable: boolean
+      secret: string
+      port?: number
+      ssl?: {
+        key?: string
+        cert?: string
+      }
+      corn?: string
+    }
     awaCookie?: string
     awaHost: string
     awaBoosterNotice?: boolean
@@ -37,8 +54,6 @@ declare global {
     asfPort?: number
     asfPassword?: string
     asfBotname?: string
-    steamAccountName?: string
-    steamPassword?: string
     proxy?: proxy
     webUI?: {
       enable: boolean
@@ -49,11 +64,6 @@ declare global {
       }
     }
     pusher?: pusher
-    autoLogin?: {
-      enable: boolean
-      username: string
-      password: string
-    },
     autoUpdateDailyQuestDb?: boolean
   }
   interface proxy {
@@ -168,5 +178,7 @@ declare global {
   var awaHost: string;
   var __: I18n['__'];
   var newVersionNotice: string;
+  var steamEventGameId: string;
+  var log: boolean;
 }
 export {};

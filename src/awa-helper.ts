@@ -3,7 +3,7 @@
 import { DailyQuest } from './DailyQuest';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
-import { SteamQuestSU } from './SteamQuestSU';
+// import { SteamQuestSU } from './SteamQuestSU';
 import * as fs from 'fs';
 import * as path from 'path';
 import { join, resolve } from 'path';
@@ -15,38 +15,47 @@ import * as i18n from 'i18n';
 import { createServer } from './webUI/index';
 import * as dayjs from 'dayjs';
 
-process.on('SIGTERM', async () => {
-  new Logger(time() + chalk.yellow(__('processWasKilled')));
-  try {
-    await push(`${__('pushTitle')}\n${__('processWasKilled')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
-  } catch (e) {
-    await push(`${__('pushTitle')}\n${__('processWasKilled')}${globalThis.newVersionNotice}`);
-  }
-  process.exit(0);
-});
+const startHelper = async () => {
+  globalThis.log = true;
+  process.on('SIGTERM', async () => {
+    new Logger(time() + chalk.yellow(__('processWasKilled')));
+    try {
+      await push(`${__('pushTitle')}\n${__('processWasKilled')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+    } catch (e) {
+      await push(`${__('pushTitle')}\n${__('processWasKilled')}${globalThis.newVersionNotice}`);
+    }
+    process.exit(0);
+  });
 
-process.on('SIGINT', async () => {
-  new Logger(time() + chalk.yellow(__('processWasInterrupted')));
-  try {
-    await push(`${__('pushTitle')}\n${__('processWasInterrupted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
-  } catch (e) {
-    await push(`${__('pushTitle')}\n${__('processWasInterrupted')}${globalThis.newVersionNotice}`);
-  }
-  process.exit(0);
-});
+  process.on('SIGINT', async () => {
+    new Logger(time() + chalk.yellow(__('processWasInterrupted')));
+    try {
+      await push(`${__('pushTitle')}\n${__('processWasInterrupted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+    } catch (e) {
+      await push(`${__('pushTitle')}\n${__('processWasInterrupted')}${globalThis.newVersionNotice}`);
+    }
+    process.exit(0);
+  });
 
-process.on('uncaughtException', async (err) => {
-  new Logger(time() + chalk.yellow(__('processError')));
-  try {
-    await push(`${__('pushTitle')}\n${__('processError')}\n\n${pushQuestInfoFormat()}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
-  } catch (e) {
-    await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
-  }
-  new Logger(`Uncaught Exception: ${err.message}`);
-  process.exit(1);
-});
+  process.on('uncaughtException', async (err) => {
+    if (err.message.includes('EPIPE')) {
+      globalThis.log = false;
+      new Logger(time() + chalk.yellow(__('processError')));
+      new Logger(`Uncaught Exception: ${err.message}\n${err.stack}`);
+      process.kill(process.pid, 'SIGTERM');
+      process.disconnect();
+      return;
+    }
+    new Logger(time() + chalk.yellow(__('processError')));
+    try {
+      await push(`${__('pushTitle')}\n${__('processError')}\n\n${pushQuestInfoFormat()}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
+    } catch (e) {
+      await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
+    }
+    new Logger(`Uncaught Exception: ${err.message}\n${err.stack}`);
+    process.exit(0);
+  });
 
-(async () => {
   i18n.configure({
     locales: ['zh', 'en'],
     directory: path.join(process.cwd(), '/locales'),
@@ -90,14 +99,14 @@ process.on('uncaughtException', async (err) => {
   new Logger(logArr.join('\n'));
 
   let configPath = 'config.yml';
-  if (/dist$/.test(process.cwd())) {
+  if (/dist$/.test(process.cwd()) || /output$/.test(process.cwd())) {
     if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
       configPath = join('../', configPath);
     }
   }
   if (!fs.existsSync(configPath)) {
     configPath = 'config/config.yml';
-    if (/dist$/.test(process.cwd())) {
+    if (/dist$/.test(process.cwd()) || /output$/.test(process.cwd())) {
       if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
         configPath = join('../', configPath);
       }
@@ -157,6 +166,7 @@ process.on('uncaughtException', async (err) => {
     language,
     timeout,
     logsExpire,
+    autoUpdate,
     awaCookie,
     awaHost,
     awaBoosterNotice,
@@ -172,16 +182,14 @@ process.on('uncaughtException', async (err) => {
     asfPort,
     asfPassword,
     asfBotname,
-    steamAccountName,
-    steamPassword,
     proxy,
     webUI,
     pusher,
-    autoLogin,
     autoUpdateDailyQuestDb,
     awaSafeReply,
     joinSteamCommunityEvent,
-    TLSRejectUnauthorized
+    TLSRejectUnauthorized,
+    managerServer
   }: config = config;
   if (TLSRejectUnauthorized === false) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -256,7 +264,10 @@ process.on('uncaughtException', async (err) => {
   }
 
   globalThis.newVersionNotice = '';
-  await checkUpdate(version, proxy);
+  await checkUpdate(version, !!managerServer?.enable, !!autoUpdate || process.argv.includes('--update'), proxy);
+  if (process.argv.includes('--update')) {
+    return;
+  }
 
   const quest = new DailyQuest({
     awaCookie: awaCookie as string,
@@ -266,7 +277,6 @@ process.on('uncaughtException', async (err) => {
     boosterRule,
     boosterCorn,
     proxy,
-    autoLogin,
     autoUpdateDailyQuestDb,
     doTaskUS: awaQuests.includes('dailyQuestUS'),
     awaSafeReply,
@@ -293,9 +303,11 @@ process.on('uncaughtException', async (err) => {
   fs.writeFileSync(configPath, configString.replace(awaCookie as string, quest.newCookie));
   await quest.listen(null, null, true);
   globalThis.quest = quest;
+  /*
   if (awaQuests.includes('promotionalCalendar') && quest.promotionalCalendarInfo) {
     await quest.getPromotionalCalendarItem();
   }
+  */
   if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
     await quest.do();
   }
@@ -325,7 +337,7 @@ process.on('uncaughtException', async (err) => {
     }
   }
 
-  let steamQuest: SteamQuestASF | SteamQuestSU | null = null;
+  let steamQuest: SteamQuestASF | null = null;
   if (!steamUse || steamUse === 'ASF') {
     const missingAsfParams = Object.entries({
       asfProtocol,
@@ -352,27 +364,8 @@ process.on('uncaughtException', async (err) => {
         }
       }
     }
-  } else if (steamUse === 'SU') {
-    const missingAsfParams = Object.entries({
-      steamAccountName,
-      steamPassword
-    }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
-    if (awaQuests.includes('steamQuest')) {
-      if (missingAsfParams.length > 0) {
-        new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
-      } else {
-        steamQuest = new SteamQuestSU({
-          awaCookie: quest.newCookie,
-          steamAccountName: steamAccountName as string,
-          steamPassword: steamPassword as string,
-          proxy
-        });
-        if (await steamQuest.init()) {
-          steamQuest.playGames();
-          await sleep(30);
-        }
-      }
-    }
   }
   quest.listen(twitch, steamQuest);
-})();
+};
+
+export { startHelper };

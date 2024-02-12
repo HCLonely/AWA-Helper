@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, questStatus, proxy, awaInfo, dailyQuestDb, myAxiosConfig, boosters */
-import { AxiosRequestHeaders } from 'axios';
+import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import * as FormData from 'form-data';
@@ -8,14 +8,14 @@ import * as cornParser from 'cron-parser';
 import { Logger, sleep, random, time, netError, http as axios, formatProxy, push, pushQuestInfoFormat, Cookie } from './tool';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
-import { SteamQuestSU } from './SteamQuestSU';
+// import { SteamQuestSU } from './SteamQuestSU';
 // import { DailyQuestUS } from './DailyQuestUS';
 import * as fs from 'fs';
 import { chunk } from 'lodash';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 import * as dayjs from 'dayjs';
-import { chromium, LaunchOptions } from 'playwright';
+// import { chromium, LaunchOptions } from 'playwright';
 /*
 import { createInterface } from 'readline';
 const rl = createInterface({
@@ -30,7 +30,7 @@ class DailyQuest {
   posts!: Array<string>;
   trackError = 0;
   trackTimes = 0;
-  headers: AxiosRequestHeaders;
+  headers: RawAxiosRequestHeaders;
   cookie: Cookie;
   httpsAgent!: myAxiosConfig['httpsAgent'];
   userId!: string;
@@ -167,26 +167,29 @@ class DailyQuest {
     this.safeReply = !!awaSafeReply;
     this.joinSteamCommunityEvent = !!joinSteamCommunityEvent;
   }
-  async init(first = true): Promise<number> {
+  async init(): Promise<number> {
     const REMEMBERME = this.cookie.get('REMEMBERME');
     if (REMEMBERME) {
       await this.updateCookie(`REMEMBERME=${REMEMBERME}`);
-    } else {
+    } /* else {
       new Logger(`${time()}${__('noREMEMBERMEAlert', chalk.yellow('awaCookie')), chalk.blue('REMEMBERME')}`);
-    }
-    if (!this.cookie.get('REMEMBERME') || this.cookie.get('REMEMBERME') === 'deleted') {
-      if (!await this.login()) {
+    }*/
+    if (this.cookie.get('REMEMBERME') === 'deleted') {
+      /* if (!await this.login()) {
         return 602;
-      }
+      } */
+      return 602;
     }
     const result = await this.updateDailyQuests(true);
     if (result === 602) {
+      /*
       if (!await this.login()) {
         return 602;
       }
       if (first) {
         return this.init();
       }
+      */
       return 602;
     }
     if (result !== 200) {
@@ -219,6 +222,7 @@ class DailyQuest {
     this.newCookie = `${this.cookie.get('REMEMBERME') ? `REMEMBERME=${this.cookie.get('REMEMBERME')}` : ''};${this.cookie.get('PHPSESSID') ? `PHPSESSID=${this.cookie.get('PHPSESSID')}` : ''};${this.cookie.get('sc') ? `sc=${this.cookie.get('sc')}` : ''};`;
     return 200;
   }
+  /*
   async login(): Promise<boolean> {
     try {
       if (!this.#loginInfo?.enable) {
@@ -320,7 +324,8 @@ class DailyQuest {
       return false;
     }
   }
-  async listen(twitch: TwitchTrack | null, steamQuest: SteamQuestASF | SteamQuestSU | null, check = false): Promise<void> {
+  */
+  async listen(twitch: TwitchTrack | null, steamQuest: SteamQuestASF | null, check = false): Promise<void> {
     if (twitch && !this.listenTwitch) {
       this.listenTwitch = true;
       twitch.EventEmitter.addListener('complete', async () => {
@@ -534,6 +539,9 @@ class DailyQuest {
                 await this.getSteamCommunityEvent();
               }
             }
+          }
+          if (this.joinSteamCommunityEvent && this.steamCommunityEventPath) {
+            await this.checkSteamCommunityEventStatus();
           }
 
           // AWA 在线任务
@@ -807,6 +815,7 @@ class DailyQuest {
       }
     }
     if (this.awaDailyQuestType.includes('replyPost') && !this.done.includes('replyPost')) {
+      this.safeReply = false; // todo: 新版界面失效！
       if (
         this.safeReply &&
         (
@@ -1185,7 +1194,7 @@ class DailyQuest {
   async replyChecker(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('checkingReply')}`, false);
     const getOptions: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/account/arp-log`,
+      url: `https://${globalThis.awaHost}/account/arp-log?max=20`,
       method: 'GET',
       headers: {
         ...this.headers,
@@ -1630,18 +1639,18 @@ class DailyQuest {
             return true;
           }
           let checkOwnedGamesStatus = false;
-          const playedTime = `${$('div.progress-bar.bg-info').attr('aria-valuenow')}h` || '-';
-          const totalTime = `${$('div.progress-bar.bg-info').attr('aria-valuemax')}h` || '-';
-          const gameName = $('a.btn-check-owned-games').parent().find('strong')
-            .text();
-          const gameLink = $('a.btn-check-owned-games').parent().find('a')
-            .eq(0)
-            .attr('href');
+          const playedTime = `${$('div.progress-bar.bg-info').eq(-2).attr('aria-valuenow')}min` || '-';
+          const totalTime = `${$('div.progress-bar.bg-info').eq(-2).attr('aria-valuemax')}min` || '-';
+          const gameName = $('h1').text();
+          const gameId = $('a.btn-steam-community-event[href^="steam://run/"]').attr('href')?.match(/[\d]+/)?.[0] || '';
+          if (gameId) {
+            globalThis.steamEventGameId = gameId;
+          }
           if ($('a.btn-check-owned-games').length > 0) {
-            if (!await this.checkOwnedGames(`[${gameName}](${gameLink})`)) {
-              new Logger(chalk.yellow(`${__('notOwnedGame', chalk.blue(`[${gameName}](${gameLink})`))}`));
+            if (!await this.checkOwnedGames(`[${gameName}](${gameId})`)) {
+              new Logger(chalk.yellow(`${__('notOwnedGame', chalk.blue(`[${gameName}](${gameId})`))}`));
               this.steamCommunityEventInfo = {
-                status: __('notOwnedGame', `[${gameName}](${gameLink})`),
+                status: __('notOwnedGame', `[${gameName}](${gameId})`),
                 playedTime,
                 totalTime
               };
@@ -1670,6 +1679,52 @@ class DailyQuest {
             playedTime,
             totalTime
           };
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+  async checkSteamCommunityEventStatus(): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('checkingSteamCommunityEventStatus')}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}/steam/community-event/${this.steamCommunityEventPath}`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        referer: `https://${globalThis.awaHost}`
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          if (response.data.includes('concluded')) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+            globalThis.steamEventGameId = '';
+            return true;
+          }
+          const $ = load(response.data);
+          const playedTime = parseInt(response.data.match(/personalPlaytime.*?=.*?([\d]+)/)?.[1] || '0', 10);
+          const totalTime = parseInt($('div.progress-bar.bg-info').eq(-2).attr('aria-valuemax') || '0', 10);
+          this.steamCommunityEventInfo = {
+            status: __('joined'),
+            playedTime: `${playedTime}`,
+            totalTime: `${totalTime}min`
+          };
+          if (playedTime >= totalTime) {
+            globalThis.steamEventGameId = '';
+          }
+          ((response.config as myAxiosConfig)?.Logger || logger).log(`${chalk.green('OK')}(${chalk.yellow(`${playedTime}/${totalTime}min`)})`);
           return true;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
@@ -1918,6 +1973,7 @@ class DailyQuest {
         return false;
       });
   }
+  /*
   async getPromotionalCalendarItem() {
     try {
       if (!this.promotionalCalendarInfo) {
@@ -1972,6 +2028,7 @@ class DailyQuest {
       return false;
     }
   }
+  */
   formatQuestInfo() {
     const result = {
       [`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`]: {
@@ -2026,7 +2083,8 @@ class DailyQuest {
           [__('status')]: parseInt(questInfo.arp, 10) > 0 ? __('done') : __('undone'),
           [__('obtainedARP')]: questInfo.arp,
           [__('extraARP')]: questInfo.extraArp || '0',
-          [__('maxAvailableARP')]: '-'
+          [__('maxAvailableARP')]: '-',
+          link: questInfo.link
         };
       }
     }

@@ -97,6 +97,7 @@ repliedNotice: 检测到今日回复帖子记录，跳过！
 checkingReply: 正在查找今日回复帖子记录...
 gettingSteamCommunityEventPath: 正在查询Steam社区活动信息...
 gettingSteamCommunityEvent: 正在查询Steam社区活动状态...
+checkingSteamCommunityEventStatus: 正在查询Steam社区活动进度...
 notOwnedGame: 未拥有此游戏%s
 joined: 已加入
 notJoined: 未加入
@@ -170,6 +171,8 @@ firstSteamUserAlert: 检测到首次使用此方式[%s]登录Steam, 如果Steam�
 loginingSteam: 正在登录 %s...
 loginSuccess: 登录成功
 playingGames: 正在挂游戏时长...
+lastCodeWrong: 验证码错误，请 %s 秒后重试！
+steamCodeInput: 请输入验证码：
 
 ### tool.ts ###
 timeout: 连接超时，请尝试更换代理！
@@ -186,6 +189,10 @@ noUpdate: 当前为最新版！
 pushing: 正在推送...
 pushSuccess: 推送成功
 pushFailed: 推送失败
+downloading: 正在下载安装包...
+decompressing: 正在解压安装包...
+updateSuccess: 更新成功，下次启动时生效！
+nextRunTime: 下次启动AWA-Helper时间：%s
 
 ### webUI ###
 webUIStart: webUI服务器已启动，请打开 %s 查看
@@ -197,3 +204,14 @@ WebUIClosed: 服务器已关闭
 giveUpReconnectWebUI: 多次连接失败，放弃重连
 reconnectingWebUI: 连接出错，正在重新连接...
 log: 日志
+
+### managerServer ###
+managerServerNotConfig: managerServer未配置!
+managerServerSecretNotSet: managerServer的secret未设置！
+managerServerStart: managerServer启动成功！推送链接 %s
+cookieUpdated: cookie更新成功，来源IP%s
+twitchCookieUpdated: Twitch Cookie更新成功，来源IP%s
+publicNetworkNotice: 如需公网访问，请将 127.0.0.1 更换为你的公网ip，并开放%s端口
+startHelper: 启动AWA-Helper
+stopHelper: 终止AWA-Helper
+cornEnabled: 成功配置定时启动AWA-Helper

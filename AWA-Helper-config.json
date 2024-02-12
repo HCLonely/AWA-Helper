@@ -1,0 +1,6 @@
+{
+  "main": "output/main.js",
+  "output": "AWA-Helper.blob",
+  "disableExperimentalSEAWarning": true,
+  "useCodeCache": true
+}

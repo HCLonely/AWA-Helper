@@ -1,15 +1,20 @@
 /* eslint-disable max-len */
-/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, retryAdapterOptions, cookies */
+/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies */
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
-import * as fs from 'fs';
-import axios, { AxiosAdapter, AxiosError, AxiosResponse } from 'axios';
+import * as fs from 'fs-extra';
+import * as os from 'os';
+import axios, { AxiosError } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 import { parse } from 'yaml';
-import { format } from 'util';
+import { format, promisify } from 'util';
 import { PushApi } from 'all-pusher-api';
 import type { Interface } from 'readline';
+import * as decompress from 'decompress';
+import * as stream from 'stream';
+import { spawn } from 'child_process';
+import * as path from 'path';
 
 globalThis.logs = { type: 'logs' };
 
@@ -109,8 +114,13 @@ class Logger {
       return;
     }
     fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(data) + (newLine ? '\n' : ''));
-    if (newLine) console.log(data);
-    else process.stdout.write(data);
+    if (globalThis.log) {
+      if (newLine)  {
+        console.log(data);
+      } else {
+        process.stdout.write(data);
+      }
+    }
     this.data += data;
     logs[this.id.toString()] = {
       id: this.id,
@@ -126,8 +136,13 @@ class Logger {
       return;
     }
     fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(text) + (newLine ? '\n' : ''));
-    if (newLine) console.log(text);
-    else process.stdout.write(text);
+    if (globalThis.log) {
+      if (newLine) {
+        console.log(text);
+      } else {
+        process.stdout.write(text);
+      }
+    }
   }
 }
 
@@ -164,12 +179,29 @@ const netError = (error: AxiosError): string => {
   return '';
 };
 
+/*
+const formatProxy = (proxy: proxy): any => {
+  const proxyOptions: AxiosProxyConfig = {
+    protocol: proxy.protocol,
+    host: proxy.host,
+    port: proxy.port
+  };
+  if (proxy.username && proxy.password) {
+    proxyOptions.auth = {
+      username: proxy.username,
+      password: proxy.password
+    };
+  }
+  return proxyOptions;
+};
+*/
 const formatProxy = (proxy: proxy): any => {
   let agent: any;
   const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
     host: proxy.host,
     port: proxy.port
   };
+
   if (proxy.protocol?.includes('socks')) {
     proxyOptions.hostname = proxy.host;
     if (proxy.username && proxy.password) {
@@ -197,8 +229,8 @@ const formatProxy = (proxy: proxy): any => {
   }
   return agent;
 };
-
-const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOptions): AxiosAdapter => {
+/*
+const retryAdapterEnhancer = (options: retryAdapterOptions): AxiosAdapter => {
   const { times = 0, delay = 300 } = options;
 
   return async (config: myAxiosConfig): Promise<AxiosResponse> => {
@@ -206,7 +238,7 @@ const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOption
     let retryCount = 0;
     const request = async (config: myAxiosConfig): Promise<AxiosResponse> => {
       try {
-        return await adapter(config);
+        return await http(config);
       } catch (err) {
         if (!retryTimes || retryCount >= retryTimes) {
           return Promise.reject(err);
@@ -227,17 +259,38 @@ const retryAdapterEnhancer = (adapter: AxiosAdapter, options: retryAdapterOption
     return request(config);
   };
 };
-
+*/
 const http = axios.create({
   maxRedirects: 5,
-  timeout: 5 * 60 * 1000,
-  adapter: retryAdapterEnhancer(axios.defaults.adapter as AxiosAdapter, {
-    delay: 1000,
-    times: 3
-  })
+  timeout: 5 * 60 * 1000
 });
+http.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const { config } = error;
+    if (!config) return Promise.reject(error);
 
-const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
+    config.retryCount = config.retryCount || 0;
+    if (config.retryCount >= (config.times || 3)) {
+      return Promise.reject(error);
+    }
+
+    config.retryCount++;
+    if (config.Logger) {
+      config.Logger.log(chalk.red('Error'));
+      config.Logger = new Logger(`${time()}${chalk.yellow(__('retrying', chalk.blue(config.retryCount)))}`, false);
+    }
+    const delayHttp = new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, config.delay || 1000);
+    });
+    await delayHttp;
+    return await http(config);
+  }
+);
+
+const checkUpdate = async (version: string, manager: boolean, autoUpdate: boolean, proxy?: proxy):Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   const options: myAxiosConfig = {
     validateStatus: (status: number) => status === 302,
@@ -248,20 +301,24 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     options.httpsAgent = formatProxy(proxy);
   }
   return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
-    .then((response) => {
+    .then(async (response) => {
       globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
       const latestVersion = response?.headers?.location?.match(/tag\/v?([\d.]+)/)?.[1];
       if (latestVersion) {
         const currentVersionArr = version.replace('V', '').split('.').map((e) => parseInt(e, 10));
-        const latestVersionArr = latestVersion.split('.').map((e) => parseInt(e, 10));
+        const latestVersionArr = latestVersion.split('.').map((e: string) => parseInt(e, 10));
         if (
           latestVersionArr[0] > currentVersionArr[0] ||
           (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] > currentVersionArr[1]) ||
           (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] === currentVersionArr[1] && latestVersionArr[2] > currentVersionArr[2])
         ) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
-          new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
-          globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
+          if (!autoUpdate || process.argv.includes('--no-update')) {
+            new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
+            globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
+            return;
+          }
+          await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : 'Linux'}.tar.gz`, manager, proxy);
           return;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
@@ -278,13 +335,90 @@ const checkUpdate = async (version: string, proxy?: proxy):Promise<void> => {
     });
 };
 
+async function downloadFile(link: string, proxy?: proxy): Promise<any> {
+  const logger = new Logger(`${time()}${__('downloading')}`, false);
+  const options: myAxiosConfig = {
+    Logger: logger,
+    responseType: 'stream'
+  };
+  if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
+    options.httpsAgent = formatProxy(proxy);
+  }
+  if (!fs.existsSync('temp/')) {
+    fs.mkdirSync('temp');
+  }
+  const finished = promisify(stream.finished);
+  const writer = fs.createWriteStream('temp/AWA-Helper.tar.gz');
+  return await http.get(link, options)
+    .then(async (response) => {
+      response.data.pipe(writer);
+      ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('OK')));
+      await finished(writer);
+      return true;
+    })
+    .catch((error) => {
+      ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+      new Logger(error);
+      return;
+    });
+}
+
+const update = async (link: string, manager: boolean, proxy?: proxy): Promise<void> => {
+  if (!await downloadFile(link, proxy)) {
+    return;
+  }
+  if (!fs.existsSync('temp/AWA-Helper.tar.gz')) {
+    return;
+  }
+  const logger = new Logger(`${time()}${__('decompressing')}`, false);
+  const decompressResult = await decompress('temp/AWA-Helper.tar.gz', 'temp/AWA-Helper')
+    .then(() => {
+      logger.log(chalk.green(__('OK')));
+      return true;
+    })
+    .catch((error) => {
+      logger.log(chalk.red('Error'));
+      new Logger(error);
+      return false;
+    });
+  if (!decompressResult) {
+    return;
+  }
+  if (os.type() === 'Windows_NT') {
+    fs.writeFileSync('temp/update.bat', `@echo off
+cd "%~dp0"
+taskkill /f /t /im AWA-Helper.exe
+if exist ".\\AWA-Helper" (
+echo Moving AWA-Helper...
+xcopy /y /e "${path.resolve('./temp/AWA-Helper/output')}" "${path.resolve('./')}\\"
+echo Success
+)
+cd ..
+${
+  // eslint-disable-next-line no-nested-ternary
+  process.argv.includes('--update') ?
+    '' :
+    (manager ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
+rmdir /s /q temp
+exit
+`);
+    const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
+    updater.unref();
+  } else {
+    if (fs.existsSync('temp/AWA-Helper')) {
+      fs.copySync('temp/AWA-Helper/output/', './', { overwrite: true });
+      fs.emptyDirSync('temp');
+      fs.rmdirSync('temp');
+      new Logger(`${time()}${chalk.green(__('updateSuccess'))}`);
+    }
+  }
+};
+
 const ask = (rl: Interface, question: string, answers?: Array<string>): Promise<string> => new Promise((resolve) => {
   rl.question(`${question}`, (chunk) => {
     const answer = chunk.toString().trim();
-    if (answers) {
-      if (!answers.includes(answer)) {
-        return resolve(ask(rl, question, answers));
-      }
+    if ((answers && !answers.includes(answer)) || !answer) {
+      return resolve(ask(rl, question, answers));
     }
     return resolve(answer);
   });
@@ -318,25 +452,27 @@ const pushQuestInfoFormat = () => {
   if (!globalThis.quest?.formatQuestInfo) {
     return '';
   }
-  const otherTaskInfo = new Array(5);
-  const dailyTaskInfo:Array<any> = [];
+  const otherTaskInfo = new Array(2);
+  const dailyTaskInfo: Array<any> = [];
+  const onlineTaskInfo = new Array(2);
+  const steamTaskInfo: Array<any> = [];
   Object.entries(globalThis.quest.formatQuestInfo()).forEach(
     ([name, value]) => {
       if (name === __('timeOnSite')) {
-        otherTaskInfo[0] = [name, value];
+        onlineTaskInfo[0] = [name, value];
       } else if (name === __('watchTwitch')) {
-        otherTaskInfo[1] = [name, value];
-      } else if (name === __('steamQuest')) {
-        otherTaskInfo[2] = [name, value];
+        onlineTaskInfo[1] = [name, value];
+      } else if (name.includes(__('steamQuest'))) {
+        steamTaskInfo.push([name, value]);
       } else if (name === __('promotionalCalendar')) {
-        otherTaskInfo[3] = [name, value];
+        otherTaskInfo[0] = [name, value];
       } else if (name === __('steamCommunityEvent')) {
-        otherTaskInfo[4] = [name, value];
+        otherTaskInfo[1] = [name, value];
       } else {
         dailyTaskInfo.push([name, value]);
       }
     });
-  const sortedTaskInfo = [...dailyTaskInfo, ...otherTaskInfo].filter((e) => e);
+  const sortedTaskInfo = [...dailyTaskInfo, ...onlineTaskInfo, ...steamTaskInfo, ...otherTaskInfo].filter((e) => e);
   return `${__('dailyArp', globalThis.quest.dailyArp)}\n\n${
     globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''
   }${
@@ -350,8 +486,8 @@ const pushQuestInfoFormat = () => {
         if (name === __('promotionalCalendar')) {
           return `---\n${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
         }
-        if (name.includes(__('dailyTask', ''))) {
-          return `---\n${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`;
+        if (name === __('watchTwitch')) {
+          return `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP\n---`;
         }
         return `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`;
       })

@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* global __, myAxiosConfig */
-import { AxiosRequestHeaders } from 'axios';
+import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, sleep, time, netError, http as axios, formatProxy, Cookie } from './tool';
@@ -16,15 +16,15 @@ class TwitchTrack {
   trackTimes = 0;
   cookie: Cookie;
   httpsAgent!: myAxiosConfig['httpsAgent'];
-  headers: AxiosRequestHeaders;
+  headers: RawAxiosRequestHeaders;
   complete = false;
   availableStreams!: Array<string>;
   availableStreamsInfo!: Array<string>;
   EventEmitter = EventEmitter;
-  awaHeaders!: AxiosRequestHeaders;
+  awaHeaders!: RawAxiosRequestHeaders;
 
   // eslint-disable-next-line no-undef
-  constructor({ cookie, proxy, awaHeaders }: { cookie: string, awaHeaders: AxiosRequestHeaders, proxy?: proxy }) {
+  constructor({ cookie, proxy, awaHeaders }: { cookie: string, awaHeaders: RawAxiosRequestHeaders, proxy?: proxy }) {
     this.cookie = new Cookie(cookie);
     this.headers = {
       Authorization: `OAuth ${this.cookie.get('auth-token')}`,

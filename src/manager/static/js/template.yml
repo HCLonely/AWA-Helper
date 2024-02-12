@@ -56,44 +56,65 @@
       desp: 一般不需要修改
       type: text
       defaultValue: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47'
-    manager:
+    autoUpdate:
+      name: 是否启用自动更新
+      type: boolean
+      defaultValue: true
+    managerServer:
       name: AWA-Manager配置
       type: object
       body:
+        enable:
+          name: 是否启用, 需同时启用webUI
+          type: boolean
+          defaultValue: false
         secret:
           name: AWA-Manager Secret
           desp: AWA-Manager访问密钥，强烈建议修改
           type: text
-          defaultValue: '{随机}'
+          defaultValue: ''
         local:
           name: 是否仅内网可访问
           type: boolean
-          defaultValue: false
+          defaultValue: true
         port:
           name: AWA-Manager端口
           type: text
           inputType: number
           defaultValue: 2345
+        ssl:
+          name: SSL证书配置
+          type: object
+          body:
+            key:
+              name: SSL证书key文件名
+              type: text
+              defaultValue: ''
+            cert:
+              name: SSL证书文件名
+              type: text
+              defaultValue: ''
+        corn:
+          name: 定时启动AWA-Helper
+          desp: |-
+              <pre><code>示例：
+              3 30 14,21 * * *
+              ┬ ┬─ ──┬── ┬ ┬ ┬
+              │ │    │   │ │ |
+              │ │    │   │ │ └─────────────── 一周的第几天 (0 - 7, 1L - 7L) (0或7是周日) ┐
+              │ │    │   │ └───────────────── 月份　　　　 (1 - 12)　 　　　             ├─ 日期
+              │ │    │   └─────────────────── 每月的第几天 (1 - 31, L)　　　　           ┘
+              │ │    └───────────────────── 小时 (0 - 23) ┐
+              │ └────────────────────────── 分钟 (0 - 59) ├─ 时间
+              └──────────────────────────── 秒　 (0 - 59) ┘
+              # 示例中的表达式代表每天的14:30:03和21:30:03启动AWA-Helper
+              # !! 注意每次运行的时间间隔要大于前面设置的timeout</code></pre>
+          type: text
     awaCookie:
       name: 外星人论坛Cookie
       desp: 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能。
       type: text
       required: true
-    autoLogin:
-      name: 自动登录配置
-      desp: 自动登录AWA更新Cookies。
-      type: object
-      body:
-        enable:
-          name: 是否启用
-          type: boolean
-          defaultValue: false
-        username:
-          name: AWA用户名[邮箱]
-          type: text
-        password:
-          name: AWA密码
-          type: text
     awaHost:
       name: 外星人论坛Host
       desp: 默认的没问题就不要改
@@ -106,13 +127,11 @@
       type: multi-select
       optionsName:
         - 每日任务
-        - 美区每日任务
         - AWA在线任务
         - Twitch直播间在线任务
         - Steam游戏时长任务
       options:
         - dailyQuest
-        - dailyQuestUS
         - timeOnSite
         - watchTwitch
         - steamQuest
@@ -130,7 +149,6 @@
         - 浏览页面任务，任务标题为任务链接，浏览页面才能完成
         - 浏览页面任务，任务标题无链接，尝试浏览 排行榜，奖励，商店页面
         - 更换Border
-        - 更换Badge
         - 更换Avatar
         - 浏览新闻
         - 分享帖子
@@ -140,7 +158,6 @@
         - visitLink
         - openLink
         - changeBorder
-        - changeBadge
         - changeAvatar
         - viewNews
         - sharePost
@@ -150,7 +167,6 @@
         - visitLink
         - openLink
         - changeBorder
-        - changeBadge
         - changeAvatar
         - viewNews
         - sharePost
@@ -161,16 +177,15 @@
     awaSafeReply:
       name: 今日回复过帖子则跳过回复帖子操作
       type: boolean
-      defaultValue: false
+      defaultValue: true
     autoUpdateDailyQuestDb:
       name: 自动更新每日任务数据库
       type: boolean
       defaultValue: false
     joinSteamCommunityEvent:
       name: 自动加入Steam社区活动
-      desp: 只是加入活动，不挂时长！
       type: boolean
-      defaultValue: false
+      defaultValue: true
     twitchCookie:
       name: Twitch Cookie
       desp: 必须包括`unique_id` 和 `auth-token`
@@ -180,10 +195,8 @@
       type: single-select
       options:
         - ASF
-        - SU
       optionsName:
         - ASF
-        - node-steam-user
       defaultValue: ASF
       bindValue:
         type: object
@@ -214,15 +227,6 @@
             asfBotname:
               name: ASF Botname
               desp: 要挂游戏的ASF Bot名称
-              type: text
-          SU:
-            steamAccountName:
-              name: Steam 用户名
-              desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
-              type: text
-            steamPassword:
-              name: Steam 密码
-              desp: 使用`node-steam-user`挂Steam游戏时长任务需要，不想做这个任务可以不填。如果Steam启用了两步验证，首次使用此方式时注意按控制台提示输入两步验证码。
               type: text
     proxy:
       name: 代理设置

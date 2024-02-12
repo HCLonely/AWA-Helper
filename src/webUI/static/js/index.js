@@ -14,8 +14,12 @@ function __(text, ...argv) {
 }
 function generateTaskInfo(data) {
   if (data) {
-    Object.entries(data).filter(([name]) => name.includes(__('dailyTask'))).forEach(([name, value], index) => {
-      $(`#daily-quest-${index}`).find('th').text(name);
+    Object.entries(data).filter(([name]) => name.includes(__('dailyTask', ''))).forEach(([name, value], index) => {
+      if (value.link) {
+        $(`#daily-quest-${index}`).find('th').html(`<a href="${value.link}" target="_blank">${name}</a>`);
+      } else {
+        $(`#daily-quest-${index}`).find('th').text(name);
+      }
       $(`#daily-quest-${index}`).find('td').eq(0)
         .text(value[__('status')]);
       $(`#daily-quest-${index}`).find('td').eq(1)
@@ -28,6 +32,20 @@ function generateTaskInfo(data) {
         $(`#daily-quest-${index}`).attr('class', 'table-success');
       }
     });
+    Object.entries(data).filter(([name]) => name.includes(__('steamQuest'))).forEach(([name, value], index) => {
+      $(`#steam-quest-${index}`).find('th').text(name);
+      $(`#steam-quest-${index}`).find('td').eq(0)
+        .text(value[__('status')]);
+      $(`#steam-quest-${index}`).find('td').eq(1)
+        .text(value[__('obtainedARP')]);
+      $(`#steam-quest-${index}`).find('td').eq(2)
+        .text(value[__('maxAvailableARP')]);
+      $(`#steam-quest-${index}`).show();
+
+      if (value[__('status')] === __('done')) {
+        $(`#steam-quest-${index}`).attr('class', 'table-success');
+      }
+    });
 
     $('#time-on-site').find('td').eq(0)
       .text(data[__('timeOnSite')][__('status')]);
@@ -38,20 +56,24 @@ function generateTaskInfo(data) {
     $('#watch-twitch').find('td').eq(0)
       .text(data[__('watchTwitch')][__('status')]);
     $('#watch-twitch').find('td').eq(1)
-      .text(data[__('watchTwitch')][__('obtainedARP')]);
+      .text(parseInt(data[__('watchTwitch')][__('obtainedARP')], 10) + parseInt(data[__('watchTwitch')][__('extraARP')], 10));
     $('#watch-twitch').find('td').eq(2)
       .text(data[__('watchTwitch')][__('maxAvailableARP')]);
-    $('#steam-quest').find('td').eq(0)
-      .text(data[__('steamQuest')][__('status')]);
-    $('#steam-quest').find('td').eq(1)
-      .text(data[__('steamQuest')][__('obtainedARP')]);
-    $('#steam-quest').find('td').eq(2)
-      .text(data[__('steamQuest')][__('maxAvailableARP')]);
     if (data[__('timeOnSite')][__('obtainedARP')] === data[__('timeOnSite')][__('maxAvailableARP')]) {
       $('#time-on-site').attr('class', 'table-success');
     }
-    if (data[__('watchTwitch')][__('obtainedARP')] === data[__('watchTwitch')][__('maxAvailableARP')]) {
+    // eslint-disable-next-line max-len
+    if ((parseInt(data[__('watchTwitch')][__('obtainedARP')], 10) + parseInt(data[__('watchTwitch')][__('extraARP')], 10)) === data[__('watchTwitch')][__('maxAvailableARP')]) {
       $('#watch-twitch').attr('class', 'table-success');
+    }
+    if (data[__('steamCommunityEvent')]) {
+      $('#steam-event').find('td').eq(0)
+        .text(data[__('steamCommunityEvent')][__('status')]);
+      $('#steam-event').find('td').eq(1)
+        .text(`${data[__('steamCommunityEvent')][__('obtainedARP')]}min`);
+      $('#steam-event').find('td').eq(2)
+        .text(data[__('steamCommunityEvent')][__('maxAvailableARP')]);
+      $('#steam-event').show();
     }
     return;
   }
@@ -61,10 +83,10 @@ function generateTaskInfo(data) {
     .text(__('obtainedARP'));
   $('#table-head').find('th').eq(3)
     .text(__('maxAvailableARP'));
-  $('#daily-quest-0').find('th').text(__('dailyTask'));
+  $('#daily-quest-0').find('th').text(__('dailyTask', ''));
   $('#time-on-site').find('th').text(__('timeOnSite'));
   $('#watch-twitch').find('th').text(__('watchTwitch'));
-  $('#steam-quest').find('th').text(__('steamQuest'));
+  $('#steam-event').find('th').text(__('steamCommunityEvent'));
   $('#log-title').text(__('log'));
 }
 function time() {

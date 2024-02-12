@@ -17,5 +17,9 @@
   },
   "include": [
     "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/DailyQuestUS.ts",
+    "src/SteamQuestSU.ts"
   ]
 }

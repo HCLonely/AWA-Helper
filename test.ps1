@@ -1,7 +1,7 @@
-Set-Location dist
+Set-Location output
 if ( -not( Test-Path ./config.yml ))
 {
-  $result = node index.js
+  $result = node main.js --helper
   if ( ((-split $result) -join "" ) -notmatch "config.yml]!" )
   {
     Write-Output $result

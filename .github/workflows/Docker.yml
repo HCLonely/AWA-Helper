@@ -38,14 +38,3 @@ jobs:
           tags: |
             hclonely/awa-helper:latest
             hclonely/awa-helper:${{ env.version }}
-      -
-        name: Build and push with chromium
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Dockerfile.chromium
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            hclonely/awa-helper-chromium:latest
-            hclonely/awa-helper-chromium:${{ env.version }}

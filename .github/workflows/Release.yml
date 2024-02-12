@@ -12,7 +12,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 18.x
+          node-version: 21.x
       - run: npm install
       - run: npm run build
       - name: Release
@@ -23,8 +23,6 @@ jobs:
           name: ${{ env.version }}
           body_path: CHANGELOG.txt
           files: |
-            AWA-Helper.zip
-            AWA-Helper.tar.gz
-#            AWA-Manager.zip
-#            AWA-Manager.tar.gz
+            AWA-Helper-Win.tar.gz
+            AWA-Helper-Linux.tar.gz
           token: ${{ github.TOKEN }}
