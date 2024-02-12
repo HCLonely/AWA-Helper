@@ -107,6 +107,7 @@ repliedNotice: Today's reply post record detected, skip!
 checkingReply: Looking for today's reply post records...
 gettingSteamCommunityEventPath: Querying Steam community event information...
 gettingSteamCommunityEvent: Checking Steam community event status...
+checkingSteamCommunityEventStatus: Checking the progress of Steam community event...
 notOwnedGame: Do not own this game %s
 joined: joined
 notJoined: not joined
@@ -174,6 +175,8 @@ firstSteamUserAlert: It is detected that this method [%s] is used to log in to S
 loginingSteam: Logging in %s...
 loginSuccess: Login successful
 playingGames: Playing game...
+lastCodeWrong: Verification code error, please try again in %s seconds!
+steamCodeInput: 'Please enter verification code:'
 timeout: Connection timed out, try changing to another proxy!
 connRefused: Connection refused, try changing to another proxy!
 connReset: The connection has been reset, try changing to another proxy!
@@ -188,6 +191,11 @@ noUpdate: No updates found!
 pushing: Pushing...
 pushSuccess: Push Successful
 pushFailed: Push failed
+downloading: Downloading installation package...
+decompressing: Unzipping the installation package...
+updateSuccess: The update is successful and will take effect the next time you start
+  it!
+nextRunTime: 'Next time to start AWA-Helper: %s'
 webUIStart: webUI server started, Please open %s to view
 webUIConnect: webUI is connected
 webUIDisconnect: webUI is disconnected
@@ -197,3 +205,13 @@ WebUIClosed: Server is closed
 giveUpReconnectWebUI: Multiple connections failed, stopping reconnection
 reconnectingWebUI: Error connecting, reconnecting...
 log: log
+managerServerNotConfig: managerServer is not configured!
+managerServerSecretNotSet: The secret of managerServer is not set!
+managerServerStart: managerServer started successfully! Push link %s
+cookieUpdated: Cookie updated successfully, source IP %s
+twitchCookieUpdated: Twitch cookie updated successfully, source IP %s
+publicNetworkNotice: If you need public network access, please replace 127.0.0.1 with
+  your public network IP and open the %s port
+startHelper: Start AWA-Helper
+stopHelper: Terminate AWA-Helper
+cornEnabled: Successfully configured scheduled start of AWA-Helper
