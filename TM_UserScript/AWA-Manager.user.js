@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWA-Manager
 // @namespace    AWA-Manager
-// @version      0.1
+// @version      0.2
 // @description  AWA Cookie更新
 // @author       HCLonely
 // @include      *
@@ -273,7 +273,7 @@
           webuiURL.port = response.data?.webui.port;
           $('.run-status').html(`<a href="${webuiURL.href}" target="_blank">${response.data?.runStatus}</a>`);
         }
-        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 行状态获取成功！`);
+        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 运行状态获取成功！`);
         return response.data?.runStatus;
       }
       $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 运行状态获取失败(${response.status})！`);
