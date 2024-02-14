@@ -177,7 +177,7 @@
         result = JSON.stringify(config, null, 2);
       }
       if (['yml', 'yaml'].includes(form.attr('data-type'))) {
-        result = jsyaml.dump(config);
+        result = jsyaml.dump(config, { lineWidth: -1, forceQuotes: true });
       }
       if (['ini'].includes(form.attr('data-type'))) {
         result = object2ini(config);
