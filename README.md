@@ -41,7 +41,7 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
 
 > 如果你的电脑全天运行不关机或在服务器上运行建议使用 AWA-Manager.
 >
-> [视频教程](#37)
+> [视频教程](https://github.com/HCLonely/AWA-Helper/issues/37)
 
 1. 下载[AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
 2. 编辑配置文件,[查看说明](#config-文件配置)
