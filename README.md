@@ -40,6 +40,8 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
 #### 安装运行
 
 > 如果你的电脑全天运行不关机或在服务器上运行建议使用 AWA-Manager.
+>
+> [视频教程](#37)
 
 1. 下载[AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
 2. 编辑配置文件,[查看说明](#config-文件配置)
@@ -89,12 +91,6 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
 
 ### 使用 Docker
 
-#### 安装
-
-```shell
-docker pull hclonely/awa-helper
-```
-
 #### 运行
 
 > !!! Docker 方式运行不要修改`managerServer`和`webUI`的`port`，并设置`autoUpdate`和`managerServer`的`local`为`false`!!!
@@ -115,7 +111,7 @@ docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src
 
 ## config 文件配置
 
-> **需要复制一份`config.example.yml`文件并重命名为`config.yml`!!!**
+> **需要复制一份`config`文件夹里的`config.example.yml`文件并重命名为`config.yml`!!!**
 
 ### 全局配置(必需)
 
