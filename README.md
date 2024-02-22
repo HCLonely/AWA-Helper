@@ -361,6 +361,13 @@ flowchart TD
 
 ![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)
 
+## TODO
+
+[ ] WebUI显示版本号
+[ ] TM User JS 安装提示
+[ ] 直接通过main.js启动
+[ ] 检测config,bat,sh
+
 ## 感谢以下开源项目
 
 - [axios](https://github.com/axios/axios)

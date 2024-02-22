@@ -2,7 +2,7 @@ name: Release
 on:
   workflow_dispatch:
 env:
-  version: 3.0.1
+  version: 3.0.2
 jobs:
   release:
     runs-on: windows-latest
@@ -14,6 +14,10 @@ jobs:
         with:
           node-version: 21.x
       - run: npm install
+      - name: Install UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          install-only: true
       - run: npm run build
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -25,4 +29,61 @@ jobs:
           files: |
             AWA-Helper-Win.tar.gz
             AWA-Helper-Linux.tar.gz
+            main.js
+          token: ${{ github.TOKEN }}
+  release-linux:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 21.x
+      - name: Install UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          install-only: true
+      - run: npm install
+      - run: npm run build:pre
+      - name: build-x64
+        run: |
+          node --experimental-sea-config AWA-Helper-config.json
+          curl -L https://nodejs.org/dist/v21.6.2/node-v21.6.2-linux-x64.tar.xz -o node-v21.6.2-linux-x64.tar.xz
+          tar -xvf node-v21.6.2-linux-x64.tar.xz node-v21.6.2-linux-x64/bin/node
+          cp node-v21.6.2-linux-x64/bin/node output/AWA-Helper
+          npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          # upx --brute ./output/AWA-Helper
+          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-x64.tar.gz ./output
+          rm -rf output/AWA-Helper
+      - name: build-armv7
+        run: |
+          curl -L https://nodejs.org/dist/v21.6.2/node-v21.6.2-linux-armv7l.tar.xz -o node-v21.6.2-linux-armv7l.tar.xz
+          tar -xvf node-v21.6.2-linux-armv7l.tar.xz node-v21.6.2-linux-armv7l/bin/node
+          cp node-v21.6.2-linux-armv7l/bin/node output/AWA-Helper
+          npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          # upx --brute ./output/AWA-Helper
+          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-armv7.tar.gz ./output
+          rm -rf output/AWA-Helper
+      - name: build-armv8
+        run: |
+          curl -L https://nodejs.org/dist/v21.6.2/node-v21.6.2-linux-arm64.tar.xz -o node-v21.6.2-linux-arm64.tar.xz
+          tar -xvf node-v21.6.2-linux-arm64.tar.xz node-v21.6.2-linux-arm64/bin/node
+          cp node-v21.6.2-linux-arm64/bin/node output/AWA-Helper
+          npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          # upx --brute ./output/AWA-Helper
+          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-armv8.tar.gz ./output
+          rm -rf output/AWA-Helper
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: false
+          tag_name: v${{ env.version }}
+          name: ${{ env.version }}
+          body_path: CHANGELOG.txt
+          files: |
+            AWA-Helper-Linux-x64.tar.gz
+            AWA-Helper-Linux-armv7.tar.gz
+            AWA-Helper-Linux-armv8.tar.gz
           token: ${{ github.TOKEN }}

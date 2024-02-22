@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-/* global __, questStatus, proxy, awaInfo, dailyQuestDb, myAxiosConfig, boosters */
+/* global __, questStatus, proxy, awaInfo, myAxiosConfig, boosters */
 import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
@@ -15,6 +15,8 @@ import { chunk } from 'lodash';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 import * as dayjs from 'dayjs';
+
+import * as dailyQuestDbJson from './dailyQuestDb.json';
 // import { chromium, LaunchOptions } from 'playwright';
 /*
 import { createInterface } from 'readline';
@@ -76,7 +78,6 @@ class DailyQuest {
     username?: string
     password?: string
   };
-  autoUpdateDailyQuestDb = false;
   doTaskUS = false;
   postReplied: null | boolean = null;
   safeReply = false;
@@ -103,7 +104,7 @@ class DailyQuest {
   dailyArp = '0';
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, autoUpdateDailyQuestDb, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
+  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
     awaCookie: string
     awaDailyQuestType?: Array<string>
     awaDailyQuestNumber1: boolean | undefined
@@ -116,14 +117,12 @@ class DailyQuest {
       username: string
       password: string
     },
-    autoUpdateDailyQuestDb?: boolean
     doTaskUS?: boolean
     awaSafeReply?: boolean
     joinSteamCommunityEvent?: boolean
   }) {
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.newCookie = awaCookie;
-    this.autoUpdateDailyQuestDb = !!autoUpdateDailyQuestDb;
     this.cookie = new Cookie(awaCookie);
     this.headers = {
       cookie: this.cookie.stringify(),
@@ -756,9 +755,6 @@ class DailyQuest {
       }
     }
 
-    if (this.autoUpdateDailyQuestDb) {
-      await this.updateDailyQuestDb();
-    }
     for (const dailyQuestName of this.dailyQuestName) {
       const matchedQuest = this.matchQuest(dailyQuestName);
       if (matchedQuest.length > 0) {
@@ -1520,38 +1516,8 @@ class DailyQuest {
       logger.log(chalk.yellow(__('notMatchedDailyQuest')));
       return [];
     }
-    let quests: dailyQuestDb['quests'] = {
-      changeBorder: [],
-      changeBadge: [],
-      changeAvatar: [],
-      viewNews: [],
-      sharePost: [],
-      replyPost: [],
-      other: []
-    };
-    let questsCloud: dailyQuestDb['quests'] = {
-      changeBorder: [],
-      changeBadge: [],
-      changeAvatar: [],
-      viewNews: [],
-      sharePost: [],
-      replyPost: [],
-      other: []
-    };
+    const { quests } = dailyQuestDbJson;
 
-    if (fs.existsSync('dailyQuestDb.json')) {
-      ({ quests } = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString()) as dailyQuestDb);
-    }
-    if (fs.existsSync('dailyQuestDbCloud.json')) {
-      ({ quests: questsCloud } = JSON.parse(fs.readFileSync('dailyQuestDbCloud.json').toString()) as dailyQuestDb);
-    }
-    if (!fs.existsSync('dailyQuestDb.json') && !fs.existsSync('dailyQuestDbCloud.json')) {
-      logger.log(chalk.yellow(__('notMatchedDailyQuest')));
-      return [];
-    }
-    if (this.autoUpdateDailyQuestDb && questsCloud) {
-      quests = questsCloud;
-    }
     let matchedQuest = Object.entries(quests).map(([key, value]) => (value.includes(dailyQuestName) ? key : '')).filter((e) => e);
     if (matchedQuest.length > 0) {
       logger.log(chalk.green(__('success')));
@@ -1947,6 +1913,7 @@ class DailyQuest {
       });
   }
 
+  /*
   async updateDailyQuestDb(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('updatingDailyQuestDb')}`, false);
     const options: myAxiosConfig = {
@@ -1973,7 +1940,6 @@ class DailyQuest {
         return false;
       });
   }
-  /*
   async getPromotionalCalendarItem() {
     try {
       if (!this.promotionalCalendarInfo) {

@@ -17,6 +17,17 @@ import * as minMax from 'dayjs/plugin/minMax';
 import axios from 'axios';
 import * as corn from 'node-cron';
 import * as parser from 'cron-parser';
+// @ts-ignore
+import indexHtml from './dist/index.html';
+// @ts-ignore
+import configerHtml from './dist/configer.html';
+// @ts-ignore
+import templateYml from './static/js/template.yml';
+
+// @ts-ignore
+import * as zh from '../locales/zh.json';
+// @ts-ignore
+import * as en from '../locales/en.json';
 
 interface config {
   logsExpire: number
@@ -44,8 +55,12 @@ const startManager = async (startHelper: boolean) => {
   dayjs.extend(minMax);
   i18n.configure({
     locales: ['zh', 'en'],
-    directory: join(process.cwd(), '/locales'),
-    extension: '.json',
+    // directory: join(process.cwd(), '/locales'),
+    // extension: '.json',
+    staticCatalog: {
+      zh,
+      en
+    },
     defaultLocale: 'zh',
     register: globalThis
   });
@@ -139,7 +154,7 @@ const startManager = async (startHelper: boolean) => {
   const createServer = (options?: { key: Buffer, cert: Buffer }) => {
     let server;
     const app = express();
-    app.use(express.static(`${__dirname}/manager/static`));
+    // app.use(express.static(`${__dirname}/manager/static`));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     if (options?.key && options?.cert) {
@@ -148,12 +163,20 @@ const startManager = async (startHelper: boolean) => {
 
     app.get('/', (_, res) => {
       res.send(
-        fs.readFileSync(`${__dirname}/manager/index.html`).toString()).end();
+        // fs.readFileSync(`${__dirname}/manager/index.html`).toString()).end();
+        indexHtml).end();
     });
     app.get('/configer', (_, res) => {
       res.send(
-        fs.readFileSync(`${__dirname}/manager/configer/index.html`).toString()).end();
+        // fs.readFileSync(`${__dirname}/manager/configer/index.html`).toString()).end();
+        configerHtml).end();
     });
+    app.get('/js/template.yml', (_, res) => {
+      res.send(
+        // fs.readFileSync(`${__dirname}/manager/configer/index.html`).toString()).end();
+        templateYml).end();
+    });
+
     app.post('/getConfig', (req, res) => {
       if (req.body?.secret === managerServer.secret) {
         res.send(
@@ -260,7 +283,7 @@ const startManager = async (startHelper: boolean) => {
     app.post('/start', async (req, res) => {
       if (req.body?.secret === managerServer.secret) {
         new Logger(time() + __('startHelper'));
-        if (os.type() === 'Windows_NT') {
+        if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
           const awaHelper = spawn('./AWA-Helper', ['--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
           awaHelper.unref();
         } else {
@@ -288,6 +311,8 @@ const startManager = async (startHelper: boolean) => {
           } catch (e) {
             res.send('error').status(501).end();
           }
+        } else {
+          res.send('success').status(200).end();
         }
       } else {
         res.status(401).end();
@@ -329,7 +354,7 @@ const startManager = async (startHelper: boolean) => {
   if (managerServer.corn) {
     corn.schedule(managerServer.corn, () => {
       new Logger(time() + __('startHelper'));
-      if (os.type() === 'Windows_NT') {
+      if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
         const awaHelper = spawn('./AWA-Helper', ['--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
         awaHelper.unref();
       } else {
@@ -345,7 +370,7 @@ const startManager = async (startHelper: boolean) => {
   // 更新后首次启动
   if (startHelper) {
     new Logger(time() + __('startHelper'));
-    if (os.type() === 'Windows_NT') {
+    if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
       const awaHelper = spawn('./AWA-Helper', ['--helper', '--color', '--no-update'], { detached: true, windowsHide: true, stdio: 'ignore' });
       awaHelper.unref();
     } else {

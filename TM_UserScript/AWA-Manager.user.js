@@ -16,7 +16,7 @@
 // ==/UserScript==
 /* global window,document,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,$, dayjs */
 /* eslint-disable max-len */
-// todo: 红猴仅限说明
+
 (async function () {
   'use strict';
   const syncTime = GM_getValue('time') || 0;

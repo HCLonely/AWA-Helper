@@ -108,7 +108,6 @@ class SteamQuestASF {
               ?.match(/steam\/apps\/([\d]+)/)?.[1];
             if (!id) continue;
             */
-            // await this.add2library(id);
             const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
             const [id, started] = await this.getQuestInfo(questLink);
 
@@ -374,6 +373,7 @@ class SteamQuestASF {
   async getOwnedGames(): Promise<boolean> {
     if (!await this.getSteamQuests()) return false;
     if (this.gamesInfo.length === 0 && !globalThis.steamEventGameId) return true;
+    await this.addLicense();
     const logger = new Logger(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
     const options: myAxiosConfig = {
       url: this.asfUrl,
@@ -484,6 +484,42 @@ class SteamQuestASF {
           if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
             this.status = 'stopped';
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(response.data.Result));
+            return true;
+          }
+          if (response.data.Message) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(response.data.Message));
+            return false;
+          }
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
+          new Logger(response.data);
+          return false;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(2): ${response.status}`));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+  }
+  async addLicense(): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('addingLicense')}`, false);
+    const options: myAxiosConfig = {
+      url: this.asfUrl,
+      method: 'POST',
+      headers: this.headers,
+      data: `{"Command":"!addlicense ${this.botname} ${this.gamesInfo.map((e) => `app/${e.id}`).join(',')}${globalThis.steamEventGameId ? `,app/${globalThis.steamEventGameId}` : ''}"}`,
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+    return axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          if (response.data.Success === true && response.data.Message === 'OK' && response.data.Result) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
             return true;
           }
           if (response.data.Message) {

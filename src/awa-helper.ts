@@ -14,6 +14,15 @@ import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
 import { createServer } from './webUI/index';
 import * as dayjs from 'dayjs';
+// @ts-ignore
+import CHANGELOG from '../CHANGELOG.txt';
+import { execSync } from 'child_process';
+import * as os from 'os';
+
+// @ts-ignore
+import * as zh from './locales/zh.json';
+// @ts-ignore
+import * as en from './locales/en.json';
 
 const startHelper = async () => {
   globalThis.log = true;
@@ -58,16 +67,20 @@ const startHelper = async () => {
 
   i18n.configure({
     locales: ['zh', 'en'],
-    directory: path.join(process.cwd(), '/locales'),
-    extension: '.json',
+    // directory: path.join(process.cwd(), '/locales'),
+    // extension: '.json',
+    staticCatalog: {
+      zh,
+      en
+    },
     defaultLocale: 'zh',
     register: globalThis
   });
   globalThis.ws = null;
   globalThis.webUI = true;
-  if (fs.existsSync('lock')) {
+  if (fs.existsSync('.lock')) {
     try {
-      fs.unlinkSync('lock');
+      fs.unlinkSync('.lock');
     } catch (e) {
       new Logger(chalk.red(__('running')));
       new Logger(chalk.blue(__('multipleAccountAlert')));
@@ -78,9 +91,16 @@ const startHelper = async () => {
     }
   }
   const locked = await new Promise((resolve) => {
-    fs.open('lock', 'w', (error) => {
+    fs.open('.lock', 'w', (error) => {
       if (error) {
         resolve(true);
+      }
+      if (os.type() === 'Windows_NT') {
+        try {
+          execSync('attrib +h .lock');
+        } catch (e) {
+          //
+        }
       }
       resolve(false);
     });
@@ -117,12 +137,19 @@ const startHelper = async () => {
     return;
   }
 
-  if (!fs.existsSync('version') || (fs.readFileSync('version').toString() !== version && fs.existsSync('CHANGELOG.txt'))) {
+  if (!fs.existsSync('.version') || fs.readFileSync('.version').toString() !== version) {
     new Logger(chalk.green(__('updateContent')));
-    console.table(fs.readFileSync('CHANGELOG.txt').toString().trim()
+    console.table(CHANGELOG.trim()
       .split('\n')
-      .map((e) => e.trim().replace('- ', '')));
-    fs.writeFileSync('version', version);
+      .map((e: string) => e.trim().replace('- ', '')));
+    fs.writeFileSync('.version', version);
+    if (os.type() === 'Windows_NT') {
+      try {
+        execSync('attrib +h .version');
+      } catch (e) {
+        //
+      }
+    }
   }
 
   globalThis.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36 Edg/103.0.1264.77';
@@ -173,8 +200,6 @@ const startHelper = async () => {
     awaQuests,
     awaDailyQuestType,
     awaDailyQuestNumber1,
-    boosterRule,
-    boosterCorn,
     twitchCookie,
     steamUse,
     asfProtocol,
@@ -185,7 +210,6 @@ const startHelper = async () => {
     proxy,
     webUI,
     pusher,
-    autoUpdateDailyQuestDb,
     awaSafeReply,
     joinSteamCommunityEvent,
     TLSRejectUnauthorized,
@@ -274,10 +298,7 @@ const startHelper = async () => {
     awaBoosterNotice: awaBoosterNotice as boolean,
     awaDailyQuestType,
     awaDailyQuestNumber1,
-    boosterRule,
-    boosterCorn,
     proxy,
-    autoUpdateDailyQuestDb,
     doTaskUS: awaQuests.includes('dailyQuestUS'),
     awaSafeReply,
     joinSteamCommunityEvent

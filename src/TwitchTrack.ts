@@ -8,10 +8,10 @@ import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 
 class TwitchTrack {
-  channelId!: string;
-  clientId!: string;
-  jwt!: string;
-  extensionID!: string;
+  channelId!: string | undefined;
+  clientId!: string | undefined;
+  jwt!: string | undefined;
+  extensionID!: string | undefined;
   trackError = 0;
   trackTimes = 0;
   cookie: Cookie;
@@ -245,7 +245,7 @@ class TwitchTrack {
         return await this.getExtInfo((returnedIndex as number) + 1);
       });
   }
-  async sendTrack():Promise<void> {
+  async sendTrack(retried = false):Promise<void> {
     if (!this.channelId || !this.jwt) {
       if (await this.getExtInfo() !== true) {
         await sleep(60 * 5);
@@ -304,13 +304,32 @@ class TwitchTrack {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         if (error.response?.status === 403) {
-          this.complete = true;
-          this.EventEmitter.emit('complete');
+          if (retried) {
+            this.complete = true;
+            this.EventEmitter.emit('complete');
+            return 'complete';
+          }
           return 'Forbidden';
         }
         return false;
       });
-    if ((['complete', 'Forbidden'] as Array<string|boolean>).includes(status)) {
+    if ((['complete'] as Array<string|boolean>).includes(status)) {
+      return;
+    }
+    if (status === 'Forbidden') {
+      if (await this.init() === true) {
+        await sleep(60);
+        this.channelId = undefined;
+        this.clientId = undefined;
+        this.jwt = undefined;
+        this.extensionID = undefined;
+        this.availableStreams = [];
+        this.availableStreamsInfo = [];
+        this.sendTrack(true);
+      } else {
+        this.complete = true;
+        this.EventEmitter.emit('complete');
+      }
       return;
     }
     if (status === 'offline') {

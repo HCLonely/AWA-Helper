@@ -45,10 +45,8 @@ declare global {
     awaDailyQuestNumber1?: boolean
     awaSafeReply?: boolean,
     joinSteamCommunityEvent?: boolean
-    boosterRule?: Array<string>
-    boosterCorn?: string
     twitchCookie?: string
-    steamUse?: 'ASF' | 'SU'
+    steamUse?: 'ASF'
     asfProtocol: string
     asfHost?: string
     asfPort?: number
@@ -64,7 +62,6 @@ declare global {
       }
     }
     pusher?: pusher
-    autoUpdateDailyQuestDb?: boolean
   }
   interface proxy {
     enable: Array<string>

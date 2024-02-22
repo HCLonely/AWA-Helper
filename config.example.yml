@@ -53,7 +53,6 @@ awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注�
   - replyPost # 回复帖子
 awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个
 awaSafeReply: false # 今日回复过帖子则跳过回复帖子操作，默认不跳过(false)。新版界面失效！
-autoUpdateDailyQuestDb: false # 自动更新每日任务数据库
 joinSteamCommunityEvent: true # 自动加入Steam社区活动
 
 #### Twitch 配置 ####

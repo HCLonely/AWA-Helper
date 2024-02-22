@@ -11,7 +11,7 @@
   const fileList = [
     'config.example.yml',
     'CHANGELOG.txt',
-    'dailyQuestDb.json',
+    // 'dailyQuestDb.json',
     'package.json'
     // 'scripts/'
   ];
@@ -93,13 +93,13 @@
   //   */
   // }
 
-  fs.copySync('dist/webUI', 'output/webUI', { filter: (fileName) => !(/index\.js$/.test(fileName) && !fileName.includes('static')) });
-  fs.copySync('dist/manager', 'output/manager', { filter: (fileName) => !(/(index|tool)\.js$/.test(fileName) && !fileName.includes('static')) });
-  fs.copySync('dist/locales', 'output/locales');
+  // fs.copySync('dist/webUI', 'output/webUI', { filter: (fileName) => !(/index\.js$/.test(fileName) && !fileName.includes('static')) });
+  // fs.copySync('dist/manager', 'output/manager', { filter: (fileName) => !(/(index|tool)\.js$/.test(fileName) && !fileName.includes('static')) });
+  // fs.copySync('dist/locales', 'output/locales');
   fs.copySync('dist/config', 'output/config');
   // fs.copySync('node_modules/@doctormckay/steam-crypto/system.pem', 'output/system.pem');
-  fs.copySync('dist/CHANGELOG.txt', 'output/CHANGELOG.txt');
-  fs.copySync('dist/dailyQuestDb.json', 'output/dailyQuestDb.json');
+  // fs.copySync('dist/CHANGELOG.txt', 'output/CHANGELOG.txt');
+  // fs.copySync('dist/dailyQuestDb.json', 'output/dailyQuestDb.json');
   fs.mkdirSync('output/logs');
   fs.copySync('dist/README.html', 'output/README.html');
   fs.copySync('dist/README_en.html', 'output/README_en.html');

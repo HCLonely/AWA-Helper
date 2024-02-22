@@ -1,5 +1,6 @@
 /* global window, location, localStorage, $, dayjs, axios */
 // eslint-disable-next-line no-underscore-dangle
+// todo: i18n
 const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
 function getStatus(secret) {
   $('#log-area').append(`<li>${time()}AWA-Manager: 正在获取AWA-Helper运行状态...</li>`);
@@ -151,3 +152,7 @@ $('button.save-secret').click(() => {
   $('#log-area').append(`<li>${time()}Manager Server Secret已保存！</li>`);
   $('#log-area li:last')[0].scrollIntoView();
 });
+
+if (managerServerSecret) {
+  getStatus(managerServerSecret);
+}

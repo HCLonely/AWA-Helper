@@ -178,10 +178,6 @@
       name: 今日回复过帖子则跳过回复帖子操作
       type: boolean
       defaultValue: true
-    autoUpdateDailyQuestDb:
-      name: 自动更新每日任务数据库
-      type: boolean
-      defaultValue: false
     joinSteamCommunityEvent:
       name: 自动加入Steam社区活动
       type: boolean

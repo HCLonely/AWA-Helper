@@ -318,7 +318,19 @@ const checkUpdate = async (version: string, manager: boolean, autoUpdate: boolea
             globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
             return;
           }
-          await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : 'Linux'}.tar.gz`, manager, proxy);
+          let arch = '';
+          if (!/.*main\.js$/.test(process.argv[1])) {
+            if (os.type() === 'Linux') {
+              if (os.arch() === 'arm') {
+                arch = '-armv7';
+              } else if (os.arch() === 'arm64') {
+                arch = '-armv8';
+              } else if (os.arch() === 'x64') {
+                arch = '-x64';
+              }
+            }
+          }
+          await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`, manager, proxy);
           return;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
@@ -359,6 +371,7 @@ async function downloadFile(link: string, proxy?: proxy): Promise<any> {
     .catch((error) => {
       ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
       new Logger(error);
+      writer.close();
       return;
     });
 }
@@ -384,8 +397,9 @@ const update = async (link: string, manager: boolean, proxy?: proxy): Promise<vo
   if (!decompressResult) {
     return;
   }
-  if (os.type() === 'Windows_NT') {
-    fs.writeFileSync('temp/update.bat', `@echo off
+  if (!/.*main\.js$/.test(process.argv[1])) {
+    if (os.type() === 'Windows_NT') {
+      fs.writeFileSync('temp/update.bat', `@echo off
 cd "%~dp0"
 taskkill /f /t /im AWA-Helper.exe
 if exist ".\\AWA-Helper" (
@@ -402,8 +416,29 @@ ${
 rmdir /s /q temp
 exit
 `);
-    const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
-    updater.unref();
+      const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
+      updater.unref();
+    } else if (os.type() === 'Linux') {
+      fs.writeFileSync('temp/update.sh', `#!/bin/bash
+sleep 1
+cd ${path.resolve('./temp')}
+kill -9 $(pidof AWA-Helper)
+if [ -d "./AWA-Helper" ]; then
+  echo Moving AWA-Helper...
+  cp -rf ${path.resolve('./temp/AWA-Helper/output')}/* ${path.resolve('./')}
+  echo Success
+fi
+cd ..
+rm -rf temp
+${
+  // eslint-disable-next-line no-nested-ternary
+  process.argv.includes('--update') ?
+    '' :
+    (manager ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
+`);
+      const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
+      updater.unref();
+    }
   } else {
     if (fs.existsSync('temp/AWA-Helper')) {
       fs.copySync('temp/AWA-Helper/output/', './', { overwrite: true });

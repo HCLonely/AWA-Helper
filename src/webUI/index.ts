@@ -7,26 +7,33 @@ import type WebSocket from 'ws';
 import { Logger, time } from '../tool';
 import * as chalk from 'chalk';
 import * as https from 'https';
+// @ts-ignore
+import indexHtml from './dist/index.html';
+
+// @ts-ignore
+import * as zh from '../locales/zh.json';
+// @ts-ignore
+import * as en from '../locales/en.json';
 
 const createServer = (options?: { key: Buffer, cert: Buffer }) => {
   let server;
   const app = express();
-  app.use(express.static(`${__dirname}/webUI/static`));
+  // app.use(express.static(`${__dirname}/webUI/static`));
   if (options?.key && options?.cert) {
     server = https.createServer(options, app);
   }
   expressWs(app, server);
   const langs: {
     [name: string]: string
-  } = {};
-  fs.readdirSync('locales').forEach((e) => {
-    langs[e.replace('.json', '') as string] = JSON.parse(fs.readFileSync(`locales/${e}`).toString());
-  });
+  } = {
+    zh,
+    en
+  };
 
   app.get('/', (_, res) => {
     res.send(
-      fs.readFileSync(`${__dirname}/webUI/index.html`).toString()
-        .replace('__LANG__', language)
+      // fs.readFileSync(`${__dirname}/webUI/index.html`).toString()
+      indexHtml.replace('__LANG__', language)
         .replace('__I18N__', JSON.stringify(langs))
     ).end();
   });

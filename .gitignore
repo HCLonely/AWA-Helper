@@ -37,3 +37,8 @@ src/SteamQuestSU.ts
 babel.index.js
 src/package.json
 node_linux/*
+src/webUI/dist
+src/manager/dist
+node_binaries/node-*
+node-*/
+node-*.tar.xz
