@@ -23,3 +23,4 @@ if (!lzma.includes('module.exports = { LZMA_WORKER: LZMA };')) {
 */
 fs.emptyDirSync('dist');
 fs.emptyDirSync('output');
+fs.copyFileSync('config.example.yml', 'src/config.example.yml');

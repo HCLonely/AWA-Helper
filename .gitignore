@@ -42,3 +42,4 @@ src/manager/dist
 node_binaries/node-*
 node-*/
 node-*.tar.xz
+src/config.example.yml
