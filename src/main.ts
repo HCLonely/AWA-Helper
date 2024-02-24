@@ -4,7 +4,7 @@ import * as os from 'os';
 import { startHelper } from './awa-helper';
 import { startManager } from './manager/index';
 // @ts-ignore
-import exampleConfig from 'config.example.yml';
+import exampleConfig from './config.example.yml';
 
 if (!fs.existsSync('logs')) {
   fs.mkdirSync('logs');

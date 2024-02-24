@@ -7,7 +7,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && node pre.js && npm run build:pre",
+    "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run build:pre",
     "start": "cd dist && node main.js --helper",
     "build:docker": "node pre.js && tsc && node build.js --docker && rollup -c",
     "build:configer": "babel src/manager/configer/index.js --out-file src/manager/configer/babel.index.js && uglifyjs src/manager/configer/babel.index.js --compress --mangle -o src/manager/static/js/configer.min.js",
