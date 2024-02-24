@@ -34,6 +34,7 @@ const createServer = (options?: { key: Buffer, cert: Buffer }) => {
     res.send(
       // fs.readFileSync(`${__dirname}/webUI/index.html`).toString()
       indexHtml.replace('__LANG__', language)
+        .replaceAll('__VERSION__', globalThis.version)
         .replace('__I18N__', JSON.stringify(langs))
     ).end();
   });

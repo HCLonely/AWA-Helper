@@ -23,6 +23,8 @@ import indexHtml from './dist/index.html';
 import configerHtml from './dist/configer.html';
 // @ts-ignore
 import templateYml from './static/js/template.yml';
+// @ts-ignore
+import templateYmlEN from './static/js/template_en.yml';
 
 // @ts-ignore
 import * as zh from '../locales/zh.json';
@@ -30,6 +32,7 @@ import * as zh from '../locales/zh.json';
 import * as en from '../locales/en.json';
 
 interface config {
+  language: string
   logsExpire: number
   managerServer?: {
     enable: boolean
@@ -85,6 +88,7 @@ const startManager = async (startHelper: boolean) => {
   }
 
   const defaultConfig: config = {
+    language: 'zh',
     logsExpire: 30,
     managerServer: {
       enable: true,
@@ -112,7 +116,8 @@ const startManager = async (startHelper: boolean) => {
   if (!config) {
     return;
   }
-  const { managerServer, logsExpire, webUI }: config = config;
+  const { language, managerServer, logsExpire, webUI }: config = config;
+  i18n.setLocale(language);
 
   if (fs.existsSync('logs')) {
     const logFiles = fs.readdirSync('logs');
@@ -151,6 +156,12 @@ const startManager = async (startHelper: boolean) => {
     };
   }
 
+  const langs: {
+    [name: string]: string
+  } = {
+    zh,
+    en
+  };
   const createServer = (options?: { key: Buffer, cert: Buffer }) => {
     let server;
     const app = express();
@@ -164,7 +175,9 @@ const startManager = async (startHelper: boolean) => {
     app.get('/', (_, res) => {
       res.send(
         // fs.readFileSync(`${__dirname}/manager/index.html`).toString()).end();
-        indexHtml).end();
+        indexHtml.replace('__LANG__', language)
+          .replace('__VERSION__', 'V__VERSION__')
+          .replace('__I18N__', JSON.stringify(langs))).end();
     });
     app.get('/configer', (_, res) => {
       res.send(
@@ -174,7 +187,7 @@ const startManager = async (startHelper: boolean) => {
     app.get('/js/template.yml', (_, res) => {
       res.send(
         // fs.readFileSync(`${__dirname}/manager/configer/index.html`).toString()).end();
-        templateYml).end();
+        language === 'en' ? templateYmlEN : templateYml).end();
     });
 
     app.post('/getConfig', (req, res) => {

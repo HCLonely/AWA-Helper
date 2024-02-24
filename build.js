@@ -8,6 +8,8 @@
 
   fs.writeFileSync('dist/awa-helper.js',
     fs.readFileSync('dist/awa-helper.js').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
+  fs.writeFileSync('dist/manager/index.js',
+    fs.readFileSync('dist/manager/index.js').toString().replace('V__VERSION__', `v${fs.readJSONSync('package.json').version}`));
   const fileList = [
     'config.example.yml',
     'CHANGELOG.txt',
@@ -61,6 +63,10 @@
 
   fs.copySync('src/webUI', 'dist/webUI', { filter: (fileName) => !/\.ts$/.test(fileName) });
   fs.copySync('src/manager', 'dist/manager', { filter: (fileName) => !/\.ts$/.test(fileName) });
+  fs.writeFileSync('dist/manager/static/js/template.yml',
+    fs.readFileSync('dist/manager/static/js/template.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
+  fs.writeFileSync('dist/manager/static/js/template_en.yml',
+    fs.readFileSync('dist/manager/static/js/template_en.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
   // fs.copySync('configer/configer.template.yml.js', 'dist/configer.template.yml.js');
   if (!fs.existsSync('dist/config')) {
     fs.mkdirSync('dist/config');

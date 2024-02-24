@@ -2,3 +2,5 @@
 - 修复：Twitch时长未挂完就中断
 - 优化：Steam任务开始前尝试入库免费Steam任务游戏
 - 优化：Win版程序大小
+- 优化：WebUI 显示版本号
+- 优化：Manager i18n支持

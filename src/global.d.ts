@@ -177,5 +177,6 @@ declare global {
   var newVersionNotice: string;
   var steamEventGameId: string;
   var log: boolean;
+  var version: string;
 }
 export {};

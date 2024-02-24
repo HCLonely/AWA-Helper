@@ -1,9 +1,20 @@
-/* global window, location, localStorage, $, dayjs, axios */
+/* global window, location, localStorage, $, I18n, lang, dayjs, axios */
 // eslint-disable-next-line no-underscore-dangle
-// todo: i18n
+function __(text, ...argv) {
+  let result = text;
+  if (I18n[lang]?.[text]) {
+    result = I18n[lang][text];
+    if (argv.length > 0) {
+      argv.forEach((s) => {
+        result = result.replace(/%s/, s);
+      });
+    }
+  }
+  return result;
+}
 const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
 function getStatus(secret) {
-  $('#log-area').append(`<li>${time()}AWA-Manager: 正在获取AWA-Helper运行状态...</li>`);
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingHelperStatus')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
   return axios.post('/runStatus', { secret }).then((response) => {
     console.log(response);
@@ -16,17 +27,17 @@ function getStatus(secret) {
         webuiURL.port = response.data?.webui.port;
         $('.run-status').html(`<a href="${webuiURL.href}" target="_blank">${response.data?.runStatus}</a>`);
       }
-      $('#log-area').append(`<li>${time()}AWA-Manager: 运行状态获取成功！</li>`);
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('getHelperStatusSuccess')}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
       return response.data?.runStatus;
     }
-    $('#log-area').append(`<li>${time()}AWA-Manager: 运行状态获取失败(${response.status})！</li>`);
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('getHelperStatusFailed')}(${response.status})!</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     $('.last-run-time').text('Error');
     $('.run-status').text('Error');
     return false;
   }).catch((error) => {
-    $('#log-area').append(`<li>${time()}AWA-Manager: 运行状态获取失败(${error.message})！</li>`);
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('getHelperStatusFailed')}(${error.message})！</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     $('.last-run-time').text('Error');
     $('.run-status').text('Error');
@@ -35,27 +46,27 @@ function getStatus(secret) {
   });
 }
 function startHelper(secret) {
-  $('#log-area').append(`<li>${time()}AWA-Manager: 正在启动AWA-Helper...</li>`);
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingHelper')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
   axios.post('/start', { secret }).then(async (response) => {
     if (response.status === 200) {
       const result = await statusChecker(secret, 'start');
       if (result === 'success') {
-        $('#log-area').append(`<li>${time()}AWA-Manager: 启动成功！</li>`);
+        $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startSuccess')}</li>`);
         $('#log-area li:last')[0].scrollIntoView();
       } else {
-        $('#log-area').append(`<li>${time()}AWA-Manager: 启动失败(${result})！</li>`);
+        $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startFailed')}(${result})!</li>`);
         $('#log-area li:last')[0].scrollIntoView();
       }
     } else {
-      $('#log-area').append(`<li>${time()}AWA-Manager: 启动失败(${response.status})！</li>`);
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startFailed')}(${response.status})!</li>`);
       $('#log-area li:last')[0].scrollIntoView();
       $('.last-run-time').text('Error');
       $('.run-status').text('Error');
     }
     console.log(response);
   }).catch((error) => {
-    $('#log-area').append(`<li>${time()}AWA-Manager: 启动失败(${error.message})！</li>`);
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startFailed')}(${error.message})!</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     $('.last-run-time').text('Error');
     $('.run-status').text('Error');
@@ -63,30 +74,30 @@ function startHelper(secret) {
   });
 }
 function stopHelper(secret) {
-  $('#log-area').append(`<li>${time()}AWA-Manager: 正在终止AWA-Helper...</li>`);
-  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在终止AWA-Helper...`);
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingHelper')}</li>`);
+  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingHelper')}`);
   axios.post('/stop', { secret }).then(async (response) => {
     if (response.status === 200) {
       const result = await statusChecker(secret, 'stop');
       if (result === 'success') {
-        $('#log-area').append(`<li>${time()}AWA-Manager: 终止成功！</li>`);
+        $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopSuccess')}</li>`);
         $('#log-area li:last')[0].scrollIntoView();
-        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 终止成功！`);
+        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stopSuccess')}`);
       } else {
-        $('#log-area').append(`<li>${time()}AWA-Manager: 终止失败(${result})！</li>`);
+        $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopFailed')}(${result})!</li>`);
         $('#log-area li:last')[0].scrollIntoView();
-        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 终止失败(${result})！`);
+        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stopFailed')}(${result})!`);
       }
     } else {
-      $('#log-area').append(`<li>${time()}AWA-Manager: 终止失败(${response.status})！</li>`);
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopFailed')}(${response.status})!</li>`);
       $('#log-area li:last')[0].scrollIntoView();
-      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 终止失败(${response.status})！`);
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stopFailed')}(${response.status})!`);
     }
     console.log(response);
   }).catch((error) => {
-    $('#log-area').append(`<li>${time()}AWA-Manager: 终止失败(${error.message})！</li>`);
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopFailed')}(${error.message})!</li>`);
     $('#log-area li:last')[0].scrollIntoView();
-    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 终止失败(${error.message})！`);
+    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stopFailed')}(${error.message})!`);
     console.error(error);
   });
 }
@@ -127,21 +138,21 @@ $('button.awa-helper-config').click(() => {
 });
 $('button.refresh-status').click(() => {
   if (!managerServerSecret) {
-    $('#log-area').append(`<li>${time()}请先配置Manager Server Secret!</li>`);
+    $('#log-area').append(`<li>${time()}${__('setManagerConfigNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
   }
   getStatus(managerServerSecret);
 });
 $('button.awa-helper-start').click(() => {
   if (!managerServerSecret) {
-    $('#log-area').append(`<li>${time()}请先配置Manager Server Secret!</li>`);
+    $('#log-area').append(`<li>${time()}${__('setManagerConfigNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
   }
   startHelper(managerServerSecret);
 });
 $('button.awa-helper-stop').click(() => {
   if (!managerServerSecret) {
-    $('#log-area').append(`<li>${time()}请先配置Manager Server Secret!</li>`);
+    $('#log-area').append(`<li>${time()}${__('setManagerConfigNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
   }
   stopHelper(managerServerSecret);
@@ -149,7 +160,7 @@ $('button.awa-helper-stop').click(() => {
 $('button.save-secret').click(() => {
   managerServerSecret = $('#secret').val();
   localStorage.setItem('managerServerSecret', managerServerSecret);
-  $('#log-area').append(`<li>${time()}Manager Server Secret已保存！</li>`);
+  $('#log-area').append(`<li>${time()}${__('managerSecretSaved')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
 });
 
