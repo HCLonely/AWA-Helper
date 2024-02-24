@@ -76,10 +76,10 @@
   }
   fs.copySync('config.example.yml', 'dist/config/config.example.yml');
 
-  fs.writeFileSync('dist/运行.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
-  fs.writeFileSync('dist/Run.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
-  fs.writeFileSync('dist/运行Manager.bat', 'cd "%~dp0" && start cmd /k "node manager/index.js"');
-  fs.writeFileSync('dist/Run-Manager.bat', 'cd "%~dp0" && start cmd /k "node manager/index.js"');
+  // fs.writeFileSync('dist/运行.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
+  // fs.writeFileSync('dist/Run.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
+  // fs.writeFileSync('dist/运行Manager.bat', 'cd "%~dp0" && start cmd /k "node manager/index.js"');
+  // fs.writeFileSync('dist/Run-Manager.bat', 'cd "%~dp0" && start cmd /k "node manager/index.js"');
   // eslint-disable-next-line max-len
   // fs.writeFileSync('dist/运行-auto.bat', 'cd "%~dp0" && where "powershell" && powershell -file "scripts/node_checker_cn.ps1" || where "pwsh" && pwsh -file "scripts/node_checker_cn.ps1" || .\\scripts\\node_checker_cn.bat && pause');
   // eslint-disable-next-line max-len

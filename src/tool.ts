@@ -420,7 +420,7 @@ exit
       updater.unref();
     } else if (os.type() === 'Linux') {
       fs.writeFileSync('temp/update.sh', `#!/bin/bash
-sleep 1
+sleep 5
 cd ${path.resolve('./temp')}
 kill -9 $(pidof AWA-Helper)
 if [ -d "./AWA-Helper" ]; then

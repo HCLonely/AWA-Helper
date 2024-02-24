@@ -366,7 +366,7 @@ flowchart TD
 - [x] WebUI 显示版本号
 - [ ] TM User JS 安装提示
 - [ ] 直接通过 main.js 启动
-- [ ] 检测 config,bat,sh
+- [x] 检测 config,bat,sh
 
 ## 感谢以下开源项目
 
