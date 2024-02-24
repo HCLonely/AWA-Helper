@@ -1,352 +1,356 @@
+---
 - name: AWA-Helper
   type: yml
   filename: config.yml
-  quote: AWA-Helper配置文件生成器 v__VERSION__
+  quote: AWA-Helper config generator v__VERSION__
   author: HCLonely
   body:
     language:
-      name: 显示语言
+      name: Display language
       type: text
       defaultValue: zh
       required: true
     webUI:
-      name: WebUI配置
+      name: WebUI configuration
       type: object
       body:
         enable:
-          name: 是否启用WebUI
+          name: Enable WebUI
           type: boolean
           defaultValue: false
         port:
-          name: WebUI端口
+          name: WebUI port
           type: text
           inputType: number
           defaultValue: 3456
         ssl:
-          name: SSL证书配置
+          name: SSL certificate configuration
           type: object
           body:
             key:
-              name: SSL证书key文件名
+              name: SSL certificate key file name
               type: text
-              defaultValue: ''
             cert:
-              name: SSL证书文件名
+              name: SSL certificate file name
               type: text
-              defaultValue: ''
     timeout:
-      name: 超时设置
-      desp: 如果程序运行超过此时间后还在运行，则终止此程序。单位：秒，0为不限制。
+      name: Timeout settings
+      desp: 'If the program is still running after this time has passed, terminate
+        the program. Unit: second, 0 means no limit.'
       type: text
       inputType: number
       defaultValue: 0
     TLSRejectUnauthorized:
-      name: 是否启用TLSSocket库校验
-      desp: 默认开启。如果使用代理出现网络问题，可尝试更改此项！
+      name: Enable TLSSocket library verification
+      desp: Enabled by default. If you have network problems using a proxy, you can
+        try changing this!
       type: boolean
       defaultValue: true
     logsExpire:
-      name: 日志保留时间
-      desp: 日志保留时间，单位：天。默认30天，0为不限制。
+      name: Log retention time
+      desp: 'Log retention time, unit: days. The default is 30 days, 0 means no limit.'
       type: text
       inputType: number
       defaultValue: 30
     UA:
-      name: 浏览器UA
-      desp: 一般不需要修改
+      name: BrowserUA
+      desp: Generally no modification is needed
       type: text
-      defaultValue: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47'
+      defaultValue: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+        like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47
     autoUpdate:
-      name: 是否启用自动更新
+      name: Enable automatic updates
       type: boolean
       defaultValue: true
     managerServer:
-      name: AWA-Manager配置
+      name: AWA-Manager configuration
       type: object
       body:
         enable:
-          name: 是否启用, 需同时启用webUI
+          name: Whether to enable it, webUI needs to be enabled at the same time
           type: boolean
           defaultValue: false
         secret:
           name: AWA-Manager Secret
-          desp: AWA-Manager访问密钥，强烈建议修改
+          desp: AWA-Manager access key, it is strongly recommended to modify
           type: text
-          defaultValue: ''
         local:
-          name: 是否仅内网可访问
+          name: Whether only the local network is accessible
           type: boolean
           defaultValue: true
         port:
-          name: AWA-Manager端口
+          name: AWA-Manager port
           type: text
           inputType: number
           defaultValue: 2345
         ssl:
-          name: SSL证书配置
+          name: SSL certificate configuration
           type: object
           body:
             key:
-              name: SSL证书key文件名
+              name: SSL certificate key file name
               type: text
-              defaultValue: ''
             cert:
-              name: SSL证书文件名
+              name: SSL certificate file name
               type: text
-              defaultValue: ''
         corn:
-          name: 定时启动AWA-Helper
+          name: Start AWA-Helper regularly
           desp: |-
-              <pre><code>示例：
-              3 30 14,21 * * *
-              ┬ ┬─ ──┬── ┬ ┬ ┬
-              │ │    │   │ │ |
-              │ │    │   │ │ └─────────────── 一周的第几天 (0 - 7, 1L - 7L) (0或7是周日) ┐
-              │ │    │   │ └───────────────── 月份　　　　 (1 - 12)　 　　　             ├─ 日期
-              │ │    │   └─────────────────── 每月的第几天 (1 - 31, L)　　　　           ┘
-              │ │    └───────────────────── 小时 (0 - 23) ┐
-              │ └────────────────────────── 分钟 (0 - 59) ├─ 时间
-              └──────────────────────────── 秒　 (0 - 59) ┘
-              # 示例中的表达式代表每天的14:30:03和21:30:03启动AWA-Helper
-              # !! 注意每次运行的时间间隔要大于前面设置的timeout</code></pre>
+            <pre><code>Example:
+            3 30 14,21 * * *
+            ┬ ┬─ ──┬── ┬ ┬ ┬
+            │ │ │ │ │ |
+            │ │ │ │ │ └──────────────── Day of the week (0 - 7, 1L - 7L) (0 or 7 is Sunday) ┐
+            │ │ │ │ └───────────────── Month 　　　 (1 - 12)　 　　 ├─ Date
+            │ │ │ └─────────────────── Day of the month (1 - 31, L)　　 ┘
+            │ │ └──────────────────── Hours (0 - 23) ┐
+            │ └───────────────────────── Minutes (0 - 59) ├─ Time
+            └──────────────────────────── Seconds (0 - 59) ┘
+            # The expression in the example represents starting AWA-Helper at 14:30:03 and 21:30:03 every day
+            #!! Note that the time interval between each run must be greater than the previously set timeout</code></pre>
           type: text
     awaCookie:
-      name: 外星人论坛Cookie
-      desp: 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能。
+      name: AWA Cookies
+      desp: You can only have `REMEMBERME`, without `REMEMBERME` you must have `PHPSESSID`
+        and `sc`, but it will cause an error in obtaining the number of consecutive
+        check-in days and will not affect other functions.
       type: text
       required: true
     awaHost:
-      name: 外星人论坛Host
-      desp: 默认的没问题就不要改
+      name: AWA Host
+      desp: If the default is fine, don’t change it.
       type: text
       defaultValue: www.alienwarearena.com
       required: true
     awaQuests:
-      name: 需要做的任务类型
-      desp: 按`Ctrl`多选
+      name: Type of tasks that need to be done
+      desp: Press `Ctrl` to select multiple
       type: multi-select
       optionsName:
-        - 每日任务
-        - AWA在线任务
-        - Twitch直播间在线任务
-        - Steam游戏时长任务
+      - daily tasks
+      - AWA online tasks
+      - Twitch live room online tasks
+      - Steam game online tasks
       options:
-        - dailyQuest
-        - timeOnSite
-        - watchTwitch
-        - steamQuest
+      - dailyQuest
+      - timeOnSite
+      - watchTwitch
+      - steamQuest
       defaultValue:
-        - dailyQuest
-        - timeOnSite
-        - watchTwitch
-        - steamQuest
+      - dailyQuest
+      - timeOnSite
+      - watchTwitch
+      - steamQuest
     awaDailyQuestType:
-      name: 需要做的每日任务类型
-      desp: 按`Ctrl`多选
+      name: Types of daily tasks that need to be done
+      desp: Press `Ctrl` to select multiple
       type: multi-select
       optionsName:
-        - 浏览页面任务，务标题为任务链接，需点击任务才能完成
-        - 浏览页面任务，任务标题为任务链接，浏览页面才能完成
-        - 浏览页面任务，任务标题无链接，尝试浏览 排行榜，奖励，商店页面
-        - 更换Border
-        - 更换Avatar
-        - 浏览新闻
-        - 分享帖子
-        - 回复帖子
+      - Browse the page task, the task title is the task link, you need to click the
+        task to complete it
+      - Browse the page task, the task title is task link, and it can be completed
+        by browsing the page.
+      - Browse the page task, the task title has no link, try to browse the leaderboard,
+        reward, store page
+      - Change Border
+      - Replace Avatar
+      - View news
+      - Share post
+      - Reply to post
       options:
-        - click
-        - visitLink
-        - openLink
-        - changeBorder
-        - changeAvatar
-        - viewNews
-        - sharePost
-        - replyPost
+      - click
+      - visitLink
+      - openLink
+      - changeBorder
+      - changeAvatar
+      - viewNews
+      - sharePost
+      - replyPost
       defaultValue:
-        - click
-        - visitLink
-        - openLink
-        - changeBorder
-        - changeAvatar
-        - viewNews
-        - sharePost
+      - click
+      - visitLink
+      - openLink
+      - changeBorder
+      - changeAvatar
+      - viewNews
+      - sharePost
     awaDailyQuestNumber1:
-      name: 每日任务有多个时是否只做第一个
+      name: When there are multiple daily tasks, whether to only do the first one?
       type: boolean
       defaultValue: true
     awaSafeReply:
-      name: 今日回复过帖子则跳过回复帖子操作
+      name: If you have replied to a post today, you will skip replying to the post.
       type: boolean
       defaultValue: true
     joinSteamCommunityEvent:
-      name: 自动加入Steam社区活动
+      name: Automatically join Steam community events
       type: boolean
       defaultValue: true
     twitchCookie:
       name: Twitch Cookie
-      desp: 必须包括`unique_id` 和 `auth-token`
+      desp: Must include `unique_id` and `auth-token`
       type: text
     steamUse:
-      name: 挂Steam游戏时长的方式
+      name: How to add the duration of a Steam game
       type: single-select
       options:
-        - ASF
+      - ASF
       optionsName:
-        - ASF
+      - ASF
       defaultValue: ASF
       bindValue:
         type: object
         body:
           ASF:
             asfProtocol:
-              name: ASF 协议
-              desp: ASF使用的协议，一般都是`http`
+              name: ASF protocol
+              desp: The protocol used by ASF is generally `http`
               type: single-select
               options:
-                - http
-                - https
+              - http
+              - https
               defaultValue: http
             asfHost:
-              name: ASF 地址
-              desp: ASF使用的Host，本地运行一般是`127.0.0.1`
+              name: ASF host
+              desp: The Host used by ASF is usually `127.0.0.1` when running locally.
               type: text
-              defaultValue: '127.0.0.1'
+              defaultValue: 127.0.0.1
             asfPort:
-              name: ASF 端口
-              desp: ASF使用的端口，默认是`1242`
+              name: ASF port
+              desp: The port used by ASF, the default is `1242`
               type: text
               inputType: number
               defaultValue: 1242
             asfPassword:
-              name: ASF 密码
+              name: ASF password
               type: text
             asfBotname:
               name: ASF Botname
-              desp: 要挂游戏的ASF Bot名称
+              desp: The name of the ASF Bot to add duration for the game
               type: text
     proxy:
-      name: 代理设置
+      name: proxy settings
       type: object
       body:
         enable:
-          name: 在访问哪些站点时启用代理
-          desp: 按`Ctrl`多选
+          name: Enable proxy when visiting which sites
+          desp: Press `Ctrl` to select multiple
           type: multi-select
           options:
-            - github
-            - twitch
-            - awa
-            - asf
-            - steam
-            - pusher
+          - github
+          - twitch
+          - awa
+          - asf
+          - steam
+          - pusher
           optionsName:
-            - 在检测更新时使用代理
-            - 在访问Twitch站点时使用代理
-            - 在访问外星人论坛站点时使用代理
-            - 在访问ASF时使用代理
-            - 在访问Steam时使用代理
-            - 在推送时使用代理
+          - Use a proxy when checking updates
+          - Using a proxy when accessing the Twitch site
+          - Using a proxy when visiting the Alien Forum site
+          - Use a proxy when accessing ASF
+          - Using a proxy when accessing Steam
+          - Use a proxy when pushing
           defaultValue:
-            - github
-            - twitch
-            - awa
-            - steam
+          - github
+          - twitch
+          - awa
+          - steam
         protocol:
-          name: 代理协议
+          name: Proxy protocol
           type: single-select
           options:
-            - http
-            - https
-            - socks4
-            - socks5
+          - http
+          - https
+          - socks4
+          - socks5
         host:
-          name: 代理host地址
+          name: Proxy host address
           type: text
-          defaultValue: '127.0.0.1'
+          defaultValue: 127.0.0.1
         port:
-          name: 代理端口
+          name: Proxy port
           type: text
           inputType: number
           defaultValue: 1080
         username:
-          name: 代理用户名，没有可留空
+          name: Proxy username, if not available, leave it blank
           type: text
         password:
-          name: 代理密码，没有可留空
+          name: Proxy password, if not available, please leave it blank
           type: text
     pusher:
-      name: 推送设置
+      name: Push settings
       type: object
       body:
         enable:
-          name: 是否启用推送
+          name: Enable push
           type: boolean
           defaultValue: false
         platform:
-          name: 推送平台
+          name: Push platform
           type: single-select
           defaultValue: GoCqhttp
           options:
-            - Bark
-            - Chanify
-            - DingTalk
-            - Discord
-            - FeiShu
-            - Gitter
-            - GoCqhttp
-            - GoogleChat
-            - IGot
-            - Mail
-            - Push
-            - Pushback
-            - PushDeer
-            - Pushover
-            - PushPlus
-            - QqChannel
-            - RocketChat
-            - ServerChanTurbo
-            - Showdoc
-            - Slack
-            - TelegramBot
-            - WorkWeixin
-            - WorkWeixinBot
-            - WxPusher
-            - Xizhi
-            - Zulip
+          - Bark
+          - Chanify
+          - DingTalk
+          - Discord
+          - FeiShu
+          - Gitter
+          - GoCqhttp
+          - GoogleChat
+          - IGot
+          - Mail
+          - Push
+          - Pushback
+          - PushDeer
+          - Pushover
+          - PushPlus
+          - QqChannel
+          - RocketChat
+          - ServerChanTurbo
+          - Showdoc
+          - Slack
+          - TelegramBot
+          - WorkWeixin
+          - WorkWeixinBot
+          - WxPusher
+          - Xizhi
+          - Zulip
           optionsName:
-            - Bark
-            - Chanify
-            - 钉钉群机器人
-            - Discord
-            - 飞书群机器人
-            - Gitter
-            - GoCqhttp
-            - GoogleChat
-            - IGot
-            - 邮件
-            - Push
-            - Pushback
-            - PushDeer
-            - Pushover
-            - PushPlus
-            - QQ 频道机器人
-            - RocketChat
-            - Server 酱
-            - Showdoc
-            - Slack
-            - TelegramBot
-            - 企业微信
-            - 企业微信群机器人
-            - WxPusher
-            - 息知
-            - Zulip
+          - Bark
+          - Chanify
+          - 钉钉群机器人
+          - Discord
+          - 飞书群机器人
+          - Gitter
+          - GoCqhttp
+          - GoogleChat
+          - IGot
+          - 邮件
+          - Push
+          - Pushback
+          - PushDeer
+          - Pushover
+          - PushPlus
+          - QQ 频道机器人
+          - RocketChat
+          - Server 酱
+          - Showdoc
+          - Slack
+          - TelegramBot
+          - 企业微信
+          - 企业微信群机器人
+          - WxPusher
+          - 息知
+          - Zulip
           bindValue:
             type: object
             isChildren: true
             body:
               Bark:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -354,11 +358,12 @@
                       type: text
                     baseURL:
                       name: baseURL
-                      desp: 如果使用自建服务端, 需配置此选项. baseURL为"/yourkey"前面的部分.
+                      desp: If you use a self-built server, you need to configure
+                        this option. The baseURL is the part in front of "/yourkey".
                       type: text
               Chanify:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -366,7 +371,8 @@
                       type: text
                     baseURL:
                       name: baseURL
-                      desp: 如果使用自建服务端, 需配置此选项. baseURL为"/<token>"前面的部分.
+                      desp: If you use a self-built server, you need to configure
+                        this option. The baseURL is the part before "/<token>".
                       type: text
               DingTalk:
                 key:
@@ -378,32 +384,32 @@
                       type: text
                     secret:
                       name: secret
-                      desp: 如果开启了加签, 此处填写加签密钥.
+                      desp: If signing is enabled, fill in the signing key here.
                       type: text
               Discord:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     webhook:
-                      name: webhook地址
+                      name: webhook address
                       type: text
               FeiShu:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
                       name: hook token
-                      desp: webhook地址"https://open.feishu.cn/open-apis/bot/v2/hook/"后面的部分.
+                      desp: The part after the webhook address "https://open.feishu.cn/open-apis/bot/v2/hook/".
                       type: text
                     secret:
                       name: secret
-                      desp: 如果开启了加签, 此处填写加签密钥.
+                      desp: If signing is enabled, fill in the signing key here.
                       type: text
               Gitter:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -414,91 +420,97 @@
                       type: text
               GoCqhttp:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     baseUrl:
                       name: baseUrl
-                      desp: go-cqhttp 的http api地址, 以"http://"或"https://"开头.
+                      desp: The http api address of go-cqhttp starts with "http://"
+                        or "https://".
                       type: text
                     token:
                       name: token
                       type: text
                     user_id:
                       name: user_id
-                      desp: 推送的目标 QQ 号, 此参数与"group_id", "channel_id"二选一.
+                      desp: The target QQ number of the push. This parameter is selected
+                        from "group_id" and "channel_id".
                       type: text
                     group_id:
                       name: group_id
-                      desp: 推送的目标群号, 此参数与"user_id", "channel_id"二选一.
+                      desp: The target group number for push. This parameter is selected
+                        from "user_id" and "channel_id".
                       type: text
                     channel_id:
                       name: channel_id
-                      desp: 推送的目标频道ID, 此参数与"user_id", "group_id"二选一, 且必须与"guild_id"同时存在.
+                      desp: The push target channel ID. This parameter is selected
+                        from "user_id" and "group_id", and must exist together with
+                        "guild_id".
                       type: text
                     guild_id:
                       name: guild_id
-                      desp: 推送的目标子频道ID, 此参数必须与"channel_id"同时存在.
+                      desp: The push target sub-channel ID, this parameter must exist
+                        together with "channel_id".
                       type: text
               GoogleChat:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     webhook:
-                      name: webhook地址
+                      name: webhook address
                       type: text
               IGot:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
-                      name: 推送key
+                      name: Push key
                       type: text
               Mail:
                 key:
-                  name: 邮件服务器配置信息
+                  name: Mail server configuration information
                   type: object
                   body:
                     host:
-                      name: 邮件发送服务器地址
+                      name: Email sending server address
                       type: text
                     port:
-                      name: 邮件发送服务器端口
+                      name: Email sending server port
                       type: text
                       inputType: number
                     secure:
-                      name: 是否启用TLS/SSL
+                      name: Enable TLS/SSL
                       type: boolean
                       defaultValue: false
                     auth:
-                      name: 认证信息
+                      name: Certification Information
                       type: object
                       body:
                         user:
-                          name: 邮件发送服务器的用户名
+                          name: Username of the mail sending server
                           type: text
                           required: true
                         pass:
-                          name: 邮件发送服务器的密码
+                          name: Email sending server password
                           type: text
                           required: true
                 options:
-                  name: 收发邮箱配置
+                  name: Sending and receiving mailbox configuration
                   type: object
                   body:
                     from:
-                      name: 发送邮件的邮箱地址
+                      name: Email address for sending emails
                       type: text
                       inputType: email
                     to:
-                      name: 接受邮件的邮箱地址
+                      name: Email address to receive mail from
                       type: text
                       inputType: email
               Push:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -506,7 +518,7 @@
                       type: text
               Pushback:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -517,7 +529,7 @@
                       type: text
               PushDeer:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -525,11 +537,12 @@
                       type: text
                     baseURL:
                       name: baseURL
-                      desp: 如果使用自建服务端, 需配置此选项.
+                      desp: If you use a self-built server, you need to configure
+                        this option.
                       type: text
               Pushover:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -540,7 +553,7 @@
                       type: text
               PushPlus:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -548,37 +561,37 @@
                       type: text
               QqChannel:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
                       name: token
-                      desp: QQ频道机器人的 token
+                      desp: QQ channel robot token
                       type: text
                     appID:
                       name: appID
-                      desp: QQ频道机器人的 ID
+                      desp: ID of QQ channel robot
                       type: text
                     channelID:
                       name: channelID
-                      desp: QQ频道的子频道 ID
+                      desp: Sub-channel ID of QQ channel
                       type: text
                     sandbox:
                       name: sandbox
-                      desp: 使用QQ频道推送时是否启用沙箱
+                      desp: Whether to enable sandbox when using QQ channel push
                       type: boolean
                       defaultValue: false
               RocketChat:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     webhook:
-                      name: webhook 地址
+                      name: webhook address
                       type: text
               ServerChanTurbo:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -586,24 +599,24 @@
                       type: text
               Showdoc:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
                       name: token
-                      desp: 推送地址"https://push.showdoc.com.cn/server/api/push/"后面的部分.
+                      desp: The part after the push address "https://push.showdoc.com.cn/server/api/push/".
                       type: text
               Slack:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     webhook:
-                      name: webhook 地址
+                      name: webhook address
                       type: text
               TelegramBot:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -614,37 +627,49 @@
                       type: text
               WorkWeixin:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     secret:
                       name: secret
-                      desp: 管理员进入企业微信管理后台后点击“客户联系”-“客户”页面. 点开“API”小按钮, 可以看到secret.
+                      desp: After the administrator enters the enterprise WeChat management
+                        background, click "Customer Contact" - "Customer" page. Click
+                        the "API" small button to see the secret.
                       type: text
                     corpid:
                       name: corpid
-                      desp: 企业管理员可在管理端“我的企业”－“企业信息”下直接查看的“企业ID”.
+                      desp: Enterprise administrators can directly view the "Enterprise
+                        ID" under "My Enterprise" - "Enterprise Information" on the
+                        management terminal.
                       type: text
                     agentid:
                       name: agentid
-                      desp: 企业应用的id. 企业内部开发，可在应用的设置页面查看.
+                      desp: The ID of the enterprise application. It is developed
+                        internally by the enterprise and can be viewed on the application's
+                        settings page.
                       type: text
                       inputType: number
                     touser:
                       name: touser
-                      desp: 指定接收消息的成员, 成员ID列表(多个接收者用"|"分隔, 最多支持1000个). 特殊情况:指定为"@all", 则向该企业应用的全部成员发送. 企业管理员可在管理端“通讯录”->点进某个成员的详情页中直接查看“帐号”。
+                      desp: 'Specify the members to receive the message, member ID
+                        list (multiple recipients are separated by "|", up to 1000
+                        are supported). Special case: If specified as "@all", it will
+                        be sent to all members of the enterprise application. The
+                        enterprise administrator can Go to "Address Book" on the management
+                        side -> click on a member''s details page to view the "Account"
+                        directly.'
                       type: text
               WorkWeixinBot:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     webhook:
-                      name: webhook 地址
+                      name: webhook address
                       type: text
               WxPusher:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -653,25 +678,27 @@
                     uids:
                       name: uids
                       type: array
-                      desp: 发送目标的 UID, 也可在"sendOptions"中配置
+                      desp: The UID of the sending target, which can also be configured
+                        in "sendOptions"
                       body:
-                        - name: uid
-                          desp: 点击+号新增
-                          type: text
-                          repeat: true
+                      - name: uid
+                        desp: Click the + sign to add
+                        type: text
+                        repeat: true
                     topicIds:
                       name: topicIds
                       type: array
-                      desp: 发送目标的 topicId, 也可在"sendOptions"中配置
+                      desp: The topicId of the sending target can also be configured
+                        in "sendOptions"
                       body:
-                        - name: topicId
-                          desp: 点击+号新增
-                          type: text
-                          inputType: number
-                          repeat: true
+                      - name: topicId
+                        desp: Click the + sign to add
+                        type: text
+                        inputType: number
+                        repeat: true
               Xizhi:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -679,7 +706,7 @@
                       type: text
               Zulip:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
@@ -692,9 +719,9 @@
                       name: bot email
                       type: text
                     to:
-                      name: 发送对象Id
+                      name: Send object ID
                       type: array
                       body:
-                        - name: id
-                          type: text
-                          repeat: true
+                      - name: id
+                        type: text
+                        repeat: true
