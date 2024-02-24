@@ -215,3 +215,14 @@ publicNetworkNotice: If you need public network access, please replace 127.0.0.1
 startHelper: Start AWA-Helper
 stopHelper: Terminate AWA-Helper
 cornEnabled: Successfully configured scheduled start of AWA-Helper
+gettingHelperStatus: Obtaining AWA-Helper running status...
+getHelperStatusSuccess: The running status was obtained successfully!
+getHelperStatusFailed: Failed to obtain running status
+startingHelper: Starting AWA-Helper...
+startSuccess: Started successfully!
+startFailed: Startup failed
+stoppingHelper: Terminating AWA-Helper...
+stopSuccess: Termination successful!
+stopFailed: Termination failed
+setManagerSecretNotice: Please configure Manager Server Secret first!
+managerSecretSaved: Manager Server Secret has been saved!
