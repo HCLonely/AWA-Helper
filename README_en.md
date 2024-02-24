@@ -39,6 +39,8 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 #### Install and run
 
 > If your computer runs all day without shutting down or runs on a server, it is recommended to use AWA-Manager.
+>
+> [Video tutorial](https://github.com/HCLonely/AWA-Helper/issues/37)
 
 1. Download [AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
 2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
@@ -90,12 +92,6 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 ### Docker
 
-#### Install
-
-```shell
-docker pull hclonely/awa-helper
-```
-
 #### Run
 
 > !!! When running in Docker mode, do not modify `port` of `managerServer` and `webUI` , and set `autoUpdate` and `local` of `managerServer` to `false` !!!
@@ -116,7 +112,7 @@ docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src
 
 ## config (File configuration)
 
-> **You need to copy the `config.example.yml` file and rename it to `config.yml` !!!**
+> **You need to copy the `config.example.yml` file in the `config` folder and rename it to `config.yml` !!!**
 
 ### Global configuration (required)
 
@@ -365,6 +361,13 @@ flowchart TD
 ## Example running
 
 ![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)
+
+## TODO
+
+- [x] WebUI 显示版本号
+- [ ] TM User JS 安装提示
+- [ ] 直接通过 main.js 启动
+- [x] 检测 config,bat,sh
 
 ## Thanks to the following open source projects
 
