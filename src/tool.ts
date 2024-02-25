@@ -4,6 +4,7 @@ import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
 import * as fs from 'fs-extra';
 import * as os from 'os';
+import * as crypto from 'crypto';
 import axios, { AxiosError } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
@@ -329,8 +330,10 @@ const checkUpdate = async (version: string, manager: boolean, autoUpdate: boolea
                 arch = '-x64';
               }
             }
+            await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`, manager, proxy);
+          } else {
+            await update(`${response.headers.location.replace('/tag/', '/download/')}/main.js`, manager, proxy);
           }
-          await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`, manager, proxy);
           return;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
@@ -377,27 +380,27 @@ async function downloadFile(link: string, proxy?: proxy): Promise<any> {
 }
 
 const update = async (link: string, manager: boolean, proxy?: proxy): Promise<void> => {
-  if (!await downloadFile(link, proxy)) {
-    return;
-  }
-  if (!fs.existsSync('temp/AWA-Helper.tar.gz')) {
-    return;
-  }
-  const logger = new Logger(`${time()}${__('decompressing')}`, false);
-  const decompressResult = await decompress('temp/AWA-Helper.tar.gz', 'temp/AWA-Helper')
-    .then(() => {
-      logger.log(chalk.green(__('OK')));
-      return true;
-    })
-    .catch((error) => {
-      logger.log(chalk.red('Error'));
-      new Logger(error);
-      return false;
-    });
-  if (!decompressResult) {
-    return;
-  }
   if (!/.*main\.js$/.test(process.argv[1])) {
+    if (!await downloadFile(link, proxy)) {
+      return;
+    }
+    if (!fs.existsSync('temp/AWA-Helper.tar.gz')) {
+      return;
+    }
+    const logger = new Logger(`${time()}${__('decompressing')}`, false);
+    const decompressResult = await decompress('temp/AWA-Helper.tar.gz', 'temp/AWA-Helper')
+      .then(() => {
+        logger.log(chalk.green(__('OK')));
+        return true;
+      })
+      .catch((error) => {
+        logger.log(chalk.red('Error'));
+        new Logger(error);
+        return false;
+      });
+    if (!decompressResult) {
+      return;
+    }
     if (os.type() === 'Windows_NT') {
       fs.writeFileSync('temp/update.bat', `@echo off
 cd "%~dp0"
@@ -440,10 +443,43 @@ ${
       updater.unref();
     }
   } else {
-    if (fs.existsSync('temp/AWA-Helper')) {
-      fs.copySync('temp/AWA-Helper/output/', './', { overwrite: true });
-      fs.emptyDirSync('temp');
-      fs.rmdirSync('temp');
+    const logger = new Logger(`${time()}${__('downloadingMainJs')}`, false);
+    const options: myAxiosConfig = {
+      Logger: logger,
+      responseType: 'text'
+    };
+    if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
+      options.httpsAgent = formatProxy(proxy);
+    }
+    const mainJsMd5 = await http.get(link.replace('main.js', 'md5.txt'), options)
+      .then(async (response) => response.data)
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Get MD5 Failed') + netError(error));
+        new Logger(error);
+        return;
+      });
+    if (!mainJsMd5) {
+      return;
+    }
+    const result = await http.get(link, options)
+      .then(async (response) => {
+        const hash = crypto.createHash('md5');
+        hash.update(response.data);
+        const md5 = hash.digest('hex');
+        if (md5 === mainJsMd5) {
+          fs.writeFileSync('main.js', response.data);
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('OK')));
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('Error: MD5 not matched!')));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
+        new Logger(error);
+        return false;
+      });
+    if (result) {
       new Logger(`${time()}${chalk.green(__('updateSuccess'))}`);
     }
   }

@@ -19,6 +19,7 @@ jobs:
         with:
           install-only: true
       - run: npm run build
+      - run: node scripts/md5.js
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -29,7 +30,8 @@ jobs:
           files: |
             AWA-Helper-Win.tar.gz
             AWA-Helper-Linux.tar.gz
-            main.js
+            output/main.js
+            output/md5.txt
           token: ${{ github.TOKEN }}
   release-linux:
     needs: release

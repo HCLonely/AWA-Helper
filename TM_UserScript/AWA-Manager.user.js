@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWA-Manager
 // @namespace    AWA-Manager
-// @version      0.2
+// @version      3.0.2
 // @description  AWA Cookie更新
 // @author       HCLonely
 // @include      *

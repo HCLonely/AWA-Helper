@@ -4,3 +4,4 @@
 - 优化：Win版程序大小
 - 优化：WebUI 显示版本号
 - 优化：Manager i18n支持
+- 优化：直接通过 main.js 启动
