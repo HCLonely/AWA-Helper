@@ -1,4 +1,4 @@
-/* global window, location, localStorage, $, I18n, lang, dayjs, axios */
+/* global window, location, localStorage, $, I18n, lang, dayjs, axios, AWAUserJsInfo */
 // eslint-disable-next-line no-underscore-dangle
 function __(text, ...argv) {
   let result = text;
@@ -163,7 +163,18 @@ $('button.save-secret').click(() => {
   $('#log-area').append(`<li>${time()}${__('managerSecretSaved')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
 });
+$('button.save-secret').click(() => {
+  window.open('https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js', '_blank');
+});
 
+if (typeof AWAUserJsInfo !== 'object') {
+  $('.install-user-js').show();
+  $('#log-area').append(`<li>${time()}${__('userJsNotInstalled')}</li>`);
+  $('#log-area li:last')[0].scrollIntoView();
+} else {
+  $('#log-area').append(`<li>${time()}${__('userJsInstalled', AWAUserJsInfo.script?.version)}</li>`);
+  $('#log-area li:last')[0].scrollIntoView();
+}
 if (managerServerSecret) {
   getStatus(managerServerSecret);
 }

@@ -176,7 +176,7 @@ const startManager = async (startHelper: boolean) => {
       res.send(
         // fs.readFileSync(`${__dirname}/manager/index.html`).toString()).end();
         indexHtml.replace('__LANG__', language)
-          .replace('__VERSION__', 'V__VERSION__')
+          .replaceAll('__VERSION__', 'V__VERSION__')
           .replace('__I18N__', JSON.stringify(langs))).end();
     });
     app.get('/configer', (_, res) => {

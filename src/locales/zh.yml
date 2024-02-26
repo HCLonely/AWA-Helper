@@ -230,3 +230,5 @@ stopSuccess: 终止成功！
 stopFailed: 终止失败
 setManagerSecretNotice: 请先配置Manager Server Secret!
 managerSecretSaved: Manager Server Secret已保存！
+userJsNotInstalled: Cookie 同步脚本未安装！
+userJsInstalled: Cookie 同步脚本已安装(v%s)

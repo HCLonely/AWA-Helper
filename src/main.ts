@@ -6,6 +6,8 @@ import { startManager } from './manager/index';
 // @ts-ignore
 import exampleConfig from './config.example.yml';
 
+process.chdir(__dirname);
+
 if (!fs.existsSync('logs')) {
   fs.mkdirSync('logs');
 }
@@ -64,7 +66,6 @@ if (os.type() === 'Windows_NT') {
     }
   }
 }
-
 if (process.argv.includes('--manager') || (process.argv.length === 2 && process.env.helperMode === 'manager')) {
   startManager(process.argv.includes('--helper'));
 } else {

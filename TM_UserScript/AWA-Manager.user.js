@@ -12,9 +12,11 @@
 // @grant        GM_cookie
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
+// @grant        GM_info
 // @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
 // ==/UserScript==
-/* global window,document,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,$, dayjs */
+/* global window,document,unsafeWindow,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,GM_info,$, dayjs */
 /* eslint-disable max-len */
 
 (async function () {
@@ -371,6 +373,7 @@
       $('button.twitch-cookie-sync').click(() => {
         updateTwitchCookie(managerServerUrl, managerServerSecret);
       });
+      unsafeWindow.AWAUserJsInfo = GM_info;
     }
   }
   if (!window.location.hostname.includes('.alienwarearena.com') || window.location.pathname !== '/control-center') {
