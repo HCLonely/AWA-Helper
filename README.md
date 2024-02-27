@@ -35,13 +35,15 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
 4. 打开<https://www.alienwarearena.com/control-center>页面配置`ManagerServer`；
 5. 每次你打开浏览器页面时都会同步一次 Cookie.
 
-### Windows
-
-#### 安装运行
+### 通过编译好的可执行文件运行
 
 > 如果你的电脑全天运行不关机或在服务器上运行建议使用 AWA-Manager.
 >
 > [视频教程](https://github.com/HCLonely/AWA-Helper/issues/37)
+
+#### Windows
+
+##### 安装运行
 
 1. 下载[AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
 2. 编辑配置文件,[查看说明](#config-文件配置)
@@ -49,45 +51,81 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
     - 运行 AWA-Helper: 双击`AWA-Helper.bat`;
     - 运行 AWA-Manager: 双击`AWA-Manager.bat`运行 AWA-Manager;
 
-#### 更新
+##### 更新
 
 - 自动更新: 在 config 文件中配置`autoUpdate: true`;
 - 手动更新: 双击'update.bat'.
 
-### Linux/Macos
+#### Linux
 
 > PS1: MacOS 的兼容性未测试，不建议使用 MacOS 设备运行此程序！
 >
 > PS2: 既然你使用 Linux 设备，以下为基于有一定 Linux 使用基础的说明！
 
-#### 安装运行
+##### 安装运行
 
-1. (仅首次安装需要)安装[NodeJs](https://nodejs.org/en/download/package-manager) >= v16.0.0;
-2. 下载[AWA-Helper-Linux.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
+1. 下载[AWA-Helper-Linux-x64.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
 
     ```bash
-    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v2.4.8/AWA-Helper-Linux.tar.gz # 注意替换版本号为最新版
-    tar -xzvf AWA-Helper-linux.tar.gz
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/AWA-Helper-Linux-x64.tar.gz # 注意替换版本号和CPU架构x64, armv7, armv8
+    tar -xzvf AWA-Helper-linux-x64.tar.gz
     sudo mv dist AWA-Helper
     cd AWA-Helper
+    sudo chmod +x AWA-Helper.sh
+    sudo chmod +x AWA-Manager.sh
+    sudo chmod +x update.sh
     ```
 
-3. 编辑配置文件,[查看说明](#config-文件配置)
+2. 编辑配置文件,[查看说明](#config-文件配置)
 
     ```bash
-    sudo cp config.example.yml config.yml
+    sudo cp config/config.example.yml config/config.yml
     ```
 
-4. 运行(以下两种二选一)：
-    - 运行 AWA-Helper: `node main.js --helper`;
-    - 运行 AWA-Manager:
-        1. 安装`nodemon`: `sudo npm install -g nodemon`或`sudo npm install -g nodemon --registry=https://registry.npmmirror.com/`(第一种如果安装慢可以使用第二种)
-        2. 运行: `nodemon -w main.js -V -L main.js --manager`
+3. 运行(以下两种二选一)：
+    - 运行 AWA-Helper: `./AWA-Helper.sh`;
+    - 运行 AWA-Manager: `./AWA-Manager.sh`.
 
 #### 更新
 
 - 自动更新: 在 config 文件中配置`autoUpdate: true`;
-- 手动更新: 待补充.
+- 手动更新: `./update.sh`.
+
+### 通过 NodeJS 运行
+
+> 这种方法更新时下载的文件体积小，但需要在本地安装 NodeJS.
+
+#### 安装运行
+
+1. (仅首次安装需要)安装[NodeJs](https://nodejs.org/en/download/package-manager) >= v16.0.0;
+2. 下载[main.js](https://github.com/HCLonely/AWA-Helper/releases/latest)；
+
+    ```bash
+    mkdir AWA-Helper
+    cd AWA-Helper
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/main.js # 注意替换版本号为最新版
+    ```
+
+3. (仅首次安装需要)初始化
+
+    ```bash
+    node main.js
+    ```
+
+4. 编辑配置文件,[查看说明](#config-文件配置)
+
+    ```bash
+    cp config/config.example.yml config/config.yml
+    ```
+
+5. 运行(以下两种二选一)：
+    - 运行 AWA-Helper: `node main.js --helper`;
+    - 运行 AWA-Manager:`node main.js --manager`.
+
+#### 更新
+
+- 自动更新: 在 config 文件中配置`autoUpdate: true`;
+- 手动更新: `node main.js --update`;
 
 ### 使用 Docker
 

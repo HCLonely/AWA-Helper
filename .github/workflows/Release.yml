@@ -29,7 +29,6 @@ jobs:
           body_path: CHANGELOG.txt
           files: |
             AWA-Helper-Win.tar.gz
-            AWA-Helper-Linux.tar.gz
             output/main.js
             output/md5.txt
           token: ${{ github.TOKEN }}

@@ -216,6 +216,7 @@ twitchCookieUpdated: Twitch Cookie更新成功，来源IP%s
 publicNetworkNotice: 如需公网访问，请将 127.0.0.1 更换为你的公网ip，并开放%s端口
 startHelper: 启动AWA-Helper
 stopHelper: 终止AWA-Helper
+stopManager: 终止AWA-Manager
 cornEnabled: 成功配置定时启动AWA-Helper
 
 ### managerWeb ###
@@ -228,6 +229,8 @@ startFailed: 启动失败
 stoppingHelper: 正在终止AWA-Helper...
 stopSuccess: 终止成功！
 stopFailed: 终止失败
+stoppingManager: 正在终止AWA-Manager...
+managerStopped: 终止命令已发送
 setManagerSecretNotice: 请先配置Manager Server Secret!
 managerSecretSaved: Manager Server Secret已保存！
 userJsNotInstalled: Cookie 同步脚本未安装！

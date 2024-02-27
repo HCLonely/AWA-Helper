@@ -15,6 +15,8 @@ import { chunk } from 'lodash';
 import * as events from 'events';
 const EventEmitter = new events.EventEmitter();
 import * as dayjs from 'dayjs';
+import { execSync } from 'child_process';
+import * as os from 'os';
 
 import * as dailyQuestDbJson from './dailyQuestDb.json';
 // import { chromium, LaunchOptions } from 'playwright';
@@ -37,7 +39,7 @@ class DailyQuest {
   httpsAgent!: myAxiosConfig['httpsAgent'];
   userId!: string;
   borderId!: string;
-  badgeIds!: Array<string>;
+  // badgeIds!: Array<string>;
   avatar!: string;
   questStatus: questStatus = {};
   dailyQuestLink!: string;
@@ -194,13 +196,13 @@ class DailyQuest {
     if (result !== 200) {
       return result;
     }
-    if (fs.existsSync('awa-info.json')) {
-      const { awaUserId, awaBorderId, awaBadgeIds, awaAvatar } = JSON.parse(fs.readFileSync('awa-info.json').toString()) as awaInfo;
+    if (fs.existsSync('.awa-info.json')) {
+      const { awaUserId, awaBorderId, awaAvatar } = JSON.parse(fs.readFileSync('.awa-info.json').toString()) as awaInfo;
       this.userId = awaUserId;
       this.borderId = awaBorderId;
       this.avatar = awaAvatar;
-      this.badgeIds = awaBadgeIds;
-      if (!(awaUserId && awaBorderId && awaBadgeIds)) {
+      // this.badgeIds = awaBadgeIds;
+      if (!(awaUserId && awaBorderId)) {
         const result = await this.getPersonalization();
         if (result !== 200) {
           return result;
@@ -889,6 +891,7 @@ class DailyQuest {
       });
   }
 
+  /*
   async changeBadge(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Badge'))}`, false);
     const options: myAxiosConfig = {
@@ -923,6 +926,7 @@ class DailyQuest {
         return false;
       });
   }
+  */
 
   async changeAvatar(): Promise<boolean> {
     await this.getAvatar();
@@ -1427,12 +1431,19 @@ class DailyQuest {
           */
           this.borderId = awaBorderId;
           // this.badgeIds = awaBadgeIds.split(',');
-          fs.writeFileSync('awa-info.json', JSON.stringify({
+          fs.writeFileSync('.awa-info.json', JSON.stringify({
             awaUserId: this.userId,
             awaBorderId: this.borderId,
-            awaBadgeIds: this.badgeIds,
+            // awaBadgeIds: this.badgeIds,
             awaAvatar: this.avatar
           }));
+          if (os.type() === 'Windows_NT') {
+            try {
+              execSync('attrib +h .awa-info.json');
+            } catch (e) {
+              //
+            }
+          }
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return 200;
         }
@@ -1492,12 +1503,19 @@ class DailyQuest {
           });
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           this.avatar = awaAvatar;
-          fs.writeFileSync('awa-info.json', JSON.stringify({
+          fs.writeFileSync('.awa-info.json', JSON.stringify({
             awaUserId: this.userId,
             awaBorderId: this.borderId,
-            awaBadgeIds: this.badgeIds,
+            // awaBadgeIds: this.badgeIds,
             awaAvatar: this.avatar
           }));
+          if (os.type() === 'Windows_NT') {
+            try {
+              execSync('attrib +h .awa-info.json');
+            } catch (e) {
+              //
+            }
+          }
           return 200;
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));

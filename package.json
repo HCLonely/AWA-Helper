@@ -20,7 +20,7 @@
     "pack:win": "node --experimental-sea-config AWA-Helper-config.json && node -e \"require('fs').copyFileSync(process.execPath, 'output/AWA-Helper.exe')\" && npx postject output/AWA-Helper.exe NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2",
     "build:win": "npm run pack:win && npm run upx && tar --exclude main.js --exclude md5.txt -zcvf AWA-Helper-Win.tar.gz ./output",
     "zip:linux": "node scripts/pre-linux.js && tar -zcvf AWA-Helper-Linux.tar.gz ./output",
-    "build": "npm run build:pre && npm run build:win && npm run zip:linux"
+    "build": "npm run build:pre && npm run build:win"
   },
   "keywords": [],
   "author": "HCLonely",

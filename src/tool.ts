@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies */
+/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
 import * as fs from 'fs-extra';
@@ -291,7 +291,7 @@ http.interceptors.response.use(
   }
 );
 
-const checkUpdate = async (version: string, manager: boolean, autoUpdate: boolean, proxy?: proxy):Promise<void> => {
+const checkUpdate = async (version: string, managerServer: managerServer | undefined, autoUpdate: boolean, proxy?: proxy):Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   const options: myAxiosConfig = {
     validateStatus: (status: number) => status === 302,
@@ -330,9 +330,9 @@ const checkUpdate = async (version: string, manager: boolean, autoUpdate: boolea
                 arch = '-x64';
               }
             }
-            await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`, manager, proxy);
+            await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`, managerServer, proxy);
           } else {
-            await update(`${response.headers.location.replace('/tag/', '/download/')}/main.js`, manager, proxy);
+            await update(`${response.headers.location.replace('/tag/', '/download/')}/main.js`, managerServer, proxy);
           }
           return;
         }
@@ -379,7 +379,7 @@ async function downloadFile(link: string, proxy?: proxy): Promise<any> {
     });
 }
 
-const update = async (link: string, manager: boolean, proxy?: proxy): Promise<void> => {
+const update = async (link: string, managerServer: managerServer | undefined, proxy?: proxy): Promise<void> => {
   if (!/.*main\.js$/.test(process.argv[1])) {
     if (!await downloadFile(link, proxy)) {
       return;
@@ -401,22 +401,25 @@ const update = async (link: string, manager: boolean, proxy?: proxy): Promise<vo
     if (!decompressResult) {
       return;
     }
+    const logPath = path.resolve('./logs/', `${dayjs().format('YYYY-MM-DD')}.txt`);
     if (os.type() === 'Windows_NT') {
       fs.writeFileSync('temp/update.bat', `@echo off
 cd "%~dp0"
-taskkill /f /t /im AWA-Helper.exe
+echo kill process ... >> ${logPath}
+taskkill /f /t /im AWA-Helper.exe >> ${logPath}
 if exist ".\\AWA-Helper" (
-echo Moving AWA-Helper...
-xcopy /y /e "${path.resolve('./temp/AWA-Helper/output')}" "${path.resolve('./')}\\"
-echo Success
+echo Moving AWA-Helper... >> ${logPath}
+xcopy /y /e "${path.resolve('./temp/AWA-Helper/output')}" "${path.resolve('./')}\\" >> ${logPath}
 )
 cd ..
 ${
   // eslint-disable-next-line no-nested-ternary
   process.argv.includes('--update') ?
     '' :
-    (manager ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
-rmdir /s /q temp
+    (managerServer?.enable ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
+echo remove temp dir >> ${logPath}
+rmdir /s /q temp >> ${logPath}
+echo update success >> ${logPath}
 exit
 `);
       const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
@@ -425,19 +428,21 @@ exit
       fs.writeFileSync('temp/update.sh', `#!/bin/bash
 sleep 5
 cd ${path.resolve('./temp')}
-kill -9 $(pidof AWA-Helper)
+echo kill process ... >> ${logPath}
+kill -9 $(pidof AWA-Helper) >> ${logPath}
 if [ -d "./AWA-Helper" ]; then
-  echo Moving AWA-Helper...
-  cp -rf ${path.resolve('./temp/AWA-Helper/output')}/* ${path.resolve('./')}
-  echo Success
+  echo Moving AWA-Helper... >> ${logPath}
+  cp -rf ${path.resolve('./temp/AWA-Helper/output')}/* ${path.resolve('./')} >> ${logPath}
 fi
 cd ..
+echo remove temp dir >> ${logPath}
 rm -rf temp
 ${
   // eslint-disable-next-line no-nested-ternary
   process.argv.includes('--update') ?
     '' :
-    (manager ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
+    (managerServer?.enable ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
+echo update success >> ${logPath}
 `);
       const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
       updater.unref();
@@ -480,7 +485,50 @@ ${
         return false;
       });
     if (result) {
-      new Logger(`${time()}${chalk.green(__('updateSuccess'))}`);
+      if (!fs.existsSync('temp/')) {
+        fs.mkdirSync('temp');
+      }
+      const managerPid = managerServer?.enable ? await axios.get(`${managerServer?.ssl?.cert ? 'https' : 'http'}://127.0.0.1:${managerServer.port}/pid`)
+        .then((response) => response.data)
+        .catch(() => null) : null;
+      const logPath = path.resolve('./logs/', `${dayjs().format('YYYY-MM-DD')}.txt`);
+      if (os.type() === 'Windows_NT') {
+        fs.writeFileSync('temp/update.bat', `@echo off
+cd ${path.resolve('./')}
+echo kill process ... >> ${logPath}
+taskkill /f /t /pid ${process.pid}${managerPid ? ` /pid ${managerPid}` : ''} >> ${logPath}
+${
+  // eslint-disable-next-line no-nested-ternary
+  process.argv.includes('--update') ?
+    '' :
+    (managerServer?.enable ? 'start cmd /k "node main.js --manager --helper"' : 'start cmd /k "node main.js --helper --no-update"')}
+echo remove temp dir >> ${logPath}
+rmdir /s /q temp >> ${logPath}
+echo update success >> ${logPath}
+exit
+`);
+        const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
+        updater.unref();
+      } else if (os.type() === 'Linux') {
+        fs.writeFileSync('temp/update.sh', `#!/bin/bash
+sleep 5
+cd ${path.resolve('./')}
+echo kill process ... >> ${logPath}
+kill -9 ${process.pid} >> ${logPath}
+${managerPid ? `kill -9 ${managerPid} >> ${logPath}` : ''}
+echo remove temp dir >> ${logPath}
+rm -rf temp
+${
+  // eslint-disable-next-line no-nested-ternary
+  process.argv.includes('--update') ?
+    '' :
+    (managerServer?.enable ? 'node main.js --manager --helper' : 'node main.js --helper --no-update')}
+echo update success >> ${logPath}
+`);
+        const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
+        updater.unref();
+      }
+      // new Logger(`${time()}${chalk.green(__('updateSuccess'))}`);
     }
   }
 };

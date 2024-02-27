@@ -331,6 +331,19 @@ const startManager = async (startHelper: boolean) => {
         res.status(401).end();
       }
     });
+    app.post('/stopManager', async (req, res) => {
+      if (req.body?.secret === managerServer.secret) {
+        new Logger(time() + __('stopManager'));
+        process.exit(0);
+        res.send('success').status(200).end();
+      } else {
+        res.status(401).end();
+      }
+    });
+
+    app.get('/pid', async (_, res) => {
+      res.send(`${process.pid}`).status(200).end();
+    });
 
     return server || app;
   };

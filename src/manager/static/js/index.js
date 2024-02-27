@@ -73,7 +73,7 @@ function startHelper(secret) {
     console.error(error);
   });
 }
-function stopHelper(secret) {
+function stopHelper(secret, stopManager = false) {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingHelper')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingHelper')}`);
   axios.post('/stop', { secret }).then(async (response) => {
@@ -83,6 +83,9 @@ function stopHelper(secret) {
         $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopSuccess')}</li>`);
         $('#log-area li:last')[0].scrollIntoView();
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stopSuccess')}`);
+        if (stopManager) {
+          stopAWAManager(secret);
+        }
       } else {
         $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopFailed')}(${result})!</li>`);
         $('#log-area li:last')[0].scrollIntoView();
@@ -98,6 +101,21 @@ function stopHelper(secret) {
     $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopFailed')}(${error.message})!</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stopFailed')}(${error.message})!`);
+    console.error(error);
+  });
+}
+function stopAWAManager(secret) {
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingManager')}</li>`);
+  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingManager')}`);
+  axios.post('/stopManager', { secret }).then(async (response) => {
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('managerStopped')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}`);
+    console.log(response);
+  }).catch((error) => {
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('managerStopped')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}`);
     console.error(error);
   });
 }
@@ -138,24 +156,32 @@ $('button.awa-helper-config').click(() => {
 });
 $('button.refresh-status').click(() => {
   if (!managerServerSecret) {
-    $('#log-area').append(`<li>${time()}${__('setManagerConfigNotice')}</li>`);
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
   }
   getStatus(managerServerSecret);
 });
 $('button.awa-helper-start').click(() => {
   if (!managerServerSecret) {
-    $('#log-area').append(`<li>${time()}${__('setManagerConfigNotice')}</li>`);
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
   }
   startHelper(managerServerSecret);
 });
 $('button.awa-helper-stop').click(() => {
   if (!managerServerSecret) {
-    $('#log-area').append(`<li>${time()}${__('setManagerConfigNotice')}</li>`);
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
   }
   stopHelper(managerServerSecret);
+});
+
+$('button.awa-manager-stop').click(() => {
+  if (!managerServerSecret) {
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+  }
+  stopHelper(managerServerSecret, true);
 });
 $('button.save-secret').click(() => {
   managerServerSecret = $('#secret').val();
@@ -163,7 +189,7 @@ $('button.save-secret').click(() => {
   $('#log-area').append(`<li>${time()}${__('managerSecretSaved')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
 });
-$('button.save-secret').click(() => {
+$('button.install-user-js').click(() => {
   window.open('https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js', '_blank');
 });
 

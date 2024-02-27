@@ -21,22 +21,23 @@ declare global {
       [name: string]: any
     }
   }
+  interface managerServer {
+    enable: boolean
+    secret: string
+    port?: number
+    ssl?: {
+      key?: string
+      cert?: string
+    }
+    corn?: string
+  }
   interface config {
     language: string
     timeout?: number
     logsExpire?: number
     TLSRejectUnauthorized?: boolean
     autoUpdate?: boolean
-    managerServer?: {
-      enable: boolean
-      secret: string
-      port?: number
-      ssl?: {
-        key?: string
-        cert?: string
-      }
-      corn?: string
-    }
+    managerServer?: managerServer
     awaCookie?: string
     awaHost: string
     awaBoosterNotice?: boolean
