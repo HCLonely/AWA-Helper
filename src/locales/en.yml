@@ -168,6 +168,7 @@ adding2library: Adding %s game to library [%s]...
 steamQuestNotChoose: The Steam task is not selected
 noSteamGames: No Steam game detected, please sync first!
 choosingOwnGame: Selecting Steam game [%s]...
+addingLicense: Trying to add Steam games to the library...
 firstSteamUserAlert: It is detected that this method [%s] is used to log in to Steam
   for the first time. If %s is enabled in Steam, please enter the 2-step verification
   code in the console prompt!
@@ -196,6 +197,7 @@ decompressing: Unzipping the installation package...
 updateSuccess: The update is successful and will take effect the next time you start
   it!
 nextRunTime: 'Next time to start AWA-Helper: %s'
+downloadingMainJs: Downloading main.js...
 webUIStart: webUI server started, Please open %s to view
 webUIConnect: webUI is connected
 webUIDisconnect: webUI is disconnected
@@ -214,6 +216,7 @@ publicNetworkNotice: If you need public network access, please replace 127.0.0.1
   your public network IP and open the %s port
 startHelper: Start AWA-Helper
 stopHelper: Terminate AWA-Helper
+stopManager: Terminate AWA-Manager
 cornEnabled: Successfully configured scheduled start of AWA-Helper
 gettingHelperStatus: Obtaining AWA-Helper running status...
 getHelperStatusSuccess: The running status was obtained successfully!
@@ -224,5 +227,10 @@ startFailed: Startup failed
 stoppingHelper: Terminating AWA-Helper...
 stopSuccess: Termination successful!
 stopFailed: Termination failed
+stoppingManager: Terminating AWA-Manager...
+managerStopped: The termination command has been sent, please refresh the page later.
+  If the page fails to load, the termination is successful.
 setManagerSecretNotice: Please configure Manager Server Secret first!
 managerSecretSaved: Manager Server Secret has been saved!
+userJsNotInstalled: Cookie sync script is not installed!
+userJsInstalled: Cookie sync script has been installed (v%s)
