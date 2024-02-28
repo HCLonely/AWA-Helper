@@ -34,13 +34,15 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 4. Open the [https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center) page to configure `ManagerServer` ;
 5. Cookies are synchronized every time you open a browser page.
 
-### Windows
-
-#### Install and run
+### Run through compiled executable file
 
 > If your computer runs all day without shutting down or runs on a server, it is recommended to use AWA-Manager.
 >
 > [Video tutorial](https://github.com/HCLonely/AWA-Helper/issues/37)
+
+#### Windows
+
+##### Install and run
 
 1. Download [AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
 2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
@@ -48,47 +50,84 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
     - Run AWA-Helper: Double-click `AWA-Helper.bat` ;
     - Run AWA-Manager: Double-click `AWA-Manager.bat` to run AWA-Manager;
 
-#### Update
+##### Update
 
 - Automatic update: Configure `autoUpdate: true` in the config file;
 - Manual update: Double-click 'update.bat'.
 
-### Linux/MacOS
+#### Linux
 
 > PS1: MacOS compatibility has not been tested, and it is not recommended to use MacOS devices to run this program!
 >
 > PS2: Since you are using Linux equipment, the following are instructions based on a certain basic knowledge of Linux usage!
 
+##### Install and run
+
+1. Download [AWA-Helper-Linux-x64.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
+
+    ```bash
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/AWA-Helper-Linux-x64.tar.gz # 注意替换版本号和CPU架构x64, armv7, armv8
+    tar -xzvf AWA-Helper-linux-x64.tar.gz
+    sudo mv dist AWA-Helper
+    cd AWA-Helper
+    sudo chmod +x AWA-Helper.sh
+    sudo chmod +x AWA-Manager.sh
+    sudo chmod +x update.sh
+    ```
+
+2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+
+    ```bash
+    sudo cp config/config.example.yml config/config.yml
+    ```
+
+3. Run (choose one of the following two):
+
+    - Run AWA-Helper: `./AWA-Helper.sh` ;
+    - Run AWA-Manager: `./AWA-Manager.sh` .
+
+#### Update
+
+- Automatic update: Configure `autoUpdate: true` in the config file;
+- Manual update: `./update.sh` .
+
+### Run via NodeJS
+
+> The file size downloaded when updating with this method is small, but NodeJS needs to be installed locally.
+
 #### Install and run
 
 1. (Only required for first time installation) Install [NodeJs](https://nodejs.org/en/download/package-manager) &gt;= v16.0.0;
 
-2. Download [AWA-Helper-Linux.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
+2. Download [main.js](https://github.com/HCLonely/AWA-Helper/releases/latest) ;
 
     ```bash
-    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v2.4.8/AWA-Helper-Linux.tar.gz # 注意替换版本号为最新版
-    tar -xzvf AWA-Helper-linux.tar.gz
-    sudo mv dist AWA-Helper
+    mkdir AWA-Helper
     cd AWA-Helper
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/main.js # 注意替换版本号为最新版
     ```
 
-3. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+3. (Only required for first time installation) Initialization
 
     ```bash
-    sudo cp config.example.yml config.yml
+    node main.js
     ```
 
-4. Run (choose one of the following two):
+4. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+
+    ```bash
+    cp config/config.example.yml config/config.yml
+    ```
+
+5. Run (choose one of the following two):
 
     - Run AWA-Helper: `node main.js --helper` ;
-    - Run AWA-Manager:
-        1. Install `nodemon` : `sudo npm install -g nodemon` or `sudo npm install -g nodemon --registry=https://registry.npmmirror.com/` (If the first method is slow to install, you can use the second method)
-        2. Run: `nodemon -w main.js -V -L main.js --manager`
+    - Run AWA-Manager: `node main.js --manager` .
 
-#### renew
+#### Update
 
 - Automatic update: Configure `autoUpdate: true` in the config file;
-- Manual update: to be added.
+- Manual update: `node main.js --update` ;
 
 ### Docker
 
@@ -224,12 +263,12 @@ document.cookie.split(';').filter((e) => ['unique_id','auth-token'].includes(e.s
 
 ### Steam Quest Configuration
 
-> How to idle Steam games, supports [ASF](https://github.com/JustArchiNET/ArchiSteamFarm) and [SU](https://github.com/DoctorMcKay/node-steam-user).
+> The way to hang up the duration of Steam games only supports [ASF](https://github.com/JustArchiNET/ArchiSteamFarm) .
 >
 > Optional Steam Game quest is supported, and you need to Sync the game (`Sync Game`) once on the game selection page.
 
 ```yml
-steamUse: 'ASF' # 'ASF' or 'SU', 'SU' simulates Steam client
+steamUse: 'ASF' # 挂时长方式
 ```
 
 ### ASF configuration (optional)
@@ -363,11 +402,6 @@ flowchart TD
 ![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)
 
 ## TODO
-
-- [x] WebUI 显示版本号
-- [ ] TM User JS 安装提示
-- [ ] 直接通过 main.js 启动
-- [x] 检测 config,bat,sh
 
 ## Thanks to the following open source projects
 
