@@ -66,6 +66,7 @@ if (os.type() === 'Windows_NT') {
     }
   }
 }
+
 if (process.argv.includes('--init')) {
   process.exit(0);
 } else if (process.argv.includes('--manager') || (process.argv.length === 2 && process.env.helperMode === 'manager')) {

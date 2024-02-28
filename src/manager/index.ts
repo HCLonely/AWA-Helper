@@ -268,7 +268,7 @@ const startManager = async (startHelper: boolean) => {
         }
         const lastRunTime = fs.readFileSync(`logs/${lastRunDate}.txt`).toString().split('\n')
           .filter((e) => e.trim())
-          .findLast((e) => /^\[[\d]{4}-[\d]{2}-[\d]{2} [\d]{2}:[\d]{2}:[\d]{2}\] [^c][^o][^o][^k][^i][^e]/.test(e)) // todo
+          .findLast((e) => /^\[[\d]{4}-[\d]{2}-[\d]{2} [\d]{2}:[\d]{2}:[\d]{2}\] [^c][^o][^o][^k][^i][^e]/.test(e))
           ?.match(/^\[([\d]{4}-[\d]{2}-[\d]{2} [\d]{2}:[\d]{2}:[\d]{2})\]/)?.[1];
 
         const pid = await getPid();

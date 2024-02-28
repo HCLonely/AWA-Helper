@@ -261,12 +261,12 @@ document.cookie.split(';').filter((e) => ['unique_id','auth-token'].includes(e.s
 
 ### Steam 任务配置
 
-> 挂 Steam 游戏时长的方式, 支持[ASF](https://github.com/JustArchiNET/ArchiSteamFarm)和[SU](https://github.com/DoctorMcKay/node-steam-user).
+> 挂 Steam 游戏时长的方式, 仅支持[ASF](https://github.com/JustArchiNET/ArchiSteamFarm).
 >
 > 已支持自选 Steam 游戏任务，需在游戏选择页面同步游戏(`Sync Game`)一次。
 
 ```yml
-steamUse: 'ASF' # 'ASF'或'SU','SU'为模拟Steam客户端
+steamUse: 'ASF' # 挂时长方式
 ```
 
 ### ASF 配置(可选)
@@ -400,11 +400,6 @@ flowchart TD
 ![Example](https://github.com/HCLonely/AWA-Helper/raw/main/static/NORmcaCfEA.png)
 
 ## TODO
-
-- [x] WebUI 显示版本号
-- [ ] TM User JS 安装提示
-- [ ] 直接通过 main.js 启动
-- [x] 检测 config,bat,sh
 
 ## 感谢以下开源项目
 

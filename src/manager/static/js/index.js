@@ -1,4 +1,4 @@
-/* global window, location, localStorage, $, I18n, lang, dayjs, axios, AWAUserJsInfo */
+/* global window, location, localStorage, $, I18n, lang, dayjs, axios */
 // eslint-disable-next-line no-underscore-dangle
 function __(text, ...argv) {
   let result = text;
@@ -158,6 +158,7 @@ $('button.refresh-status').click(() => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
+    return;
   }
   getStatus(managerServerSecret);
 });
@@ -165,6 +166,7 @@ $('button.awa-helper-start').click(() => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
+    return;
   }
   startHelper(managerServerSecret);
 });
@@ -172,6 +174,7 @@ $('button.awa-helper-stop').click(() => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
+    return;
   }
   stopHelper(managerServerSecret);
 });
@@ -180,6 +183,7 @@ $('button.awa-manager-stop').click(() => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
+    return;
   }
   stopHelper(managerServerSecret, true);
 });
@@ -193,14 +197,9 @@ $('button.install-user-js').click(() => {
   window.open('https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js', '_blank');
 });
 
-if (typeof AWAUserJsInfo !== 'object') {
-  $('.install-user-js').show();
-  $('#log-area').append(`<li>${time()}${__('userJsNotInstalled')}</li>`);
-  $('#log-area li:last')[0].scrollIntoView();
-} else {
-  $('#log-area').append(`<li>${time()}${__('userJsInstalled', AWAUserJsInfo.script?.version)}</li>`);
-  $('#log-area li:last')[0].scrollIntoView();
-}
+$('#log-area').append(`<li id="user-js-not-installed">${time()}${__('userJsNotInstalled')}</li>`);
+$('#log-area li:last')[0].scrollIntoView();
+
 if (managerServerSecret) {
   getStatus(managerServerSecret);
 }

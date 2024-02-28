@@ -230,7 +230,7 @@ stoppingHelper: 正在终止AWA-Helper...
 stopSuccess: 终止成功！
 stopFailed: 终止失败
 stoppingManager: 正在终止AWA-Manager...
-managerStopped: 终止命令已发送
+managerStopped: 终止命令已发送，请稍后刷新页面，如果页面加载失败说明终止成功
 setManagerSecretNotice: 请先配置Manager Server Secret!
 managerSecretSaved: Manager Server Secret已保存！
 userJsNotInstalled: Cookie 同步脚本未安装！
