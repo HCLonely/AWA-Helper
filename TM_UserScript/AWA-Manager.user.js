@@ -373,6 +373,7 @@
         updateTwitchCookie(managerServerUrl, managerServerSecret);
       });
 
+      $('button.install-user-js').remove();
       $('#user-js-not-installed').remove();
       $('#log-area').append(`<li>${time()}${__('userJsInstalled', GM_info.script?.version)}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
