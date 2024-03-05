@@ -9,7 +9,7 @@
   "scripts": {
     "test": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint src/**/*.ts && npm run build:pre",
     "start": "cd dist && node main.js --helper",
-    "build:docker": "node scripts/pre.js && tsc && node scripts/build.js --docker && rollup -c",
+    "build:docker": "npm run build:configer && npm run gulp && node scripts/pre.js && tsc && node scripts/build.js --docker && rollup -c",
     "build:configer": "babel src/manager/configer/index.js --out-file src/manager/configer/babel.index.js && uglifyjs src/manager/configer/babel.index.js --compress --mangle -o src/manager/static/js/configer.min.js",
     "tsc": "tsc",
     "gulp": "gulp",
