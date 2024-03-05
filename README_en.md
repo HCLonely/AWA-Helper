@@ -323,7 +323,7 @@ pusher:
 
 ## Function
 
-### Daily Quests
+### Daily tasks (old version)
 
 ```mermaid
 flowchart TD
