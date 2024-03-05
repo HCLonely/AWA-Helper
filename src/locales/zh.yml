@@ -195,6 +195,8 @@ decompressing: 正在解压安装包...
 updateSuccess: 更新成功，下次启动时生效！
 nextRunTime: 下次启动AWA-Helper时间：%s
 downloadingMainJs: 正在下载 main.js ...
+autoUpdated: 已自动更新至 %s
+updateLog: 更新内容：
 
 ### webUI ###
 webUIStart: webUI服务器已启动，请打开 %s 查看

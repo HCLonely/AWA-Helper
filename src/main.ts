@@ -48,6 +48,11 @@ if (os.type() === 'Windows_NT') {
       // eslint-disable-next-line max-len
       fs.writeFileSync('AWA-Manager.sh', 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --manager');
     }
+    try {
+      fs.chmodSync('AWA-Manager.sh', 0o777);
+    } catch (e) {
+      //
+    }
   }
   if (!fs.existsSync('AWA-Helper.sh')) {
     if (/.*main\.js$/.test(process.argv[1])) {
@@ -56,6 +61,11 @@ if (os.type() === 'Windows_NT') {
       // eslint-disable-next-line max-len
       fs.writeFileSync('AWA-Helper.sh', 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --helper');
     }
+    try {
+      fs.chmodSync('AWA-Helper.sh', 0o777);
+    } catch (e) {
+      //
+    }
   }
   if (!fs.existsSync('update.sh')) {
     if (/.*main\.js$/.test(process.argv[1])) {
@@ -63,6 +73,11 @@ if (os.type() === 'Windows_NT') {
     } else {
       // eslint-disable-next-line max-len
       fs.writeFileSync('update.sh', 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nkill -9 $(pidof AWA-Helper)\nchmod +x ./AWA-Helper\n./AWA-Helper --update');
+    }
+    try {
+      fs.chmodSync('update.sh', 0o777);
+    } catch (e) {
+      //
     }
   }
 }

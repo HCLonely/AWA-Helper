@@ -291,7 +291,7 @@ http.interceptors.response.use(
   }
 );
 
-const checkUpdate = async (version: string, managerServer: managerServer | undefined, autoUpdate: boolean, proxy?: proxy):Promise<void> => {
+const checkUpdate = async (version: string, managerServer: managerServer | undefined, autoUpdate: boolean, CHANGELOG: string, proxy?: proxy):Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   const options: myAxiosConfig = {
     validateStatus: (status: number) => status === 302,
@@ -335,6 +335,9 @@ const checkUpdate = async (version: string, managerServer: managerServer | undef
             await update(`${response.headers.location.replace('/tag/', '/download/')}/main.js`, managerServer, proxy);
           }
           return;
+        }
+        if (process.argv.includes('--no-update')) {
+          await push(`${__('pushTitle')}\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\nCHANGELOG`);
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
         return;
@@ -444,6 +447,11 @@ ${
     (managerServer?.enable ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
 echo update success >> ${logPath}
 `);
+      try {
+        fs.chmodSync('temp/update.sh', 0o777);
+      } catch (e) {
+        //
+      }
       const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
       updater.unref();
     }
@@ -525,6 +533,11 @@ ${
     (managerServer?.enable ? 'node main.js --manager --helper' : 'node main.js --helper --no-update')}
 echo update success >> ${logPath}
 `);
+        try {
+          fs.chmodSync('temp/update.sh', 0o777);
+        } catch (e) {
+          //
+        }
         const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
         updater.unref();
       }

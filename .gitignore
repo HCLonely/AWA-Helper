@@ -43,3 +43,5 @@ node_binaries/node-*
 node-*/
 node-*.tar.xz
 src/config.example.yml
+resource_hacker/
+upx/

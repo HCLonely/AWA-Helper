@@ -321,7 +321,7 @@ pusher:
 
 ## 功能
 
-### 每日任务
+### 每日任务（旧版）
 
 ```mermaid
 flowchart TD

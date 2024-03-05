@@ -4,6 +4,8 @@
 // @version      3.0.2
 // @description  AWA Cookie更新
 // @author       HCLonely
+// @icon         https://github.com/HCLonely/AWA-Helper/raw/main/static/icon.ico
+// @downloadURL  https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js
 // @include      *
 // @include      *://*.alienwarearena.com/*
 // @run-at       document-end
