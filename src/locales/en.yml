@@ -198,6 +198,8 @@ updateSuccess: The update is successful and will take effect the next time you s
   it!
 nextRunTime: 'Next time to start AWA-Helper: %s'
 downloadingMainJs: Downloading main.js...
+autoUpdated: Automatically updated to %s
+updateLog: 'Update content:'
 webUIStart: webUI server started, Please open %s to view
 webUIConnect: webUI is connected
 webUIDisconnect: webUI is disconnected
