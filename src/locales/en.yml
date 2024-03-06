@@ -219,10 +219,13 @@ publicNetworkNotice: If you need public network access, please replace 127.0.0.1
 startHelper: Start AWA-Helper
 stopHelper: Terminate AWA-Helper
 stopManager: Terminate AWA-Manager
+updateHelper: Update AWA-Helper
 cornEnabled: Successfully configured scheduled start of AWA-Helper
+watchLogs: View log
 gettingHelperStatus: Obtaining AWA-Helper running status...
 getHelperStatusSuccess: The running status was obtained successfully!
 getHelperStatusFailed: Failed to obtain running status
+gettingManagerStatus: Obtaining AWA-Manager running status...
 startingHelper: Starting AWA-Helper...
 startSuccess: Started successfully!
 startFailed: Startup failed
@@ -230,9 +233,11 @@ stoppingHelper: Terminating AWA-Helper...
 stopSuccess: Termination successful!
 stopFailed: Termination failed
 stoppingManager: Terminating AWA-Manager...
-managerStopped: The termination command has been sent, please refresh the page later.
-  If the page fails to load, the termination is successful.
+managerStopped: Termination successful!
 setManagerSecretNotice: Please configure Manager Server Secret first!
 managerSecretSaved: Manager Server Secret has been saved!
 userJsNotInstalled: Cookie sync script is not installed!
 userJsInstalled: Cookie sync script has been installed (v%s)
+updating: Updating...
+updateFailed: Update failed
+updateSuccessManager: Update completed!
