@@ -142,6 +142,13 @@ const startHelper = async () => {
     console.table(CHANGELOG.trim()
       .split('\n')
       .map((e: string) => e.trim().replace('- ', '')));
+    if (os.type() === 'Windows_NT') {
+      try {
+        execSync('attrib -h .version');
+      } catch (e) {
+        //
+      }
+    }
     fs.writeFileSync('.version', version);
     if (os.type() === 'Windows_NT') {
       try {
