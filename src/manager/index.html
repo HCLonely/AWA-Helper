@@ -42,16 +42,20 @@
     <button type="button" class="btn btn-primary twitch-cookie-sync" style="display: none;">同步Twitch Cookie</button>
   </div>
 
-  <div class="d-flex gap-5 justify-content-center" style="margin: auto;margin-top: 5px;">
+  <div class="d-flex gap-5 justify-content-center" style="margin: auto;margin-top: 10px;">
     <button type="button" class="btn btn-success awa-helper-start">启动AWA-Helper</button>
     <button type="button" class="btn btn-danger awa-helper-stop">终止AWA-Helper</button>
     <button type="button" class="btn btn-danger awa-manager-stop">终止AWA-Manager</button>
+    <button type="button" class="btn btn-primary awa-helper-update">更新AWA-Helper</button>
     <button type="button" class="btn btn-danger install-user-js">安装Cookie同步脚本</button>
   </div>
   <div class="d-flex gap-5 justify-content-center" style="max-width: 800px;margin: auto;margin-top: 10px;"><div class="card">
     <div class="card-body">
       <div>上次运行时间：<span class="last-run-time" style="display: inline !important;">-</span></div>
       <div>运行状态：<span class="run-status" style="display: inline !important;">-</span></div>
+      <div>运行日志：<span style="display: inline !important;">
+        <a class="run-logs" href="javascript:void(0);" target="_self">查看</a>
+      </span></div>
     </div>
   </div>
 </div>

@@ -298,6 +298,7 @@ const startHelper = async () => {
   globalThis.newVersionNotice = '';
   await checkUpdate(version, managerServer, !!autoUpdate || process.argv.includes('--update'), CHANGELOG, proxy);
   if (process.argv.includes('--update')) {
+    process.exit(0);
     return;
   }
 

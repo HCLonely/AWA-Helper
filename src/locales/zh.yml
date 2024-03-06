@@ -219,12 +219,15 @@ publicNetworkNotice: 如需公网访问，请将 127.0.0.1 更换为你的公网
 startHelper: 启动AWA-Helper
 stopHelper: 终止AWA-Helper
 stopManager: 终止AWA-Manager
+updateHelper: 更新AWA-Helper
 cornEnabled: 成功配置定时启动AWA-Helper
+watchLogs: 查看日志
 
 ### managerWeb ###
 gettingHelperStatus: 正在获取AWA-Helper运行状态...
 getHelperStatusSuccess: 运行状态获取成功！
 getHelperStatusFailed: 运行状态获取失败
+gettingManagerStatus: 正在获取AWA-Manager运行状态...
 startingHelper: 正在启动AWA-Helper...
 startSuccess: 启动成功！
 startFailed: 启动失败
@@ -232,8 +235,11 @@ stoppingHelper: 正在终止AWA-Helper...
 stopSuccess: 终止成功！
 stopFailed: 终止失败
 stoppingManager: 正在终止AWA-Manager...
-managerStopped: 终止命令已发送，请稍后刷新页面，如果页面加载失败说明终止成功
+managerStopped: 终止成功！
 setManagerSecretNotice: 请先配置Manager Server Secret!
 managerSecretSaved: Manager Server Secret已保存！
 userJsNotInstalled: Cookie 同步脚本未安装！
 userJsInstalled: Cookie 同步脚本已安装(v%s)
+updating: 正在更新...
+updateFailed: 更新失败
+updateSuccessManager: 更新成功！

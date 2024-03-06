@@ -4,6 +4,7 @@
 import * as express from 'express';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as qs from 'qs';
 import { Logger, time } from './tool';
 import * as chalk from 'chalk';
 import * as https from 'https';
@@ -168,6 +169,7 @@ const startManager = async (startHelper: boolean) => {
     // app.use(express.static(`${__dirname}/manager/static`));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+    app.set('query parser', (str: string) => qs.parse(str));
     if (options?.key && options?.cert) {
       server = https.createServer(options, app);
     }
@@ -336,6 +338,33 @@ const startManager = async (startHelper: boolean) => {
         new Logger(time() + __('stopManager'));
         process.exit(0);
         res.send('success').status(200).end();
+      } else {
+        res.status(401).end();
+      }
+    });
+    app.post('/update', async (req, res) => {
+      if (req.body?.secret === managerServer.secret) {
+        new Logger(time() + __('updateHelper'));
+        if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
+          const awaHelper = spawn('./AWA-Helper', ['--update', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
+          awaHelper.unref();
+        } else {
+          const awaHelper = spawn('node', ['main.js', '--update', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
+          awaHelper.unref();
+        }
+        res.send('success').status(200).end();
+      } else {
+        res.status(401).end();
+      }
+    });
+    app.get('/runLogs', async (req, res) => {
+      if (req.query?.secret === managerServer.secret) {
+        new Logger(time() + __('watchLogs'));
+        if (fs.existsSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`)) {
+          res.send(`<html><body style="width:100%;height:100%"><textarea style="width:100%;height:100%">${fs.readFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`).toString()}</textarea></body></html>`).status(200).end();
+        } else {
+          res.send('').status(200).end();
+        }
       } else {
         res.status(401).end();
       }

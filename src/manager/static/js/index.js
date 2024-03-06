@@ -104,18 +104,95 @@ function stopHelper(secret, stopManager = false) {
     console.error(error);
   });
 }
+function updateHelper(secret) {
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('updating')}</li>`);
+  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updating')}`);
+  axios.post('/update', { secret }).then(async (response) => {
+    if (response.status === 200) {
+      await sleep(10);
+      const result = await managerStatusChecker('start');
+      if (result === 'success') {
+        $('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateSuccessManager')}</li>`);
+        $('#log-area li:last')[0].scrollIntoView();
+        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateSuccessManager')}`);
+      } else {
+        $('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateFailed')}(${result})!</li>`);
+        $('#log-area li:last')[0].scrollIntoView();
+        $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateFailed')}(${result})!`);
+      }
+    } else {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateFailed')}(${response.status})!</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateFailed')}(${response.status})!`);
+    }
+    console.log(response);
+  }).catch(async (error) => {
+    await sleep(10);
+    const result = await managerStatusChecker('start');
+    if (result === 'success') {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateSuccessManager')}</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateSuccessManager')}`);
+    } else {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateFailed')}(${error.message})!</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateFailed')}(${error.message})!`);
+      console.error(error);
+    }
+  });
+}
+async function managerStatusChecker(status, times = 1) {
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingManagerStatus')}</li>`);
+  $('#log-area li:last')[0].scrollIntoView();
+  const runStatus = await axios.get('/').then(() => true).catch(() => false);
+  if (status === 'start') {
+    if (runStatus) {
+      return 'success';
+    }
+    if (times > 100) {
+      return 'error';
+    }
+    await sleep(3);
+    return await managerStatusChecker(status, times + 1);
+  }
+  if (status === 'stop') {
+    if (!runStatus) {
+      return 'success';
+    }
+    if (times > 10) {
+      return 'error';
+    }
+    await sleep(3);
+    return await statusChecker(status, times + 1);
+  }
+  return 'error';
+}
 function stopAWAManager(secret) {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingManager')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingManager')}`);
   axios.post('/stopManager', { secret }).then(async (response) => {
-    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('managerStopped')}</li>`);
-    $('#log-area li:last')[0].scrollIntoView();
-    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}`);
+    const result = await managerStatusChecker('stop');
+    if (result === 'success') {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('managerStopped')}</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}`);
+    } else {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopManagerFailed')}(${result})!</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}(${result})!`);
+    }
     console.log(response);
-  }).catch((error) => {
-    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('managerStopped')}</li>`);
-    $('#log-area li:last')[0].scrollIntoView();
-    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}`);
+  }).catch(async (error) => {
+    const result = await managerStatusChecker('stop');
+    if (result === 'success') {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('managerStopped')}</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}`);
+    } else {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stopManagerFailed')}(${error.message})!</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('managerStopped')}(${error.message})!`);
+    }
     console.error(error);
   });
 }
@@ -178,6 +255,14 @@ $('button.awa-helper-stop').click(() => {
   }
   stopHelper(managerServerSecret);
 });
+$('button.awa-helper-update').click(() => {
+  if (!managerServerSecret) {
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    return;
+  }
+  updateHelper(managerServerSecret);
+});
 
 $('button.awa-manager-stop').click(() => {
   if (!managerServerSecret) {
@@ -193,6 +278,16 @@ $('button.save-secret').click(() => {
   $('#log-area').append(`<li>${time()}${__('managerSecretSaved')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
 });
+
+$('a.run-logs').click(() => {
+  if (!managerServerSecret) {
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    return;
+  }
+  window.open(`/runLogs?secret=${managerServerSecret}`);
+});
+
 $('button.install-user-js').click(() => {
   window.open('https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js', '_blank');
 });

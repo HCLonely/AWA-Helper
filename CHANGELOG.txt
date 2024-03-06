@@ -1,1 +1,2 @@
-- 修复：版本识别时报错(Windows)
+- 新增：Manager Web可查看当天运行日志
+- 新增：Manager Web增加更新按钮
