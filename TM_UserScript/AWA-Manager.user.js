@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWA-Manager
 // @namespace    AWA-Manager
-// @version      3.1.2
+// @version      3.1.2.1
 // @description  AWA Cookie更新
 // @author       HCLonely
 // @icon         https://github.com/HCLonely/AWA-Helper/raw/main/static/icon.ico
@@ -16,7 +16,7 @@
 // @grant        GM_setValue
 // @grant        GM_info
 // @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
-// @require      https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js
+// @require      https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 // ==/UserScript==
 /* global window,document,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,GM_info,$, dayjs,__ */
 /* eslint-disable max-len */
