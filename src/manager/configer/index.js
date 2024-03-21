@@ -630,7 +630,7 @@
   }
   function setDefaultConfig(data, config) {
     return Object.fromEntries(Object.entries(data).map(([name, value]) => {
-      if (config[name]) {
+      if (config[name] || !(config[name] ?? true)) {
         if (typeof config[name] === 'object' && !Array.isArray(config[name])) {
           value.body = setDefaultConfig(value.body, config[name]);
           return [name, value];

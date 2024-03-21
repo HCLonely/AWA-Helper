@@ -96,12 +96,11 @@ class DailyQuest {
     daily?: string,
     monthly?: string
   } = {};
-  promotionalCalendarInfo?: {
+  promotionalCalendarInfo?: Array<{
     name: string,
-    id: string | undefined,
     day: string,
     finished?: boolean
-  };
+  }>;
   taskType: string = 'New';
   dailyArp = '0';
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
@@ -526,13 +525,24 @@ class DailyQuest {
             }
 
             // 推广活动
-            const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM')).eq(0);
+            const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM'));
             if (promotionalCalendar.length > 0) {
-              this.promotionalCalendarInfo = {
-                name: promotionalCalendar.find('div.promotional-calendar__day-label').text().trim(),
-                id: promotionalCalendar.find('button.promotional-calendar__day-claim').attr('data-id')?.trim(),
-                day: promotionalCalendar.find('div.promotional-calendar__day-date').text().trim()
-              };
+              this.promotionalCalendarInfo = promotionalCalendar.map((i, e) => ({
+                name: $(e).find('.promotional-calendar__day-info h1').text()
+                  .trim(),
+                day: `Day ${$(e).attr('data-day')}`,
+                finished: false
+              })).toArray();
+            } else {
+              this.promotionalCalendarInfo = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('My Rewards'))
+                .last()
+                .toArray()
+                .map((e) => ({
+                  name: $(e).find('.promotional-calendar__day-info h1').text()
+                    .trim(),
+                  day: `Day ${$(e).attr('data-day')}`,
+                  finished: true
+                }));
             }
             // Steam社区活动
             if (this.joinSteamCommunityEvent) {
@@ -2072,14 +2082,16 @@ class DailyQuest {
         };
       }
     }
-    if (this.promotionalCalendarInfo) {
-      result[__('promotionalCalendar')] = {
-        // eslint-disable-next-line no-nested-ternary
-        [__('status')]: this.promotionalCalendarInfo.finished ? __('done') : __('undone'),
-        [__('obtainedARP')]: this.promotionalCalendarInfo.name,
-        [__('extraARP')]: '-',
-        [__('maxAvailableARP')]: '-'
-      };
+    if (this.promotionalCalendarInfo && this.promotionalCalendarInfo.length > 0) {
+      this.promotionalCalendarInfo.forEach((calendarInfo) => {
+        result[`${__('promotionalCalendar')}[${calendarInfo.day}]`] = {
+          // eslint-disable-next-line no-nested-ternary
+          [__('status')]: calendarInfo.finished ? __('done') : __('undone'),
+          [__('obtainedARP')]: calendarInfo.name,
+          [__('extraARP')]: '-',
+          [__('maxAvailableARP')]: calendarInfo.name
+        };
+      });
     }
     if (this.steamCommunityEventInfo) {
       result[__('steamCommunityEvent')] = {

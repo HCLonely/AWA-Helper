@@ -584,7 +584,7 @@ const pushQuestInfoFormat = () => {
   if (!globalThis.quest?.formatQuestInfo) {
     return '';
   }
-  const otherTaskInfo = new Array(2);
+  const otherTaskInfo = new Array(1);
   const dailyTaskInfo: Array<any> = [];
   const onlineTaskInfo = new Array(2);
   const steamTaskInfo: Array<any> = [];
@@ -596,32 +596,32 @@ const pushQuestInfoFormat = () => {
         onlineTaskInfo[1] = [name, value];
       } else if (name.includes(__('steamQuest'))) {
         steamTaskInfo.push([name, value]);
-      } else if (name === __('promotionalCalendar')) {
-        otherTaskInfo[0] = [name, value];
+      } else if (name.includes(__('promotionalCalendar'))) {
+        otherTaskInfo.push([name, value]);
       } else if (name === __('steamCommunityEvent')) {
-        otherTaskInfo[1] = [name, value];
+        otherTaskInfo[0] = [name, value];
       } else {
         dailyTaskInfo.push([name, value]);
       }
     });
   const sortedTaskInfo = [...dailyTaskInfo, ...onlineTaskInfo, ...steamTaskInfo, ...otherTaskInfo].filter((e) => e);
-  return `${__('dailyArp', globalThis.quest.dailyArp)}\n\n${
-    globalThis.quest.signArp.daily ? __('dailySign', globalThis.quest.signArp.daily) : ''
+  return `👉${__('dailyArp', globalThis.quest.dailyArp)}\n\n${
+    globalThis.quest.signArp.daily ? `✔️${__('dailySign', globalThis.quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`
   }${
-    globalThis.quest.signArp.monthly ? __('monthlySign', globalThis.quest.signArp.monthly) : ''
+    globalThis.quest.signArp.monthly ? `✔️${__('monthlySign', globalThis.quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`
   }---\n${
     sortedTaskInfo.map(
       ([name, value]) => {
         if (name === __('steamCommunityEvent')) {
-          return `---\n${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}`;
+          return `---\n${parseInt(value[__('obtainedARP')], 10) >= parseInt(value[__('maxAvailableARP')], 10) ? '✔️' : '⚠️'}${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}`;
         }
-        if (name === __('promotionalCalendar')) {
-          return `---\n${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
+        if (name.includes(__('promotionalCalendar'))) {
+          return `---\n${value[__('status')] === __('done') ? '✔️' : '⚠️'}${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
         }
         if (name === __('watchTwitch')) {
-          return `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP\n---`;
+          return `${value[__('status')] === __('done') ? '✔️' : '❌'}${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP\n---`;
         }
-        return `${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`;
+        return `${value[__('status')] === __('done') ? '✔️' : '❌'}${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP`;
       })
       .join('\n')
   }`;
