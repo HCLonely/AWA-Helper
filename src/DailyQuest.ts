@@ -524,26 +524,6 @@ class DailyQuest {
               new Logger(`${time()}${chalk.green(__('promotionalAlert'))}`);
             }
 
-            // 推广活动
-            const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM'));
-            if (promotionalCalendar.length > 0) {
-              this.promotionalCalendarInfo = promotionalCalendar.map((i, e) => ({
-                name: $(e).find('.promotional-calendar__day-info h1').text()
-                  .trim(),
-                day: `Day ${$(e).attr('data-day')}`,
-                finished: false
-              })).toArray();
-            } else {
-              this.promotionalCalendarInfo = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('My Rewards'))
-                .last()
-                .toArray()
-                .map((e) => ({
-                  name: $(e).find('.promotional-calendar__day-info h1').text()
-                    .trim(),
-                  day: `Day ${$(e).attr('data-day')}`,
-                  finished: true
-                }));
-            }
             // Steam社区活动
             if (this.joinSteamCommunityEvent) {
               if (await this.getSteamCommunityEventPath() && this.steamCommunityEventPath) {
@@ -553,6 +533,27 @@ class DailyQuest {
           }
           if (this.joinSteamCommunityEvent && this.steamCommunityEventPath) {
             await this.checkSteamCommunityEventStatus();
+          }
+
+          // 推广活动
+          const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM'));
+          if (promotionalCalendar.length > 0) {
+            this.promotionalCalendarInfo = promotionalCalendar.map((i, e) => ({
+              name: $(e).find('.promotional-calendar__day-info h1').text()
+                .trim(),
+              day: `Day ${$(e).attr('data-day')}`,
+              finished: false
+            })).toArray();
+          } else {
+            this.promotionalCalendarInfo = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('My Rewards'))
+              .last()
+              .toArray()
+              .map((e) => ({
+                name: $(e).find('.promotional-calendar__day-info h1').text()
+                  .trim(),
+                day: `Day ${$(e).attr('data-day')}`,
+                finished: true
+              }));
           }
 
           // AWA 在线任务
