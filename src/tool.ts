@@ -337,7 +337,7 @@ const checkUpdate = async (version: string, managerServer: managerServer | undef
           return;
         }
         if (process.argv.includes('--no-update')) {
-          await push(`${__('pushTitle')}\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\nCHANGELOG`);
+          await push(`${__('pushTitle')}\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\n${CHANGELOG}`);
         }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
         return;
@@ -613,10 +613,10 @@ const pushQuestInfoFormat = () => {
     sortedTaskInfo.map(
       ([name, value]) => {
         if (name === __('steamCommunityEvent')) {
-          return `---\n${parseInt(value[__('obtainedARP')], 10) >= parseInt(value[__('maxAvailableARP')], 10) ? '✔️' : '⚠️'}${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}`;
+          return `---\n${parseInt(value[__('obtainedARP')], 10) >= parseInt(value[__('maxAvailableARP')], 10) ? '✔️' : '⚠️'}${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}\n---`;
         }
         if (name.includes(__('promotionalCalendar'))) {
-          return `---\n${value[__('status')] === __('done') ? '✔️' : '⚠️'}${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
+          return `${value[__('status')] === __('done') ? '✔️' : '⚠️'}${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
         }
         if (name === __('watchTwitch')) {
           return `${value[__('status')] === __('done') ? '✔️' : '❌'}${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP\n---`;

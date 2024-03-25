@@ -500,8 +500,7 @@ class DailyQuest {
                 if (monthlyLogins.count < 29) {
                   const week = Math.ceil(monthlyLogins.count / 7);
                   const rewardArp = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__reward h1`).text().trim();
-                  const rewardItem = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__day-overlay`).eq(0).text()
-                    .trim();
+                  const rewardItem = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__reward img[data-bs-title]`).attr('data-bs-title')?.trim();
                   if (rewardArp) {
                     this.signArp.monthly = `${rewardArp} + ${rewardBonusArp || ''} ARP`;
                     new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${rewardArp} + ${rewardBonusArp || ''}`))}`);
