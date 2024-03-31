@@ -128,7 +128,7 @@ boundingBox: 正在绑定画布框架...
 initing: 正在初始化 %s...
 checkAuthorization: 正在检测是否授权 %s 扩展...
 authorized: 已授权
-notAuthorized: 未授权
+notAuthorized: 未授权(授权方式请参考https://keylol.com/t782079-1-1)
 gettingLiveInfo: 正在获取可用直播信息...
 noLive: 当前没有可用的直播！
 getLiveInfoAlert: '%s 分钟后再次获取可用直播信息'
@@ -162,7 +162,7 @@ owned: 已拥有
 notOwned: 未拥有
 adding2library: 正在调用 %s 入库游戏[%s]...
 steamQuestNotChoose: Steam任务未选择
-noSteamGames: 未检测到Steam游戏，请先同步！
+noSteamGames: 未检测到Steam游戏，请先同步(%s)！
 choosingOwnGame: 正在选择Steam游戏[%s]...
 addingLicense: 正在尝试入库Steam游戏...
 
@@ -176,10 +176,10 @@ lastCodeWrong: 验证码错误，请 %s 秒后重试！
 steamCodeInput: 请输入验证码：
 
 ### tool.ts ###
-timeout: 连接超时，请尝试更换代理！
-connRefused: 连接被拒绝，请尝试更换代理！
-connReset: 连接被重置，请尝试更换代理！
-certificateError: 证书错误，请尝试更换代理！
+timeout: 连接超时，请尝试更换代理或节点！
+connRefused: 连接被拒绝，请尝试更换代理或节点！
+connReset: 连接被重置，请尝试更换代理或节点！
+certificateError: 证书错误，请尝试更换代理或节点！
 changeAwaHostAlert1: 重定向次数过多，请尝试更改 %s 配置！
 changeAwaHostAlert2: 重定向次数过多，请尝试将 %s 配置更改为 %s
 retrying: 正在重试第 %s 次...

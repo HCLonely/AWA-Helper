@@ -231,7 +231,7 @@ class SteamQuestASF {
           }
           const steamGameId = $('#userGames>option').eq(0).attr('value');
           if (!steamGameId) {
-            new Logger(`${time()}${chalk.red(__('noSteamGames'))}`, false);
+            new Logger(`${time()}${chalk.red(__('noSteamGames', url))}`, false);
             return [id, false];
           }
           await this.chooseOwnGame(url, steamGameId);

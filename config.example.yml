@@ -65,7 +65,7 @@ steamUse: 'ASF' # 仅支持ASF
 asfProtocol: 'http'
 asfHost: '127.0.0.1'
 asfPort: 1242
-asfPassword: ''
+asfPassword: '' # ASF IPCPassword
 asfBotname: ''
 
 #### 代理设置(可选) ####

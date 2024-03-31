@@ -219,6 +219,7 @@
               defaultValue: 1242
             asfPassword:
               name: ASF 密码
+              desp: ASF IPCPassword
               type: text
             asfBotname:
               name: ASF Botname

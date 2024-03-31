@@ -222,7 +222,7 @@
               inputType: number
               defaultValue: 1242
             asfPassword:
-              name: ASF password
+              name: ASF IPCPassword
               type: text
             asfBotname:
               name: ASF Botname

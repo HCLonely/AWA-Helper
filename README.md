@@ -279,7 +279,7 @@ steamUse: 'ASF' # 挂时长方式
 asfProtocol: 'http' # ASF使用的协议，一般都是`http`
 asfHost: '127.0.0.1' # ASF使用的Host，本地运行一般是`127.0.0.1`
 asfPort: '1242' # ASF使用的端口，默认是`1242`
-asfPassword: '' # ASF密码
+asfPassword: '' # ASF IPCPassword
 asfBotname: '' # 要挂游戏的ASF Bot名称
 ```
 
