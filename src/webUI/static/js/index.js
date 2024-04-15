@@ -16,7 +16,7 @@ function generateTaskInfo(data) {
   if (data) {
     Object.entries(data).filter(([name]) => name.includes(__('dailyTask', ''))).forEach(([name, value], index) => {
       if (value.link) {
-        $(`#daily-quest-${index}`).find('th').html(`<a href="${value.link}" target="_blank">${name}</a>`);
+        $(`#daily-quest-${index}`).find('th').html(`<a href="${value.link}" target="_blank" style="border: none;">${name}</a>`);
       } else {
         $(`#daily-quest-${index}`).find('th').text(name);
       }

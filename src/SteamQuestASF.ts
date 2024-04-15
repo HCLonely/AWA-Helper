@@ -231,6 +231,10 @@ class SteamQuestASF {
           }
           const steamGameId = $('#userGames>option').eq(0).attr('value');
           if (!steamGameId) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('syncSteamGamesRequired')));
+            if (await this.syncGames(url)) {
+              return await this.getQuestInfo(url, true);
+            }
             new Logger(`${time()}${chalk.red(__('noSteamGames', url))}`, false);
             return [id, false];
           }
@@ -249,6 +253,51 @@ class SteamQuestASF {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
         return ['', false];
+      });
+  }
+  async syncGames(url: string): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('syncingGames')}`, false);
+    const options: myAxiosConfig = {
+      url: url.replace('steam/quests', 'ajax/user/steam/quests/sync-owned-games'),
+      method: 'GET',
+      responseType: 'json',
+      headers: {
+        cookie: this.awaCookie.stringify(),
+        accept: '*/*',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'user-agent': globalThis.userAgent,
+        referer: url
+      },
+      Logger: logger
+    };
+    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+
+    return axios(options)
+      .then(async (response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          if (response.data?.success) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(response.data?.message || 'OK'));
+            return true;
+          }
+          if (response.data?.message) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(response.data?.message));
+          } else {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow('Warning'));
+            new Logger(response.data || response.statusText);
+          }
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
+        new Logger(response.data || response.statusText);
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
       });
   }
   async chooseOwnGame(url: string, steamGameId: string): Promise<boolean> {
