@@ -164,6 +164,7 @@ const startHelper = async () => {
 
   const defaultConfig: config = {
     language: 'zh',
+    timeout: 86400,
     logsExpire: 30,
     awaHost: 'www.alienwarearena.com',
     awaBoosterNotice: true,

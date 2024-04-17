@@ -69,11 +69,13 @@ class DailyQuest {
   } = {};
   boosterRule: Array<string> = [];
   boosterCorn?: cornParser.CronExpression;
+  /*
   #loginInfo?: {
     enable: boolean
     username: string
     password: string
   };
+  */
   newCookie: string;
   proxy?: {
     server: string
@@ -161,7 +163,7 @@ class DailyQuest {
       }
     }
     if (autoLogin?.enable) {
-      this.#loginInfo = autoLogin;
+      // this.#loginInfo = autoLogin;
     }
     this.doTaskUS = !!doTaskUS;
     this.safeReply = !!awaSafeReply;
@@ -556,11 +558,9 @@ class DailyQuest {
           }
 
           // AWA 在线任务
-          const maxArp = $('#control-center__tos-max-arp').text().trim()
-            .match(/[\d]+/)?.[0] || '0';
           if (!this.questInfo.timeOnSite) {
             this.questInfo.timeOnSite = {
-              maxArp,
+              maxArp: '5',
               addedArp: '0',
               addedArpExtra: '0'
             };
@@ -569,6 +569,7 @@ class DailyQuest {
           if (dailyArpDataRaw) {
             try {
               const dailyArpData = JSON.parse(dailyArpDataRaw);
+              this.questInfo.timeOnSite.maxArp = `${dailyArpData.timeOnSiteCap}`;
               this.questInfo.timeOnSite.addedArp = `${dailyArpData.timeOnSiteArp}`;
               this.questInfo.watchTwitch = [`${dailyArpData.twitchData.totalPoints}`, `${dailyArpData.twitchData.bonusPoints}`];
               this.dailyArp = `${dailyArpData.dailyArp}`;
