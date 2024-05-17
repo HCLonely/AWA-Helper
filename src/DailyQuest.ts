@@ -105,9 +105,10 @@ class DailyQuest {
   }>;
   taskType: string = 'New';
   dailyArp = '0';
+  getStarted = true;
   // USTaskInfo?: Array<{ url: string; progress: Array<string>; }>;
 
-  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, doTaskUS, awaSafeReply, joinSteamCommunityEvent }: {
+  constructor({ awaCookie, awaDailyQuestType, awaDailyQuestNumber1, boosterRule, boosterCorn, awaBoosterNotice, proxy, autoLogin, doTaskUS, awaSafeReply, joinSteamCommunityEvent, getStarted }: {
     awaCookie: string
     awaDailyQuestType?: Array<string>
     awaDailyQuestNumber1: boolean | undefined
@@ -123,6 +124,7 @@ class DailyQuest {
     doTaskUS?: boolean
     awaSafeReply?: boolean
     joinSteamCommunityEvent?: boolean
+    getStarted?: boolean
   }) {
     this.awaBoosterNotice = awaBoosterNotice ?? true;
     this.newCookie = awaCookie;
@@ -134,6 +136,7 @@ class DailyQuest {
       'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
     };
     this.awaDailyQuestNumber1 = awaDailyQuestNumber1 ?? true;
+    this.getStarted = getStarted ?? true;
     if (boosterRule) {
       this.boosterRule = boosterRule;
     }
@@ -529,6 +532,18 @@ class DailyQuest {
             if (this.joinSteamCommunityEvent) {
               if (await this.getSteamCommunityEventPath() && this.steamCommunityEventPath) {
                 await this.getSteamCommunityEvent();
+              }
+            }
+
+            if (this.getStarted) {
+              const getStartedItems = $('.onboarding_items .onboarding_item').has('i.fa-square').toArray()
+                .map((e) => ({
+                  name: $(e).find('a.onboarding-link').text()
+                    .trim(),
+                  link: $(e).find('a.onboarding-link').attr('href') as string
+                }));
+              if (getStartedItems.length > 0) {
+                await this.doGetStartQuest(getStartedItems);
               }
             }
           }
@@ -1947,6 +1962,43 @@ class DailyQuest {
       });
   }
 
+  async doGetStartQuest(itemsInfo: Array<{ name: string, link: string }>, index = 0): Promise<boolean> {
+    const itemInfo = itemsInfo[index];
+    const logger = new Logger(`${time()}${__('doingGetStartedQuest', itemInfo.name)}`, false);
+    const options: myAxiosConfig = {
+      url: `https://${globalThis.awaHost}${itemInfo.link}`,
+      method: 'GET',
+      headers: {
+        ...this.headers,
+        origin: `https://${globalThis.awaHost}`,
+        referer: `https://${globalThis.awaHost}/control-center`
+      },
+      Logger: logger
+    };
+    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+
+    const result = await axios(options)
+      .then((response) => {
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        if (response.status === 200) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('OK')));
+          return true;
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
+        return false;
+      })
+      .catch((error) => {
+        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
+        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+        new Logger(error);
+        return false;
+      });
+
+    if (index < itemsInfo.length - 1) {
+      return this.doGetStartQuest(itemsInfo, index + 1);
+    }
+    return result;
+  }
   /*
   async updateDailyQuestDb(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('updatingDailyQuestDb')}`, false);

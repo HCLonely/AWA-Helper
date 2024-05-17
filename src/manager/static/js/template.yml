@@ -126,16 +126,19 @@
       desp: 按`Ctrl`多选
       type: multi-select
       optionsName:
+        - GET STARTED任务
         - 每日任务
         - AWA在线任务
         - Twitch直播间在线任务
         - Steam游戏时长任务
       options:
+        - getStarted
         - dailyQuest
         - timeOnSite
         - watchTwitch
         - steamQuest
       defaultValue:
+        - getStarted
         - dailyQuest
         - timeOnSite
         - watchTwitch

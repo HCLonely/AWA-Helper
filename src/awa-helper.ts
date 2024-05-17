@@ -168,7 +168,7 @@ const startHelper = async () => {
     logsExpire: 30,
     awaHost: 'www.alienwarearena.com',
     awaBoosterNotice: true,
-    awaQuests: ['dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
+    awaQuests: ['getStarted', 'dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
     awaDailyQuestType: [
       'click',
       'visitLink',
@@ -311,7 +311,8 @@ const startHelper = async () => {
     proxy,
     doTaskUS: awaQuests.includes('dailyQuestUS'),
     awaSafeReply,
-    joinSteamCommunityEvent
+    joinSteamCommunityEvent,
+    getStarted: awaQuests.includes('getStarted')
   });
   const initResult = await quest.init();
   if (initResult !== 200) {

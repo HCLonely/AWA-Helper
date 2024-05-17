@@ -112,6 +112,7 @@ gettingItem: "正在获取推广奖励..."
 gettingPromotionalCalendarItemError: "获取推广奖励失败！"
 promotionalCalendar: "推广奖励"
 dailyArp: "今日共获得 %s ARP"
+doingGetStartedQuest: "正在做GET START任务[%s]..."
 
 ### DailyQuestUS.ts ###
 doingTaskUS: 正在做美区任务[%s]...

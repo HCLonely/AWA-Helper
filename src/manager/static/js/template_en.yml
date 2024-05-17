@@ -127,16 +127,19 @@
       desp: Press `Ctrl` to select multiple
       type: multi-select
       optionsName:
+      - GET STARTED tasks
       - daily tasks
       - AWA online tasks
       - Twitch live room online tasks
       - Steam game online tasks
       options:
+      - getStarted
       - dailyQuest
       - timeOnSite
       - watchTwitch
       - steamQuest
       defaultValue:
+      - getStarted
       - dailyQuest
       - timeOnSite
       - watchTwitch
