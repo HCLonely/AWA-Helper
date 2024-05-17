@@ -11,7 +11,7 @@ Automatically does AWA quests.<br>This document comes from machine translation
 ### Instructions before use
 
 1. Before using it, please make sure that your AWA account has a Steam account linked and that the Steam profile settings have been set to public;
-2. Before using it, please make sure that your AWA account has a Twitch account linked and that the Twitch account has been granted access to the AWA ARP widget;
+2. Before using, please make sure that your AWA account has been linked to your Twitch account and that your Twitch account has authorized the AWA extension ( [how to link?](https://keylol.com/t782079-1-1) )
 3. [Not recommended] If you want to use more than one account, copy the program to another folder to run multiple accounts.
 
 ### AWA-Manager
@@ -207,6 +207,7 @@ awaCookie: '' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBER
 awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienwarearena.com`和`na.alienwarearena.com`, 默认的没问题就不要改
 # awaBoosterNotice: true # 已弃用！外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 awaQuests:
+  - getStarted # 自动做左下角的GET STARTED任务，不需要做此任务删除或注释掉此行
   - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
   - timeOnSite # 自动做AWA在线任务，不需要做此任务删除或注释掉此行
   - watchTwitch # 自动做Twitch直播间在线任务，不需要做此任务删除或注释掉此行
@@ -278,11 +279,11 @@ steamUse: 'ASF' # 挂时长方式
 #### ASF parameters description
 
 ```yml
-asfProtocol: 'http' # Protocol used by ASF, usually `http`
-asfHost: '127.0.0.1' # Host used by ASF, usually `127.0.0.1` for local operation
-asfPort: '1242' # Port used by ASF, default is `1242`
-asfPassword: '' # ASF password
-asfBotname: '' # ASF Bot name to idle game
+asfProtocol: 'http' # ASF使用的协议，一般都是`http`
+asfHost: '127.0.0.1' # ASF使用的Host，本地运行一般是`127.0.0.1`
+asfPort: '1242' # ASF使用的端口，默认是`1242`
+asfPassword: '' # ASF IPCPassword
+asfBotname: '' # 要挂游戏的ASF Bot名称
 ```
 
 ### Proxy configuration (optional)
