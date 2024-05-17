@@ -226,6 +226,7 @@
               defaultValue: 1242
             asfPassword:
               name: ASF IPCPassword
+              desp: ASF IPCPassword
               type: text
             asfBotname:
               name: ASF Botname
@@ -379,7 +380,7 @@
                       type: text
               DingTalk:
                 key:
-                  name: 认证信息
+                  name: Certification Information
                   type: object
                   body:
                     token:
