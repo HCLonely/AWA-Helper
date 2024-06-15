@@ -224,7 +224,9 @@ stopHelper: Terminate AWA-Helper
 stopManager: Terminate AWA-Manager
 updateHelper: Update AWA-Helper
 cornEnabled: Successfully configured scheduled start of AWA-Helper
+cornError: cron format error
 watchLogs: View log
+changeArtifacts: Change Artifacts
 gettingHelperStatus: Obtaining AWA-Helper running status...
 getHelperStatusSuccess: The running status was obtained successfully!
 getHelperStatusFailed: Failed to obtain running status
@@ -244,3 +246,13 @@ userJsInstalled: Cookie sync script has been installed (v%s)
 updating: Updating...
 updateFailed: Update failed
 updateSuccessManager: Update completed!
+gettingArtifactsInfo: Getting artifacts information...
+changingArtifact: Changing artifacts {id:%s,position:%s}...
+changeArtifactsSuccess: Artifacts replacement successful!
+changeArtifactsFailed: Artifacts replacement failed!
+missingAwaCookie: Missing awaCookie parameter!
+artifactCornEnabled: Successfully configured to periodically replace Artifacts
+artifactsStatus: The artifacts are successfully replaced with
+activePerks: 'Current artifacts effects:'
+artifactsStatusPushFailed: Artifacts status push failed!
+artifactsStatusError: Artifacts replacement failed, current artifacts are
