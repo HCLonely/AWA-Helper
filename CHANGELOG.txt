@@ -1,1 +1,1 @@
-- 新增：定时更换遗物
+- 新增：定时更换遗物(managerServer.artifacts)
