@@ -5,7 +5,7 @@ import * as express from 'express';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as qs from 'qs';
-import { Logger, time } from './tool';
+import { Logger, time, push } from './tool';
 import * as chalk from 'chalk';
 import * as https from 'https';
 import { dirname, join, resolve } from 'path';
@@ -18,6 +18,7 @@ import * as minMax from 'dayjs/plugin/minMax';
 import axios from 'axios';
 import * as corn from 'node-cron';
 import * as parser from 'cron-parser';
+import { Artifacts } from './Artifacts';
 // @ts-ignore
 import indexHtml from './dist/index.html';
 // @ts-ignore
@@ -31,7 +32,13 @@ import templateYmlEN from './static/js/template_en.yml';
 import * as zh from '../locales/zh.json';
 // @ts-ignore
 import * as en from '../locales/en.json';
-
+interface pusher {
+  enable: boolean
+  platform: string
+  key: {
+    [name: string]: any
+  }
+}
 interface config {
   language: string
   logsExpire: number
@@ -45,6 +52,10 @@ interface config {
       cert?: string
     }
     corn?: string
+    artifacts: Array<{
+      corn: string
+      ids: string
+    }>
   }
   webUI: {
     enable: boolean
@@ -53,6 +64,16 @@ interface config {
       key?: string
       cert?: string
     }
+  }
+  awaHost: string,
+  pusher?: pusher,
+  proxy?: {
+    enable: Array<string>
+    host: string
+    port: number
+    protocol?: string
+    username?: string
+    password?: string
   }
 }
 const startManager = async (startHelper: boolean) => {
@@ -95,12 +116,14 @@ const startManager = async (startHelper: boolean) => {
       enable: true,
       secret: '',
       local: true,
-      port: 2345
+      port: 2345,
+      artifacts: []
     },
     webUI: {
       enable: true,
       port: 3456
-    }
+    },
+    awaHost: 'www.alienwarearena.com'
   };
   const configString = fs.readFileSync(configPath).toString();
   let config: config | null = null;
@@ -117,8 +140,13 @@ const startManager = async (startHelper: boolean) => {
   if (!config) {
     return;
   }
-  const { language, managerServer, logsExpire, webUI }: config = config;
+  const { language, managerServer, logsExpire, webUI, awaHost, pusher, proxy }: config = config;
   i18n.setLocale(language);
+  globalThis.awaHost = awaHost || 'www.alienwarearena.com';
+  globalThis.pusher = pusher;
+  if (pusher?.enable && proxy?.enable?.includes('pusher')) {
+    globalThis.pusherProxy = proxy;
+  }
 
   if (fs.existsSync('logs')) {
     const logFiles = fs.readdirSync('logs');
@@ -408,19 +436,54 @@ const startManager = async (startHelper: boolean) => {
 
   // corn
   if (managerServer.corn) {
-    corn.schedule(managerServer.corn, () => {
-      new Logger(time() + __('startHelper'));
-      if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
-        const awaHelper = spawn('./AWA-Helper', ['--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
-        awaHelper.unref();
+    if (corn.validate(managerServer.corn)) {
+      corn.schedule(managerServer.corn, () => {
+        new Logger(time() + __('startHelper'));
+        if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
+          const awaHelper = spawn('./AWA-Helper', ['--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
+          awaHelper.unref();
+        } else {
+          const awaHelper = spawn('node', ['main.js', '--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
+          awaHelper.unref();
+        }
+        new Logger(time() + __('nextRunTime', chalk.blue(dayjs(parser.parseExpression(managerServer.corn as string).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+      });
+      new Logger(`${time()}${chalk.green(__('cornEnabled'))}(${managerServer.corn})`);
+      new Logger(time() + __('nextRunTime', chalk.blue(dayjs(parser.parseExpression(managerServer.corn).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+    } else {
+      new Logger(`${time()}${chalk.red(__('cornError'))}(${managerServer.corn})`);
+    }
+  }
+  if (managerServer.artifacts && managerServer.artifacts.length > 0) {
+    managerServer.artifacts.forEach((option) => {
+      if (corn.validate(option.corn)) {
+        corn.schedule(option.corn, async () => {
+          new Logger(time() + __('changeArtifacts'));
+          const artifacts = new Artifacts(configPath);
+          if (!artifacts.initted) {
+            return;
+          }
+          const initResult = await artifacts.init();
+          if (initResult !== 200) {
+            const errorMap = {
+              0: __('netError'),
+              602: __('tokenExpired'),
+              603: __('noBorderAndBadges'),
+              604: __('noBorder'),
+              605: __('noBadges'),
+              610: __('ipBanned')
+            };
+            const initError = errorMap[initResult as keyof typeof errorMap] || __('unknownError');
+            new Logger(time() + __('changeArtifactsFailed') + chalk.red(initError));
+            return;
+          }
+          await artifacts.start(option.ids.split(',').map((e) => parseInt(e.trim(), 10)));
+        });
+        new Logger(`${time()}${chalk.green(__('artifactCornEnabled'))}(${option.corn})`);
       } else {
-        const awaHelper = spawn('node', ['main.js', '--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
-        awaHelper.unref();
+        new Logger(`${time()}${chalk.red(__('cornError'))}(${option.corn})`);
       }
-      new Logger(time() + __('nextRunTime', chalk.blue(dayjs(parser.parseExpression(managerServer.corn as string).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
     });
-    new Logger(`${time()}${chalk.green(__('cornEnabled'))}(${managerServer.corn})`);
-    new Logger(time() + __('nextRunTime', chalk.blue(dayjs(parser.parseExpression(managerServer.corn).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
   }
 
   // 更新后首次启动

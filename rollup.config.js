@@ -10,14 +10,16 @@ module.exports = {
     dir: 'output',
     format: 'cjs'
   },
-  plugins: [terser({
-    format: {
-      comments: false
-    }
-  }), nodeResolve({
-    preferBuiltins: true,
-    exportConditions: ['node']
-  }), commonjs(), json(), string({
-    include: ['**/*.html', '**/*.yml', '**/CHANGELOG.txt']
-  })]
+  plugins: [
+    terser({
+      format: {
+        comments: false
+      }
+    }),
+    nodeResolve({
+      preferBuiltins: true,
+      exportConditions: ['node']
+    }), commonjs(), json(), string({
+      include: ['**/*.html', '**/*.yml', '**/CHANGELOG.txt']
+    })]
 };

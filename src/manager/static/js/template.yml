@@ -110,6 +110,25 @@
               # 示例中的表达式代表每天的14:30:03和21:30:03启动AWA-Helper
               # !! 注意每次运行的时间间隔要大于前面设置的timeout</code></pre>
           type: text
+        artifacts:
+          name: 定时更换遗物
+          type: array
+          desp: 定时更换遗物
+          body:
+            - name: 更换遗物配置
+              desp: 点击+号新增
+              type: object
+              repeat: true
+              body:
+                corn:
+                  name: 定时设置
+                  type: text
+                  desp: corn格式，参考定时启动AWA-Helper的写法
+                  defaultValue: ''
+                ids:
+                  name: 遗物id, 英文逗号分隔
+                  type: text
+                  defaultValue: ''
     awaCookie:
       name: 外星人论坛Cookie
       desp: 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能。

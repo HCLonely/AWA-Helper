@@ -107,22 +107,14 @@
         singleConfig.body = setDefaultConfig(singleConfig.body, oldConfig);
       }
       // 多配置文件处理
-      $('div.container').append(`<form id="config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, '')}" style="display:none;" data-type="${
-        singleConfig.type || singleConfig.filename.split('.').slice(0, -1).join('.')
+      $('div.container').append(`<form id="config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, '')}" style="display:none;" data-type="${singleConfig.type || singleConfig.filename.split('.').slice(0, -1).join('.')
       }" data-filename="${singleConfig.filename || `${singleConfig.name}.${singleConfig.type}`}">
-
         ${singleConfig.quote ? `<figure class="text-center" style="border: 1px dashed #00c9ff;border-radius: 5px;">
-
           <blockquote class="blockquote">
-
             <p>${singleConfig.quote}</p>
-
           </blockquote>
-
           ${singleConfig.author ? `<figcaption class="blockquote-footer" style="margin-bottom: .5rem;">${singleConfig.author}</figcaption>` : ''}
-
         </figure>` : ''}
-
       </form>`);
       if (index === 0) {
         $('#single-config-name>button').attr('data-name', htmlDecode(singleConfig.name));
@@ -147,6 +139,18 @@
       });
     });
     $('button.repeat').on('click', repeatButton);
+    $('button.delete-repeat').on('click', (event) => {
+      if ($(event.target).parent().parent()
+        .parent()
+        .children().length > 1) {
+        $(event.target).parent().parent()
+          .remove();
+      } else {
+        $(event.target).parent().parent()
+          .find('input')
+          .val('');
+      }
+    });
     const generatorButton = $('<button class="btn btn-primary" type="submit" style="margin-bottom: 1rem;">Save</button>');
     $('form').append(generatorButton).submit(async function (event) {
       $(this).children('button[type="submit"]').attr('disabled', 'disabled')
@@ -262,17 +266,27 @@
     copyElement.children().children('button.repeat').map((index, element) => {
       const deleteRepeatButton = $(element).clone();
       deleteRepeatButton.removeClass('repeat').addClass('delete-repeat').text('-')
-        .attr('style', '--bs-btn-padding-y: .02rem; --bs-btn-padding-x: .39rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;');
+        .attr('style', '--bs-btn-padding-y: .02rem; --bs-btn-padding-x: .39rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;width: 37px;');
       if ($(element).prev().hasClass('delete-repeat')) {
         $(element).prev().remove();
       }
       $(element).before(deleteRepeatButton);
       return element;
     });
+    copyElement.children().children().children('input')
+      .attr('value', '');
     parent.after(copyElement.prop('outerHTML'));
     $('button.delete-repeat').off('click').on('click', (event) => {
-      $(event.target).parent().parent()
-        .remove();
+      if ($(event.target).parent().parent()
+        .parent()
+        .children().length > 1) {
+        $(event.target).parent().parent()
+          .remove();
+      } else {
+        $(event.target).parent().parent()
+          .find('input')
+          .val('');
+      }
     });
     $('button.repeat').off('click', repeatButton).on('click', repeatButton);
   }
@@ -327,126 +341,72 @@
     if (options.type === 'text') {
       if (options.inputType === 'textarea') {
         $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
-
           <label for="${id}" class="form-label">
-
             ${options.name || name}${options.required ? '<font style="color:red;" title="Required">*</font>' : ''}
-
             ${`${options.validation}` ? '<font style="color:blue;" title="RegExp Validation">!</font>' : ''}
-
             ${(parentType === 'array' && options.repeat === true) ? `<button type="button" class="btn btn-outline-primary repeat"
-
             data-id="${id}" data-name="${name}"
-
             style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
-
           </label>
-
           <textarea type="text" class="form-control item" id="${id}" name="${name}" data-parent="${preId}"
-
             ${options.desp ? ` aria-describedby="help-${id}"` : ''}
-
             ${options.placeholder ? ` placeholder="${options.placeholder}"` : ''}
-
             ${options.required ? ' required' : ''}
-
             ${`${options.defaultValue ?? ''}` ? ` value="${options.defaultValue}"` : ''}
-
             ${options.validation ? ` data-validation="${options.validation}"` : ''}
-
           ></textarea>
-
           ${options.validation ? '<div class="invalid-feedback">Invalid format!</div>' : ''}
-
           ${options.desp ? `<div id="help-${id}" class="form-text">${options.desp}</div>` : ''}
-
         </div>`);
         return;
       }
       $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
-
         <label for="${id}" class="form-label">${options.name || name}${options.required ? '<font style="color:red;" title="Required">*</font>' : ''}
-
             ${options.validation ? '<font style="color:blue;" title="RegExp Validation">!</font>' : ''}
-
             ${(parentType === 'array' && options.repeat === true) ? `<button type="button"
-
           class="btn btn-outline-primary repeat" data-id="${id}" data-name="${name}"
-
           style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
-
         </label>
-
         <input type="${options.inputType || 'text'}" class="form-control" id="${id}" name="${name}" data-parent="${preId}"
-
           ${options.desp ? ` aria-describedby="help-${id}"` : ''}
-
           ${options.placeholder ? ` placeholder="${options.placeholder}"` : ''}
-
           ${options.required ? ' required' : ''}
-
           ${`${options.defaultValue ?? ''}` ? ` value="${options.defaultValue}"` : ''}
-
           ${options.validation ? ` data-validation="${options.validation}"` : ''}
-
         />
-
         ${options.validation ? '<div class="invalid-feedback">Invalid format!</div>' : ''}
-
         ${options.desp ? `<div id="help-${id}" class="form-text">${htmlDecode(options.desp)}</div>` : ''}
-
       </div>`);
       return;
     }
     // boolean
     if (options.type === 'boolean') {
       $(`#config-${preId}`).append(`<div class="form-check form-switch mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
-
         <input class="form-check-input" type="checkbox" role="switch" id="${id}" name="${name}" data-parent="${preId}"
-
           ${options.desp ? ` aria-describedby="help-${id}"` : ''}
-
           ${options.defaultValue ? ' checked="checked"' : ''}
-
           />
-
         <label class="form-check-label" for="${id}">${options.name || name}${(parentType === 'array' && options.repeat === true) ? `<button type="button"
-
           class="btn btn-outline-primary repeat" data-id="${id}" data-name="${name}"
-
           style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
-
         </label>
-
         ${options.desp ? `<div id="help-${id}" class="form-text">${options.desp}</div>` : ''}
-
       </div>`);
       return;
     }
     // single-select
     if (options.type === 'single-select') {
       $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
-
         <label class="form-select-label" for="${id}">${options.name || name}${(parentType === 'array' && options.repeat === true) ? `<button type="button"
-
           class="btn btn-outline-primary repeat" data-id="${id}" data-name="${name}"
-
           style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
-
         </label>
-
         <select class="form-select" id="${id}" name="${name}" data-parent="${preId}"
-
         ${options.desp ? ` aria-describedby="help-${id}"` : ''}>
-
           ${options.options.map((option, index) => `<option value="${option}" ${option === options.defaultValue ? ' selected' : ''}>
-
           ${options.optionsName?.[index] ? options.optionsName[index] : option}</option>`).join('')}
-
         </select>
-
         ${options.desp ? `<div id="help-${id}" class="form-text">${options.desp}</div>` : ''}
-
       </div>`);
       if (options.bindValue) {
         if (options.bindValue.isChildren) {
@@ -490,58 +450,36 @@
     // multi-select
     if (options.type === 'multi-select') {
       $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
-
         <label class="form-select-label" for="${id}">${options.name || name}${(parentType === 'array' && options.repeat === true) ? `<button type="button"
-
           class="btn btn-outline-primary repeat" data-id="${id}" data-name="${name}"
-
           style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
-
         </label>
-
         <select class="form-select" id="${id}" name="${name}" multiple data-parent="${preId}"
-
         ${options.desp ? ` aria-describedby="help-${id}"` : ''}>
-
           ${options.options.map((option, index) => `<option value="${option}"
-
           ${(options.defaultValue || []).includes(option) ? ' selected' : ''}>
-
           ${options.optionsName?.[index] ? options.optionsName[index] : option}</option>`).join('')}
-
         </select>
-
         ${options.desp ? `<div id="help-${id}" class="form-text">${options.desp}</div>` : ''}
-
       </div>`);
       return;
     }
     // object
     if (options.type === 'object') {
       $(`#config-${preId}`).append(`<div class="card card-body" style="padding-bottom:0;margin-bottom:1rem;${parentType === 'single-select' ? 'display: none;' : ''}"
-
       ${parentType === 'single-select' ? ` bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
-
         <p style="text-align:center;margin-bottom:0;"">
-
           <a class="btn btn-primary" data-bs-toggle="collapse" href="#config-${preId}-${name}" role="button" aria-expanded="true"
-
             aria-controls="config-${preId}-${name}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
-
             data-bs-title="Click to hide/show the options about ${options.name || name}.">
-
             ${options.name || name}
-
           </a>
-
-          ${(parentType === 'array' && options.repeat === true) ? `<button type="button" class="btn btn-outline-primary repeat"
-
+          ${(parentType === 'array' && options.repeat === true) ? `<button type="button" class="btn btn-outline-primary delete-repeat"
             data-id="config-${preId}-${name}" data-name="${name}"
-
+            style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;width: 37px;">-</button><button type="button" class="btn btn-outline-primary repeat"
+            data-id="config-${preId}-${name}" data-name="${name}"
             style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
-
           ${options.desp ? `<div id="configHelp-${preId}-${name}" class="form-text">${options.desp}</div>` : ''}
-
         </p><div id="config-${preId}-${name}" class="collapse show" name="${name}" type="object" data-parent="${preId}"></div>
 
       </div>`);
@@ -552,31 +490,20 @@
     // array
     if (options.type === 'array') {
       $(`#config-${preId}`).append(`<div class="card card-body" style="padding-bottom:0;margin-bottom:1rem;${parentType === 'single-select' ? 'display: none;' : ''}"
-
       ${parentType === 'single-select' ? ` bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
-
         <p style="text-align:center;margin-bottom:0;">
-
           <a class="btn btn-primary" data-bs-toggle="collapse" href="#config-${preId}-${name}" role="button" aria-expanded="true"
-
             aria-controls="config-${preId}-${name}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
-
             data-bs-title="Click to hide/show the options about ${options.name || name}.">
-
             ${options.name || name}
-
           </a>
-
-          ${(parentType === 'array' && options.repeat === true) ? `<button type="button" class="btn btn-outline-primary repeat"
-
+          ${(parentType === 'array' && options.repeat === true) ? `<button type="button" class="btn btn-outline-primary delete-repeat"
             data-id="config-${preId}-${name}" data-name="${name}"
-
+            style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;width: 37px;">-</button><button type="button" class="btn btn-outline-primary repeat"
+            data-id="config-${preId}-${name}" data-name="${name}"
             style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
-
           ${options.desp ? `<div id="configHelp-${preId}-${name}" class="form-text">${options.desp}</div>` : ''}
-
         </p><div id="config-${preId}-${name}" class="collapse show" name="${name}" type="array" data-parent="${preId}"></div>
-
       </div>`);
       const arrayBody = [];
       options.body.forEach((subOptions) => {
@@ -633,6 +560,15 @@
       if (config[name] || !(config[name] ?? true)) {
         if (typeof config[name] === 'object' && !Array.isArray(config[name])) {
           value.body = setDefaultConfig(value.body, config[name]);
+          return [name, value];
+        }
+        if (['artifacts'].includes(name)) {
+          const template = JSON.stringify(value.body[0]);
+          for (let i = 0; i < config[name].length; i++) {
+            const temp = JSON.parse(template);
+            temp.body = JSON.parse(JSON.stringify(setDefaultConfig(temp.body, config[name][i])));
+            value.body[i] = temp;
+          }
           return [name, value];
         }
         if (config[name] === null && Array.isArray(value.defaultValue)) {

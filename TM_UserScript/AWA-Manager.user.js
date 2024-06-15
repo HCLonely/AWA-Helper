@@ -23,6 +23,10 @@
 
 (async function () {
   'use strict';
+
+  if (/^\/member\/.+?\/artifacts$/.test(window.location.pathname)) {
+    $('a[data-id]').map((i, e) => $(e).after(`<p style="text-align: center;">id: ${$(e).attr('data-id')}</p>`));
+  }
   const syncTime = GM_getValue('time') || 0;
   let managerServerUrl = GM_getValue('managerServerUrl') || '';
   let managerServerSecret = GM_getValue('managerServerSecret') || '';
