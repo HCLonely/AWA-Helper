@@ -109,6 +109,24 @@
             # The expression in the example represents starting AWA-Helper at 14:30:03 and 21:30:03 every day
             #!! Note that the time interval between each run must be greater than the previously set timeout</code></pre>
           type: text
+        artifacts:
+          name: Change artifacts regularly
+          type: array
+          desp: Change artifacts regularly
+          body:
+          - name: Change artifacts configuration
+            desp: Click the + sign to add
+            type: object
+            repeat: true
+            body:
+              corn:
+                name: Timing settings
+                type: text
+                desp: cron format, refer to the writing method of timing to start
+                  AWA-Helper
+              ids:
+                name: Artifacts ids, comma separated
+                type: text
     awaCookie:
       name: AWA Cookies
       desp: You can only have `REMEMBERME`, without `REMEMBERME` you must have `PHPSESSID`
