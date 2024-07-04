@@ -260,3 +260,11 @@ artifactsStatus: 遗物成功更换为
 activePerks: 当前遗物效果：
 artifactsStatusPushFailed: 遗物状态推送失败！
 artifactsStatusError: 遗物更换失败，当前遗物为
+Increases your daily Time on Site ARP limit by s%.: '每天在线时长任务的ARP限制额外增加 %s'
+Increases your playtime in community events by s%.: '社区活动中的游戏时间增加 %s%'
+Adds an additional s% ARP to ARP earned through Discord.: '通过Discord获得的ARP额外增加 %s ARP'
+Increases the amount of ARP you can earn for completing Twitch quests by s%.: '完成Twitch任务时额外增加 %s 个可获得的ARP'
+Reduces the cost of items in the Marketplace by s%%.: '市场上物品的价格降低 %s%'
+s% additional ARP for each daily calendar claim.: '每日登录额外增加 %s ARP'
+Changes your username color in the forums.: 在论坛中更改您的用户名颜色
+Adds an additional s% ARP to Steam quest completions.: 'Steam任务完成时额外增加 %s ARP'

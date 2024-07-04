@@ -1,1 +1,1 @@
-- 新增：定时更换遗物(managerServer.artifacts)
+- 优化：遗物效果说明

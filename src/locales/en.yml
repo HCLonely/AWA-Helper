@@ -256,3 +256,11 @@ artifactsStatus: The artifacts are successfully replaced with
 activePerks: 'Current artifacts effects:'
 artifactsStatusPushFailed: Artifacts status push failed!
 artifactsStatusError: Artifacts replacement failed, current artifacts are
+Increases your daily Time on Site ARP limit by s%.: 'Increases your daily Time on Site ARP limit by %s.'
+Increases your playtime in community events by s%.: 'Increases your playtime in community events by %s.'
+Adds an additional s% ARP to ARP earned through Discord.: 'Adds an additional %s ARP to ARP earned through Discord.'
+Increases the amount of ARP you can earn for completing Twitch quests by s%.: 'Increases the amount of ARP you can earn for completing Twitch quests by %s.'
+Reduces the cost of items in the Marketplace by s%%.: 'Reduces the cost of items in the Marketplace by %s%.'
+s% additional ARP for each daily calendar claim.: '%s additional ARP for each daily calendar claim.'
+Changes your username color in the forums.: 'Changes your username color in the forums.'
+Adds an additional s% ARP to Steam quest completions.: 'Adds an additional %s ARP to Steam quest completions.'

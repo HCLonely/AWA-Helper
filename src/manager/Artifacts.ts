@@ -1,3 +1,11 @@
+/*
+ * @Author       : HCLonely
+ * @Date         : 2024-05-29 14:57:48
+ * @LastEditTime : 2024-07-04 10:15:56
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/manager/artifacts.ts
+ * @Description  :
+ */
 /* eslint-disable max-len */
 /* global __, proxy, myAxiosConfig */
 import { RawAxiosRequestHeaders } from 'axios';
@@ -167,7 +175,15 @@ class Artifacts {
     const newArtifactsSet = new Set(newArtifacts);
     const diffArtifacts: Array<number> = newArtifacts.filter((artifact) => !oldArtifactsSet.has(artifact));
     const sameArtifactsIndex = this.oldArtifacts.filter((artifact) => newArtifactsSet.has(artifact)).map((artifact) => this.oldArtifacts.indexOf(artifact));
-    if (diffArtifacts.length === 0) return true;
+    if (diffArtifacts.length === 0) {
+      new Logger(`${time()}${chalk.green(__('changeArtifactsSuccess'))}`);
+      try {
+        await push(`${__('artifactsStatus')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`);
+      } catch (e) {
+        new Logger(`${time()}${chalk.red(__('artifactsStatusPushFailed'))}`);
+      }
+      return true;
+    }
 
     const positions = [0, 1, 2].filter((index) => !sameArtifactsIndex.includes(index)).map((index) => index + 1);
 
@@ -211,7 +227,11 @@ class Artifacts {
         const { userActiveArtifacts } = JSON.parse(`{${response.data.match(/artifactsData.*?=.*?{(.+?)};/m)?.[1] || ''}}`) || {};
         if (userActiveArtifacts) {
           this.oldArtifacts = Object.values(userActiveArtifacts).map((artifact: any) => artifact.id);
-          this.activePerks = Object.values(userActiveArtifacts).map((artifact: any) => `* ${artifact.perkTextShort}`).join('\n');
+          this.activePerks = Object.values(userActiveArtifacts).map((artifact: any) => {
+            const perkTextShort = artifact.perkTextShort.replace(/\d+/, 's%');
+            const [num] = artifact.perkTextShort.match(/\d+/);
+            return `* ${__(perkTextShort, num)}`;
+          }).join('\n');
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
