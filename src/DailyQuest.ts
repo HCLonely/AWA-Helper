@@ -552,7 +552,8 @@ class DailyQuest {
           }
 
           // 推广活动
-          const promotionalCalendar = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('GET ITEM'));
+          const promotionalCalendarDiv = $('div.promotional-calendar__day');
+          const promotionalCalendar = promotionalCalendarDiv.filter((i, e) => $(e).text().includes('GET ITEM'));
           if (promotionalCalendar.length > 0) {
             this.promotionalCalendarInfo = promotionalCalendar.map((i, e) => ({
               name: $(e).find('.promotional-calendar__day-info h1').text()
@@ -561,7 +562,7 @@ class DailyQuest {
               finished: false
             })).toArray();
           } else {
-            this.promotionalCalendarInfo = $('div.promotional-calendar__day').filter((i, e) => $(e).text().includes('My Rewards'))
+            this.promotionalCalendarInfo = promotionalCalendarDiv.filter((i, e) => $(e).text().includes('My Rewards'))
               .last()
               .toArray()
               .map((e) => ({
@@ -647,14 +648,15 @@ class DailyQuest {
           */
 
           // 每日任务
-          $('div.user-profile__card-body').eq(0).find('.card-table-row')
+          const cardBody = $('div.user-profile__card-body');
+          cardBody.eq(0).find('.card-table-row')
             .each((i, e) => {
               if ($(e).find('.quest-item-progress').length === 1) {
                 $(e).append('<span class="quest-item-progress">0 ARP</span>');
               }
             });
           const dailyQuests = chunk(
-            $('div.user-profile__card-body').eq(0).find('.card-table-row')
+            cardBody.eq(0).find('.card-table-row')
               .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
               .find('.quest-item-progress')
               .map((i, e) => $(e).text().trim()
@@ -666,7 +668,7 @@ class DailyQuest {
           if (dailyQuests.length === 0) {
             dailyQuest = [['none', '0']];
           }
-          this.dailyQuestName = $('div.user-profile__card-body').eq(0).find('.card-table-row')
+          this.dailyQuestName = cardBody.eq(0).find('.card-table-row')
             .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
             .find('.quest-title')
             .toArray()
@@ -675,7 +677,7 @@ class DailyQuest {
             status, arp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[0].trim() || '0',
             extraArp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[1]?.trim() || '0'
           }));
-          this.dailyQuestNumber = $('div.user-profile__card-body').eq(0).find('.card-table-row')
+          this.dailyQuestNumber = cardBody.eq(0).find('.card-table-row')
             .filter((i, e) => $(e).find('a[href^="/quests"]').length === 0)
             .find('.quest-item-progress')
             .map((i, e) => $(e).text().trim()
@@ -695,7 +697,7 @@ class DailyQuest {
           this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
 
           // Steam 挂机任务
-          this.questInfo.steamQuest = $('div.user-profile__card-body').eq(1).find('.card-table-row')
+          this.questInfo.steamQuest = cardBody.eq(1).find('.card-table-row')
             .map((i, e) => ({
               name: $(e).find('.quest-list__quest-details div').eq(0)
                 .text()
@@ -1030,7 +1032,7 @@ class DailyQuest {
       if (!this.questInfo.timeOnSite) {
         return new Logger(time() + chalk.yellow(__('noTimeOnSiteInfo')));
       }
-      if (this.questInfo.timeOnSite.addedArp >= this.questInfo.timeOnSite.maxArp) {
+      if (parseInt(this.questInfo.timeOnSite.addedArp, 10) >= parseInt(this.questInfo.timeOnSite.maxArp, 10)) {
         this.questStatus.timeOnSite = 'complete';
         this.EventEmitter.emit('complete');
         return new Logger(time() + chalk.green(__('timeOnSiteCompleted')));
