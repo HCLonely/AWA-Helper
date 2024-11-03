@@ -77,6 +77,12 @@ interface config {
   }
 }
 const startManager = async (startHelper: boolean) => {
+  const version = 'V__VERSION__ ';
+  const logArr = '  ______   __       __   ______           __       __\n /      \\ /  |  _  /  | /      \\         /  \\     /  |\n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$  \\   /$$ |  ______   _______    ______    ______    ______    ______\n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$$  \\ /$$$ | /      \\ /       \\  /      \\  /      \\  /      \\  /      \\\n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$$$  /$$$$ | $$$$$$  |$$$$$$$  | $$$$$$  |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$ $$ $$/$$ | /    $$ |$$ |  $$ | /    $$ |$$ |  $$ |$$    $$ |$$ |  $$/\n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |$$$/ $$ |/$$$$$$$ |$$ |  $$ |/$$$$$$$ |$$ \\__$$ |$$$$$$$$/ $$ |\n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ | $/  $$ |$$    $$ |$$ |  $$ |$$    $$ |$$    $$ |$$       |$$ |\n$$/   $$/ $$/      $$/ $$/   $$/         $$/      $$/  $$$$$$$/ $$/   $$/  $$$$$$$/  $$$$$$$ | $$$$$$$/ $$/\n                                                                                    /  \\__$$ |\n                                                                                    $$    $$/\n                                                                                     $$$$$$/         by HCLonely '.split('\n');
+  logArr[logArr.length - 2] = `${logArr[logArr.length - 2]}        ${version}`;
+  new Logger(logArr.join('\n'));
+  new Logger(chalk.red.bold('\n* 重要提示：后台挂机可能导致COD封号，游玩COD时请关闭本程序！！！\n\n* Important: Running this program at the same time as COD may result in a COD account ban. Please close this program when playing COD !!!\n'));
+
   dayjs.extend(minMax);
   i18n.configure({
     locales: ['zh', 'en'],

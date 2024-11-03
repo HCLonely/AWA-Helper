@@ -10,6 +10,7 @@ Automatically does AWA quests.<br>This document comes from machine translation
 
 ### Instructions before use
 
+0. **!!!Running this program at the same time as COD may result in a COD account ban. Please close this program when playing COD !!!**
 1. Before using it, please make sure that your AWA account has a Steam account linked and that the Steam profile settings have been set to public;
 2. Before using, please make sure that your AWA account has been linked to your Twitch account and that your Twitch account has authorized the AWA extension ( [how to link?](https://keylol.com/t782079-1-1) )
 3. [Not recommended] If you want to use more than one account, copy the program to another folder to run multiple accounts.

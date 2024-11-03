@@ -1,3 +1,10 @@
+/*
+ * @Author       : HCLonely
+ * @Date         : 2024-02-24 15:32:30
+ * @LastEditTime : 2024-08-20 15:16:42
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/awa-helper.ts
+ */
 /* eslint-disable max-len */
 /* global config, __ */
 import { DailyQuest } from './DailyQuest';
@@ -57,9 +64,9 @@ const startHelper = async () => {
     }
     new Logger(time() + chalk.yellow(__('processError')));
     try {
-      await push(`${__('pushTitle')}\n${__('processError')}\n\n${pushQuestInfoFormat()}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}\n${__('processError')}\n\n${pushQuestInfoFormat()}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
     } catch (e) {
-      await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}: \nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
     }
     new Logger(`Uncaught Exception: ${err.message}\n${err.stack}`);
     process.exit(0);
@@ -114,9 +121,10 @@ const startHelper = async () => {
     return;
   }
   const version = 'V__VERSION__ ';
-  const logArr = '  ______   __       __   ______           __    __            __                               \n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |                              \n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______  \n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\ \n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/ \n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |      \n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |      \n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/       \n                                                                 $$ |                          \n                                                                 $$ |                          \n                                                                 $$/               by HCLonely '.split('\n');
-  logArr[logArr.length - 2] = logArr[logArr.length - 2].replace(new RegExp(`${''.padEnd(version.length)}$`), version);
+  const logArr = '  ______   __       __   ______           __    __            __\n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |\n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______\n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\\n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/\n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |\n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |\n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/\n                                                                 $$ |\n                                                                 $$ |\n                                                                 $$/               by HCLonely '.split('\n');
+  logArr[logArr.length - 2] = `${logArr[logArr.length - 2]}              ${version}`;
   new Logger(logArr.join('\n'));
+  new Logger(chalk.red.bold('\n* 重要提示：后台挂机可能导致COD封号，游玩COD时请关闭本程序！！！\n\n* Important: Running this program at the same time as COD may result in a COD account ban. Please close this program when playing COD !!!\n'));
 
   let configPath = 'config.yml';
   if (/dist$/.test(process.cwd()) || /output$/.test(process.cwd())) {
@@ -291,7 +299,7 @@ const startHelper = async () => {
     awaCookie
   }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
   if (missingAwaParams.length > 0) {
-    new Logger(chalk.red(__('missingParams')));
+    new Logger(chalk.red(__('missingAwaParams')));
     new Logger(missingAwaParams);
     return;
   }
