@@ -23,6 +23,15 @@
           type: text
           inputType: number
           defaultValue: 3456
+        local:
+          name: Whether only the local network is accessible
+          type: boolean
+          defaultValue: true
+        reverseProxyPort:
+          name: Reverse proxy port, 0 means not enabled
+          type: text
+          inputType: number
+          defaultValue: 0
         ssl:
           name: SSL certificate configuration
           type: object

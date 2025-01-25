@@ -14,6 +14,8 @@ import { SteamQuestASF } from './SteamQuestASF';
 import * as fs from 'fs';
 import * as path from 'path';
 import { join, resolve } from 'path';
+import { EventEmitter } from 'events';
+const emitter = new EventEmitter();
 import { parse } from 'yaml';
 import { sleep, Logger, time, checkUpdate, push, pushQuestInfoFormat } from './tool';
 import * as chalk from 'chalk';
@@ -290,7 +292,7 @@ const startHelper = async () => {
     }
     const server = createServer(options);
 
-    server.listen(port, () => {
+    server.listen(port, (webUI.reverseProxyPort || webUI.local) ? '127.0.0.1' : '0.0.0.0',  () => {
       new Logger(time() + __('webUIStart', chalk.yellow(`${webUI.ssl ? 'https' : 'http'}://localhost:${port}`)));
     });
   }
@@ -317,10 +319,15 @@ const startHelper = async () => {
     awaDailyQuestType,
     awaDailyQuestNumber1,
     proxy,
-    doTaskUS: awaQuests.includes('dailyQuestUS'),
     awaSafeReply,
     joinSteamCommunityEvent,
-    getStarted: awaQuests.includes('getStarted')
+    getStarted: awaQuests.includes('getStarted'),
+    tasksFinished: new Map([
+      ['dailyQuest', !awaQuests.includes('dailyQuest')],
+      ['timeOnSite', !awaQuests.includes('timeOnSite')],
+      ['steam', !awaQuests.includes('steamQuest')],
+      ['twitch', !awaQuests.includes('watchTwitch')]
+    ])
   });
   const initResult = await quest.init();
   if (initResult !== 200) {
@@ -341,21 +348,18 @@ const startHelper = async () => {
     process.exit(0);
   }
   fs.writeFileSync(configPath, configString.replace(awaCookie as string, quest.newCookie));
-  await quest.listen(null, null, true);
+  await quest.listen(true);
   globalThis.quest = quest;
-  /*
-  if (awaQuests.includes('promotionalCalendar') && quest.promotionalCalendarInfo) {
-    await quest.getPromotionalCalendarItem();
-  }
-  */
+
   if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
     await quest.do();
-  }
-  if (awaQuests.includes('dailyQuestUS')) {
-    await quest.doQuestUS();
+  } else {
+    emitter.emit('taskComplete', 'dailyQuest');
   }
   if (awaQuests.includes('timeOnSite') && quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {
     quest.track();
+  } else {
+    emitter.emit('taskComplete', 'timeOnSite');
   }
   await sleep(10);
 
@@ -365,14 +369,23 @@ const startHelper = async () => {
     if (quest.questInfo.watchTwitch?.[0] !== '15' || parseFloat(quest.questInfo.watchTwitch?.[1] || '0') < quest.additionalTwitchARP) {
       if (twitchCookie) {
         twitch = new TwitchTrack({ cookie: twitchCookie, awaHeaders: quest.headers, proxy });
+        emitter.on('taskComplete', async (data) => {
+          if (data === 'twitch') {
+            twitch = null;
+          }
+        });
         if (await twitch.init() === true) {
           twitch.sendTrack();
           await sleep(10);
+        } else {
+          emitter.emit('taskCompleted', 'twitch');
         }
       } else {
+        emitter.emit('taskCompleted', 'twitch');
         new Logger(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
       }
     } else {
+      emitter.emit('taskCompleted', 'twitch');
       new Logger(time() + chalk.green(__('twitchTaskCompleted')));
     }
   }
@@ -387,6 +400,7 @@ const startHelper = async () => {
     }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
     if (awaQuests.includes('steamQuest')) {
       if (missingAsfParams.length > 0) {
+        emitter.emit('taskComplete', 'steam');
         new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
       } else {
         steamQuest = new SteamQuestASF({
@@ -398,14 +412,24 @@ const startHelper = async () => {
           asfBotname: asfBotname as string,
           proxy
         });
+        emitter.on('taskComplete', async (data) => {
+          if (data === 'steam') {
+            steamQuest = null;
+          }
+        });
         if (await steamQuest.init()) {
           steamQuest.playGames();
           await sleep(30);
+        } else {
+          emitter.emit('taskComplete', 'steam');
         }
       }
+    } else {
+      emitter.emit('taskComplete', 'steam');
     }
   }
-  quest.listen(twitch, steamQuest);
+
+  quest.listen();
 };
 
 export { startHelper };

@@ -57,6 +57,8 @@ declare global {
     webUI?: {
       enable: boolean
       port?: number
+      local?: boolean
+      reverseProxyPort?: number
       ssl?: {
         key?: string
         cert?: string

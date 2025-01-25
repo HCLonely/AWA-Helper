@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
 /* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
 import * as chalk from 'chalk';
@@ -291,58 +292,47 @@ http.interceptors.response.use(
   }
 );
 
-const checkUpdate = async (version: string, managerServer: managerServer | undefined, autoUpdate: boolean, CHANGELOG: string, proxy?: proxy):Promise<void> => {
+const checkUpdate = async (version: string, managerServer: managerServer | undefined, autoUpdate: boolean, CHANGELOG: string, proxy?: proxy): Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   const options: myAxiosConfig = {
     validateStatus: (status: number) => status === 302,
     maxRedirects: 0,
     Logger: logger
   };
+
   if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
     options.httpsAgent = formatProxy(proxy);
   }
+
   return await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options)
     .then(async (response) => {
       globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
       const latestVersion = response?.headers?.location?.match(/tag\/v?([\d.]+)/)?.[1];
-      if (latestVersion) {
-        const currentVersionArr = version.replace('V', '').split('.').map((e) => parseInt(e, 10));
-        const latestVersionArr = latestVersion.split('.').map((e: string) => parseInt(e, 10));
-        if (
-          latestVersionArr[0] > currentVersionArr[0] ||
-          (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] > currentVersionArr[1]) ||
-          (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] === currentVersionArr[1] && latestVersionArr[2] > currentVersionArr[2])
-        ) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
-          if (!autoUpdate || process.argv.includes('--no-update')) {
-            new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
-            globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
-            return;
-          }
-          let arch = '';
-          if (!/.*main\.js$/.test(process.argv[1])) {
-            if (os.type() === 'Linux') {
-              if (os.arch() === 'arm') {
-                arch = '-armv7';
-              } else if (os.arch() === 'arm64') {
-                arch = '-armv8';
-              } else if (os.arch() === 'x64') {
-                arch = '-x64';
-              }
-            }
-            await update(`${response.headers.location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`, managerServer, proxy);
-          } else {
-            await update(`${response.headers.location.replace('/tag/', '/download/')}/main.js`, managerServer, proxy);
-          }
-          return;
-        }
-        if (process.argv.includes('--no-update')) {
-          await push(`${__('pushTitle')}\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\n${CHANGELOG}`);
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
+
+      if (!latestVersion) {
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Failed'));
         return;
       }
-      ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Failed'));
+
+      if (isNewVersion(version, latestVersion)) {
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
+
+        if (!autoUpdate || process.argv.includes('--no-update')) {
+          new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
+          globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
+          return;
+        }
+
+        const downloadUrl = getDownloadUrl(response.headers.location);
+        await update(downloadUrl, managerServer, proxy);
+        return;
+      }
+
+      if (process.argv.includes('--no-update')) {
+        await push(`${__('pushTitle')}\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\n${CHANGELOG}`);
+      }
+
+      ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
       return;
     })
     .catch((error) => {
@@ -351,6 +341,34 @@ const checkUpdate = async (version: string, managerServer: managerServer | undef
       new Logger(error);
       return;
     });
+};
+
+const isNewVersion = (currentVersion: string, latestVersion: string): boolean => {
+  const currentVersionArr = currentVersion.replace('V', '').split('.').map((e) => parseInt(e, 10));
+  const latestVersionArr = latestVersion.split('.').map((e: string) => parseInt(e, 10));
+
+  return (
+    latestVersionArr[0] > currentVersionArr[0] ||
+    (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] > currentVersionArr[1]) ||
+    (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] === currentVersionArr[1] && latestVersionArr[2] > currentVersionArr[2])
+  );
+};
+
+const getDownloadUrl = (location: string): string => {
+  let arch = '';
+  if (!/.*main\.js$/.test(process.argv[1])) {
+    if (os.type() === 'Linux') {
+      if (os.arch() === 'arm') {
+        arch = '-armv7';
+      } else if (os.arch() === 'arm64') {
+        arch = '-armv8';
+      } else if (os.arch() === 'x64') {
+        arch = '-x64';
+      }
+    }
+    return `${location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`;
+  }
+  return `${location.replace('/tag/', '/download/')}/main.js`;
 };
 
 async function downloadFile(link: string, proxy?: proxy): Promise<any> {
@@ -377,19 +395,21 @@ async function downloadFile(link: string, proxy?: proxy): Promise<any> {
     .catch((error) => {
       ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
       new Logger(error);
-      writer.close();
+      if (writer.writable) {
+        writer.close();
+      }
       return;
     });
 }
 
 const update = async (link: string, managerServer: managerServer | undefined, proxy?: proxy): Promise<void> => {
+  const logPath = path.resolve('./logs/', `${dayjs().format('YYYY-MM-DD')}.txt`);
+
   if (!/.*main\.js$/.test(process.argv[1])) {
-    if (!await downloadFile(link, proxy)) {
-      return;
+    if (!await downloadFile(link, proxy) || !fs.existsSync('temp/AWA-Helper.tar.gz')) {
+      return; // Early return if download fails or file doesn't exist
     }
-    if (!fs.existsSync('temp/AWA-Helper.tar.gz')) {
-      return;
-    }
+
     const logger = new Logger(`${time()}${__('decompressing')}`, false);
     const decompressResult = await decompress('temp/AWA-Helper.tar.gz', 'temp/AWA-Helper')
       .then(() => {
@@ -401,59 +421,15 @@ const update = async (link: string, managerServer: managerServer | undefined, pr
         new Logger(error);
         return false;
       });
+
     if (!decompressResult) {
       return;
     }
-    const logPath = path.resolve('./logs/', `${dayjs().format('YYYY-MM-DD')}.txt`);
+
     if (os.type() === 'Windows_NT') {
-      fs.writeFileSync('temp/update.bat', `@echo off
-cd "%~dp0"
-echo kill process ... >> ${logPath}
-taskkill /f /t /im AWA-Helper.exe >> ${logPath}
-if exist ".\\AWA-Helper" (
-echo Moving AWA-Helper... >> ${logPath}
-xcopy /y /e "${path.resolve('./temp/AWA-Helper/output')}" "${path.resolve('./')}\\" >> ${logPath}
-)
-cd ..
-${
-  // eslint-disable-next-line no-nested-ternary
-  process.argv.includes('--update') ?
-    '' :
-    (managerServer?.enable ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
-echo remove temp dir >> ${logPath}
-rmdir /s /q temp >> ${logPath}
-echo update success >> ${logPath}
-exit
-`);
-      const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
-      updater.unref();
+      createWindowsUpdateScript(logPath, managerServer);
     } else if (os.type() === 'Linux') {
-      fs.writeFileSync('temp/update.sh', `#!/bin/bash
-sleep 5
-cd ${path.resolve('./temp')}
-echo kill process ... >> ${logPath}
-kill -9 $(pidof AWA-Helper) >> ${logPath}
-if [ -d "./AWA-Helper" ]; then
-  echo Moving AWA-Helper... >> ${logPath}
-  cp -rf ${path.resolve('./temp/AWA-Helper/output')}/* ${path.resolve('./')} >> ${logPath}
-fi
-cd ..
-echo remove temp dir >> ${logPath}
-rm -rf temp
-${
-  // eslint-disable-next-line no-nested-ternary
-  process.argv.includes('--update') ?
-    '' :
-    (managerServer?.enable ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
-echo update success >> ${logPath}
-`);
-      try {
-        fs.chmodSync('temp/update.sh', 0o777);
-      } catch (e) {
-        //
-      }
-      const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
-      updater.unref();
+      createLinuxUpdateScript(logPath, managerServer);
     }
   } else {
     const logger = new Logger(`${time()}${__('downloadingMainJs')}`, false);
@@ -461,9 +437,11 @@ echo update success >> ${logPath}
       Logger: logger,
       responseType: 'text'
     };
+
     if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
       options.httpsAgent = formatProxy(proxy);
     }
+
     const mainJsMd5 = await http.get(link.replace('main.js', 'md5.txt'), options)
       .then(async (response) => response.data)
       .catch((error) => {
@@ -471,9 +449,11 @@ echo update success >> ${logPath}
         new Logger(error);
         return;
       });
+
     if (!mainJsMd5) {
       return;
     }
+
     const result = await http.get(link, options)
       .then(async (response) => {
         const hash = crypto.createHash('md5');
@@ -492,33 +472,99 @@ echo update success >> ${logPath}
         new Logger(error);
         return false;
       });
+
     if (result) {
       if (!fs.existsSync('temp/')) {
         fs.mkdirSync('temp');
       }
+
       const managerPid = managerServer?.enable ? await axios.get(`${managerServer?.ssl?.cert ? 'https' : 'http'}://127.0.0.1:${managerServer.port}/pid`)
         .then((response) => response.data)
         .catch(() => null) : null;
-      const logPath = path.resolve('./logs/', `${dayjs().format('YYYY-MM-DD')}.txt`);
+
       if (os.type() === 'Windows_NT') {
-        fs.writeFileSync('temp/update.bat', `@echo off
-cd ${path.resolve('./')}
+        createWindowsMainJsUpdateScript(logPath, !!managerServer?.enable, managerPid);
+      } else if (os.type() === 'Linux') {
+        createLinuxMainJsUpdateScript(logPath, !!managerServer?.enable, managerPid);
+      }
+    }
+  }
+};
+
+const createWindowsUpdateScript = (logPath: string, managerServer?: managerServer) => {
+  const scriptContent = `@echo off
+cd "%~dp0"
 echo kill process ... >> ${logPath}
-taskkill /f /t /pid ${process.pid}${managerPid ? ` /pid ${managerPid}` : ''} >> ${logPath}
+taskkill /f /t /im AWA-Helper.exe >> ${logPath}
+if exist ".\\AWA-Helper" (
+echo Moving AWA-Helper... >> ${logPath}
+xcopy /y /e "${path.resolve('./temp/AWA-Helper/output')}" "${path.resolve('./')}\\" >> ${logPath}
+)
+cd ..
 ${
-  // eslint-disable-next-line no-nested-ternary
   process.argv.includes('--update') ?
     '' :
-    (managerServer?.enable ? 'start cmd /k "node main.js --manager --helper"' : 'start cmd /k "node main.js --helper --no-update"')}
+    (managerServer?.enable ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
 echo remove temp dir >> ${logPath}
 rmdir /s /q temp >> ${logPath}
 echo update success >> ${logPath}
 exit
-`);
-        const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
-        updater.unref();
-      } else if (os.type() === 'Linux') {
-        fs.writeFileSync('temp/update.sh', `#!/bin/bash
+`;
+  fs.writeFileSync('temp/update.bat', scriptContent);
+  const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
+  updater.unref();
+};
+
+const createLinuxUpdateScript = (logPath: string, managerServer?: managerServer) => {
+  const scriptContent = `#!/bin/bash
+sleep 5
+cd ${path.resolve('./temp')}
+echo kill process ... >> ${logPath}
+kill -9 $(pidof AWA-Helper) >> ${logPath}
+if [ -d "./AWA-Helper" ]; then
+  echo Moving AWA-Helper... >> ${logPath}
+  cp -rf ${path.resolve('./temp/AWA-Helper/output')}/* ${path.resolve('./')} >> ${logPath}
+fi
+cd ..
+echo remove temp dir >> ${logPath}
+rm -rf temp
+${
+  process.argv.includes('--update') ?
+    '' :
+    (managerServer?.enable ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
+echo update success >> ${logPath}
+`;
+  fs.writeFileSync('temp/update.sh', scriptContent);
+  try {
+    fs.chmodSync('temp/update.sh', 0o777);
+  } catch (e) {
+    // Handle error if needed
+  }
+  const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
+  updater.unref();
+};
+
+const createWindowsMainJsUpdateScript = (logPath: string, managerServerEnable: boolean, managerPid?: string) => {
+  const scriptContent = `@echo off
+cd ${path.resolve('./')}
+echo kill process ... >> ${logPath}
+taskkill /f /t /pid ${process.pid}${managerPid ? ` /pid ${managerPid}` : ''} >> ${logPath}
+${
+  process.argv.includes('--update') ?
+    '' :
+    (managerServerEnable ? 'start cmd /k "node main.js --manager --helper"' : 'start cmd /k "node main.js --helper --no-update"')}
+echo remove temp dir >> ${logPath}
+rmdir /s /q temp >> ${logPath}
+echo update success >> ${logPath}
+exit
+`;
+  fs.writeFileSync('temp/update.bat', scriptContent);
+  const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
+  updater.unref();
+};
+
+const createLinuxMainJsUpdateScript = (logPath: string, managerServerEnable: boolean, managerPid?: string) => {
+  const scriptContent = `#!/bin/bash
 sleep 5
 cd ${path.resolve('./')}
 echo kill process ... >> ${logPath}
@@ -527,23 +573,19 @@ ${managerPid ? `kill -9 ${managerPid} >> ${logPath}` : ''}
 echo remove temp dir >> ${logPath}
 rm -rf temp
 ${
-  // eslint-disable-next-line no-nested-ternary
   process.argv.includes('--update') ?
     '' :
-    (managerServer?.enable ? 'node main.js --manager --helper' : 'node main.js --helper --no-update')}
+    (managerServerEnable ? 'node main.js --manager --helper' : 'node main.js --helper --no-update')}
 echo update success >> ${logPath}
-`);
-        try {
-          fs.chmodSync('temp/update.sh', 0o777);
-        } catch (e) {
-          //
-        }
-        const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
-        updater.unref();
-      }
-      // new Logger(`${time()}${chalk.green(__('updateSuccess'))}`);
-    }
+`;
+  fs.writeFileSync('temp/update.sh', scriptContent);
+  try {
+    fs.chmodSync('temp/update.sh', 0o777);
+  } catch (e) {
+    // Handle error if needed
   }
+  const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
+  updater.unref();
 };
 
 const ask = (rl: Interface, question: string, answers?: Array<string>): Promise<string> => new Promise((resolve) => {

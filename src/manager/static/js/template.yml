@@ -22,6 +22,15 @@
           type: text
           inputType: number
           defaultValue: 3456
+        local:
+          name: 是否仅内网可访问
+          type: boolean
+          defaultValue: true
+        reverseProxyPort:
+          name: 反向代理端口，0为不启用
+          type: text
+          inputType: number
+          defaultValue: 0
         ssl:
           name: SSL证书配置
           type: object

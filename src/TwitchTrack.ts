@@ -4,8 +4,8 @@ import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, sleep, time, netError, http as axios, formatProxy, Cookie } from './tool';
-import * as events from 'events';
-const EventEmitter = new events.EventEmitter();
+import { EventEmitter } from 'events';
+const emitter = new EventEmitter();
 
 class TwitchTrack {
   channelId!: string | undefined;
@@ -20,7 +20,7 @@ class TwitchTrack {
   complete = false;
   availableStreams!: Array<string>;
   availableStreamsInfo!: Array<string>;
-  EventEmitter = EventEmitter;
+  emitter = emitter;
   awaHeaders!: RawAxiosRequestHeaders;
 
   // eslint-disable-next-line no-undef
@@ -65,24 +65,24 @@ class TwitchTrack {
     const result = await axios(options)
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.status === 200) {
-          const $ = load(response.data);
-          const optionScript = $('script').filter((_, e) => !!$(e).html()?.includes('clientId'));
-          if (optionScript.length === 0) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error: optionScript not found!'));
-            return false;
-          }
-          const clientId = optionScript.html()?.trim()?.match(/clientId="(.+?)"/)?.[1];
-          if (!clientId) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error: clientId not found!'));
-            return false;
-          }
-          this.clientId = clientId;
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
+        if (response.status !== 200) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
+          return false;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${response.status}`));
-        return false;
+        const $ = load(response.data);
+        const optionScript = $('script').filter((_, e) => !!$(e).html()?.includes('clientId'));
+        if (optionScript.length === 0) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error: optionScript not found!'));
+          return false;
+        }
+        const clientId = optionScript.html()?.trim()?.match(/clientId="(.+?)"/)?.[1];
+        if (!clientId) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error: clientId not found!'));
+          return false;
+        }
+        this.clientId = clientId;
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+        return true;
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
@@ -139,22 +139,22 @@ class TwitchTrack {
     return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.status === 200) {
-          const $ = load(response.data);
-          this.availableStreams = $('div.quest-list__stream-thumbnail a[href]').toArray().map((e) => $(e).attr('href')
-            ?.match(/www\.twitch\.tv\/(.+)/)?.[1])
-            .filter((e) => e) as Array<string>;
-          if (this.availableStreams.length === 0) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(__('noLive')));
-            new Logger(`${time()}${__('getLiveInfoAlert', chalk.green('10'))}`);
-            await sleep(60 * 10);
-            return await this.getAvailableStreams();
-          }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
+        if (response.status !== 200) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Net Error: ${response.status}`));
+          return false;
         }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Net Error: ${response.status}`));
-        return false;
+        const $ = load(response.data);
+        this.availableStreams = $('div.quest-list__stream-thumbnail a[href]').toArray().map((e) => $(e).attr('href')
+          ?.match(/www\.twitch\.tv\/(.+)/)?.[1])
+          .filter((e) => e) as Array<string>;
+        if (this.availableStreams.length === 0) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.blue(__('noLive')));
+          new Logger(`${time()}${__('getLiveInfoAlert', chalk.green('10'))}`);
+          await sleep(60 * 10);
+          return await this.getAvailableStreams();
+        }
+        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+        return true;
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
@@ -279,7 +279,7 @@ class TwitchTrack {
           switch (response.data.state) {
           case 'daily_cap_reached':
             this.complete = true;
-            this.EventEmitter.emit('complete');
+            this.emitter.emit('taskComplete', 'twitch');
             new Logger(time() + chalk.green(response.data.message || __('obtainedArp')));
             returnText = 'complete';
             break;
@@ -303,15 +303,15 @@ class TwitchTrack {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
         new Logger(error);
-        if (error.response?.status === 403) {
-          if (retried) {
-            this.complete = true;
-            this.EventEmitter.emit('complete');
-            return 'complete';
-          }
-          return 'Forbidden';
+        if (error.response?.status !== 403) {
+          return false;
         }
-        return false;
+        if (retried) {
+          this.complete = true;
+          this.emitter.emit('taskComplete', 'twitch');
+          return 'complete';
+        }
+        return 'Forbidden';
       });
     if ((['complete'] as Array<string|boolean>).includes(status)) {
       return;
@@ -328,7 +328,7 @@ class TwitchTrack {
         this.sendTrack(true);
       } else {
         this.complete = true;
-        this.EventEmitter.emit('complete');
+        this.emitter.emit('taskComplete', 'twitch');
       }
       return;
     }

@@ -60,6 +60,8 @@ interface config {
   webUI: {
     enable: boolean
     port: number
+    local?: boolean
+    reverseProxyPort?: number
     ssl?: {
       key?: string
       cert?: string
@@ -315,7 +317,7 @@ const startManager = async (startHelper: boolean) => {
         }
 
         const webui = {
-          port: webUI.port,
+          port: webUI.reverseProxyPort || webUI.port,
           ssl: !!webUI.ssl?.cert
         };
 
