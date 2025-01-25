@@ -163,9 +163,11 @@ language: zh # 程序显示语言，目前支持中文 (zh) 和 English (en)
 webUI:
   enable: true # 是否启用WebUI
   port: 3456 # WebUI端口
+  local: true # 仅内网访问，false为开启外网访问
   ssl: # WebUI启用SSL
     key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
     cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
+  reverseProxyPort: 0 # 反向代理端口，0为不启用
 timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
