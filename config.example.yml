@@ -42,7 +42,7 @@ managerServer:
 # !! 注意每次更换遗物的时间间隔要大于24小时
 
 #### AWA 配置(必需) ####
-awaCookie: '' # 外星人论坛Cookie, 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能
+awaCookie: '' # 外星人论坛Cookie
 awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 默认的没问题就不要改
 # awaBoosterNotice: true # 外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 awaQuests:

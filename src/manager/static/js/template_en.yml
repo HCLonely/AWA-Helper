@@ -138,9 +138,7 @@
                 type: text
     awaCookie:
       name: AWA Cookies
-      desp: You can only have `REMEMBERME`, without `REMEMBERME` you must have `PHPSESSID`
-        and `sc`, but it will cause an error in obtaining the number of consecutive
-        check-in days and will not affect other functions.
+      desp: AWA Cookies.
       type: text
       required: true
     awaHost:

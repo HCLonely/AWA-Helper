@@ -1,3 +1,11 @@
+/*
+ * @Author       : HCLonely
+ * @Date         : 2025-06-17 14:03:46
+ * @LastEditTime : 2025-07-18 11:03:23
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/manager/index.ts
+ * @Description  :
+ */
 /* eslint-disable max-len */
 /* eslint-disable no-unused-vars */
 /* global WebSocket, logs, __, language */
@@ -79,7 +87,7 @@ interface config {
   }
 }
 const startManager = async (startHelper: boolean) => {
-  const version = 'V__VERSION__ ';
+  const version = 'V__VERSION__';
   const logArr = '  ______   __       __   ______           __       __\n /      \\ /  |  _  /  | /      \\         /  \\     /  |\n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$  \\   /$$ |  ______   _______    ______    ______    ______    ______\n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$$  \\ /$$$ | /      \\ /       \\  /      \\  /      \\  /      \\  /      \\\n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$$$  /$$$$ | $$$$$$  |$$$$$$$  | $$$$$$  |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$ $$ $$/$$ | /    $$ |$$ |  $$ | /    $$ |$$ |  $$ |$$    $$ |$$ |  $$/\n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |$$$/ $$ |/$$$$$$$ |$$ |  $$ |/$$$$$$$ |$$ \\__$$ |$$$$$$$$/ $$ |\n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ | $/  $$ |$$    $$ |$$ |  $$ |$$    $$ |$$    $$ |$$       |$$ |\n$$/   $$/ $$/      $$/ $$/   $$/         $$/      $$/  $$$$$$$/ $$/   $$/  $$$$$$$/  $$$$$$$ | $$$$$$$/ $$/\n                                                                                    /  \\__$$ |\n                                                                                    $$    $$/\n                                                                                     $$$$$$/         by HCLonely '.split('\n');
   logArr[logArr.length - 2] = `${logArr[logArr.length - 2]}        ${version}`;
   new Logger(logArr.join('\n'));
@@ -214,7 +222,7 @@ const startManager = async (startHelper: boolean) => {
       res.send(
         // fs.readFileSync(`${__dirname}/manager/index.html`).toString()).end();
         indexHtml.replace('__LANG__', language)
-          .replaceAll('__VERSION__', 'V__VERSION__')
+          .replaceAll('__VERSION__', version)
           .replace('__I18N__', JSON.stringify(langs))).end();
     });
     app.get('/configer', (_, res) => {
@@ -257,9 +265,9 @@ const startManager = async (startHelper: boolean) => {
               oldConfigStringRaw = `${oldConfigStringRaw}\n\n` + `UA: '${req.headers['user-agent']}'`;
             }
           }
-          if (!(req.body.cookie.includes('REMEMBERME=') || (req.body.cookie.includes('sc=') && req.body.cookie.includes('PHPSESSID=')))) {
-            return res.status(502).end();
-          }
+          // if (!(req.body.cookie.includes('REMEMBERME=') || (req.body.cookie.includes('sc=') && req.body.cookie.includes('PHPSESSID=')))) {
+          //   return res.status(502).end();
+          // }
           const oldCookie = oldConfigStringRaw.match(/^awaCookie:.+/m)?.[0];
           if (!oldCookie) {
             return res.status(501).end();

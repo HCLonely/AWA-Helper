@@ -1,8 +1,15 @@
+/*
+ * @Author       : HCLonely
+ * @Date         : 2024-09-11 15:27:30
+ * @LastEditTime : 2025-06-17 12:30:30
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/webUI/index.ts
+ * @Description  :
+ */
 /* eslint-disable no-unused-vars */
 /* global WebSocket, logs, __, language */
 import * as express from 'express';
 import * as expressWs from 'express-ws';
-import * as fs from 'fs';
 import type WebSocket from 'ws';
 import { Logger, time } from '../tool';
 import * as chalk from 'chalk';

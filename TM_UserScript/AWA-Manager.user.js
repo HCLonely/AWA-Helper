@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWA-Manager
 // @namespace    AWA-Manager
-// @version      3.1.2.1
+// @version      3.2.5
 // @description  AWA Cookie更新
 // @author       HCLonely
 // @icon         https://github.com/HCLonely/AWA-Helper/raw/main/static/icon.ico
@@ -15,10 +15,11 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_info
+// @grant        GM_addStyle
 // @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
 // @require      https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 // ==/UserScript==
-/* global window,document,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,GM_info,$, dayjs,__ */
+/* global window,document,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,GM_info,GM_addStyle,$, dayjs,__ */
 /* eslint-disable max-len */
 
 (async function () {
@@ -168,16 +169,16 @@
 
   function mapDataTypeToResponseType(dataType) {
     switch (dataType) {
-    case 'json':
-      return 'json';
-    case 'text':
-      return 'text';
-    case 'blob':
-      return 'blob';
-    case 'arraybuffer':
-      return 'arraybuffer';
-    default:
-      return 'text';
+      case 'json':
+        return 'json';
+      case 'text':
+        return 'text';
+      case 'blob':
+        return 'blob';
+      case 'arraybuffer':
+        return 'arraybuffer';
+      default:
+        return 'text';
     }
   }
 
@@ -206,7 +207,7 @@
   function updateCookie(url, secret) {
     GM_cookie.list({ url: 'https://na.alienwarearena.com/control-center' }, (cookies, error) => {
       if (!error) {
-        const cookie = cookies.map((e) => (['REMEMBERME', 'PHPSESSID', 'sc'].includes(e.name) ? `${e.name}=${e.value}` : null)).filter((e) => e).join(';');
+        const cookie = cookies.map((e) => `${e.name}=${e.value}`).filter((e) => e).join(';');
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在同步Cookie...`);
         GM_Axios.post(`${url}updateCookie`, { data: { secret, cookie } }).then((response) => {
           if (response.status === 200) { // { lastRunTime, runStatus }
@@ -380,8 +381,13 @@
         updateTwitchCookie(managerServerUrl, managerServerSecret);
       });
 
-      $('button.install-user-js').remove();
-      $('#user-js-not-installed').remove();
+      GM_addStyle(`
+        button.install-user-js,#user-js-not-installed {
+          display: none !important;
+        }
+      `);
+      // $('button.install-user-js').remove();
+      // $('#user-js-not-installed').remove();
       $('#log-area').append(`<li>${time()}${__('userJsInstalled', GM_info.script?.version)}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
     }

@@ -140,7 +140,7 @@
                   defaultValue: ''
     awaCookie:
       name: 外星人论坛Cookie
-      desp: 可以只有`REMEMBERME`, 没有`REMEMBERME`则必须有`PHPSESSID`和`sc`, 但会导致连续签到天数获取错误，不会影响其他功能。
+      desp: 外星人论坛Cookie。
       type: text
       required: true
     awaHost:

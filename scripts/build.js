@@ -13,9 +13,7 @@
   const fileList = [
     'config.example.yml',
     'CHANGELOG.txt',
-    // 'dailyQuestDb.json',
     'package.json'
-    // 'scripts/'
   ];
   fileList.forEach((e) => {
     fs.copySync(e, `dist/${e}`);
@@ -67,7 +65,6 @@
     fs.readFileSync('dist/manager/static/js/template.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
   fs.writeFileSync('dist/manager/static/js/template_en.yml',
     fs.readFileSync('dist/manager/static/js/template_en.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
-  // fs.copySync('configer/configer.template.yml.js', 'dist/configer.template.yml.js');
   if (!fs.existsSync('dist/config')) {
     fs.mkdirSync('dist/config');
   }
@@ -76,36 +73,7 @@
   }
   fs.copySync('config.example.yml', 'dist/config/config.example.yml');
 
-  // fs.writeFileSync('dist/运行.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
-  // fs.writeFileSync('dist/Run.bat', 'cd "%~dp0" && start cmd /k "node index.js"');
-  // fs.writeFileSync('dist/运行Manager.bat', 'cd "%~dp0" && start cmd /k "node manager/index.js"');
-  // fs.writeFileSync('dist/Run-Manager.bat', 'cd "%~dp0" && start cmd /k "node manager/index.js"');
-  // eslint-disable-next-line max-len
-  // fs.writeFileSync('dist/运行-auto.bat', 'cd "%~dp0" && where "powershell" && powershell -file "scripts/node_checker_cn.ps1" || where "pwsh" && pwsh -file "scripts/node_checker_cn.ps1" || .\\scripts\\node_checker_cn.bat && pause');
-  // eslint-disable-next-line max-len
-  // fs.writeFileSync('dist/Run-auto.bat', 'cd "%~dp0" && where "powershell" && powershell -file "scripts/node_checker.ps1" || where "pwsh" && pwsh -file "scripts/node_checker.ps1" || .\\scripts\\node_checker.bat && pause');
-  // fs.writeFileSync('dist/run_auto_linux.sh', './scripts/node_checker.sh');
-  // if (!process.argv.includes('--docker')) {
-  //   await zipdir('dist', { saveTo: './AWA-Helper.zip' });
-  //   /*
-  //   if (!fs.existsSync('manager')) {
-  //     fs.mkdirSync('manager');
-  //   }
-  //   fs.copySync('server', 'manager/server');
-  //   fs.copySync('tools', 'manager/tools');
-  //   fs.copySync('web', 'manager/web');
-  //   fs.copySync('package.json', 'manager/package.json');
-  //   await zipdir('manager', { saveTo: './AWA-Manager.zip' });
-  //   */
-  // }
-
-  // fs.copySync('dist/webUI', 'output/webUI', { filter: (fileName) => !(/index\.js$/.test(fileName) && !fileName.includes('static')) });
-  // fs.copySync('dist/manager', 'output/manager', { filter: (fileName) => !(/(index|tool)\.js$/.test(fileName) && !fileName.includes('static')) });
-  // fs.copySync('dist/locales', 'output/locales');
   fs.copySync('dist/config', 'output/config');
-  // fs.copySync('node_modules/@doctormckay/steam-crypto/system.pem', 'output/system.pem');
-  // fs.copySync('dist/CHANGELOG.txt', 'output/CHANGELOG.txt');
-  // fs.copySync('dist/dailyQuestDb.json', 'output/dailyQuestDb.json');
   fs.mkdirSync('output/logs');
   fs.copySync('dist/README.html', 'output/README.html');
   fs.copySync('dist/README_en.html', 'output/README_en.html');

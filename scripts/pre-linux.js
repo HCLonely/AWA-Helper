@@ -1,3 +1,11 @@
+/*
+ * @Author       : HCLonely
+ * @Date         : 2024-09-11 15:31:08
+ * @LastEditTime : 2025-06-17 13:55:37
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/scripts/pre-linux.js
+ * @Description  :
+ */
 const fs = require('fs');
 
 fs.unlinkSync('output/AWA-Helper.exe');

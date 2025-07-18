@@ -277,20 +277,20 @@ class TwitchTrack {
           this.trackTimes++;
           let returnText: boolean | string = true;
           switch (response.data.state) {
-          case 'daily_cap_reached':
-            this.complete = true;
-            this.emitter.emit('taskComplete', 'twitch');
-            new Logger(time() + chalk.green(response.data.message || __('obtainedArp')));
-            returnText = 'complete';
-            break;
-          case 'streamer_offline':
-            new Logger(time() + chalk.blue(__('liveOffline', chalk.yellow(this.channelId))));
-            returnText = 'offline';
-            break;
-          case 'streamer_online':
-            break;
-          default:
-            break;
+            case 'daily_cap_reached':
+              this.complete = true;
+              this.emitter.emit('taskComplete', 'twitch');
+              new Logger(time() + chalk.green(response.data.message || __('obtainedArp')));
+              returnText = 'complete';
+              break;
+            case 'streamer_offline':
+              new Logger(time() + chalk.blue(__('liveOffline', chalk.yellow(this.channelId))));
+              returnText = 'offline';
+              break;
+            case 'streamer_online':
+              break;
+            default:
+              break;
           }
           return returnText;
         }

@@ -1,3 +1,11 @@
+/*
+ * @Author       : HCLonely
+ * @Date         : 2025-07-18 09:14:52
+ * @LastEditTime : 2025-07-18 09:15:12
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/tool.ts
+ * @Description  :
+ */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
 /* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
@@ -502,9 +510,9 @@ xcopy /y /e "${path.resolve('./temp/AWA-Helper/output')}" "${path.resolve('./')}
 )
 cd ..
 ${
-  process.argv.includes('--update') ?
-    '' :
-    (managerServer?.enable ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
+  process.argv.includes('--update')
+    ? ''
+    : (managerServer?.enable ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
 echo remove temp dir >> ${logPath}
 rmdir /s /q temp >> ${logPath}
 echo update success >> ${logPath}
@@ -529,9 +537,9 @@ cd ..
 echo remove temp dir >> ${logPath}
 rm -rf temp
 ${
-  process.argv.includes('--update') ?
-    '' :
-    (managerServer?.enable ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
+  process.argv.includes('--update')
+    ? ''
+    : (managerServer?.enable ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
 echo update success >> ${logPath}
 `;
   fs.writeFileSync('temp/update.sh', scriptContent);
@@ -550,9 +558,9 @@ cd ${path.resolve('./')}
 echo kill process ... >> ${logPath}
 taskkill /f /t /pid ${process.pid}${managerPid ? ` /pid ${managerPid}` : ''} >> ${logPath}
 ${
-  process.argv.includes('--update') ?
-    '' :
-    (managerServerEnable ? 'start cmd /k "node main.js --manager --helper"' : 'start cmd /k "node main.js --helper --no-update"')}
+  process.argv.includes('--update')
+    ? ''
+    : (managerServerEnable ? 'start cmd /k "node main.js --manager --helper"' : 'start cmd /k "node main.js --helper --no-update"')}
 echo remove temp dir >> ${logPath}
 rmdir /s /q temp >> ${logPath}
 echo update success >> ${logPath}
@@ -573,9 +581,9 @@ ${managerPid ? `kill -9 ${managerPid} >> ${logPath}` : ''}
 echo remove temp dir >> ${logPath}
 rm -rf temp
 ${
-  process.argv.includes('--update') ?
-    '' :
-    (managerServerEnable ? 'node main.js --manager --helper' : 'node main.js --helper --no-update')}
+  process.argv.includes('--update')
+    ? ''
+    : (managerServerEnable ? 'node main.js --manager --helper' : 'node main.js --helper --no-update')}
 echo update success >> ${logPath}
 `;
   fs.writeFileSync('temp/update.sh', scriptContent);
