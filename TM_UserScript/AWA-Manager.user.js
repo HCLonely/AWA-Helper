@@ -404,8 +404,8 @@
             <div class="user-profile__card-header">
                 <h3>AWA Helper</h3>
                 <a class="btn btn-outline-primary btn-arrow manager-server-config">ManagerServer配置</a>
-                <a class="btn btn-outline-primary btn-arrow cookie-sync">同步Cookie</a>
-                <a class="btn btn-outline-primary btn-arrow twitch-cookie-sync">同步Twitch Cookie</a>
+                <a class="btn btn-outline-primary btn-arrow cookie-sync">同步 AWA Cookie</a>
+                <a class="btn btn-outline-primary btn-arrow twitch-cookie-sync">同步 Twitch Cookie</a>
                 <a class="btn btn-outline-primary btn-arrow awa-helper-start">启动AWA-Helper</a>
                 <a class="btn btn-outline-primary btn-arrow awa-helper-stop">终止AWA-Helper</a>
             </div>

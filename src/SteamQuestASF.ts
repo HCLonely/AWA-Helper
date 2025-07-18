@@ -501,7 +501,7 @@ class SteamQuestASF {
       return false;
     }
 
-    if (!this.taskStatus.length) {
+    if (!this.taskStatus?.length) {
       this.status = 'stopped';
       return false;
     }
