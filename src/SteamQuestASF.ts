@@ -20,7 +20,7 @@ class SteamQuestASF {
   gamesInfo: Array<steamGameInfo> = [];
   maxArp = 0;
   status = 'none';
-  taskStatus!: Array<steamGameInfo>;
+  taskStatus: Array<steamGameInfo> = [];
   emitter = emitter;
 
   constructor({
