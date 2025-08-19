@@ -435,7 +435,6 @@ class SteamQuestASF {
         });
     }
     if (this.taskStatus?.filter((e) => parseInt(e.progress || '0', 10) >= 100)?.length === this.taskStatus?.length && !globalThis.steamEventGameId) {
-      this.emitter.emit('taskComplete', 'steam');
       new Logger(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
       await this.resume();
       return true;
@@ -546,6 +545,7 @@ class SteamQuestASF {
     return await this.checkStatus();
   }
   async resume(): Promise<boolean> {
+    this.emitter.emit('taskComplete', 'steam');
     if (this.status === 'stopped') return true;
     const logger = new Logger(`${time()}${__('stoppingPlayingGames')}`, false);
     const options: myAxiosConfig = {

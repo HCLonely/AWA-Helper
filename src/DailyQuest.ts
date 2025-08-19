@@ -175,9 +175,9 @@ class DailyQuest {
       return this.listen(check);
     }
 
-    if (this.questInfo.steamQuest && !this.tasksFinished.get('steam')) {
-      this.emitter.emit('steamStop');
-    }
+    // if (this.questInfo.steamQuest && !this.tasksFinished.get('steam')) {
+    //   this.emitter.emit('steamStop');
+    // }
 
     this.checkAndEmitTaskComplete('dailyQuest', () => this.tasksFinished.get('dailyQuest') ||
           (this.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length === this.questInfo.dailyQuest?.length
