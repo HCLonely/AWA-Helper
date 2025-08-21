@@ -161,6 +161,7 @@ class DailyQuest {
 
     this.emitter.on('taskComplete', async (data) => {
       this.tasksFinished.set(data, true);
+      console.debug('taskComplete', data, this.tasksFinished); // debug
       if ([...this.tasksFinished.values()].filter((e) => !e).length === 0) {
         new Logger(time() + chalk.green(__('allTaskCompleted')));
         await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);

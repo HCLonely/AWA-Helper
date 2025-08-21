@@ -1,19 +1,20 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-17 14:03:46
- * @LastEditTime : 2025-07-18 11:03:23
+ * @LastEditTime : 2025-08-21 12:48:54
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/manager/index.ts
- * @Description  :
+ * @Description  : 管理器
  */
-/* eslint-disable max-len */
-/* eslint-disable no-unused-vars */
+/* eslint-disable max-len, no-unused-vars */
 /* global WebSocket, logs, __, language */
 import * as express from 'express';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as qs from 'qs';
-import { Logger, time, push } from './tool';
+import * as expressWs from 'express-ws';
+import * as WebSocket from 'ws';
+import { Logger, time } from './tool';
 import * as chalk from 'chalk';
 import * as https from 'https';
 import { dirname, join, resolve } from 'path';
@@ -26,6 +27,7 @@ import * as minMax from 'dayjs/plugin/minMax';
 import axios from 'axios';
 import * as corn from 'node-cron';
 import * as parser from 'cron-parser';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { Artifacts } from './Artifacts';
 // @ts-ignore
 import indexHtml from './dist/index.html';
@@ -96,8 +98,6 @@ const startManager = async (startHelper: boolean) => {
   dayjs.extend(minMax);
   i18n.configure({
     locales: ['zh', 'en'],
-    // directory: join(process.cwd(), '/locales'),
-    // extension: '.json',
     staticCatalog: {
       zh,
       en
@@ -207,10 +207,10 @@ const startManager = async (startHelper: boolean) => {
     zh,
     en
   };
+
   const createServer = (options?: { key: Buffer, cert: Buffer }) => {
     let server;
     const app = express();
-    // app.use(express.static(`${__dirname}/manager/static`));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.set('query parser', (str: string) => qs.parse(str));
@@ -218,22 +218,17 @@ const startManager = async (startHelper: boolean) => {
       server = https.createServer(options, app);
     }
 
+    expressWs(app, server);
     app.get('/', (_, res) => {
-      res.send(
-        // fs.readFileSync(`${__dirname}/manager/index.html`).toString()).end();
-        indexHtml.replace('__LANG__', language)
-          .replaceAll('__VERSION__', version)
-          .replace('__I18N__', JSON.stringify(langs))).end();
+      res.send(indexHtml.replace('__LANG__', language)
+        .replaceAll('__VERSION__', version)
+        .replace('__I18N__', JSON.stringify(langs))).end();
     });
     app.get('/configer', (_, res) => {
-      res.send(
-        // fs.readFileSync(`${__dirname}/manager/configer/index.html`).toString()).end();
-        configerHtml).end();
+      res.send(configerHtml).end();
     });
     app.get('/js/template.yml', (_, res) => {
-      res.send(
-        // fs.readFileSync(`${__dirname}/manager/configer/index.html`).toString()).end();
-        language === 'en' ? templateYmlEN : templateYml).end();
+      res.send(language === 'en' ? templateYmlEN : templateYml).end();
     });
 
     app.post('/getConfig', (req, res) => {
@@ -265,9 +260,6 @@ const startManager = async (startHelper: boolean) => {
               oldConfigStringRaw = `${oldConfigStringRaw}\n\n` + `UA: '${req.headers['user-agent']}'`;
             }
           }
-          // if (!(req.body.cookie.includes('REMEMBERME=') || (req.body.cookie.includes('sc=') && req.body.cookie.includes('PHPSESSID=')))) {
-          //   return res.status(502).end();
-          // }
           const oldCookie = oldConfigStringRaw.match(/^awaCookie:.+/m)?.[0];
           if (!oldCookie) {
             return res.status(501).end();
@@ -419,6 +411,30 @@ const startManager = async (startHelper: boolean) => {
       res.send(`${process.pid}`).status(200).end();
     });
 
+    if (webUI.enable) {
+      app.use('/awa-helper', createProxyMiddleware({
+        target: `http://127.0.0.1:${webUI.port}`,
+        changeOrigin: true
+      }));
+      const targetUrl = `ws://127.0.0.1:${webUI.port}/ws`;
+      // @ts-ignore
+      app.ws('/ws', (ws: WebSocket, _) => {
+        const targetWs = new WebSocket(targetUrl);
+        ws.on('message', (data) => {
+          targetWs.send(data);
+        });
+        targetWs.on('message', (data) => {
+          ws.send(data);
+        });
+        ws.on('close', () => {
+          targetWs.close();
+        });
+        targetWs.on('close', () => {
+          ws.close();
+        });
+      });
+    }
+
     return server || app;
   };
 
@@ -443,7 +459,6 @@ const startManager = async (startHelper: boolean) => {
     };
   }
   const server = createServer(options);
-
   const hostname = managerServer.local ? '127.0.0.1' : '0.0.0.0';
   server.listen(managerServer.port, hostname, () => {
     new Logger(time() + __('managerServerStart', chalk.yellow(`${managerServer.ssl?.cert ? 'https' : 'http'}://127.0.0.1:${managerServer.port}/`)));

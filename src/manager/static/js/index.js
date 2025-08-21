@@ -1,4 +1,4 @@
-/* global window, location, localStorage, $, I18n, lang, dayjs, axios */
+/* global window, localStorage, $, I18n, lang, dayjs, axios */
 // eslint-disable-next-line no-underscore-dangle
 function __(text, ...argv) {
   let result = text;
@@ -22,10 +22,7 @@ function getStatus(secret) {
       $('.last-run-time').text(response.data?.lastRunTime);
       $('.run-status').text(response.data?.runStatus);
       if (response.data?.webui) {
-        const webuiURL = new URL(location.href);
-        webuiURL.protocol = response.data?.webui.ssl ? 'https:' : 'http:';
-        webuiURL.port = response.data?.webui.port;
-        $('.run-status').html(`<a href="${webuiURL.href}" target="_blank">${response.data?.runStatus}</a>`);
+        $('.run-status').html(`<a href="/awa-helper" target="_blank">${response.data?.runStatus}</a>`);
       }
       $('#log-area').append(`<li>${time()}AWA-Manager: ${__('getHelperStatusSuccess')}</li>`);
       $('#log-area li:last')[0].scrollIntoView();

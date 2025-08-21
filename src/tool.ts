@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-07-18 09:14:52
- * @LastEditTime : 2025-07-18 09:15:12
+ * @LastEditTime : 2025-08-21 14:12:49
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/tool.ts
  * @Description  :
@@ -78,6 +78,10 @@ const toHtmlJSON = (e: any): string => {
     return hideSectets(e.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
     // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[31m(.+?)\x1B\[39m/g, '<font class="red">$1</font>')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[1m(.+?)\x1B\[1m/g, '$1')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[22m(.+?)\x1B\[22m/g, '$1')
     // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[32m(.+?)\x1B\[39m/g, '<font class="green">$1</font>')
     // eslint-disable-next-line no-control-regex
@@ -88,6 +92,10 @@ const toHtmlJSON = (e: any): string => {
       .replace(/\x1B\[90m(.+)/g, '<font class="gray">$1</font>')
       // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[31m(.+)/g, '<font class="red">$1</font>')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[1m(.+)/g, '$1')
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1B\[22m(.+)/g, '$1')
       // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[32m(.+)/g, '<font class="green">$1</font>')
       // eslint-disable-next-line no-control-regex
