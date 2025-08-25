@@ -154,12 +154,14 @@
       optionsName:
       - GET STARTED tasks
       - daily tasks
+      - daily tasks (old)
       - AWA online tasks
       - Twitch live room online tasks
       - Steam game online tasks
       options:
       - getStarted
       - dailyQuest
+      - dailyQuestOld
       - timeOnSite
       - watchTwitch
       - steamQuest
@@ -170,7 +172,7 @@
       - watchTwitch
       - steamQuest
     awaDailyQuestType:
-      name: Types of daily tasks that need to be done
+      name: Types of daily tasks (old) that need to be done
       desp: Press `Ctrl` to select multiple
       type: multi-select
       optionsName:
@@ -204,10 +206,6 @@
       - sharePost
     awaDailyQuestNumber1:
       name: When there are multiple daily tasks, whether to only do the first one?
-      type: boolean
-      defaultValue: true
-    awaSafeReply:
-      name: If you have replied to a post today, you will skip replying to the post.
       type: boolean
       defaultValue: true
     joinSteamCommunityEvent:

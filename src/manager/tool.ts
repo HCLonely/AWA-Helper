@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /* global  __, pusher */
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';

@@ -1,17 +1,21 @@
-/* eslint-disable max-len */
+/*
+ * @Author       : HCLonely
+ * @Date         : 2025-07-18 09:14:20
+ * @LastEditTime : 2025-08-22 20:39:17
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/SteamQuestASF.ts
+ * @Description  : Steam任务
+ */
 /* global __, steamGameInfo, proxy, myAxiosConfig */
 import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
 import * as chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy, Cookie } from './tool';
-import { EventEmitter } from 'events';
-const emitter = new EventEmitter();
 
 class SteamQuestASF {
   awaCookie: Cookie;
   asfUrl: string;
   httpsAgent!: myAxiosConfig['httpsAgent'];
-  awaHttpsAgent!: myAxiosConfig['httpsAgent'];
   headers: RawAxiosRequestHeaders;
   botname!: string;
   ownedGames: Array<string> = [];
@@ -21,10 +25,8 @@ class SteamQuestASF {
   maxArp = 0;
   status = 'none';
   taskStatus: Array<steamGameInfo> = [];
-  emitter = emitter;
 
   constructor({
-    awaCookie,
     asfProtocol,
     asfHost,
     asfPort,
@@ -32,7 +34,6 @@ class SteamQuestASF {
     asfBotname,
     proxy
   }: {
-      awaCookie: string,
       asfProtocol: string,
       asfHost: string,
       asfPort: number,
@@ -40,7 +41,7 @@ class SteamQuestASF {
       asfBotname: string,
       proxy?: proxy
   }) {
-    this.awaCookie = new Cookie(awaCookie);
+    this.awaCookie = new Cookie(globalThis.quest.newCookie);
     this.botname = asfBotname;
 
     const baseUrl = `${asfProtocol}://${asfHost}:${asfPort}`;
@@ -57,10 +58,6 @@ class SteamQuestASF {
 
     if (proxy?.enable?.includes('asf') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
-    }
-
-    if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
-      this.awaHttpsAgent = formatProxy(proxy);
     }
   }
 
@@ -100,11 +97,6 @@ class SteamQuestASF {
         new Logger(error);
         return false;
       });
-    if (initted) {
-      this.emitter.on('steamStop', () => {
-        this.resume();
-      });
-    }
     return initted;
   }
   async getSteamQuests(): Promise<boolean> {
@@ -120,7 +112,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+    if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
     return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
@@ -182,7 +174,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+    if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
     return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
@@ -222,7 +214,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+    if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
 
     return axios(options)
       .then(async (response) => {
@@ -295,7 +287,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+    if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
 
     return axios(options)
       .then(async (response) => {
@@ -342,7 +334,7 @@ class SteamQuestASF {
       data: steamGameId,
       Logger: logger
     };
-    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+    if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
 
     return axios(options)
       .then(async (response) => {
@@ -374,7 +366,7 @@ class SteamQuestASF {
       },
       Logger: logger
     };
-    if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+    if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
     return axios(options)
       .then((response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
@@ -410,7 +402,7 @@ class SteamQuestASF {
         },
         Logger: logger
       };
-      if (this.awaHttpsAgent) options.httpsAgent = this.awaHttpsAgent;
+      if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
       await axios(options)
         .then((response) => {
           globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
@@ -434,6 +426,7 @@ class SteamQuestASF {
           return false;
         });
     }
+
     if (this.taskStatus?.filter((e) => parseInt(e.progress || '0', 10) >= 100)?.length === this.taskStatus?.length && !globalThis.steamEventGameId) {
       new Logger(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
       await this.resume();
@@ -489,7 +482,7 @@ class SteamQuestASF {
         return false;
       });
   }
-  async playGames(): Promise<boolean> {
+  async do(): Promise<boolean> {
     if (!await this.getOwnedGames()) {
       this.status = 'stopped';
       return false;
@@ -545,7 +538,6 @@ class SteamQuestASF {
     return await this.checkStatus();
   }
   async resume(): Promise<boolean> {
-    this.emitter.emit('taskComplete', 'steam');
     if (this.status === 'stopped') return true;
     const logger = new Logger(`${time()}${__('stoppingPlayingGames')}`, false);
     const options: myAxiosConfig = {

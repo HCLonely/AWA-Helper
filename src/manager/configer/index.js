@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /* global window, document, location, localStorage, FileReader, $, bootstrap, axios, jsyaml */
 (async () => {
   $(document).ready(() => {

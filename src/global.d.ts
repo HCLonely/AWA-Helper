@@ -4,7 +4,7 @@
 import { AxiosRequestConfig } from 'axios';
 import type { I18n } from 'i18n';
 import type WebSocket from 'ws';
-import type { DailyQuest } from './DailyQuest';
+import type { AWA } from './AWA';
 import { Logger } from './tool';
 
 declare global {
@@ -173,7 +173,7 @@ declare global {
   var language: string;
   var pusher: pusher | undefined;
   var pusherProxy: proxy;
-  var quest: DailyQuest;
+  var quest: AWA;
   var initError: string;
   var awaHost: string;
   var __: I18n['__'];

@@ -1,21 +1,21 @@
 /*
  * @Author       : HCLonely
- * @Date         : 2024-02-24 15:32:30
- * @LastEditTime : 2025-08-21 13:46:32
+ * @Date         : 2025-07-18 09:14:00
+ * @LastEditTime : 2025-08-25 10:30:22
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/awa-helper.ts
+ * @Description  : 启动助手
  */
-/* eslint-disable max-len */
 /* global config, __ */
+import { AWA } from './AWA';
 import { DailyQuest } from './DailyQuest';
+import { DailyQuestOld } from './DailyQuestOld';
+import { TimeOnSite } from './TimeOnSite';
 import { TwitchTrack } from './TwitchTrack';
 import { SteamQuestASF } from './SteamQuestASF';
-// import { SteamQuestSU } from './SteamQuestSU';
 import * as fs from 'fs';
 import * as path from 'path';
 import { join, resolve } from 'path';
-import { EventEmitter } from 'events';
-const emitter = new EventEmitter();
 import { parse } from 'yaml';
 import { sleep, Logger, time, checkUpdate, push, pushQuestInfoFormat } from './tool';
 import * as chalk from 'chalk';
@@ -24,7 +24,7 @@ import * as i18n from 'i18n';
 import { createServer } from './webUI/index';
 import * as dayjs from 'dayjs';
 // @ts-ignore
-import CHANGELOG from '../CHANGELOG.txt';
+import CHANGELOG from './CHANGELOG.txt';
 import { execSync } from 'child_process';
 import * as os from 'os';
 
@@ -74,10 +74,9 @@ const startHelper = async () => {
     process.exit(0);
   });
 
+  // 国际化
   i18n.configure({
     locales: ['zh', 'en'],
-    // directory: path.join(process.cwd(), '/locales'),
-    // extension: '.json',
     staticCatalog: {
       zh,
       en
@@ -87,6 +86,7 @@ const startHelper = async () => {
   });
   globalThis.ws = null;
   globalThis.webUI = true;
+  // 检查是否已运行
   if (fs.existsSync('.lock')) {
     try {
       fs.unlinkSync('.lock');
@@ -122,12 +122,14 @@ const startHelper = async () => {
     process.stdin.on('data', () => process.exit(0));
     return;
   }
+  // 打印版本信息
   const version = 'V__VERSION__ ';
   const logArr = '  ______   __       __   ______           __    __            __\n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |\n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______\n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\\n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/\n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |\n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |\n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/\n                                                                 $$ |\n                                                                 $$ |\n                                                                 $$/               by HCLonely '.split('\n');
   logArr[logArr.length - 2] = `${logArr[logArr.length - 2]}              ${version}`;
   new Logger(logArr.join('\n'));
   new Logger(chalk.red.bold('\n* 重要提示：后台挂机可能导致COD封号，游玩COD时请关闭本程序！！！\n\n* Important: Running this program at the same time as COD may result in a COD account ban. Please close this program when playing COD !!!\n'));
 
+  // 获取配置文件路径
   let configPath = 'config.yml';
   if (/dist$/.test(process.cwd()) || /output$/.test(process.cwd())) {
     if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
@@ -147,6 +149,7 @@ const startHelper = async () => {
     return;
   }
 
+  // 打印更新信息
   if (!fs.existsSync('.version') || fs.readFileSync('.version').toString() !== version) {
     new Logger(chalk.green(__('updateContent')));
     console.table(CHANGELOG.trim()
@@ -172,6 +175,7 @@ const startHelper = async () => {
   globalThis.version = version.replace('V', 'v');
   globalThis.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36 Edg/103.0.1264.77';
 
+  // 默认配置
   const defaultConfig: config = {
     language: 'zh',
     timeout: 86400,
@@ -184,16 +188,13 @@ const startHelper = async () => {
       'visitLink',
       'openLink',
       'changeBorder',
-      'changeBadge',
       'changeAvatar',
-      'viewPost',
-      'viewNew',
-      'sharePost',
-      'replyPost'
+      'viewNews'
     ],
     awaDailyQuestNumber1: true,
     asfProtocol: 'http'
   };
+  // 读取配置文件
   const configString = fs.readFileSync(configPath).toString();
   let config: config | null = null;
   await yamlLint
@@ -215,7 +216,7 @@ const startHelper = async () => {
     autoUpdate,
     awaCookie,
     awaHost,
-    awaBoosterNotice,
+    // awaBoosterNotice,
     awaQuests,
     awaDailyQuestType,
     awaDailyQuestNumber1,
@@ -229,7 +230,7 @@ const startHelper = async () => {
     proxy,
     webUI,
     pusher,
-    awaSafeReply,
+    // awaSafeReply,
     joinSteamCommunityEvent,
     TLSRejectUnauthorized,
     managerServer
@@ -243,6 +244,7 @@ const startHelper = async () => {
   globalThis.awaHost = awaHost || 'www.alienwarearena.com';
   i18n.setLocale(language);
 
+  // 清理日志
   if (fs.existsSync('logs')) {
     const logFiles = fs.readdirSync('logs');
     if (logsExpire && logsExpire < logFiles.length) {
@@ -256,10 +258,12 @@ const startHelper = async () => {
       logger.log(chalk.green('OK'));
     }
   }
+  // 设置推送代理
   if (pusher?.enable && proxy?.enable?.includes('pusher')) {
     globalThis.pusherProxy = proxy;
   }
 
+  // 设置超时
   if (timeout && typeof timeout === 'number' && timeout > 0) {
     setTimeout(async () => {
       new Logger(chalk.yellow(__('processTimeout')));
@@ -268,6 +272,7 @@ const startHelper = async () => {
     }, timeout * 1000);
   }
 
+  // 启动WebUI
   if (webUI?.enable) {
     const port = webUI.port || 3456;
     let options: undefined | {
@@ -297,6 +302,7 @@ const startHelper = async () => {
     });
   }
 
+  // 检查AWA参数
   const missingAwaParams = Object.entries({
     awaCookie
   }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
@@ -306,6 +312,7 @@ const startHelper = async () => {
     return;
   }
 
+  // 检查更新
   globalThis.newVersionNotice = '';
   await checkUpdate(version, managerServer, !!autoUpdate || process.argv.includes('--update'), CHANGELOG, proxy);
   if (process.argv.includes('--update')) {
@@ -313,23 +320,16 @@ const startHelper = async () => {
     return;
   }
 
-  const quest = new DailyQuest({
+  // 初始化AWA
+  const awa = new AWA({
     awaCookie: awaCookie as string,
-    awaBoosterNotice: awaBoosterNotice as boolean,
-    awaDailyQuestType,
-    awaDailyQuestNumber1,
     proxy,
-    awaSafeReply,
     joinSteamCommunityEvent,
-    getStarted: awaQuests.includes('getStarted'),
-    tasksFinished: new Map([
-      ['dailyQuest', !awaQuests.includes('dailyQuest')],
-      ['timeOnSite', !awaQuests.includes('timeOnSite')],
-      ['steam', !awaQuests.includes('steamQuest')],
-      ['twitch', !awaQuests.includes('watchTwitch')]
-    ])
+    awaDailyQuestNumber1,
+    getStarted: awaQuests.includes('getStarted')
   });
-  const initResult = await quest.init();
+
+  const initResult = await awa.init();
   if (initResult !== 200) {
     const errorMap = {
       0: __('netError'),
@@ -347,49 +347,50 @@ const startHelper = async () => {
     }
     process.exit(0);
   }
-  fs.writeFileSync(configPath, configString.replace(awaCookie as string, quest.newCookie));
-  await quest.listen(true);
-  globalThis.quest = quest;
+  fs.writeFileSync(configPath, configString.replace(awaCookie as string, awa.newCookie));
+  globalThis.quest = awa;
 
-  if (awaQuests.includes('dailyQuest') && (quest.questInfo.dailyQuest || []).filter((e) => e.status === 'complete').length !== quest.questInfo.dailyQuest?.length) {
-    await quest.do();
-  } else {
-    emitter.emit('taskComplete', 'dailyQuest');
+  // 每日任务
+  if (awaQuests.includes('dailyQuest') && (awa.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (awa.questInfo.dailyQuest || []).length) {
+    const dailyQuest = new DailyQuest();
+    await dailyQuest.do();
   }
-  if (awaQuests.includes('timeOnSite') && quest.questInfo.timeOnSite?.addedArp !== quest.questInfo.timeOnSite?.maxArp) {
-    quest.track();
-  } else {
-    emitter.emit('taskComplete', 'timeOnSite');
+  // 每日任务(旧版)
+  if (awaQuests.includes('dailyQuestOld') && (awa.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (awa.questInfo.dailyQuest || []).length) {
+    const dailyQuestOld = new DailyQuestOld({
+      awaDailyQuestType
+    });
+    await dailyQuestOld.do();
+  }
+
+  const quests: Array<Promise<any>> = [];
+
+  // AWA在线时长
+  if (awaQuests.includes('timeOnSite') && awa.questInfo.timeOnSite?.addedArp !== awa.questInfo.timeOnSite?.maxArp) {
+    quests.push(TimeOnSite.do());
   }
   await sleep(10);
 
+  // Twitch直播心跳
   let twitch: TwitchTrack | null = null;
   if (awaQuests.includes('watchTwitch')) {
-    await quest.getTwitchTech();
-    if (quest.questInfo.watchTwitch?.[0] !== '15' || parseFloat(quest.questInfo.watchTwitch?.[1] || '0') < quest.additionalTwitchARP) {
+    await awa.getTwitchTech();
+    if (awa.questInfo.watchTwitch?.[0] !== '15' || parseFloat(awa.questInfo.watchTwitch?.[1] || '0') < awa.additionalTwitchARP) {
       if (twitchCookie) {
-        twitch = new TwitchTrack({ cookie: twitchCookie, awaHeaders: quest.headers, proxy });
-        emitter.on('taskComplete', async (data) => {
-          if (data === 'twitch') {
-            twitch = null;
-          }
-        });
+        twitch = new TwitchTrack({ cookie: twitchCookie, proxy });
         if (await twitch.init() === true) {
-          twitch.sendTrack();
+          quests.push(twitch.do());
           await sleep(10);
-        } else {
-          emitter.emit('taskCompleted', 'twitch');
         }
       } else {
-        emitter.emit('taskCompleted', 'twitch');
         new Logger(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
       }
     } else {
-      emitter.emit('taskCompleted', 'twitch');
       new Logger(time() + chalk.green(__('twitchTaskCompleted')));
     }
   }
 
+  // Steam任务
   let steamQuest: SteamQuestASF | null = null;
   if (!steamUse || steamUse === 'ASF') {
     const missingAsfParams = Object.entries({
@@ -400,11 +401,9 @@ const startHelper = async () => {
     }).filter(([name, value]) => name !== 'proxy' && !value).map(([name]) => name);
     if (awaQuests.includes('steamQuest')) {
       if (missingAsfParams.length > 0) {
-        emitter.emit('taskComplete', 'steam');
         new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
       } else {
         steamQuest = new SteamQuestASF({
-          awaCookie: quest.newCookie,
           asfProtocol,
           asfHost: asfHost as string,
           asfPort: asfPort as number,
@@ -412,24 +411,19 @@ const startHelper = async () => {
           asfBotname: asfBotname as string,
           proxy
         });
-        emitter.on('taskComplete', async (data) => {
-          if (data === 'steam') {
-            steamQuest = null;
-          }
-        });
         if (await steamQuest.init()) {
-          steamQuest.playGames();
+          quests.push(steamQuest.do());
           await sleep(30);
-        } else {
-          emitter.emit('taskComplete', 'steam');
         }
       }
-    } else {
-      emitter.emit('taskComplete', 'steam');
     }
   }
 
-  quest.listen();
+  awa.listen();
+  await Promise.allSettled(quests);
+  new Logger(time() + chalk.green(__('allTaskCompleted')));
+  await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+  process.exit(0);
 };
 
 export { startHelper };

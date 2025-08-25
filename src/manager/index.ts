@@ -6,8 +6,7 @@
  * @FilePath     : /AWA-Helper/src/manager/index.ts
  * @Description  : 管理器
  */
-/* eslint-disable max-len, no-unused-vars */
-/* global WebSocket, logs, __, language */
+/* global __ */
 import * as express from 'express';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -418,7 +417,7 @@ const startManager = async (startHelper: boolean) => {
       }));
       const targetUrl = `ws://127.0.0.1:${webUI.port}/ws`;
       // @ts-ignore
-      app.ws('/ws', (ws: WebSocket, _) => {
+      app.ws('/ws', (ws: WebSocket) => {
         const targetWs = new WebSocket(targetUrl);
         ws.on('message', (data) => {
           targetWs.send(data);
@@ -532,7 +531,7 @@ const startManager = async (startHelper: boolean) => {
   async function getPid() {
     const pidRaw = await axios.get(`${webUI.ssl?.cert ? 'https' : 'http'}://127.0.0.1:${webUI.port}/run-status`)
       .then((response) => response.data)
-      .catch((e) => '0');
+      .catch(() => '0');
     return parseInt(pidRaw, 10);
   }
 };

@@ -1,12 +1,11 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2024-05-29 14:57:48
- * @LastEditTime : 2024-07-04 10:15:56
+ * @LastEditTime : 2025-08-22 20:41:37
  * @LastEditors  : HCLonely
- * @FilePath     : /AWA-Helper/src/manager/artifacts.ts
+ * @FilePath     : /AWA-Helper/src/manager/Artifacts.ts
  * @Description  :
  */
-/* eslint-disable max-len */
 /* global __, proxy, myAxiosConfig */
 import { RawAxiosRequestHeaders } from 'axios';
 import * as fs from 'fs';
@@ -60,28 +59,23 @@ class Artifacts {
     }
   }
   async init(): Promise<number> {
-    const REMEMBERME = this.cookie.get('REMEMBERME');
-    if (REMEMBERME) {
-      await this.updateCookie(`REMEMBERME=${REMEMBERME}`);
-    }
-    if (this.cookie.get('REMEMBERME') === 'deleted') {
-      return 602;
-    }
+    await this.updateCookie();
     const result = await this.updateInfo();
     if (result !== 200) {
       return result;
     }
-    this.newCookie = `${this.cookie.get('REMEMBERME') ? `REMEMBERME=${this.cookie.get('REMEMBERME')}` : ''};${this.cookie.get('PHPSESSID') ? `PHPSESSID=${this.cookie.get('PHPSESSID')}` : ''};${this.cookie.get('sc') ? `sc=${this.cookie.get('sc')}` : ''};`;
+    this.newCookie = this.cookie.stringify();
     return 200;
   }
-  async updateCookie(REMEMBERME: string): Promise<boolean> {
+
+  async updateCookie(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('updatingCookie', chalk.yellow('AWA Cookie'))}...`, false);
     const options: myAxiosConfig = {
       url: `https://${globalThis.awaHost}/`,
       method: 'GET',
       headers: {
         ...this.headers,
-        cookie: REMEMBERME,
+        cookie: this.cookie.stringify(),
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
       },
       maxRedirects: 0,
@@ -96,20 +90,25 @@ class Artifacts {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
           return false;
         }
-        if (response.status === 302 && response.headers['set-cookie']?.length) {
-          this.headers.cookie = this.cookie.update(response.headers['set-cookie']).stringify();
+        if (!response.headers['set-cookie']?.length) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          return true;
+        }
+        this.headers.cookie = this.cookie.update(response.headers['set-cookie']).stringify();
+        if (response.status === 200) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+          return true;
+        }
+        if (response.status === 302) {
           const homeSite = this.cookie.get('home_site');
           if (homeSite && globalThis.awaHost !== homeSite) {
             globalThis.awaHost = homeSite;
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('redirected')));
-            return this.updateCookie(REMEMBERME);
+            return this.updateCookie();
           }
           if (this.cookie.get('REMEMBERME') === 'deleted') {
             ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('cookieExpired', chalk.yellow('awaCookie'))}`));
             return false;
-          }
-          if (!this.cookie.get('REMEMBERME')) {
-            this.headers.cookie = this.cookie.update(REMEMBERME).stringify();
           }
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;

@@ -1,6 +1,6 @@
 {
   "name": "awa-helper",
-  "version": "3.2.9",
+  "version": "3.3.0",
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "engines": {

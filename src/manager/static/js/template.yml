@@ -156,12 +156,14 @@
       optionsName:
         - GET STARTED任务
         - 每日任务
+        - 每日任务(旧版)
         - AWA在线任务
         - Twitch直播间在线任务
         - Steam游戏时长任务
       options:
         - getStarted
         - dailyQuest
+        - dailyQuestOld
         - timeOnSite
         - watchTwitch
         - steamQuest
@@ -172,7 +174,7 @@
         - watchTwitch
         - steamQuest
     awaDailyQuestType:
-      name: 需要做的每日任务类型
+      name: 需要做的每日任务(旧版)类型
       desp: 按`Ctrl`多选
       type: multi-select
       optionsName:
@@ -203,10 +205,6 @@
         - sharePost
     awaDailyQuestNumber1:
       name: 每日任务有多个时是否只做第一个
-      type: boolean
-      defaultValue: true
-    awaSafeReply:
-      name: 今日回复过帖子则跳过回复帖子操作
       type: boolean
       defaultValue: true
     joinSteamCommunityEvent:

@@ -185,12 +185,7 @@
       "error",
       "always"
     ],
-    "max-len": [
-      "error",
-      {
-        "code": 200
-      }
-    ],
+    "max-len": "off",
     "block-spacing": "error",
     "comma-spacing": [
       "error",

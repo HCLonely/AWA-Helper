@@ -1,13 +1,12 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-07-18 09:14:52
- * @LastEditTime : 2025-08-21 14:12:49
+ * @LastEditTime : 2025-08-22 10:41:23
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/tool.ts
  * @Description  :
  */
 /* eslint-disable no-nested-ternary */
-/* eslint-disable max-len */
 /* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
 import * as chalk from 'chalk';
 import * as dayjs from 'dayjs';
@@ -197,22 +196,6 @@ const netError = (error: AxiosError): string => {
   return '';
 };
 
-/*
-const formatProxy = (proxy: proxy): any => {
-  const proxyOptions: AxiosProxyConfig = {
-    protocol: proxy.protocol,
-    host: proxy.host,
-    port: proxy.port
-  };
-  if (proxy.username && proxy.password) {
-    proxyOptions.auth = {
-      username: proxy.username,
-      password: proxy.password
-    };
-  }
-  return proxyOptions;
-};
-*/
 const formatProxy = (proxy: proxy): any => {
   let agent: any;
   const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
@@ -247,37 +230,7 @@ const formatProxy = (proxy: proxy): any => {
   }
   return agent;
 };
-/*
-const retryAdapterEnhancer = (options: retryAdapterOptions): AxiosAdapter => {
-  const { times = 0, delay = 300 } = options;
 
-  return async (config: myAxiosConfig): Promise<AxiosResponse> => {
-    const { retryTimes = times, retryDelay = delay } = config;
-    let retryCount = 0;
-    const request = async (config: myAxiosConfig): Promise<AxiosResponse> => {
-      try {
-        return await http(config);
-      } catch (err) {
-        if (!retryTimes || retryCount >= retryTimes) {
-          return Promise.reject(err);
-        }
-        retryCount++;
-        if (config.Logger) {
-          config.Logger.log(chalk.red('Error'));
-          config.Logger = new Logger(`${time()}${chalk.yellow(__('retrying', chalk.blue(retryCount)))}`, false);
-        }
-        const delay = new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(true);
-          }, retryDelay);
-        });
-        return delay.then(() => request(config));
-      }
-    };
-    return request(config);
-  };
-};
-*/
 const http = axios.create({
   maxRedirects: 5,
   timeout: 5 * 60 * 1000

@@ -212,14 +212,14 @@ managerServer:
 ```yml
 awaCookie: '' # 外星人论坛Cookie
 awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienwarearena.com`和`na.alienwarearena.com`, 默认的没问题就不要改
-# awaBoosterNotice: true # 已弃用！外星人论坛任务大于1个时询问是否开启助推器，助推器需要自行开启！！！
 awaQuests:
   - getStarted # 自动做左下角的GET STARTED任务，不需要做此任务删除或注释掉此行
   - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
+  # - dailyQuestOld # 自动做每日任务(旧版)，不需要做此任务删除或注释掉此行（默认关闭，一般不会再有此类任务）
   - timeOnSite # 自动做AWA在线任务，不需要做此任务删除或注释掉此行
   - watchTwitch # 自动做Twitch直播间在线任务，不需要做此任务删除或注释掉此行
   - steamQuest # 自动做Steam游戏时长任务，不需要做此任务删除或注释掉此行
-awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注释=全部开启，如果不需要做每日任务请注释上面的`dailyQuest`
+awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注释=全部开启，如果不需要做每日任务请注释上面的`dailyQuestOld`
   - click # 浏览页面任务，务标题为任务链接，需点击任务才能完成
   - visitLink # 浏览页面任务，任务标题为任务链接，浏览页面才能完成
   - openLink # 浏览页面任务，任务标题无链接，尝试浏览 排行榜，奖励，商店页面
@@ -228,10 +228,8 @@ awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注�
   - changeAvatar # 更换Avatar
   - viewNews # 浏览新闻
   - sharePost # 分享帖子
-  - replyPost # 回复帖子
+  # - replyPost # 回复帖子
 awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个
-awaSafeReply: false # 今日回复过帖子则跳过回复帖子操作，默认不跳过(false)
-autoUpdateDailyQuestDb: false # 自动更新每日任务数据库
 joinSteamCommunityEvent: true # 自动加入Steam社区活动
 ```
 

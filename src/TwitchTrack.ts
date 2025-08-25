@@ -1,4 +1,11 @@
-/* eslint-disable max-len */
+/*
+ * @Author       : HCLonely
+ * @Date         : 2025-07-18 09:14:26
+ * @LastEditTime : 2025-08-22 19:48:39
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/TwitchTrack.ts
+ * @Description  : Twitch 直播心跳
+ */
 /* global __, myAxiosConfig */
 import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
@@ -24,7 +31,7 @@ class TwitchTrack {
   awaHeaders!: RawAxiosRequestHeaders;
 
   // eslint-disable-next-line no-undef
-  constructor({ cookie, proxy, awaHeaders }: { cookie: string, awaHeaders: RawAxiosRequestHeaders, proxy?: proxy }) {
+  constructor({ cookie, proxy }: { cookie: string, proxy?: proxy }) {
     this.cookie = new Cookie(cookie);
     this.headers = {
       Authorization: `OAuth ${this.cookie.get('auth-token')}`,
@@ -35,7 +42,7 @@ class TwitchTrack {
       'User-Agent': globalThis.userAgent,
       'X-Device-Id': this.cookie.get('unique_id') as string
     };
-    this.awaHeaders = awaHeaders;
+    this.awaHeaders = globalThis.quest.headers;
     if (proxy?.enable?.includes('twitch') && proxy.host && proxy.port) {
       this.httpsAgent = formatProxy(proxy);
     }
@@ -245,12 +252,14 @@ class TwitchTrack {
         return await this.getExtInfo((returnedIndex as number) + 1);
       });
   }
-  async sendTrack(retried = false):Promise<void> {
+  async do(retried = false):Promise<boolean> {
+    if (!(globalThis.quest.questInfo.watchTwitch?.[0] !== '15' || parseFloat(globalThis.quest.questInfo.watchTwitch?.[1] || '0') < globalThis.quest.additionalTwitchARP)) {
+      return true;
+    }
     if (!this.channelId || !this.jwt) {
       if (await this.getExtInfo() !== true) {
         await sleep(60 * 5);
-        this.sendTrack();
-        return;
+        return this.do();
       }
     }
     const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
@@ -279,7 +288,6 @@ class TwitchTrack {
           switch (response.data.state) {
             case 'daily_cap_reached':
               this.complete = true;
-              this.emitter.emit('taskComplete', 'twitch');
               new Logger(time() + chalk.green(response.data.message || __('obtainedArp')));
               returnText = 'complete';
               break;
@@ -308,13 +316,12 @@ class TwitchTrack {
         }
         if (retried) {
           this.complete = true;
-          this.emitter.emit('taskComplete', 'twitch');
           return 'complete';
         }
         return 'Forbidden';
       });
     if ((['complete'] as Array<string|boolean>).includes(status)) {
-      return;
+      return true;
     }
     if (status === 'Forbidden') {
       if (await this.init() === true) {
@@ -325,18 +332,17 @@ class TwitchTrack {
         this.extensionID = undefined;
         this.availableStreams = [];
         this.availableStreamsInfo = [];
-        this.sendTrack(true);
+        this.do(true);
       } else {
         this.complete = true;
-        this.emitter.emit('taskComplete', 'twitch');
       }
-      return;
+      return false;
     }
     if (status === 'offline') {
       this.channelId = '';
     }
     await sleep(60);
-    this.sendTrack();
+    return this.do();
   }
 }
 
