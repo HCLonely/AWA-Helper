@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-07-18 09:14:26
- * @LastEditTime : 2025-08-22 19:48:39
+ * @LastEditTime : 2025-08-26 15:37:44
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/TwitchTrack.ts
  * @Description  : Twitch 直播心跳
@@ -332,10 +332,9 @@ class TwitchTrack {
         this.extensionID = undefined;
         this.availableStreams = [];
         this.availableStreamsInfo = [];
-        this.do(true);
-      } else {
-        this.complete = true;
+        return this.do(true);
       }
+      this.complete = true;
       return false;
     }
     if (status === 'offline') {
