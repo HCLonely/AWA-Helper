@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-07-18 09:14:52
- * @LastEditTime : 2025-08-22 10:41:23
+ * @LastEditTime : 2025-09-01 09:42:07
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/tool.ts
  * @Description  :
@@ -627,7 +627,7 @@ const pushQuestInfoFormat = () => {
           return `---\n${parseInt(value[__('obtainedARP')], 10) >= parseInt(value[__('maxAvailableARP')], 10) ? '✔️' : '⚠️'}${name}:  ${value[__('obtainedARP')]}/${value[__('maxAvailableARP')]}\n---`;
         }
         if (name.includes(__('promotionalCalendar'))) {
-          return `${value[__('status')] === __('done') ? '✔️' : '⚠️'}${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
+          return `---\n${value[__('status')] === __('done') ? '✔️' : '⚠️'}${name}:  ${value[__('status')] === __('done') ? value[__('obtainedARP')] : value[__('status')]}`;
         }
         if (name === __('watchTwitch')) {
           return `${value[__('status')] === __('done') ? '✔️' : '❌'}${name}:  ${value[__('obtainedARP')]}${value[__('extraARP')] && value[__('extraARP')] !== '0' ? ` + ${value[__('extraARP')]}` : ''} ARP\n---`;

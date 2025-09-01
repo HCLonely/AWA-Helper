@@ -1,4 +1,12 @@
-const commonjs  = require('@rollup/plugin-commonjs');
+/*
+ * @Author       : HCLonely
+ * @Date         : 2024-09-11 15:27:10
+ * @LastEditTime : 2025-08-28 10:43:47
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/rollup.config.js
+ * @Description  : 打包配置
+ */
+const commonjs = require('@rollup/plugin-commonjs');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const json = require('@rollup/plugin-json');
 const { string } = require('rollup-plugin-string');
@@ -19,7 +27,10 @@ module.exports = {
     nodeResolve({
       preferBuiltins: true,
       exportConditions: ['node']
-    }), commonjs(), json(), string({
+    }),
+    commonjs(),
+    json(),
+    string({
       include: ['**/*.html', '**/*.yml', '**/CHANGELOG.txt']
     })]
 };
