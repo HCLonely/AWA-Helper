@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-07-18 09:14:26
- * @LastEditTime : 2025-08-26 15:37:44
+ * @LastEditTime : 2025-10-12 17:37:04
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/TwitchTrack.ts
  * @Description  : Twitch 直播心跳
@@ -320,7 +320,8 @@ class TwitchTrack {
         }
         return 'Forbidden';
       });
-    if ((['complete'] as Array<string|boolean>).includes(status)) {
+    if ((['complete'] as Array<string|boolean>).includes(status) &&
+      (parseInt(globalThis.quest.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(globalThis.quest.questInfo.watchTwitch?.[1] || '0')) >= (15 + globalThis.quest.additionalTwitchARP)) {
       return true;
     }
     if (status === 'Forbidden') {
