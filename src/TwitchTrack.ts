@@ -219,13 +219,14 @@ class TwitchTrack {
         ...this.headers,
         'Client-Id': this.clientId
       },
-      data: `[{"operationName":"ExtensionsForChannel","variables":{"channelID":"${this.channelId}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"37a5969f117f2f76bc8776a0b216799180c0ce722acb92505c794a9a4f9737e7"}}}]`,
+      data: `[{"operationName":"ExtensionsForChannel","variables":{"channelID":"${this.channelId}"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"d52085e5b03d1fc3534aa49de8f5128b2ee0f4e700f79bf3875dcb1c90947ac3"}}}]`,
       Logger: logger
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
     return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+        console.log(JSON.stringify(response.data, null, 2));
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
         if (!extensions?.length) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noExt')}`));
