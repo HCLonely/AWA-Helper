@@ -27,7 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "all-pusher-api": "^1.2.2",
-    "axios": "^1.10.0",
+    "axios": "^1.13.2",
     "chalk": "4",
     "cheerio": "^1.0.0-rc.12",
     "cron-parser": "^4.9.0",
