@@ -12,6 +12,9 @@ interface pushOptions {
     key: {
       [name: string]: any
     }
+    options?: {
+      [name: string]: any
+    }
     proxy?: {
       enable: Array<string>
       host: string
@@ -26,6 +29,9 @@ interface pusher {
   enable: boolean
   platform: string
   key: {
+    [name: string]: any
+  }
+  options?: {
     [name: string]: any
   }
 }
@@ -98,11 +104,14 @@ const push = async (message: string) => {
       key: (pusher as pusher).key
     }
   };
+  if ((pusher as pusher).options) {
+    pushOptions.config.options = (pusher as pusher).options;
+  }
   if (globalThis.pusherProxy) {
     pushOptions.config.proxy = globalThis.pusherProxy;
   }
   const result = await new PushApi([pushOptions])
-    .send({ message });
+    .send({ message, title: __('pushTitle'), type: 'text' });
   if ((result[0].result?.status || 0) >= 200 && result[0].result.status < 300) {
     logger.log(chalk.green(__('pushSuccess')));
     return;

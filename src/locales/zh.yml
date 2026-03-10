@@ -10,7 +10,7 @@ missingAwaParams: 缺少以下参数：
 missingTwitchParams: 缺少 %s 参数，跳过Twitch相关任务！
 twitchTaskCompleted: Twitch在线任务已完成！
 missingSteamParams: 缺少 %s 参数，跳过Steam相关任务！
-pushTitle: 'AWA-Helper提醒:'
+pushTitle: 'AWA-Helper提醒'
 processWasKilled: 任务进程被终止
 processWasInterrupted: 任务进程被人为终止
 processError: 任务进程异常退出

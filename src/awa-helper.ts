@@ -38,9 +38,9 @@ const startHelper = async () => {
   process.on('SIGTERM', async () => {
     new Logger(time() + chalk.yellow(__('processWasKilled')));
     try {
-      await push(`${__('pushTitle')}\n${__('processWasKilled')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processWasKilled')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
     } catch (e) {
-      await push(`${__('pushTitle')}\n${__('processWasKilled')}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processWasKilled')}${globalThis.newVersionNotice}`);
     }
     process.exit(0);
   });
@@ -48,9 +48,9 @@ const startHelper = async () => {
   process.on('SIGINT', async () => {
     new Logger(time() + chalk.yellow(__('processWasInterrupted')));
     try {
-      await push(`${__('pushTitle')}\n${__('processWasInterrupted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processWasInterrupted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
     } catch (e) {
-      await push(`${__('pushTitle')}\n${__('processWasInterrupted')}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processWasInterrupted')}${globalThis.newVersionNotice}`);
     }
     process.exit(0);
   });
@@ -66,9 +66,9 @@ const startHelper = async () => {
     }
     new Logger(time() + chalk.yellow(__('processError')));
     try {
-      await push(`${__('pushTitle')}\n${__('processError')}\n\n${pushQuestInfoFormat()}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processError')}\n\n${pushQuestInfoFormat()}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
     } catch (e) {
-      await push(`${__('pushTitle')}\n${__('processError')}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processError')}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
     }
     new Logger(`Uncaught Exception: ${err.message}\n${err.stack}`);
     process.exit(0);
@@ -267,7 +267,7 @@ const startHelper = async () => {
   if (timeout && typeof timeout === 'number' && timeout > 0) {
     setTimeout(async () => {
       new Logger(chalk.yellow(__('processTimeout')));
-      await push(`${__('pushTitle')}\n${__('processTimeout')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
       process.exit(0);
     }, timeout * 1000);
   }
@@ -341,9 +341,9 @@ const startHelper = async () => {
     };
     const initError = errorMap[initResult as keyof typeof errorMap] || __('unknownError');
     try {
-      await push(`${__('pushTitle')}\n${__('processInitError')}\n\n${initError}, ${__('checkLog')}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processInitError')}\n\n${initError}, ${__('checkLog')}${globalThis.newVersionNotice}`);
     } catch (e) {
-      await push(`${__('pushTitle')}\n${__('processInitError')}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processInitError')}${globalThis.newVersionNotice}`);
     }
     process.exit(0);
   }
@@ -422,7 +422,7 @@ const startHelper = async () => {
   awa.listen();
   await Promise.allSettled(quests);
   new Logger(time() + chalk.green(__('allTaskCompleted')));
-  await push(`${__('pushTitle')}\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+  await push(`${__('pushTitle')}:\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
   process.exit(0);
 };
 
