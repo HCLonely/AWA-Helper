@@ -1,17 +1,25 @@
-/* global window, localStorage, $, I18n, lang, dayjs, axios */
+/*
+ * @Author       : HCLonely
+ * @Date         : 2024-09-11 15:39:08
+ * @LastEditTime : 2026-01-29 09:55:17
+ * @LastEditors  : HCLonely
+ * @FilePath     : /AWA-Helper/src/manager/static/js/index.js
+ * @Description  : 管理器
+ */
+/* global window, localStorage, $, __, dayjs, axios */
 // eslint-disable-next-line no-underscore-dangle
-function __(text, ...argv) {
-  let result = text;
-  if (I18n[lang]?.[text]) {
-    result = I18n[lang][text];
-    if (argv.length > 0) {
-      argv.forEach((s) => {
-        result = result.replace(/%s/, s);
-      });
-    }
-  }
-  return result;
-}
+// function __(text, ...argv) {
+//   let result = text;
+//   if (I18n[lang]?.[text]) {
+//     result = I18n[lang][text];
+//     if (argv.length > 0) {
+//       argv.forEach((s) => {
+//         result = result.replace(/%s/, s);
+//       });
+//     }
+//   }
+//   return result;
+// }
 const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
 function getStatus(secret) {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingHelperStatus')}</li>`);
@@ -194,6 +202,53 @@ function stopAWAManager(secret) {
   });
 }
 
+function startArchievement(secret) {
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingArchievement')}</li>`);
+  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('startingArchievement')}`);
+  axios.post('/startArchievement', { secret }).then(async (response) => {
+    if (response.data === 'success') {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStarted')}</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStarted')}`);
+      $('.awa-archievement-stop').removeClass('disabled');
+      $('.awa-archievement-start').addClass('disabled');
+    } else {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStartFailed')}(${response.data})!</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStartFailed')}(${response.data})!`);
+    }
+    console.log(response);
+  }).catch(async (error) => {
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStartFailed')}(${error.message})!</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStartFailed')}(${error.message})!`);
+    console.error(error);
+  });
+}
+function stopArchievement(secret) {
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingArchievement')}</li>`);
+  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingArchievement')}`);
+  axios.post('/stopArchievement', { secret }).then(async (response) => {
+    if (response.data === 'success') {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStopped')}</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStopped')}`);
+      $('.awa-archievement-stop').addClass('disabled');
+      $('.awa-archievement-start').removeClass('disabled');
+    } else {
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStopFailed')}(${response.data})!</li>`);
+      $('#log-area li:last')[0].scrollIntoView();
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStopFailed')}(${response.data})!`);
+    }
+    console.log(response);
+  }).catch(async (error) => {
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStopFailed')}(${error.message})!</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStopFailed')}(${error.message})!`);
+    console.error(error);
+  });
+}
+
 const sleep = (time) => new Promise((resolve) => {
   const timeout = setTimeout(() => {
     clearTimeout(timeout);
@@ -259,6 +314,31 @@ $('button.awa-helper-update').click(() => {
     return;
   }
   updateHelper(managerServerSecret);
+});
+
+$('button.awa-archievement-start').click(() => {
+  if (!managerServerSecret) {
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    return;
+  }
+  startArchievement(managerServerSecret);
+});
+$('button.awa-archievement-stop').click(() => {
+  if (!managerServerSecret) {
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    return;
+  }
+  stopArchievement(managerServerSecret);
+});
+$('button.awa-archievement-logs').click(() => {
+  if (!managerServerSecret) {
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    return;
+  }
+  window.open(`/awaArchievementLogs?secret=${managerServerSecret}`);
 });
 
 $('button.awa-manager-stop').click(() => {

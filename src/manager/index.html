@@ -21,68 +21,603 @@
     font.red{color: red;}
     h1,h2{text-align: center;}
     #quest-info *{border: 1px solid #000;}
-    body{margin-top: 20px;}
+    body{margin-top: 20px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;}
     footer{text-align: center;color: grey;}
     footer a{text-decoration: none;}
     #log-area{height: 300px;overflow-y: auto;}
     #log-area li:last-child {font-weight: bold;}
+
+    /* Button Area Styling */
+    .button-section {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px auto;
+      max-width: 1000px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 15px;
+      text-align: center;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 2px;
+      background: linear-gradient(90deg, #007bff, #6c757d);
+      border-radius: 1px;
+    }
+
+    .btn-group-custom {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-custom {
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      min-width: 140px;
+    }
+
+    .btn-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary.btn-custom {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+
+    .btn-success.btn-custom {
+      background: linear-gradient(135deg, #28a745, #1e7e34);
+    }
+
+    .btn-danger.btn-custom {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+    }
+
+    .btn-warning.btn-custom {
+      background: linear-gradient(135deg, #ffc107, #e0a800);
+      color: #212529;
+    }
+
+    /* Status Information Styling */
+    .status-info-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 10px;
+    }
+
+    .status-item {
+      background: rgba(248, 249, 250, 0.8);
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(135deg, #007bff, #28a745);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .status-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .status-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .status-label i {
+      color: #007bff;
+      width: 16px;
+      text-align: center;
+    }
+
+    .status-value {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #212529;
+      padding-left: 24px;
+    }
+
+    .status-link {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-link:hover {
+      color: #0056b3;
+      text-decoration: none;
+      transform: translateX(2px);
+    }
+
+    .status-link i {
+      font-size: 0.8rem;
+    }
+
+    /* Log Area Styling */
+    .log-container {
+      background: rgba(248, 249, 250, 0.8);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .log-header {
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .log-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .log-control-btn {
+      background: rgba(0, 123, 255, 0.1);
+      border: 1px solid rgba(0, 123, 255, 0.2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: #007bff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 32px;
+    }
+
+    .log-control-btn:hover {
+      background: rgba(0, 123, 255, 0.2);
+      border-color: rgba(0, 123, 255, 0.4);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+    }
+
+    .log-control-btn:active {
+      transform: translateY(0);
+    }
+
+    .log-content {
+      height: 350px;
+      overflow-y: auto;
+      padding: 15px 25px;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      background: rgba(255, 255, 255, 0.5);
+      color: #212529;
+    }
+
+    .log-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .log-content::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+    }
+
+    .log-content::-webkit-scrollbar-thumb {
+      background: rgba(0, 123, 255, 0.3);
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    .log-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 123, 255, 0.5);
+    }
+
+    .log-content li {
+      margin-bottom: 4px;
+      padding: 2px 0;
+      border-radius: 3px;
+      transition: background 0.2s ease;
+    }
+
+    .log-content li:hover {
+      background: rgba(0, 123, 255, 0.05);
+      padding-left: 8px;
+      margin-left: -8px;
+    }
+
+    .log-content li:last-child {
+      font-weight: 600;
+      color: #007bff;
+      background: rgba(0, 123, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid #007bff;
+    }
+
+    /* Modal Styling */
+    .modal-custom {
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .modal-header-custom {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      border-radius: 15px 15px 0 0;
+      padding: 20px 25px;
+      border-bottom: none;
+    }
+
+    .modal-title-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-icon {
+      font-size: 1.3rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .modal-close-custom {
+      border-radius: 8px;
+      padding: 8px;
+      transition: all 0.3s ease;
+      opacity: 0.8;
+    }
+
+    .modal-close-custom:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .modal-body-custom {
+      padding: 30px 25px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .input-container {
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    .input-label i {
+      color: #007bff;
+      width: 16px;
+      text-align: center;
+    }
+
+    .input-group-custom {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-group-text-custom {
+      background: rgba(0, 123, 255, 0.1);
+      border: 1px solid rgba(0, 123, 255, 0.2);
+      color: #007bff;
+      border-right: none;
+    }
+
+    .form-control-custom {
+      border: 1px solid rgba(0, 123, 255, 0.2);
+      border-left: none;
+      border-right: none;
+      padding: 12px 15px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control-custom:focus {
+      border-color: rgba(0, 123, 255, 0.4);
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle-password {
+      background: rgba(0, 123, 255, 0.1);
+      border: 1px solid rgba(0, 123, 255, 0.2);
+      color: #007bff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-left: none;
+    }
+
+    .toggle-password:hover {
+      background: rgba(0, 123, 255, 0.2);
+      color: #0056b3;
+    }
+
+    .modal-footer-custom {
+      background: rgba(248, 249, 250, 0.8);
+      border-radius: 0 0 15px 15px;
+      padding: 20px 25px;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn-cancel {
+      background: linear-gradient(135deg, #6c757d, #5a6268);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-btn-save {
+      background: linear-gradient(135deg, #28a745, #1e7e34);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .btn-group-custom {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-custom {
+        min-width: auto;
+        width: 100%;
+      }
+
+      .button-section {
+        margin: 10px;
+        padding: 20px;
+      }
+
+      .status-info-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .status-item {
+        padding: 15px;
+      }
+    }
   </style>
   <script>
     var lang = "__LANG__";
     var I18n = __I18N__;
+
+    // i18n function
+    function __(text, ...argv) {
+      let result = text;
+      if (I18n[lang]?.[text]) {
+        result = I18n[lang][text];
+        if (argv.length > 0) {
+          argv.forEach((s) => {
+            result = result.replace(/%s/, s);
+          });
+        }
+      }
+      return result;
+    }
+
+    // Initialize i18n on page load
+    function initI18n() {
+      // Replace text content for elements with data-i18n attribute
+      document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        element.textContent = __(key);
+      });
+
+      // Replace placeholder text for elements with data-i18n-placeholder attribute
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-i18n-placeholder');
+        element.placeholder = __(key);
+      });
+    }
+
+    // Initialize i18n when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initI18n);
   </script>
 </head>
 <body>
   <h1 class="fw-bold">AWA-Manager <a style="font-size:20px;margin-left: 5px;" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></h1>
-  <div class="d-flex gap-5 justify-content-center" style="margin: auto;">
-    <button type="button" class="btn btn-primary manager-server-config"  data-bs-toggle="modal" data-bs-target="#staticBackdrop">配置ManagerServer</button>
-    <button type="button" class="btn btn-primary awa-helper-config" data-bs-toggle="modal">配置AWA-Helper</button>
-    <button type="button" class="btn btn-primary refresh-status">刷新运行状态</button>
-    <button type="button" class="btn btn-primary cookie-sync" style="display: none;">同步Cookie</button>
-    <button type="button" class="btn btn-primary twitch-cookie-sync" style="display: none;">同步Twitch Cookie</button>
+  <!-- Configuration Section -->
+  <div class="button-section">
+    <div class="section-title">⚙️ <span data-i18n="systemConfig">系统配置</span></div>
+    <div class="btn-group-custom">
+      <button type="button" class="btn btn-primary btn-custom manager-server-config" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        <i class="fas fa-cog"></i> <span data-i18n="configManagerServer">配置ManagerServer</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom awa-helper-config" data-bs-toggle="modal">
+        <i class="fas fa-tools"></i> <span data-i18n="configAWAHelper">配置AWA-Helper</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom refresh-status">
+        <i class="fas fa-sync-alt"></i> <span data-i18n="refreshStatus">刷新运行状态</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom cookie-sync" style="display: none;">
+        <i class="fas fa-cookie-bite"></i> <span data-i18n="syncCookie">同步Cookie</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom twitch-cookie-sync" style="display: none;">
+        <i class="fab fa-twitch"></i> <span data-i18n="syncTwitchCookie">同步Twitch Cookie</span>
+      </button>
+    </div>
   </div>
 
-  <div class="d-flex gap-5 justify-content-center" style="margin: auto;margin-top: 10px;">
-    <button type="button" class="btn btn-success awa-helper-start">启动AWA-Helper</button>
-    <button type="button" class="btn btn-danger awa-helper-stop">终止AWA-Helper</button>
-    <button type="button" class="btn btn-danger awa-manager-stop">终止AWA-Manager</button>
-    <button type="button" class="btn btn-primary awa-helper-update">更新AWA-Helper</button>
-    <button type="button" class="btn btn-danger install-user-js">安装Cookie同步脚本</button>
+  <!-- AWA-Helper Control Section -->
+  <div class="button-section">
+    <div class="section-title">🚀 <span data-i18n="awaHelperControl">AWA-Helper 控制</span></div>
+    <div class="btn-group-custom">
+      <button type="button" class="btn btn-success btn-custom awa-helper-start">
+        <i class="fas fa-play"></i> <span data-i18n="startAWAHelper">启动AWA-Helper</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-custom awa-helper-stop">
+        <i class="fas fa-stop"></i> <span data-i18n="stopAWAHelper">终止AWA-Helper</span>
+      </button>
+      <button type="button" class="btn btn-warning btn-custom awa-helper-update">
+        <i class="fas fa-download"></i> <span data-i18n="updateAWAHelper">更新AWA-Helper</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-custom awa-manager-stop">
+        <i class="fas fa-power-off"></i> <span data-i18n="stopAWAManager">终止AWA-Manager</span>
+      </button>
+      <button type="button" class="btn btn-info btn-custom install-user-js">
+        <i class="fas fa-code"></i> <span data-i18n="installCookieScript">安装Cookie同步脚本</span>
+      </button>
+    </div>
   </div>
-  <div class="d-flex gap-5 justify-content-center" style="max-width: 800px;margin: auto;margin-top: 10px;"><div class="card">
-    <div class="card-body">
-      <div>上次运行时间：<span class="last-run-time" style="display: inline !important;">-</span></div>
-      <div>运行状态：<span class="run-status" style="display: inline !important;">-</span></div>
-      <div>运行日志：<span style="display: inline !important;">
-        <a class="run-logs" href="javascript:void(0);" target="_self">查看</a>
-      </span></div>
+
+  <!-- AWA-Achievement Control Section -->
+  <div class="button-section">
+    <div class="section-title">🏆 <span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
+    <div class="btn-group-custom">
+      <button type="button" class="btn btn-success btn-custom awa-archievement-start">
+        <i class="fas fa-trophy"></i> <span data-i18n="startAWAAchievement">启动AWA-Achievement</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom awa-archievement-logs">
+        <i class="fas fa-file-alt"></i> <span data-i18n="viewLogs">查看日志</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-custom awa-archievement-stop disabled">
+        <i class="fas fa-stop-circle"></i> <span data-i18n="stopAWAAchievement">终止AWA-Achievement</span>
+      </button>
+    </div>
+  </div>
+  <!-- Status Information Section -->
+  <div class="button-section">
+    <div class="section-title">📊 <span data-i18n="statusInfo">运行状态信息</span></div>
+    <div class="status-info-container">
+      <div class="status-item">
+        <div class="status-label">
+          <i class="fas fa-clock"></i>
+          <span data-i18n="lastRunTime">上次运行时间</span>
+        </div>
+        <div class="status-value last-run-time">-</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">
+          <i class="fas fa-heartbeat"></i>
+          <span data-i18n="runStatus">运行状态</span>
+        </div>
+        <div class="status-value run-status">-</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">
+          <i class="fas fa-file-alt"></i>
+          <span data-i18n="runLogs">运行日志</span>
+        </div>
+        <div class="status-value">
+          <a class="run-logs status-link" href="javascript:void(0);" target="_self">
+            <i class="fas fa-external-link-alt"></i> <span data-i18n="view">查看</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-  <div class="mb-4 bg-light rounded-3" style="max-width: 900px;margin: 10px auto;">
-    <div class="container-fluid">
-      <h2 id="log-title" class="display-6">Log</h2>
-      <div id="log-area"></div>
+  <!-- Log Display Section -->
+  <div class="button-section">
+    <div class="section-title">📋 <span data-i18n="realtimeLogs">实时日志</span></div>
+    <div class="log-container">
+      <div id="log-area" class="log-content"></div>
     </div>
   </div>
 
   <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">配置Manager Server Secret</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content modal-custom">
+        <div class="modal-header modal-header-custom">
+          <div class="modal-title-container">
+            <i class="fas fa-key modal-icon"></i>
+            <h1 class="modal-title fs-5" id="staticBackdropLabel"><span data-i18n="configManagerServerSecret">配置Manager Server Secret</span></h1>
+          </div>
+          <button type="button" class="btn-close modal-close-custom" data-bs-dismiss="modal" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-        <div class="modal-body">
-            <div class="input-group mb-3">
-              <span class="input-group-text" id="basic-addon1">Secret</span>
-              <input id="secret" type="password" class="form-control" aria-label="Secret" aria-describedby="basic-addon1">
+        <div class="modal-body modal-body-custom">
+          <div class="input-container">
+            <label class="input-label">
+              <i class="fas fa-shield-alt"></i>
+              <span data-i18n="secretKey">Secret Key</span>
+            </label>
+            <div class="input-group input-group-custom">
+              <span class="input-group-text input-group-text-custom">
+                <i class="fas fa-lock"></i>
+              </span>
+              <input id="secret" type="password" class="form-control form-control-custom"
+                     placeholder="" data-i18n-placeholder="enterSecretKey" aria-label="Secret" aria-describedby="basic-addon1">
             </div>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-          <button type="button" class="btn btn-primary save-secret">确定</button>
+        <div class="modal-footer modal-footer-custom">
+          <button type="button" class="btn btn-secondary btn-custom modal-btn-cancel" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> <span data-i18n="cancel">取消</span>
+          </button>
+          <button type="button" class="btn btn-primary btn-custom modal-btn-save save-secret">
+            <i class="fas fa-check"></i> <span data-i18n="confirm">确定</span>
+          </button>
         </div>
       </div>
     </div>

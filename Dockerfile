@@ -11,7 +11,8 @@ WORKDIR /usr/src/app/output
 # COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/output ./
 
-VOLUME ["/usr/src/app/output/config", "/usr/src/app/output/logs"]
+RUN mkdir -p /usr/src/app/output/data
+VOLUME ["/usr/src/app/output/config", "/usr/src/app/output/logs", "/usr/src/app/output/data"]
 
 EXPOSE 3456 2345
 CMD [ "node", "main.js" ]

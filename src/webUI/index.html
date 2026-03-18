@@ -16,12 +16,230 @@
     font.blue{color: blue;}
     font.yellow{color: darkorange;}
     font.red{color: red;}
-    h1,h2{text-align: center;}
-    #quest-info *{border: 1px solid #000;}
-    body{margin-top: 20px;}
-    footer{text-align: center;color: grey;}
-    footer a{text-decoration: none;}
-    #log-area{height: 500px;overflow-y: auto;}
+
+    body {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    footer {
+      text-align: center;
+      color: grey;
+      margin-top: 40px;
+      padding: 20px;
+    }
+
+    footer a {
+      text-decoration: none;
+      color: #007bff;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: #0056b3;
+    }
+
+    /* Quest Table Styling */
+    .quest-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px auto;
+      max-width: 900px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .quest-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .quest-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, #007bff, #28a745);
+      border-radius: 2px;
+    }
+
+    #quest-info {
+      border: none;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      background: white;
+    }
+
+    #quest-info thead {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+    }
+
+    #quest-info thead th {
+      border: none;
+      padding: 15px 12px;
+      font-weight: 600;
+      text-align: center;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+
+    #quest-info tbody tr {
+      transition: all 0.3s ease;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    #quest-info tbody tr:hover {
+      background: rgba(0, 123, 255, 0.05);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+    }
+
+    #quest-info tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    #quest-info tbody th {
+      background: rgba(0, 123, 255, 0.1);
+      border: none;
+      padding: 12px;
+      font-weight: 600;
+      color: #007bff;
+      text-align: center;
+      border-right: 3px solid #007bff;
+    }
+
+    #quest-info tbody td {
+      border: none;
+      padding: 12px;
+      text-align: center;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    /* Quest Status Indicators */
+    .status-unknown {
+      color: #6c757d;
+      font-style: italic;
+    }
+
+    .status-completed {
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      color: #ffc107;
+      font-weight: 600;
+    }
+
+    .status-failed {
+      color: #dc3545;
+      font-weight: 600;
+    }
+
+    /* Log Area Styling */
+    .log-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px auto;
+      max-width: 900px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .log-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 15px;
+      text-align: center;
+      position: relative;
+    }
+
+    .log-title::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, #007bff, #6c757d);
+      border-radius: 1px;
+    }
+
+    #log-area {
+      height: 400px;
+      overflow-y: auto;
+      background: rgba(248, 249, 250, 0.8);
+      border-radius: 8px;
+      padding: 15px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    #log-area::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #log-area::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+    }
+
+    #log-area::-webkit-scrollbar-thumb {
+      background: rgba(0, 123, 255, 0.3);
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    #log-area::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 123, 255, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .quest-container, .log-container {
+        margin: 10px;
+        padding: 20px;
+      }
+
+      #quest-info {
+        font-size: 0.9rem;
+      }
+
+      #quest-info thead th,
+      #quest-info tbody th,
+      #quest-info tbody td {
+        padding: 10px 8px;
+      }
+    }
   </style>
   <script>
     var lang = "__LANG__";
@@ -30,110 +248,113 @@
 </head>
 <body>
   <h1 class="fw-bold">AWA-Helper<a style="font-size:20px;" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></h1>
-  <div class="d-flex gap-5 justify-content-center" style="max-width: 800px;margin: auto;">
-    <table id="quest-info" class="table">
-      <thead>
-        <tr id="table-head">
-          <th scope="col">Quest</th>
-          <th scope="col"></th>
-          <th scope="col"></th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr id="daily-quest-0">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="daily-quest-1" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="daily-quest-2" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="daily-quest-3" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="daily-quest-4" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="daily-quest-5" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
+  <!-- Quest Information Section -->
+  <div class="quest-container">
+    <div class="quest-title">🎯 任务状态监控</div>
+    <div class="table-responsive">
+      <table id="quest-info" class="table table-hover">
+        <thead>
+          <tr id="table-head">
+            <th scope="col">📋 Quest</th>
+            <th scope="col">📊 Status</th>
+            <th scope="col">🎯 Progress</th>
+            <th scope="col">⏰ Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="daily-quest-0">
+            <th scope="row">Daily Quest 1</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="daily-quest-1" style="display:none;">
+            <th scope="row">Daily Quest 2</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="daily-quest-2" style="display:none;">
+            <th scope="row">Daily Quest 3</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="daily-quest-3" style="display:none;">
+            <th scope="row">Daily Quest 4</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="daily-quest-4" style="display:none;">
+            <th scope="row">Daily Quest 5</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="daily-quest-5" style="display:none;">
+            <th scope="row">Daily Quest 6</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
 
-        <tr id="time-on-site">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="watch-twitch">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="steam-quest-0">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="steam-quest-1" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="steam-quest-2" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="steam-quest-3" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="steam-quest-4" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-        <tr id="steam-event" style="display:none;">
-          <th scope="row"></th>
-          <td>Unknown</td>
-          <td>Unknown</td>
-          <td>Unknown</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="mb-4 bg-light rounded-3" style="max-width: 900px;margin: 10px auto;">
-    <div class="container-fluid">
-      <h2 id="log-title" class="display-6">Log</h2>
-      <div id="log-area"></div>
+          <tr id="time-on-site">
+            <th scope="row">⏱️ Time on Site</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="watch-twitch">
+            <th scope="row">📺 Watch Twitch</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="steam-quest-0">
+            <th scope="row">🎮 Steam Quest 1</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="steam-quest-1" style="display:none;">
+            <th scope="row">🎮 Steam Quest 2</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="steam-quest-2" style="display:none;">
+            <th scope="row">🎮 Steam Quest 3</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="steam-quest-3" style="display:none;">
+            <th scope="row">🎮 Steam Quest 4</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="steam-quest-4" style="display:none;">
+            <th scope="row">🎮 Steam Quest 5</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+          <tr id="steam-event" style="display:none;">
+            <th scope="row">🎉 Steam Event</th>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+            <td class="status-unknown">Unknown</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  </div>
+  <!-- Log Display Section -->
+  <div class="log-container">
+    <div class="log-title">📋 实时日志</div>
+    <div id="log-area"></div>
   </div>
   <footer><a href="https://github.com/HCLonely/AWA-Helper" target="_blank">AWA-Helper</a> By <a href="https://github.com/HCLonely" target="_blank">HCLonely</a></footer>
   <script src="static/js/index.js" inline></script>

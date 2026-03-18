@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-17 14:03:46
- * @LastEditTime : 2025-08-21 12:48:54
+ * @LastEditTime : 2026-01-22 09:22:34
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/manager/index.ts
  * @Description  : 管理器
@@ -28,6 +28,7 @@ import * as corn from 'node-cron';
 import * as parser from 'cron-parser';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { Artifacts } from './Artifacts';
+import { Archievement } from '../Archievement/Archievement';
 // @ts-ignore
 import indexHtml from './dist/index.html';
 // @ts-ignore
@@ -36,6 +37,8 @@ import configerHtml from './dist/configer.html';
 import templateYml from './static/js/template.yml';
 // @ts-ignore
 import templateYmlEN from './static/js/template_en.yml';
+// @ts-ignore
+import icon from './static/img/icon.ico';
 
 // @ts-ignore
 import * as zh from '../locales/zh.json';
@@ -77,6 +80,9 @@ interface config {
     }
   }
   awaHost: string,
+  awaCookie?: string,
+  twitchCookie?: string,
+  UA?: string,
   pusher?: pusher,
   proxy?: {
     enable: Array<string>
@@ -155,7 +161,7 @@ const startManager = async (startHelper: boolean) => {
   if (!config) {
     return;
   }
-  const { language, managerServer, logsExpire, webUI, awaHost, pusher, proxy }: config = config;
+  const { language, managerServer, logsExpire, webUI, awaHost, pusher, proxy, awaCookie, twitchCookie, UA }: config = config;
   i18n.setLocale(language);
   globalThis.awaHost = awaHost || 'www.alienwarearena.com';
   globalThis.pusher = pusher;
@@ -169,7 +175,7 @@ const startManager = async (startHelper: boolean) => {
       const logger = new Logger(`${time()}${__('clearingLogs')}`, false);
       const now = dayjs();
       logFiles.forEach((filename) => {
-        if (now.diff(filename.replace('.txt', '').replace('Manager-', ''), 'day') >= logsExpire) {
+        if (now.diff(filename.replace('.txt', '').replace('Manager-', '').replace('Archievement-', ''), 'day') >= logsExpire) {
           fs.unlinkSync(join('logs', filename));
         }
       });
@@ -209,6 +215,8 @@ const startManager = async (startHelper: boolean) => {
 
   const createServer = (options?: { key: Buffer, cert: Buffer }) => {
     let server;
+    let archievement: Archievement | null = null;
+    let archievementCorn: corn.ScheduledTask | null = null;
     const app = express();
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
@@ -219,9 +227,13 @@ const startManager = async (startHelper: boolean) => {
 
     expressWs(app, server);
     app.get('/', (_, res) => {
-      res.send(indexHtml.replace('__LANG__', language)
+      let htmlContext = indexHtml.replace('__LANG__', language)
         .replaceAll('__VERSION__', version)
-        .replace('__I18N__', JSON.stringify(langs))).end();
+        .replace('__I18N__', JSON.stringify(langs));
+      if (archievementCorn) {
+        htmlContext = htmlContext.replace('class="btn btn-success btn-custom awa-archievement-start"', 'class="btn btn-success btn-custom awa-archievement-start disabled"');
+      }
+      res.send(htmlContext).end();
     });
     app.get('/configer', (_, res) => {
       res.send(configerHtml).end();
@@ -397,7 +409,20 @@ const startManager = async (startHelper: boolean) => {
         new Logger(time() + __('watchLogs'));
         if (fs.existsSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`)) {
           res.send(`<html><head><title>${__('log')}</title><link rel="shortcut icon"
-    href="data:image/x-icon;base64,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" type="image/x-icon"></head><body style="width:100%;height:100%"><textarea style="width:100%;height:100%">${fs.readFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`).toString()}</textarea></body></html>`).status(200).end();
+    href="${icon}" type="image/x-icon"></head><body style="width:100%;height:100%"><textarea style="width:100%;height:100%">${fs.readFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`).toString()}</textarea></body></html>`).status(200).end();
+        } else {
+          res.send('').status(200).end();
+        }
+      } else {
+        res.status(401).end();
+      }
+    });
+    app.get('/awaArchievementLogs', async (req, res) => {
+      if (req.query?.secret === managerServer.secret) {
+        new Logger(time() + __('watchLogs'));
+        if (fs.existsSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`)) {
+          res.send(`<html><head><title>AWA Archievement ${__('log')}</title><link rel="shortcut icon"
+    href="${icon}" type="image/x-icon"></head><body style="width:100%;height:100%"><textarea style="width:100%;height:100%">${fs.readFileSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`).toString()}</textarea></body></html>`).status(200).end();
         } else {
           res.send('').status(200).end();
         }
@@ -408,6 +433,64 @@ const startManager = async (startHelper: boolean) => {
 
     app.get('/pid', async (_, res) => {
       res.send(`${process.pid}`).status(200).end();
+    });
+
+    app.post('/startArchievement', async (req, res) => {
+      if (req.body?.secret === managerServer.secret) {
+        if (!awaCookie) {
+          res.send('awaCookie is not set').status(200).end();
+          return;
+        }
+
+        archievementCorn = corn.schedule('0 14 * * *', async () => {
+          new Logger(time() + __('startArchievement'));
+          if (archievement) {
+            archievement.destroy();
+            archievement = null;
+          }
+
+          archievement = new Archievement({
+            awaCookie,
+            proxy,
+            awaHost,
+            twitchCookie,
+            userAgent: UA
+          });
+          await archievement.init();
+          archievement.run();
+
+          new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(parser.parseExpression('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+        });
+
+        if (archievement) {
+          archievement.destroy();
+          archievement = null;
+        }
+
+        archievement = new Archievement({
+          awaCookie,
+          proxy,
+          awaHost,
+          twitchCookie,
+          userAgent: UA
+        });
+        await archievement.init();
+        archievement.run();
+        res.send('success').status(200).end();
+      } else {
+        res.status(401).end();
+      }
+    });
+    app.get('/stopArchievement', async (req, res) => {
+      if (req.body?.secret === managerServer.secret) {
+        archievement?.destroy();
+        archievement = null;
+        archievementCorn?.stop();
+        archievementCorn = null;
+        res.send('success').status(200).end();
+      } else {
+        res.status(401).end();
+      }
     });
 
     if (webUI.enable) {

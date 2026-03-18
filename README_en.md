@@ -139,7 +139,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 - AWA-Manager (recommended)
 
 ```shell
-docker run -d --name awa-helper -p 2345:2345 -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -e helperMode=manager hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 2345:2345 -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data -e helperMode=manager hclonely/awa-helper:latest
 ```
 
 - or AWA-Helper
@@ -148,7 +148,19 @@ docker run -d --name awa-helper -p 2345:2345 -p 3456:3456 -v /data/awa-helper/co
 docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
 ```
 
-> ps: There are two mount points in the container: `/usr/src/app/dist/config` and `/usr/src/app/dist/logs` , corresponding to the local paths `/data/awa-helper/config` and `/data/awa-helper/logs` respectively. `/data/awa-helper/logs` (can be customized and modified), the former stores configuration files, and the latter stores log files.
+> ps: There are three mount points in the container:
+> `/usr/src/app/dist/config`: corresponding to the local paths `/data/awa-helper/config`
+> `/usr/src/app/dist/logs`: corresponding to the local paths `/data/awa-helper/logs`
+> `/usr/src/app/dist/data`: corresponding to the local paths `/data/awa-helper/data`
+
+## Archievement Helper
+
+> This function is based on AWA-Manager, AWA-Helper cannot be used alone!
+
+### Usage method
+
+1. Open `AWA-Manager` management background;
+2. Click the `启动AWA-Archievement` button.
 
 ## config (File configuration)
 

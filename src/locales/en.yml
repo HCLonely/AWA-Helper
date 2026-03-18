@@ -200,6 +200,7 @@ decompressing: Unzipping the installation package...
 updateSuccess: The update is successful and will take effect the next time you start
   it!
 nextRunTime: 'Next time to start AWA-Helper: %s'
+nextArchievementRestart: 'Next time to restart AWA-Achievement: %s'
 downloadingMainJs: Downloading main.js...
 autoUpdated: Automatically updated to %s
 updateLog: 'Update content:'
@@ -246,6 +247,12 @@ userJsInstalled: Cookie sync script has been installed (v%s)
 updating: Updating...
 updateFailed: Update failed
 updateSuccessManager: Update completed!
+startingArchievement: Starting AWA-Achievement...
+archievementStarted: AWA-Achievement started successfully!
+archievementStartFailed: AWA-Achievement start failed!
+stoppingArchievement: Stopping AWA-Achievement...
+archievementStopped: AWA-Achievement stopped successfully!
+archievementStopFailed: AWA-Achievement stop failed!
 gettingArtifactsInfo: Getting artifacts information...
 changingArtifact: Changing artifacts {id:%s,position:%s}...
 changeArtifactsSuccess: Artifacts replacement successful!
@@ -264,3 +271,61 @@ Reduces the cost of items in the Marketplace by s%%.: 'Reduces the cost of items
 s% additional ARP for each daily calendar claim.: '%s additional ARP for each daily calendar claim.'
 Changes your username color in the forums.: 'Changes your username color in the forums.'
 Adds an additional s% ARP to Steam quest completions.: 'Adds an additional %s ARP to Steam quest completions.'
+matching: Matching %s...
+doingAchievement: Doing achievement[%s]...
+doneAchievement: Achievement[%s] completed!
+doneMatch: '%s matched!'
+notEnoughBorders: Not enough borders! Stop!
+foundEnoughBorders: Found enough borders(%s)!
+doneBorder25: Changed 25 borders!
+currentHourNot13: Current time is not 13:00, stop!
+todayAlreadyChangedBorder: Today has already changed borders, stop!
+noAvailableBorder: No available borders, stop!
+borderChangeHistorySaved: Border change history saved!
+borderOnceADayForAWeekExist: There is an uncompleted achievement[%s], stop!
+currentDayNot10: Current date is not 10th, stop!
+borderOnceAMonthForAYearAlreadyDone: This month has already changed borders, stop!
+todayAlreadyChangedAvatar: Today has already changed avatars, stop!
+avatarOnceADayForAYearAlreadyDone: This month has already changed avatars, stop!
+selectedAvatar: 'Selected avatar[%s]'
+noAvailableAvatar: No available avatars, stop!
+avatarChangeHistorySaved: Avatar change history saved!
+avatarOnceADayForAYearExist: There is an uncompleted achievement[%s], stop!
+avatarOnceAMonthForAYearAlreadyDone: This month has already changed avatars, stop!
+foundHiveLive: Found %s Hive live streams!
+foundNexusLive: Found %s Nexus live streams!
+watchTwitchFailed: 'Twitch start failed: %s'
+getting: 'Getting %s...'
+getChannelFailed: 'Failed to get channel information: %s'
+allChannelsFailed: 'Failed to get all channel information!'
+unknownState: 'Unknown state: %s'
+watchTwitchAfter5min: 'Twitch start failed, retry in 5 minutes...'
+noChannelFound: 'No channel found'
+### Manager Web UI ###
+systemConfig: System Configuration
+configManagerServer: Configure ManagerServer
+configAWAHelper: Configure AWA-Helper
+refreshStatus: Refresh Status
+syncCookie: Sync Cookie
+syncTwitchCookie: Sync Twitch Cookie
+awaHelperControl: AWA-Helper Control
+startAWAHelper: Start AWA-Helper
+stopAWAHelper: Stop AWA-Helper
+updateAWAHelper: Update AWA-Helper
+stopAWAManager: Stop AWA-Manager
+installCookieScript: Install Cookie Sync Script
+awaAchievementControl: AWA-Achievement Control
+startAWAAchievement: Start AWA-Achievement
+viewLogs: View Logs
+stopAWAAchievement: Stop AWA-Achievement
+statusInfo: Status Information
+lastRunTime: Last Run Time
+runStatus: Run Status
+runLogs: Run Logs
+view: View
+realtimeLogs: Realtime Logs
+configManagerServerSecret: Configure Manager Server Secret
+secretKey: Secret Key
+enterSecretKey: Please enter Secret key
+cancel: Cancel
+confirm: Confirm

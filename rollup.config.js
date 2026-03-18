@@ -31,6 +31,6 @@ module.exports = {
     commonjs(),
     json(),
     string({
-      include: ['**/*.html', '**/*.yml', '**/CHANGELOG.txt']
+      include: ['**/*.html', '**/*.yml', '**/CHANGELOG.txt', '**/icon.ico']
     })]
 };
