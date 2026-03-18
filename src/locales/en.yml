@@ -12,7 +12,7 @@ missingAwaParams: 'The following parameters are missing:'
 missingTwitchParams: Missing %s parameters, skipping Twitch related quests!
 twitchTaskCompleted: Twitch Quest Completed!
 missingSteamParams: Missing %s parameters, skipping Steam related quests!
-pushTitle: 'AWA-Helper Reminder:'
+pushTitle: 'AWA-Helper Reminder'
 processWasKilled: Task process terminated
 processWasInterrupted: The task process was manually terminated
 processError: The task process exited abnormally

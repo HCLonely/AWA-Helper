@@ -20,6 +20,9 @@ declare global {
     key: {
       [name: string]: any
     }
+    options?: {
+      [name: string]: any
+    }
   }
   interface managerServer {
     enable: boolean
@@ -150,6 +153,9 @@ declare global {
     name: string
       config: {
         key: {
+          [name: string]: any
+        }
+        options?: {
           [name: string]: any
         }
         proxy?: proxy

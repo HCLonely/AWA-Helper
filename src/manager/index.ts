@@ -50,6 +50,9 @@ interface pusher {
   key: {
     [name: string]: any
   }
+  options?: {
+    [name: string]: any
+  }
 }
 interface config {
   language: string

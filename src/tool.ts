@@ -298,7 +298,7 @@ const checkUpdate = async (version: string, managerServer: managerServer | undef
       }
 
       if (process.argv.includes('--no-update')) {
-        await push(`${__('pushTitle')}\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\n${CHANGELOG}`);
+        await push(`${__('pushTitle')}:\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\n${CHANGELOG}`);
       }
 
       ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('noUpdate')));
@@ -578,11 +578,14 @@ const push = async (message: string) => {
       key: (pusher as pusher).key
     }
   };
+  if ((pusher as pusher).options) {
+    pushOptions.config.options = (pusher as pusher).options;
+  }
   if (globalThis.pusherProxy) {
     pushOptions.config.proxy = globalThis.pusherProxy;
   }
   const result = await new PushApi([pushOptions])
-    .send({ message });
+    .send({ message, title: __('pushTitle'), type: 'text' });
   if ((result[0].result?.status || 0) >= 200 && result[0].result.status < 300) {
     logger.log(chalk.green(__('pushSuccess')));
     return;
