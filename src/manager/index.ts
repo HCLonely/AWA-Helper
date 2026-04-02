@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-17 14:03:46
- * @LastEditTime : 2026-01-22 09:22:34
+ * @LastEditTime : 2026-03-18 20:56:10
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/manager/index.ts
  * @Description  : 管理器
@@ -228,13 +228,48 @@ const startManager = async (startHelper: boolean) => {
       server = https.createServer(options, app);
     }
 
+    if (awaCookie && fs.existsSync('data/Archievement')) {
+      archievementCorn = corn.schedule('0 14 * * *', async () => {
+        new Logger(time() + __('startArchievement'));
+        if (archievement) {
+          archievement.destroy();
+          archievement = null;
+        }
+
+        archievement = new Archievement({
+          awaCookie,
+          proxy,
+          awaHost,
+          twitchCookie,
+          userAgent: UA
+        });
+        await archievement.init();
+        archievement.run();
+
+        new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(parser.parseExpression('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+      });
+
+      archievement = new Archievement({
+        awaCookie,
+        proxy,
+        awaHost,
+        twitchCookie,
+        userAgent: UA
+      });
+      archievement.init().then(() => {
+        archievement?.run();
+      });
+    }
+
     expressWs(app, server);
     app.get('/', (_, res) => {
       let htmlContext = indexHtml.replace('__LANG__', language)
         .replaceAll('__VERSION__', version)
         .replace('__I18N__', JSON.stringify(langs));
       if (archievementCorn) {
-        htmlContext = htmlContext.replace('class="btn btn-success btn-custom awa-archievement-start"', 'class="btn btn-success btn-custom awa-archievement-start disabled"');
+        htmlContext = htmlContext
+          .replace('class="btn btn-success btn-custom awa-archievement-start"', 'class="btn btn-success btn-custom awa-archievement-start disabled"')
+          .replace('class="btn btn-danger btn-custom awa-archievement-stop disabled"', 'class="btn btn-danger btn-custom awa-archievement-stop"');
       }
       res.send(htmlContext).end();
     });
@@ -437,13 +472,16 @@ const startManager = async (startHelper: boolean) => {
     app.get('/pid', async (_, res) => {
       res.send(`${process.pid}`).status(200).end();
     });
-
     app.post('/startArchievement', async (req, res) => {
       if (req.body?.secret === managerServer.secret) {
         if (!awaCookie) {
           res.send('awaCookie is not set').status(200).end();
           return;
         }
+        if (!fs.existsSync('data')) {
+          fs.mkdirSync('data');
+        }
+        fs.writeFileSync('data/Archievement', '');
 
         archievementCorn = corn.schedule('0 14 * * *', async () => {
           new Logger(time() + __('startArchievement'));
@@ -486,6 +524,9 @@ const startManager = async (startHelper: boolean) => {
     });
     app.get('/stopArchievement', async (req, res) => {
       if (req.body?.secret === managerServer.secret) {
+        if (fs.existsSync('data/Archievement')) {
+          fs.rmSync('data/Archievement');
+        }
         archievement?.destroy();
         archievement = null;
         archievementCorn?.stop();

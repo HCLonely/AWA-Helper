@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2026-01-05 10:15:36
- * @LastEditTime : 2026-03-18 11:09:12
+ * @LastEditTime : 2026-04-02 20:53:11
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/Archievement/Archievement.ts
  * @Description  : 任务执行器
@@ -35,13 +35,20 @@ export class Archievement {
       'Use 25 different borders': () => this.border25(),
       'Change your border once a day for a week': () => this.borderOnceADayForAWeek(),
       'Change your border once a month for a year': () => this.borderOnceAMonthForAYear(),
-      'Change your avatar items every day for a week': () => this.avatarItemsEveryDayForAWeek(),
-      'Change your avatar once a month for 1 year': () => this.avatarOnceAMonthForAYear(),
-      'Watch 1000 Hours of Twitch.tv on Hive channels': () => this.watchTwitch('hive'),
-      'Watch 1000 Hours of Twitch.tv on Nexus channels': () => this.watchTwitch('nexus')
+      // 'Change your avatar items every day for a week': () => this.avatarItemsEveryDayForAWeek(),
+      // 'Change your avatar once a month for 1 year': () => this.avatarOnceAMonthForAYear(),
+      'Watch 1000 Hours of Twitch.tv on Hive channels': () => this.addWatchTwitch('hive'),
+      'Watch 1000 Hours of Twitch.tv on Nexus channels': () => this.addWatchTwitch('nexus')
     };
   incompletedAchievements: Array<string> = [];
   actionHistoryPath: string = 'data/actionHistory';
+  watchTwitchStatus: {
+    running: boolean,
+    type: Set<'hive' | 'nexus'>
+  } = {
+      running: false,
+      type: new Set()
+    };
 
   constructor({ awaCookie, proxy, awaHost, twitchCookie, userAgent }: { awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string }) {
     this.awa = new AWA({
@@ -77,6 +84,7 @@ export class Archievement {
         new Logger(`${time()}${__('doneAchievement', chalk.yellow(availableAchievement))}`);
       }
     }
+    this.watchTwitch();
     new Logger(`${time()}${__('doneMatch', chalk.yellow('Achievements'))}`);
   }
 
@@ -340,11 +348,20 @@ export class Archievement {
     new Logger(`${time()}${__('avatarChangeHistorySaved')}`);
   }
 
-  async watchTwitch(type: 'hive' | 'nexus'): Promise<void> {
+  async addWatchTwitch(type: 'hive' | 'nexus'): Promise<void> {
+    try {
+      this.watchTwitchStatus.type.add(type);
+    } catch (error) {
+      new Logger(`${time()}${__('addWatchTwitchFailed', (error as Error).toString())}`);
+    }
+  }
+
+  async watchTwitch(): Promise<void> {
     try {
       if (!this.twitchCookie) {
         return;
       }
+
       this.twitch = new Twitch({ cookie: this.twitchCookie });
       // await twitch.start(type);
 
@@ -352,33 +369,34 @@ export class Archievement {
       if (!initStatus) {
         return;
       }
+      this.watchTwitchStatus.running = true;
 
       const { Hive, Nexus } = await this.awa.getAvailableStreams();
       new Logger(`${time()}${__('foundHiveLive', chalk.yellow(Hive.length))}`);
       new Logger(`${time()}${__('foundNexusLive', chalk.yellow(Nexus.length))}`);
 
-      if (type === 'hive') {
+      if (Hive.length > 0 && this.watchTwitchStatus.type.has('hive')) {
         const { channelId, jwt, extensionID } = await this.twitch.getChannelInfo(Hive);
         if (!channelId || !jwt) {
           this.twitch?.destroy();
           this.twitch = null;
-          return this.watchTwitch(type);
+          return this.watchTwitch();
         }
 
         await this.twitch.sendTrack({ channelId, jwt, extensionID }).catch(async () => {
           await sleep(5 * 60);
           this.twitch?.destroy();
           this.twitch = null;
-          return this.watchTwitch(type);
+          return this.watchTwitch();
         });
       }
 
-      if (type === 'nexus') {
+      if (Nexus.length > 0 && this.watchTwitchStatus.type.has('nexus')) {
         const { channelId, jwt, extensionID } = await this.twitch.getChannelInfo(Nexus);
         if (!channelId || !jwt) {
           this.twitch?.destroy();
           this.twitch = null;
-          return this.watchTwitch(type);
+          return this.watchTwitch();
         }
 
         await this.twitch.sendTrack({ channelId, jwt, extensionID }).catch(async () => {
@@ -386,7 +404,7 @@ export class Archievement {
           await sleep(5 * 60);
           this.twitch?.destroy();
           this.twitch = null;
-          return this.watchTwitch(type);
+          return this.watchTwitch();
         });
       }
     } catch (error) {
@@ -405,6 +423,10 @@ export class Archievement {
       this.twitch.destroy();
       this.twitch = null as any;
     }
+    this.watchTwitchStatus = {
+      running: false,
+      type: new Set()
+    };
 
     // Clear arrays
     if (this.availableAchievements) {

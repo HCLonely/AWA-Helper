@@ -230,7 +230,7 @@ class AWA {
           if (consecutiveLoginsText) {
             try {
               const consecutiveLogins = JSON.parse(consecutiveLoginsText);
-              const rewardArp = $(`#streak-days .calendar-rewards__day[data-day="${consecutiveLogins.count}"] .calendar-rewards__reward h1`).text().trim();
+              const rewardArp = $(`#streak-days .calendar-rewards__day[data-day="${consecutiveLogins.count}"] .calendar-rewards__reward span`).text().trim();
               if (rewardArp) {
                 this.signArp.daily = `${rewardArp} + ${rewardBonusArp || ''} ARP`;
                 new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp} + ${rewardBonusArp || ''}`))}`);
@@ -247,7 +247,7 @@ class AWA {
               const monthlyLogins = JSON.parse(monthlyLoginsText);
               if (monthlyLogins.count < 29) {
                 const week = Math.ceil(monthlyLogins.count / 7);
-                const rewardArp = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__reward h1`).text().trim();
+                const rewardArp = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__reward span`).text().trim();
                 const rewardItem = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${monthlyLogins.count}"] .calendar-rewards__reward img[data-bs-title]`).attr('data-bs-title')?.trim();
                 if (rewardArp) {
                   this.signArp.monthly = `${rewardArp} + ${rewardBonusArp || ''} ARP`;

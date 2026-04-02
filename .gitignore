@@ -31,6 +31,7 @@ node-v18.17.1-win-x64/
 test.js
 test.ts
 test.exe
+Todo.md
 temp/
 src/DailyQuestUS.ts
 src/SteamQuestSU.ts

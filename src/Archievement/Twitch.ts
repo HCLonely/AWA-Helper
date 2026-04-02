@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2026-01-08 16:59:59
- * @LastEditTime : 2026-01-21 14:47:03
+ * @LastEditTime : 2026-03-19 10:15:17
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/Archievement/Twitch.ts
  * @Description  : Twitch Track
@@ -275,21 +275,17 @@ class Twitch {
         return false;
       });
 
-    if (!status || !this.isTracking) {
-      if (!this.isTracking) {
-        new Logger(`${time()}${chalk.yellow('Twitch tracking stopped')}`);
-        return false;
-      }
-      throw new Error('Twitch Track Failed');
-    }
-
-    await sleep(60);
-
     // Check again if tracking should continue before recursing
     if (!this.isTracking) {
       new Logger(`${time()}${chalk.yellow('Twitch tracking stopped')}`);
       return false;
     }
+
+    if (!status) {
+      throw new Error('Twitch Track Failed');
+    }
+
+    await sleep(60);
 
     return this.sendTrack({ channelId, jwt, extensionID });
   }
