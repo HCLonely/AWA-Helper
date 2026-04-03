@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2026-01-05 10:15:36
- * @LastEditTime : 2026-04-02 20:53:11
+ * @LastEditTime : 2026-04-03 10:43:46
  * @LastEditors  : HCLonely
  * @FilePath     : /AWA-Helper/src/Archievement/Archievement.ts
  * @Description  : 任务执行器
@@ -23,8 +23,8 @@ export class Archievement {
     'Use 25 different borders',
     'Change your border once a day for a week',
     'Change your border once a month for a year',
-    'Change your avatar items every day for a week',
-    'Change your avatar once a month for 1 year',
+    // 'Change your avatar items every day for a week',
+    // 'Change your avatar once a month for 1 year',
     'Watch 1000 Hours of Twitch.tv on Hive channels',
     'Watch 1000 Hours of Twitch.tv on Nexus channels'
   ];
