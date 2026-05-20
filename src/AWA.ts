@@ -14,7 +14,7 @@ import * as FormData from 'form-data';
 import { Logger, sleep, random, time, netError, http as axios, formatProxy, Cookie } from './tool';
 
 import * as fs from 'fs';
-import { chunk } from 'lodash';
+// import { chunk } from 'lodash';
 import * as dayjs from 'dayjs';
 import { execSync } from 'child_process';
 import * as os from 'os';
@@ -27,8 +27,8 @@ class AWA {
   borderId!: string;
   avatar!: string;
   dailyQuestLink!: string;
-  clickQuestId?: string | undefined;
-  dailyQuestName!: Array<string>;
+  // clickQuestId?: string | undefined;
+  // dailyQuestName!: Array<string>;
   newCookie: string;
   proxy?: {
     server: string
@@ -53,8 +53,7 @@ class AWA {
   taskType: string = 'New';
   joinSteamCommunityEvent = false;
   steamCommunityEventPath?: string;
-  awaDailyQuestNumber1: boolean;
-  dailyQuestNumber = 0;
+  // dailyQuestNumber = 0;
   posts!: Array<string>;
   trackError = 0;
   trackTimes = 0;
@@ -65,11 +64,10 @@ class AWA {
     totalTime: string
   };
 
-  constructor({ awaCookie, proxy, joinSteamCommunityEvent, awaDailyQuestNumber1, getStarted }: {
+  constructor({ awaCookie, proxy, joinSteamCommunityEvent,  getStarted }: {
     awaCookie: string
     proxy?: proxy
     joinSteamCommunityEvent?: boolean
-    awaDailyQuestNumber1?: boolean
     getStarted?: boolean
   }) {
     this.newCookie = awaCookie;
@@ -90,7 +88,6 @@ class AWA {
       };
     }
     this.joinSteamCommunityEvent = !!joinSteamCommunityEvent;
-    this.awaDailyQuestNumber1 = awaDailyQuestNumber1 ?? true;
     this.getStarted = !!getStarted;
   }
 
@@ -363,42 +360,55 @@ class AWA {
 
         // 每日任务
         const cardBody = $('div.user-profile__card-body');
-        cardBody.eq(0).find('.card-table-row')
-          .each((i, e) => {
+        this.questInfo.dailyQuest = cardBody.eq(0).find('.card-table-row')
+          .map((i, e) => {
             if ($(e).find('.quest-item-progress').length === 1) {
               $(e).append('<span class="quest-item-progress">0 ARP</span>');
             }
-          });
-        const dailyQuests = chunk(
-          cardBody.eq(0).find('.card-table-row')
-            .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
-            .find('.quest-item-progress')
-            .map((i, e) => $(e).text().trim()
-              .toLowerCase()), 2);
-        let dailyQuest = dailyQuests;
-        if (this.awaDailyQuestNumber1) {
-          dailyQuest = [dailyQuests[0]];
-        }
-        if (dailyQuests.length === 0) {
-          dailyQuest = [['none', '0']];
-        }
-        this.dailyQuestName = cardBody.eq(0).find('.card-table-row')
-          .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
-          .find('.quest-title')
-          .toArray()
-          .map((e) => $(e).text().trim()) || ['None'];
-        this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({
-          status, arp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[0].trim() || '0',
-          extraArp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[1]?.trim() || '0'
-        }));
-        this.dailyQuestNumber = cardBody.eq(0).find('.card-table-row')
-          .filter((i, e) => $(e).find('a[href^="/quests"]').length === 0)
-          .find('.quest-item-progress')
-          .map((i, e) => $(e).text().trim()
-            .toLowerCase())
-          .filter((i, e) => e === 'incomplete').length;
+            const [status, arp] = $(e).find('.quest-item-progress')
+              .map((i, e) => $(e).text().trim()
+                .toLowerCase())
+              .toArray();
+            const [name] = $(e).find('.quest-title')
+              .toArray()
+              .map((e) => $(e).text().trim());
+            return {
+              status,
+              arp,
+              name,
+              id: $(e).find('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string))
+                .attr('data-quest-id')
+            };
+          })
+          .toArray();
+        // const dailyQuests = chunk(cardBody.eq(0).find('.card-table-row')
+        //   .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
+        //   .find('.quest-item-progress')
+        //   .map((i, e) => $(e).text().trim()
+        //     .toLowerCase()), 2);
+        // let dailyQuest = dailyQuests;
 
-        this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
+        // if (dailyQuests.length === 0) {
+        //   dailyQuest = [['none', '0']];
+        // }
+        // this.dailyQuestName = cardBody.eq(0).find('.card-table-row')
+        //   .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
+        //   .find('.quest-title')
+        //   .toArray()
+        //   .map((e) => $(e).text().trim()) || ['None'];
+        // this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({
+        //   status,
+        //   arp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[0].trim() || '0',
+        //   extraArp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[1]?.trim() || '0'
+        // }));
+        // this.dailyQuestNumber = cardBody.eq(0).find('.card-table-row')
+        //   .filter((i, e) => $(e).find('a[href^="/quests"]').length === 0)
+        //   .find('.quest-item-progress')
+        //   .map((i, e) => $(e).text().trim()
+        //     .toLowerCase())
+        //   .filter((i, e) => e === 'incomplete').length;
+
+        // this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
 
         // Steam 挂机任务
         this.questInfo.steamQuest = cardBody.eq(1).find('.card-table-row')
@@ -1370,14 +1380,14 @@ class AWA {
 
   formatQuestInfo() {
     const result = {
-      [`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`]: {
-        // eslint-disable-next-line no-nested-ternary
-        [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : __('undone'),
-        // [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
-        [__('obtainedARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[0] || '0',
-        [__('extraARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[1] || '0',
-        [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
-      },
+      // [`${__('dailyTask', '')}[${this.questInfo.dailyQuest[0].name}]`]: {
+      //   // eslint-disable-next-line no-nested-ternary
+      //   [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : __('undone'),
+      //   // [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
+      //   [__('obtainedARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[0] || '0',
+      //   [__('extraARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[1] || '0',
+      //   [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
+      // },
       [__('timeOnSite')]: {
         [__('status')]: this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp ? __('done') : __('undone'),
         [__('obtainedARP')]: this.questInfo.timeOnSite?.addedArp,
@@ -1402,12 +1412,12 @@ class AWA {
         };
       });
     }
-    if (!this.dailyQuestName[0]) {
-      delete result[`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`];
-    }
+    // if (!this.dailyQuestName[0]) {
+    //   delete result[`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`];
+    // }
     if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
-      for (let i = 1; i < this.questInfo.dailyQuest.length; i++) {
-        result[`${__('dailyTask', '')}[${this.dailyQuestName[i]}]`] = {
+      for (let i = 0; i < this.questInfo.dailyQuest.length; i++) {
+        result[`${__('dailyTask', '')}[${this.questInfo.dailyQuest[i].name}]`] = {
           // eslint-disable-next-line no-nested-ternary
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : __('undone'),
           [__('obtainedARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.[0] || '0',

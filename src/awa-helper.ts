@@ -219,7 +219,7 @@ const startHelper = async () => {
     // awaBoosterNotice,
     awaQuests,
     awaDailyQuestType,
-    awaDailyQuestNumber1,
+    // awaDailyQuestNumber1,
     twitchCookie,
     steamUse,
     asfProtocol,
@@ -325,7 +325,7 @@ const startHelper = async () => {
     awaCookie: awaCookie as string,
     proxy,
     joinSteamCommunityEvent,
-    awaDailyQuestNumber1,
+    // awaDailyQuestNumber1,
     getStarted: awaQuests.includes('getStarted')
   });
 

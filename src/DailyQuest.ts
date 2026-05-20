@@ -12,7 +12,7 @@ import { Logger, time } from './tool';
 
 class DailyQuest {
   async do(): Promise<any> {
-    if (!globalThis.quest.dailyQuestName[0]) {
+    if (!globalThis.quest.questInfo.dailyQuest?.[0]) {
       new Logger(time() + chalk.yellow(__('noDailyQuest')));
       return true;
     }
@@ -20,11 +20,13 @@ class DailyQuest {
     if (this.checkDailyQuestCompleted()) {
       return true;
     }
-    if (globalThis.quest.clickQuestId) {
-      await globalThis.quest.questAward(globalThis.quest.clickQuestId);
-      await globalThis.quest.updateDailyQuests();
-      if (this.checkDailyQuestCompleted()) {
-        return true;
+    for (const questInfo of globalThis.quest.questInfo.dailyQuest) {
+      if (questInfo.id) {
+        await globalThis.quest.questAward(questInfo.id);
+        await globalThis.quest.updateDailyQuests();
+        if (this.checkDailyQuestCompleted()) {
+          return true;
+        }
       }
     }
     if (globalThis.quest.dailyQuestLink) {
@@ -44,7 +46,7 @@ class DailyQuest {
   }
   private checkDailyQuestCompleted(): boolean {
     if ((globalThis.quest.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (globalThis.quest.questInfo.dailyQuest || []).length) {
-      if (globalThis.quest.dailyQuestNumber < 2) {
+      if ((globalThis.quest.questInfo.dailyQuest?.length || 0) < 2) {
         new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }
       return true;

@@ -78,6 +78,8 @@ declare global {
     password?: string
   }
   interface dailyQuest {
+    name: string
+    id: string | undefined
     status: string
     arp: string
   }

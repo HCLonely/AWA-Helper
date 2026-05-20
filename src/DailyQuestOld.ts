@@ -25,7 +25,7 @@ class DailyQuestOld {
   }
 
   async do(): Promise<any> {
-    if (!globalThis.quest.dailyQuestName[0]) {
+    if (!globalThis.quest.questInfo.dailyQuest?.[0]) {
       return new Logger(time() + chalk.yellow(__('noDailyQuest')));
     }
 
@@ -33,8 +33,8 @@ class DailyQuestOld {
       return;
     }
 
-    for (const dailyQuestName of globalThis.quest.dailyQuestName) {
-      const matchedQuest = this.matchQuest(dailyQuestName);
+    for (const { name } of globalThis.quest.questInfo.dailyQuest) {
+      const matchedQuest = this.matchQuest(name);
       if (matchedQuest.length > 0) {
         for (const quest of matchedQuest) {
           // @ts-ignore
@@ -88,7 +88,7 @@ class DailyQuestOld {
   }
   private checkDailyQuestCompleted(): boolean {
     if ((globalThis.quest.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (globalThis.quest.questInfo.dailyQuest || []).length) {
-      if (globalThis.quest.dailyQuestNumber < 2) {
+      if ((globalThis.quest.questInfo.dailyQuest?.length || 0) < 2) {
         new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }
       return true;
