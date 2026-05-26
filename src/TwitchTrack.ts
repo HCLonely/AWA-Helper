@@ -9,7 +9,7 @@
 /* global __, myAxiosConfig */
 import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Logger, sleep, time, netError, http as axios, formatProxy, Cookie } from './tool';
 import { EventEmitter } from 'events';
 const emitter = new EventEmitter();

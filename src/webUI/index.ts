@@ -7,12 +7,12 @@
  * @Description  :
  */
 /* eslint-disable no-unused-vars */
-/* global WebSocket, logs, __, language */
-import * as express from 'express';
-import * as expressWs from 'express-ws';
+/* global logs, __, language */
+import express from 'express';
+import expressWs from 'express-ws';
 import type WebSocket from 'ws';
 import { Logger, time } from '../tool';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as https from 'https';
 // @ts-ignore
 import indexHtml from './dist/index.html';

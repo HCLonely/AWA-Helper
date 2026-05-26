@@ -9,8 +9,9 @@
 
 /* global __, proxy, myAxiosConfig */
 import { RawAxiosRequestHeaders, AxiosResponse, AxiosError } from 'axios';
-import { load, Cheerio, Element } from 'cheerio';
-import * as chalk from 'chalk';
+import { load, Cheerio } from 'cheerio';
+import type { AnyNode } from 'domhandler';
+import chalk from 'chalk';
 import { Logger, time, netError, http as axios, formatProxy, Cookie } from './tool';
 import { Achievement, Border, AvailableStreams } from './types';
 
@@ -470,7 +471,7 @@ class AWA {
 
         // 1. 找到含有Watch Twitch的user-profile__profile-card元素
         const profileCards = $('.user-profile__profile-card');
-        let twitchCard: Cheerio<Element> | null = null;
+        let twitchCard: Cheerio<AnyNode> | null = null;
 
         profileCards.each((_, card) => {
           const header = $(card).find('.user-profile__card-header');
@@ -486,7 +487,7 @@ class AWA {
         }
 
         // 2. 从找到的元素中找到.user-profile__card-body元素
-        const cardBody = (twitchCard as Cheerio<Element>).find('.user-profile__card-body');
+        const cardBody = (twitchCard as Cheerio<AnyNode>).find('.user-profile__card-body');
         if (cardBody.length === 0) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Card body not found'));
           return { Hive: [], Nexus: [] };
@@ -503,7 +504,7 @@ class AWA {
         let currentCategory: 'Hive' | 'Nexus' | null = null;
 
         // 4-7. 处理每个row元素
-        rows.each((_: any, row: Element) => {
+        rows.each((_: any, row: AnyNode) => {
           const tableHeading = $(row).find('.card-table-heading');
 
           if (tableHeading.length > 0) {

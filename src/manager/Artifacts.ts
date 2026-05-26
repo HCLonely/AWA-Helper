@@ -10,7 +10,7 @@
 import { RawAxiosRequestHeaders } from 'axios';
 import * as fs from 'fs';
 import { load } from 'cheerio';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { time, netError, formatProxy, Cookie } from '../tool';
 import { Logger, http as axios, push } from './tool';
 import { parse } from 'yaml';
@@ -178,7 +178,7 @@ class Artifacts {
       new Logger(`${time()}${chalk.green(__('changeArtifactsSuccess'))}`);
       try {
         await push(`${__('artifactsStatus')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`);
-      } catch (e) {
+      } catch (_e) {
         new Logger(`${time()}${chalk.red(__('artifactsStatusPushFailed'))}`);
       }
       return true;
@@ -194,14 +194,14 @@ class Artifacts {
       new Logger(`${time()}${chalk.green(__('changeArtifactsSuccess'))}`);
       try {
         await push(`${__('artifactsStatus')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`);
-      } catch (e) {
+      } catch (_e) {
         new Logger(`${time()}${chalk.red(__('artifactsStatusPushFailed'))}`);
       }
       return true;
     }
     try {
       await push(`${__('artifactsStatusError')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`);
-    } catch (e) {
+    } catch (_e) {
       new Logger(`${time()}${chalk.red(__('artifactsStatusPushFailed'))}`);
     }
     new Logger(`${time()}${chalk.red(__('changeArtifactsFailed'))}`);

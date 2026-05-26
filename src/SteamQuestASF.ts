@@ -9,7 +9,7 @@
 /* global __, steamGameInfo, proxy, myAxiosConfig */
 import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Logger, netError, sleep, time, http as axios, formatProxy, Cookie } from './tool';
 
 class SteamQuestASF {

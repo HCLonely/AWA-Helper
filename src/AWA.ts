@@ -9,13 +9,13 @@
 /* global __, proxy, questInfo, awaInfo, myAxiosConfig */
 import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
-import * as chalk from 'chalk';
-import * as FormData from 'form-data';
+import chalk from 'chalk';
+import FormData from 'form-data';
 import { Logger, sleep, random, time, netError, http as axios, formatProxy, Cookie } from './tool';
 
 import * as fs from 'fs';
 // import { chunk } from 'lodash';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { execSync } from 'child_process';
 import * as os from 'os';
 

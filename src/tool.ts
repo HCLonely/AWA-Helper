@@ -8,8 +8,8 @@
  */
 /* eslint-disable no-nested-ternary */
 /* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
-import * as chalk from 'chalk';
-import * as dayjs from 'dayjs';
+import chalk from 'chalk';
+import dayjs from 'dayjs';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as crypto from 'crypto';
@@ -20,7 +20,7 @@ import { parse } from 'yaml';
 import { format, promisify } from 'util';
 import { PushApi } from 'all-pusher-api';
 import type { Interface } from 'readline';
-import * as decompress from 'decompress';
+import decompress from 'decompress';
 import * as stream from 'stream';
 import { spawn } from 'child_process';
 import * as path from 'path';

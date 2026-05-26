@@ -12,7 +12,7 @@ import { Achievement, ActionHistory, Border } from './types';
 import { AWA } from './AWA';
 import { sleep, Logger, time } from './tool';
 import { Twitch } from './Twitch';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as fs from 'fs';
 
 export class Archievement {

@@ -203,10 +203,10 @@
         - changeAvatar
         - viewNews
         - sharePost
-    awaDailyQuestNumber1:
-      name: 每日任务有多个时是否只做第一个
-      type: boolean
-      defaultValue: true
+    # awaDailyQuestNumber1:
+    #   name: 每日任务有多个时是否只做第一个
+    #   type: boolean
+    #   defaultValue: true
     joinSteamCommunityEvent:
       name: 自动加入Steam社区活动
       type: boolean

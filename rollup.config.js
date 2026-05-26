@@ -9,7 +9,7 @@
 const commonjs = require('@rollup/plugin-commonjs');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const json = require('@rollup/plugin-json');
-const { string } = require('rollup-plugin-string');
+const string = require('rollup-plugin-string-import').default;
 const terser = require('@rollup/plugin-terser');
 
 module.exports = {
@@ -19,11 +19,11 @@ module.exports = {
     format: 'cjs'
   },
   plugins: [
-    terser({
-      format: {
-        comments: false
-      }
-    }),
+    // terser({
+    //   format: {
+    //     comments: false
+    //   }
+    // }),
     nodeResolve({
       preferBuiltins: true,
       exportConditions: ['node']

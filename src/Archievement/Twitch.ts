@@ -10,7 +10,7 @@
 /* global __, myAxiosConfig, proxy */
 import { RawAxiosRequestHeaders } from 'axios';
 import { load } from 'cheerio';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Logger, sleep, time, netError, http as axios, formatProxy, Cookie } from './tool';
 
 class Twitch {
@@ -133,7 +133,7 @@ class Twitch {
           // addLog(`获取频道信息成功: ${streamerName} (ID: ${channelId})`, TaskStatus.SUCCESS);
           return { channelId, jwt, extensionID };
         }
-      } catch (error) {
+      } catch (_error) {
         new Logger(`${time()}${__('getChannelFailed', chalk.yellow(streamerName))}`);
         continue;
       }

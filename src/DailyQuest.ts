@@ -7,7 +7,7 @@
  * @Description  : 每日任务
  */
 /* global __ */
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Logger, time } from './tool';
 
 class DailyQuest {

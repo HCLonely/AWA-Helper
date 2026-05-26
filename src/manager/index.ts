@@ -7,25 +7,25 @@
  * @Description  : 管理器
  */
 /* global __ */
-import * as express from 'express';
+import express from 'express';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as qs from 'qs';
-import * as expressWs from 'express-ws';
-import * as WebSocket from 'ws';
+import expressWs from 'express-ws';
+import WebSocket from 'ws';
 import { Logger, time } from './tool';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as https from 'https';
 import { dirname, join, resolve } from 'path';
 import * as i18n from 'i18n';
 import * as yamlLint from 'yaml-lint';
 import { parse } from 'yaml';
 import { execSync, spawn } from 'child_process';
-import * as dayjs from 'dayjs';
-import * as minMax from 'dayjs/plugin/minMax';
+import dayjs from 'dayjs';
+import minMax from 'dayjs/plugin/minMax';
 import axios from 'axios';
 import * as corn from 'node-cron';
-import * as parser from 'cron-parser';
+import { CronExpressionParser } from 'cron-parser';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { Artifacts } from './Artifacts';
 import { Archievement } from '../Archievement/Archievement';
@@ -157,7 +157,6 @@ const startManager = async (startHelper: boolean) => {
       config = { ...defaultConfig, ...parse(configString) };
     })
     .catch((error) => {
-      // eslint-disable-next-line max-len
       new Logger(time() + chalk.red(__('configFileErrorAlter', error.mark?.line ? chalk.blue(error.mark.line + 1) : '???', chalk.yellow(__('configFileErrorLocation')))));
       new Logger(error.message);
     });
@@ -246,7 +245,7 @@ const startManager = async (startHelper: boolean) => {
         await archievement.init();
         archievement.run();
 
-        new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(parser.parseExpression('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+        new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(CronExpressionParser.parse('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
       });
 
       archievement = new Archievement({
@@ -346,7 +345,6 @@ const startManager = async (startHelper: boolean) => {
 
     app.post('/runStatus', async (req, res) => {
       if (req.body?.secret === managerServer.secret) {
-        // eslint-disable-next-line max-len
         const lastRunDate = dayjs.max(fs.readdirSync('logs').filter((e) => /^[\d]{4}-[\d]{2}-[\d]{2}.txt$/.test(e)).map((e) => dayjs(e.replace('.txt', ''))))?.format('YYYY-MM-DD');
 
         if (!lastRunDate) {
@@ -408,7 +406,7 @@ const startManager = async (startHelper: boolean) => {
               execSync(`kill ${pid}`);
             }
             res.send('success').status(200).end();
-          } catch (e) {
+          } catch (_e) {
             res.send('error').status(501).end();
           }
         } else {
@@ -500,7 +498,7 @@ const startManager = async (startHelper: boolean) => {
           await archievement.init();
           archievement.run();
 
-          new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(parser.parseExpression('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+          new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(CronExpressionParser.parse('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
         });
 
         if (archievement) {
@@ -603,10 +601,10 @@ const startManager = async (startHelper: boolean) => {
           const awaHelper = spawn('node', ['main.js', '--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
           awaHelper.unref();
         }
-        new Logger(time() + __('nextRunTime', chalk.blue(dayjs(parser.parseExpression(managerServer.corn as string).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+        new Logger(time() + __('nextRunTime', chalk.blue(dayjs(CronExpressionParser.parse(managerServer.corn as string).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
       });
       new Logger(`${time()}${chalk.green(__('cornEnabled'))}(${managerServer.corn})`);
-      new Logger(time() + __('nextRunTime', chalk.blue(dayjs(parser.parseExpression(managerServer.corn).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+      new Logger(time() + __('nextRunTime', chalk.blue(dayjs(CronExpressionParser.parse(managerServer.corn).next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
     } else {
       new Logger(`${time()}${chalk.red(__('cornError'))}(${managerServer.corn})`);
     }

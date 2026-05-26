@@ -204,10 +204,10 @@
       - changeAvatar
       - viewNews
       - sharePost
-    awaDailyQuestNumber1:
-      name: When there are multiple daily tasks, whether to only do the first one?
-      type: boolean
-      defaultValue: true
+    # awaDailyQuestNumber1:
+    #   name: When there are multiple daily tasks, whether to only do the first one?
+    #   type: boolean
+    #   defaultValue: true
     joinSteamCommunityEvent:
       name: Automatically join Steam community events
       type: boolean

@@ -18,11 +18,11 @@ import * as path from 'path';
 import { join, resolve } from 'path';
 import { parse } from 'yaml';
 import { sleep, Logger, time, checkUpdate, push, pushQuestInfoFormat } from './tool';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
 import { createServer } from './webUI/index';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 // @ts-ignore
 import CHANGELOG from './CHANGELOG.txt';
 import { execSync } from 'child_process';
@@ -61,7 +61,7 @@ const startHelper = async () => {
       new Logger(time() + chalk.yellow(__('processError')));
       new Logger(`Uncaught Exception: ${err.message}\n${err.stack}`);
       process.kill(process.pid, 'SIGTERM');
-      process.disconnect();
+      process.disconnect?.();
       return;
     }
     new Logger(time() + chalk.yellow(__('processError')));
@@ -191,7 +191,7 @@ const startHelper = async () => {
       'changeAvatar',
       'viewNews'
     ],
-    awaDailyQuestNumber1: true,
+    // awaDailyQuestNumber1: true,
     asfProtocol: 'http'
   };
   // 读取配置文件

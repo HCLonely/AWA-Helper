@@ -1,6 +1,6 @@
 /* global  __, pusher */
-import * as chalk from 'chalk';
-import * as dayjs from 'dayjs';
+import chalk from 'chalk';
+import dayjs from 'dayjs';
 import * as fs from 'fs';
 import { format } from 'util';
 import axios from 'axios';

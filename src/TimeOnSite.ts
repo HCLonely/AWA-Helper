@@ -7,7 +7,7 @@
  * @Description  : 在线时长
  */
 /* global __ */
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Logger, sleep, time } from './tool';
 
 class TimeOnSite {

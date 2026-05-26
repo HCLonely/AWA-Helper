@@ -6,10 +6,9 @@
  * @FilePath     : /AWA-Helper/src/Archievement/tool.ts
  * @Description  : 工具函数
  */
-/* eslint-disable no-nested-ternary */
 /* global __, proxy, cookies */
-import * as chalk from 'chalk';
-import * as dayjs from 'dayjs';
+import chalk from 'chalk';
+import dayjs from 'dayjs';
 import * as fs from 'fs-extra';
 import axios, { AxiosError } from 'axios';
 import * as tunnel from 'tunnel';
@@ -51,7 +50,6 @@ const sleep = (time: number): Promise<true> => new Promise((resolve) => {
 });
 
 const time = (): string => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
-// eslint-disable-next-line
 const netError = (error: AxiosError): string => {
   if (error.message.includes('ETIMEDOUT')) {
     return `: ${chalk.yellow(__('timeout'))}`;

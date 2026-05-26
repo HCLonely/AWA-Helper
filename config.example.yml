@@ -61,7 +61,7 @@ awaDailyQuestType: # 每日任务(旧版)类型，不需要注释掉即可，如
   - viewNews # 浏览新闻
   - sharePost # 分享帖子
   # - replyPost # 回复帖子，默认关闭
-awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个
+# awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个(已弃用)
 joinSteamCommunityEvent: true # 自动加入Steam社区活动
 
 #### Twitch 配置 ####

@@ -2,18 +2,19 @@
   "compileOnSave": false,
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "./src",
     "sourceMap": false,
     "strict": true,
     "declaration": false,
     "declarationMap": false,
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
     "module": "CommonJS",
-    "target": "es2021",
-    "baseUrl": "./",
+    "target": "es2022",
     "allowJs": true,
-    "downlevelIteration":true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     "src/**/*.ts"

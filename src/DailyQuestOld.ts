@@ -1,5 +1,5 @@
 /* global __ */
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Logger, sleep, random, time } from './tool';
 
 import * as dailyQuestDbJson from './dailyQuestDb.json';
