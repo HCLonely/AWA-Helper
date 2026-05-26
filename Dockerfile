@@ -1,4 +1,4 @@
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 # builder
 WORKDIR /usr/src/app
@@ -6,7 +6,7 @@ COPY . .
 RUN npm install
 RUN npm run build:docker
 
-FROM node:18-alpine
+FROM node:22-alpine
 WORKDIR /usr/src/app/output
 # COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/output ./
