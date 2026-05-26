@@ -6,31 +6,32 @@
  * @FilePath     : /AWA-Helper/rollup.config.js
  * @Description  : 打包配置
  */
-const commonjs = require('@rollup/plugin-commonjs');
-const { nodeResolve } = require('@rollup/plugin-node-resolve');
-const json = require('@rollup/plugin-json');
-const string = require('rollup-plugin-string-import').default;
-const terser = require('@rollup/plugin-terser');
 
-module.exports = {
+import commonjs from '@rollup/plugin-commonjs';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import json from '@rollup/plugin-json';
+import { importAsString } from 'rollup-plugin-string-import';
+import terser from '@rollup/plugin-terser';
+
+export default {
   input: 'dist/main.js',
   output: {
     dir: 'output',
     format: 'cjs'
   },
   plugins: [
-    // terser({
-    //   format: {
-    //     comments: false
-    //   }
-    // }),
+    terser({
+      format: {
+        comments: false
+      }
+    }),
     nodeResolve({
       preferBuiltins: true,
       exportConditions: ['node']
     }),
     commonjs(),
     json(),
-    string({
+    importAsString({
       include: ['**/*.html', '**/*.yml', '**/CHANGELOG.txt', '**/icon.ico']
     })]
 };
