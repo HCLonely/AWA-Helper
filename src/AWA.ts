@@ -232,7 +232,7 @@ class AWA {
                 this.signArp.daily = `${rewardArp} + ${rewardBonusArp || ''} ARP`;
                 new Logger(`${time()}${__('consecutiveLoginsAlert', chalk.yellow(`${consecutiveLogins.count} / 7`), chalk.green(`${rewardArp} + ${rewardBonusArp || ''}`))}`);
               }
-            } catch (e) {
+            } catch (_e) {
               // 处理错误
             }
           }
@@ -258,7 +258,7 @@ class AWA {
                 this.signArp.monthly = `${monthlyLogins.extra_arp} + ${rewardBonusArp || ''} ARP`;
                 new Logger(`${time()}${__('monthlyLoginsARPAlert', chalk.yellow(monthlyLogins.count), chalk.green(`${monthlyLogins.extra_arp} + ${rewardBonusArp || ''}`))}`);
               }
-            } catch (e) {
+            } catch (_e) {
               // 处理错误
             }
           }
@@ -970,7 +970,7 @@ class AWA {
         if (os.type() === 'Windows_NT') {
           try {
             execSync('attrib +h .awa-info.json');
-          } catch (e) {
+          } catch (_e) {
             //
           }
         }
@@ -1033,7 +1033,7 @@ class AWA {
         if (os.type() === 'Windows_NT') {
           try {
             execSync('attrib +h .awa-info.json');
-          } catch (e) {
+          } catch (_e) {
             //
           }
         }
@@ -1129,8 +1129,8 @@ class AWA {
           return true;
         }
 
-        const playedTime = `${$('div.progress-bar.bg-info').eq(-2).attr('aria-valuenow')}min` || '-';
-        const totalTime = `${$('div.progress-bar.bg-info').eq(-2).attr('aria-valuemax')}min` || '-';
+        const playedTime = `${$('div.progress-bar.bg-info').eq(-2).attr('aria-valuenow') || '-'}min`;
+        const totalTime = `${$('div.progress-bar.bg-info').eq(-2).attr('aria-valuemax') || '-'}min`;
         const gameName = $('h1').text();
         const gameId = $('a.btn-steam-community-event[href^="steam://run/"]').attr('href')?.match(/[\d]+/)?.[0] || '';
 
@@ -1404,7 +1404,6 @@ class AWA {
     if (this.questInfo.steamQuest && this.questInfo.steamQuest.length > 0) {
       this.questInfo.steamQuest.forEach((questInfo) => {
         result[`${__('steamQuest')}([${questInfo.name}])`] = {
-          // eslint-disable-next-line no-nested-ternary
           [__('status')]: questInfo.status === 'complete' ? __('done') : __('undone'),
           [__('obtainedARP')]: questInfo.status === 'complete' ? (questInfo.maxAvailableARP?.split('+')?.[0] || '0') : '0',
           [__('extraARP')]: questInfo.status === 'complete' ? (questInfo.maxAvailableARP?.split('+')?.[1] || '0') : '0',
@@ -1418,7 +1417,6 @@ class AWA {
     if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
       for (let i = 0; i < this.questInfo.dailyQuest.length; i++) {
         result[`${__('dailyTask', '')}[${this.questInfo.dailyQuest[i].name}]`] = {
-          // eslint-disable-next-line no-nested-ternary
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : __('undone'),
           [__('obtainedARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.[0] || '0',
           [__('extraARP')]: this.questInfo.dailyQuest?.[i]?.arp?.split('+')?.[1] || '0',
@@ -1429,7 +1427,6 @@ class AWA {
     if (this.questInfo.dailyQuestUS && this.questInfo.dailyQuestUS.length > 0) {
       for (const questInfo of this.questInfo.dailyQuestUS) {
         result[`${__('dailyTask', this.taskType)}[${questInfo.title}]`] = {
-          // eslint-disable-next-line no-nested-ternary
           [__('status')]: parseInt(questInfo.arp, 10) > 0 ? __('done') : __('undone'),
           [__('obtainedARP')]: questInfo.arp,
           [__('extraARP')]: questInfo.extraArp || '0',
@@ -1441,7 +1438,6 @@ class AWA {
     if (this.promotionalCalendarInfo && this.promotionalCalendarInfo.length > 0) {
       this.promotionalCalendarInfo.forEach((calendarInfo) => {
         result[`${__('promotionalCalendar')}[${calendarInfo.day}]`] = {
-          // eslint-disable-next-line no-nested-ternary
           [__('status')]: calendarInfo.finished ? __('done') : __('undone'),
           [__('obtainedARP')]: calendarInfo.name,
           [__('extraARP')]: '-',
@@ -1451,7 +1447,6 @@ class AWA {
     }
     if (this.steamCommunityEventInfo) {
       result[__('steamCommunityEvent')] = {
-        // eslint-disable-next-line no-nested-ternary
         [__('status')]: this.steamCommunityEventInfo.status,
         [__('obtainedARP')]: this.steamCommunityEventInfo.playedTime,
         [__('extraARP')]: '-',

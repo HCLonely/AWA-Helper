@@ -39,7 +39,7 @@ const startHelper = async () => {
     new Logger(time() + chalk.yellow(__('processWasKilled')));
     try {
       await push(`${__('pushTitle')}:\n${__('processWasKilled')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
-    } catch (e) {
+    } catch (_e) {
       await push(`${__('pushTitle')}:\n${__('processWasKilled')}${globalThis.newVersionNotice}`);
     }
     process.exit(0);
@@ -49,7 +49,7 @@ const startHelper = async () => {
     new Logger(time() + chalk.yellow(__('processWasInterrupted')));
     try {
       await push(`${__('pushTitle')}:\n${__('processWasInterrupted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
-    } catch (e) {
+    } catch (_e) {
       await push(`${__('pushTitle')}:\n${__('processWasInterrupted')}${globalThis.newVersionNotice}`);
     }
     process.exit(0);
@@ -67,7 +67,7 @@ const startHelper = async () => {
     new Logger(time() + chalk.yellow(__('processError')));
     try {
       await push(`${__('pushTitle')}:\n${__('processError')}\n\n${pushQuestInfoFormat()}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
-    } catch (e) {
+    } catch (_e) {
       await push(`${__('pushTitle')}:\n${__('processError')}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
     }
     new Logger(`Uncaught Exception: ${err.message}\n${err.stack}`);
@@ -90,7 +90,7 @@ const startHelper = async () => {
   if (fs.existsSync('.lock')) {
     try {
       fs.unlinkSync('.lock');
-    } catch (e) {
+    } catch (_e) {
       new Logger(chalk.red(__('running')));
       new Logger(chalk.blue(__('multipleAccountAlert')));
       new Logger(__('exitAlert'));
@@ -107,7 +107,7 @@ const startHelper = async () => {
       if (os.type() === 'Windows_NT') {
         try {
           execSync('attrib +h .lock');
-        } catch (e) {
+        } catch (_e) {
           //
         }
       }
@@ -158,7 +158,7 @@ const startHelper = async () => {
     if (os.type() === 'Windows_NT') {
       try {
         execSync('attrib -h .version');
-      } catch (e) {
+      } catch (_e) {
         //
       }
     }
@@ -166,7 +166,7 @@ const startHelper = async () => {
     if (os.type() === 'Windows_NT') {
       try {
         execSync('attrib +h .version');
-      } catch (e) {
+      } catch (_e) {
         //
       }
     }
@@ -342,7 +342,7 @@ const startHelper = async () => {
     const initError = errorMap[initResult as keyof typeof errorMap] || __('unknownError');
     try {
       await push(`${__('pushTitle')}:\n${__('processInitError')}\n\n${initError}, ${__('checkLog')}${globalThis.newVersionNotice}`);
-    } catch (e) {
+    } catch (_e) {
       await push(`${__('pushTitle')}:\n${__('processInitError')}${globalThis.newVersionNotice}`);
     }
     process.exit(0);
@@ -372,12 +372,12 @@ const startHelper = async () => {
   await sleep(10);
 
   // Twitch直播心跳
-  let twitch: TwitchTrack | null = null;
+  // let twitch: TwitchTrack | null = null;
   if (awaQuests.includes('watchTwitch')) {
     await awa.getTwitchTech();
     if (awa.questInfo.watchTwitch?.[0] !== '15' || parseFloat(awa.questInfo.watchTwitch?.[1] || '0') < awa.additionalTwitchARP) {
       if (twitchCookie) {
-        twitch = new TwitchTrack({ cookie: twitchCookie, proxy });
+        const twitch = new TwitchTrack({ cookie: twitchCookie, proxy });
         if (await twitch.init() === true) {
           quests.push(twitch.do());
           await sleep(10);
@@ -391,7 +391,7 @@ const startHelper = async () => {
   }
 
   // Steam任务
-  let steamQuest: SteamQuestASF | null = null;
+  // let steamQuest: SteamQuestASF | null = null;
   if (!steamUse || steamUse === 'ASF') {
     const missingAsfParams = Object.entries({
       asfProtocol,
@@ -403,7 +403,7 @@ const startHelper = async () => {
       if (missingAsfParams.length > 0) {
         new Logger(time() + chalk.yellow(__('missingSteamParams', chalk.blue(JSON.stringify(missingAsfParams)))));
       } else {
-        steamQuest = new SteamQuestASF({
+        const steamQuest = new SteamQuestASF({
           asfProtocol,
           asfHost: asfHost as string,
           asfPort: asfPort as number,

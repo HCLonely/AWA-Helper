@@ -1,6 +1,4 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-var, no-unused-vars */
-/* global WebSocketServer */
+/* eslint-disable no-underscore-dangle, no-unused-vars */
 import { AxiosRequestConfig } from 'axios';
 import type { I18n } from 'i18n';
 import type WebSocket from 'ws';

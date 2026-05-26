@@ -172,7 +172,6 @@ const sleep = (time: number): Promise<true> => new Promise((resolve) => {
 
 const random = (minNum: number, maxNum: number): number => Math.floor((Math.random() * (maxNum - minNum + 1)) + minNum);
 const time = (): string => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
-// eslint-disable-next-line
 const netError = (error: AxiosError): string => {
   if (error.message.includes('ETIMEDOUT')) {
     return `: ${chalk.yellow(__('timeout'))}`;
@@ -506,7 +505,7 @@ echo update success >> ${logPath}
   fs.writeFileSync('temp/update.sh', scriptContent);
   try {
     fs.chmodSync('temp/update.sh', 0o777);
-  } catch (e) {
+  } catch (_e) {
     // Handle error if needed
   }
   const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
@@ -550,7 +549,7 @@ echo update success >> ${logPath}
   fs.writeFileSync('temp/update.sh', scriptContent);
   try {
     fs.chmodSync('temp/update.sh', 0o777);
-  } catch (e) {
+  } catch (_e) {
     // Handle error if needed
   }
   const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
