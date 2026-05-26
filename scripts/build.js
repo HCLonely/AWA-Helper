@@ -3,7 +3,7 @@
   const path = require('path');
   // const zipdir = require('zip-dir');
   const { parse } = require('yaml');
-  const { marked } = require('marked');
+  const { marked } = await import('marked');
   const hljs = require('highlight.js');
 
   fs.writeFileSync('dist/awa-helper.js',
