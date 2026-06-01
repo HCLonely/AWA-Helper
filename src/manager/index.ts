@@ -545,10 +545,10 @@ const startManager = async (startHelper: boolean) => {
       app.ws('/ws', (ws: WebSocket) => {
         const targetWs = new WebSocket(targetUrl);
         ws.on('message', (data) => {
-          targetWs.send(data);
+          targetWs.send(typeof data === 'string' ? data : data.toString());
         });
         targetWs.on('message', (data) => {
-          ws.send(data);
+          ws.send(typeof data === 'string' ? data : data.toString());
         });
         ws.on('close', () => {
           targetWs.close();
