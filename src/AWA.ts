@@ -1414,7 +1414,7 @@ class AWA {
     // if (!this.dailyQuestName[0]) {
     //   delete result[`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`];
     // }
-    if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 1) {
+    if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 0) {
       for (let i = 0; i < this.questInfo.dailyQuest.length; i++) {
         result[`${__('dailyTask', '')}[${this.questInfo.dailyQuest[i].name}]`] = {
           [__('status')]: this.questInfo.dailyQuest?.[i]?.status === 'complete' ? __('done') : __('undone'),
