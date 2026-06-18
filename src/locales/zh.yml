@@ -287,6 +287,7 @@ doneBorder25: 完成更换25个边框操作！
 currentHourNot13: 当前时间未到13点，停止操作！
 todayAlreadyChangedBorder: 今天已经更换过边框，停止操作！
 noAvailableBorder: 没有可用的边框，停止操作！
+getUserAvatarInfoError: 获取用户头像信息失败，停止操作！
 borderChangeHistorySaved: 边框更换历史已保存！
 borderOnceADayForAWeekExist: 存在未完成的成就[%s]，停止操作!
 currentDayNot10: 当前日期未到10号，停止操作！

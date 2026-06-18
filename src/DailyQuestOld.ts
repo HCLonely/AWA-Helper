@@ -54,8 +54,8 @@ class DailyQuestOld {
       }
     }
 
-    if (this.awaDailyQuestType.includes('changeBorder') && !this.done.includes('changeBorder')) await globalThis.quest.changeBorder();
-    if (this.awaDailyQuestType.includes('changeAvatar') && !this.done.includes('changeAvatar')) await globalThis.quest.changeAvatar();
+    // if (this.awaDailyQuestType.includes('changeBorder') && !this.done.includes('changeBorder')) await globalThis.quest.changeBorder();
+    // if (this.awaDailyQuestType.includes('changeAvatar') && !this.done.includes('changeAvatar')) await globalThis.quest.changeAvatar();
     if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) await globalThis.quest.viewNews();
     if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePost')) await globalThis.quest.sharePosts();
 

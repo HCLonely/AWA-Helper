@@ -281,6 +281,7 @@ doneBorder25: Changed 25 borders!
 currentHourNot13: Current time is not 13:00, stop!
 todayAlreadyChangedBorder: Today has already changed borders, stop!
 noAvailableBorder: No available borders, stop!
+getUserAvatarInfoError: Getting user avatar info failed, stop!
 borderChangeHistorySaved: Border change history saved!
 borderOnceADayForAWeekExist: There is an uncompleted achievement[%s], stop!
 currentDayNot10: Current date is not 10th, stop!

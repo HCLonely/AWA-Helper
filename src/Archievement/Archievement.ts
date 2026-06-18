@@ -8,7 +8,7 @@
  */
 
 /* global __, proxy */
-import { Achievement, ActionHistory, Border } from './types';
+import { Achievement, ActionHistory, Id, userAvatarInfo } from './types';
 import { AWA } from './AWA';
 import { sleep, Logger, time } from './tool';
 import { Twitch } from './Twitch';
@@ -23,8 +23,8 @@ export class Archievement {
     'Use 25 different borders',
     'Change your border once a day for a week',
     'Change your border once a month for a year',
-    // 'Change your avatar items every day for a week',
-    // 'Change your avatar once a month for 1 year',
+    'Change your avatar items every day for a week',
+    'Change your avatar once a month for 1 year',
     'Watch 1000 Hours of Twitch.tv on Hive channels',
     'Watch 1000 Hours of Twitch.tv on Nexus channels'
   ];
@@ -33,14 +33,15 @@ export class Archievement {
     [key in typeof this.availableAchievements[number]]: () => Promise<void>; // eslint-disable-line
   } = {
       'Use 25 different borders': () => this.border25(),
-      'Change your border once a day for a week': () => this.borderOnceADayForAWeek(),
-      'Change your border once a month for a year': () => this.borderOnceAMonthForAYear(),
-      // 'Change your avatar items every day for a week': () => this.avatarItemsEveryDayForAWeek(),
-      // 'Change your avatar once a month for 1 year': () => this.avatarOnceAMonthForAYear(),
+      'Change your border once a day for a week': () => this.onceADayForAWeek('border'),
+      'Change your border once a month for a year': () => this.onceAMonthForAYear('border'),
+      'Change your avatar items every day for a week': () => this.onceADayForAWeek('avatar'),
+      'Change your avatar once a month for 1 year': () => this.onceAMonthForAYear('avatar'),
       'Watch 1000 Hours of Twitch.tv on Hive channels': () => this.addWatchTwitch('hive'),
       'Watch 1000 Hours of Twitch.tv on Nexus channels': () => this.addWatchTwitch('nexus')
     };
   incompletedAchievements: Array<string> = [];
+  userAvatarInfo: userAvatarInfo | null = null;
   actionHistoryPath: string = 'data/actionHistory';
   watchTwitchStatus: {
     running: boolean,
@@ -75,6 +76,7 @@ export class Archievement {
     new Logger(`${time()}${__('matching', chalk.yellow('Achievements'))}`);
     // addLog('开始匹配可操作的成就', TaskStatus.RUNNING);
 
+    this.userAvatarInfo = null;
     for (const availableAchievement of this.availableAchievements) {
       const achievement = this.Achievements.find((achievement) => achievement.description === availableAchievement && !achievement.completed);
       if (achievement) {
@@ -89,11 +91,12 @@ export class Archievement {
   }
 
   async border25(): Promise<void> {
-    const borders = await this.awa.getBorders();
-    if (!borders) {
+    const { userAvatarInfo: UAI, ids: borders } = await this.awa.getAvatars('border') || {};
+    const userAvatarInfo = this.userAvatarInfo || UAI;
+    if (!borders || !userAvatarInfo) {
       return;
     }
-    const borderIds = borders.map((border:Border) => border.id);
+    const borderIds = borders.map((border:Id) => border.id);
     if (borderIds.length < 25) {
       new Logger(`${time()}${__('notEnoughBorders', chalk.yellow('25'))}`);
       return;
@@ -102,15 +105,16 @@ export class Archievement {
     // addLog('找到足够的边框(25个)', TaskStatus.SUCCESS);
 
     for (let i = 0; i < 25; i++) {
-      const borderId = borderIds[i];
-      await this.awa.changeBorder(parseInt(borderId, 10));
+      userAvatarInfo.border = borderIds[i];
+      await this.awa.changeAvatar('Border', userAvatarInfo);
+      this.userAvatarInfo = userAvatarInfo;
       // new Logger(`${time()}${__('changeBorder', chalk.yellow(borderId))}`, false);
       await sleep(5);
     }
     new Logger(`${time()}${chalk.green(__('doneBorder25'))}`);
   }
 
-  async borderOnceADayForAWeek(): Promise<void> {
+  async onceADayForAWeek(type: 'border' | 'avatar'): Promise<void> {
     const now = new Date();
     const currentHour = now.getHours();
 
@@ -121,160 +125,53 @@ export class Archievement {
 
     const [today] = now.toISOString().split('T');
 
-    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: {} } };
+    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: [] } };
     const actionHistory: ActionHistory = JSON.parse(fs.readFileSync(this.actionHistoryPath).toString()) || defaultHistory;
+    if (!Array.isArray(actionHistory.avatar.used)) {
+      actionHistory.avatar.used = [];
+    }
 
-    if (actionHistory.border?.date === today) {
-      new Logger(`${time()}${__('todayAlreadyChangedBorder')}`);
+    if (actionHistory[type]?.date === today) {
+      new Logger(`${time()}${__(type === 'border' ? 'todayAlreadyChangedBorder' : 'todayAlreadyChangedAvatar')}`);
       return;
     }
 
     // new Logger(`${time()}${__('gettingBorder')}`);
-    const borders = await this.awa.getBorders();
-    if (!borders) {
-      return;
-    }
-    const usedBorderIds = actionHistory.border.used || [];
-    const availableBorders = borders.filter((border: Border) => !usedBorderIds.includes(border.id));
-
-    if (availableBorders.length === 0) {
-      new Logger(`${time()}${__('noAvailableBorder')}`);
+    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars('border') || {};
+    const userAvatarInfo = this.userAvatarInfo || UAI;
+    if (!ids) {
       return;
     }
 
-    const [selectedBorder] = availableBorders;
-    // addLog(`准备切换到边框 ${selectedBorder.name} (ID: ${selectedBorder.id})`, TaskStatus.RUNNING);
+    const usedIds = actionHistory[type].used || [];
+    const availableIds = ids.filter((id: Id) => !usedIds.includes(id.id));
 
-    await this.awa.changeBorder(parseInt(selectedBorder.id, 10));
+    if (availableIds.length === 0 || !userAvatarInfo) {
+      new Logger(`${time()}${__(type === 'border' ? 'noAvailableBorder' : 'noAvailableAvatar')}`);
+      return;
+    }
+
+    const [selectedId] = availableIds;
+    userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    actionHistory.border.date = today;
-    actionHistory.border.used.push(selectedBorder.id);
+    await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo);
+    this.userAvatarInfo = userAvatarInfo;
+    // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
+
+    actionHistory[type].date = today;
+    actionHistory[type].used.push(selectedId.id);
     fs.writeFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
 
-    new Logger(`${time()}${__('borderChangeHistorySaved')}`);
+    new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
   }
 
-  async borderOnceAMonthForAYear(): Promise<void> {
-    if (this.incompletedAchievements.includes('Change your border once a day for a week')) {
+  async onceAMonthForAYear(type: 'border' | 'avatar'): Promise<void> {
+    if (type === 'border' && this.incompletedAchievements.includes('Change your border once a day for a week')) {
       new Logger(`${time()}${__('borderOnceADayForAWeekExist', chalk.blue('Change your border once a day for a week'))}`);
       return;
     }
-
-    const now = new Date();
-    const currentDay = now.getDate();
-
-    if (currentDay < 10) {
-      new Logger(`${time()}${__('currentDayNot10')}`);
-      return;
-    }
-
-    const currentMonth = now.toISOString().substring(0, 7);
-
-    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: {} } };
-    const actionHistory: ActionHistory = JSON.parse(fs.readFileSync(this.actionHistoryPath).toString()) || defaultHistory;
-
-    if (actionHistory.border.date === currentMonth) {
-      new Logger(`${time()}${__('borderOnceAMonthForAYearAlreadyDone')}`);
-      return;
-    }
-
-    // new Logger(`${time()}${__('gettingBorder')}`);
-    const borders = await this.awa.getBorders();
-    if (!borders) {
-      return;
-    }
-
-    const usedBorderIds = actionHistory.border.used || [];
-    const availableBorders = borders.filter((border: Border) => !usedBorderIds.includes(border.id));
-
-    if (availableBorders.length === 0) {
-      new Logger(`${time()}${__('noAvailableBorder')}`);
-      return;
-    }
-
-    const [selectedBorder] = availableBorders;
-    // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
-
-    await this.awa.changeBorder(parseInt(selectedBorder.id, 10));
-    // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
-
-    actionHistory.border.date = currentMonth;
-    actionHistory.border.used.push(selectedBorder.id);
-    fs.writeFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
-
-    new Logger(`${time()}${__('borderChangeHistorySaved')}`);
-  }
-
-  async avatarItemsEveryDayForAWeek(): Promise<void> {
-    const now = new Date();
-    const currentHour = now.getHours();
-
-    if (currentHour < 13) {
-      new Logger(`${time()}${__('currentHourNot13')}`);
-      return;
-    }
-
-    const [today] = now.toISOString().split('T');
-
-    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: {} } };
-    const actionHistory: ActionHistory = JSON.parse(fs.readFileSync(this.actionHistoryPath).toString()) || defaultHistory;
-
-    if (actionHistory.avatar?.date === today) {
-      new Logger(`${time()}${__('todayAlreadyChangedAvatar')}`);
-      return;
-    }
-
-    // new Logger(`${time()}${__('gettingAvatar')}`);
-    const avatars = await this.awa.getAvatar();
-    if (!avatars?.length) {
-      new Logger(`${time()}${__('noAvailableAvatar')}`);
-      return;
-    }
-
-    // const slotTypes = ['body', 'hat', 'top', 'item', 'legs', 'feet'];
-    // const newAvatar = { ...currentAvatar };
-
-    // for (const slotType of slotTypes) {
-    //   const usedIds = actionHistory.avatar.used[slotType] || [];
-    //   const currentEquippedId = currentAvatar[slotType as keyof typeof currentAvatar]?.id;
-
-    //   // 过滤出未使用且不是当前装备的物品
-    //   const slotAvatars = avatars.filter((a: Avatar) => a.slotType === slotType &&
-    //     !usedIds.includes(a.id) &&
-    //     a.id !== currentEquippedId
-    //   );
-
-    //   if (slotAvatars.length > 0) {
-    //     const [selectedAvatar] = slotAvatars;
-    //     newAvatar[slotType as keyof typeof newAvatar] = { id: selectedAvatar.id };
-
-    //     if (!actionHistory.avatar.used[slotType]) {
-    //       actionHistory.avatar.used[slotType] = [];
-    //     }
-    //     actionHistory.avatar.used[slotType].push(selectedAvatar.id);
-
-    //     new Logger(`${time()}${__('selectedAvatar', chalk.yellow(`${slotType}: ${selectedAvatar.name}`))}`);
-    //   }
-    // }
-
-    // if (JSON.stringify(newAvatar) === JSON.stringify(currentAvatar)) {
-    //   new Logger(`${time()}${__('noAvailableAvatar')}`);
-    //   return;
-    // }
-
-    // new Logger(`${time()}${__('changingAvatar')}`);
-    await this.awa.changeAvatar(avatars.at(-1) as string);
-    // addLog('成功更换 Avatar 配置', TaskStatus.SUCCESS);
-
-    actionHistory.avatar.date = today;
-    fs.writeFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
-
-    new Logger(`${time()}${__('avatarChangeHistorySaved')}`);
-  }
-
-  async avatarOnceAMonthForAYear(): Promise<void> {
-    if (this.incompletedAchievements.includes('Change your avatar items every day for a week')) {
+    if (type === 'avatar' && this.incompletedAchievements.includes('Change your avatar items every day for a week')) {
       new Logger(`${time()}${__('avatarOnceADayForAYearExist', chalk.blue('Change your avatar items every day for a week'))}`);
       return;
     }
@@ -289,63 +186,45 @@ export class Archievement {
 
     const currentMonth = now.toISOString().substring(0, 7);
 
-    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: {} } };
+    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: [] } };
     const actionHistory: ActionHistory = JSON.parse(fs.readFileSync(this.actionHistoryPath).toString()) || defaultHistory;
+    if (!Array.isArray(actionHistory.avatar.used)) {
+      actionHistory.avatar.used = [];
+    }
 
-    if (actionHistory.avatar.date === currentMonth) {
-      new Logger(`${time()}${__('avatarOnceAMonthForAYearAlreadyDone')}`);
+    if (actionHistory[type].date === currentMonth) {
+      new Logger(`${time()}${__(`${type}OnceAMonthForAYearAlreadyDone`)}`);
       return;
     }
 
-    // new Logger(`${time()}${__('gettingAvatar')}`);
-    const avatars = await this.awa.getAvatar();
-    if (!avatars?.length) {
-      new Logger(`${time()}${__('noAvailableAvatar')}`);
+    // new Logger(`${time()}${__('gettingBorder')}`);
+    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars('border') || {};
+    const userAvatarInfo = this.userAvatarInfo || UAI;
+    if (!ids) {
       return;
     }
 
-    // const slotTypes = ['body', 'hat', 'top', 'item', 'legs', 'feet'];
-    // const newAvatar = { ...currentAvatar };
-    // // let foundNewItem = true;
+    const usedIds = actionHistory[type].used || [];
+    const availableIds = ids.filter((id: Id) => !usedIds.includes(id.id));
 
-    // for (const slotType of slotTypes) {
-    //   const usedIds = actionHistory.avatar.used[slotType] || [];
-    //   const currentEquippedId = currentAvatar[slotType as keyof typeof currentAvatar]?.id;
+    if (availableIds.length === 0 || !userAvatarInfo) {
+      new Logger(`${time()}${__(type === 'border' ? 'noAvailableBorder' : 'noAvailableAvatar')}`);
+      return;
+    }
 
-    //   // 过滤出未使用且不是当前装备的物品
-    //   const slotAvatars = avatars.filter((a: Avatar) => a.slotType === slotType &&
-    //     !usedIds.includes(a.id) &&
-    //     a.id !== currentEquippedId
-    //   );
+    const [selectedId] = availableIds;
+    userAvatarInfo[type] = selectedId.id;
+    // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    //   if (slotAvatars.length > 0) {
-    //     const [selectedAvatar] = slotAvatars;
-    //     newAvatar[slotType as keyof typeof newAvatar] = { id: selectedAvatar.id };
+    await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo);
+    this.userAvatarInfo = userAvatarInfo;
+    // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
-    //     if (!actionHistory.avatar.used[slotType]) {
-    //       actionHistory.avatar.used[slotType] = [];
-    //     }
-    //     actionHistory.avatar.used[slotType].push(selectedAvatar.id);
-
-    //     new Logger(`${time()}${__('selectedAvatar', chalk.yellow(`[${slotType}]: ${selectedAvatar.name}`))}`);
-    //     // foundNewItem = true;
-    //     // break;
-    //   }
-    // }
-
-    // if (JSON.stringify(newAvatar) === JSON.stringify(currentAvatar)) {
-    //   new Logger(`${time()}${__('noAvailableAvatar')}`);
-    //   return;
-    // }
-
-    // new Logger(`${time()}${__('changingAvatar')}`);
-    await this.awa.changeAvatar(avatars.at(-1) as string);
-    // addLog('成功更换 Avatar 配置', TaskStatus.SUCCESS);
-
-    actionHistory.avatar.date = currentMonth;
+    actionHistory[type].date = currentMonth;
+    actionHistory[type].used.push(selectedId.id);
     fs.writeFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
 
-    new Logger(`${time()}${__('avatarChangeHistorySaved')}`);
+    new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
   }
 
   async addWatchTwitch(type: 'hive' | 'nexus'): Promise<void> {

@@ -14,26 +14,28 @@ interface Achievement {
     description?: string;
 }
 
-interface Border {
+interface Id {
     id: string;
     name: string;
 }
 
-interface Avatar {
-    id: string;
-    name: string;
-    slotType: string;
-    category: string;
-    equipped: boolean;
+// interface Avatar {
+//     id: string;
+//     name: string;
+//     slotType: string;
+//     category: string;
+//     equipped: boolean;
+// }
+
+interface userAvatarInfo {
+    avatar: string
+    border: string
+    background: string
 }
 
-interface AvatarConfig {
-    body: { id: string } | null;
-    hat: { id: string } | null;
-    top: { id: string } | null;
-    item: { id: string } | null;
-    legs: { id: string } | null;
-    feet: { id: string } | null;
+interface avatarIds {
+    userAvatarInfo: userAvatarInfo,
+    ids: Array<Id>
 }
 
 interface ActionHistory {
@@ -43,7 +45,7 @@ interface ActionHistory {
     };
     avatar: {
         date: string;
-        used: { [slotType: string]: string[] };
+        used: string[];
     };
 }
 
@@ -52,4 +54,4 @@ interface AvailableStreams {
     Nexus: string[];
 }
 
-export type { Achievement, Border, Avatar, AvatarConfig, ActionHistory, AvailableStreams };
+export type { Achievement, Id, userAvatarInfo, avatarIds, ActionHistory, AvailableStreams };

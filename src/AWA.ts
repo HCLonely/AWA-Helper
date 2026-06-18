@@ -14,7 +14,6 @@ import FormData from 'form-data';
 import { Logger, sleep, random, time, netError, http as axios, formatProxy, Cookie } from './tool';
 
 import * as fs from 'fs';
-// import { chunk } from 'lodash';
 import dayjs from 'dayjs';
 import { execSync } from 'child_process';
 import * as os from 'os';
@@ -27,8 +26,6 @@ class AWA {
   borderId!: string;
   avatar!: string;
   dailyQuestLink!: string;
-  // clickQuestId?: string | undefined;
-  // dailyQuestName!: Array<string>;
   newCookie: string;
   proxy?: {
     server: string
@@ -53,7 +50,6 @@ class AWA {
   taskType: string = 'New';
   joinSteamCommunityEvent = false;
   steamCommunityEventPath?: string;
-  // dailyQuestNumber = 0;
   posts!: Array<string>;
   trackError = 0;
   trackTimes = 0;
@@ -381,34 +377,6 @@ class AWA {
             };
           })
           .toArray();
-        // const dailyQuests = chunk(cardBody.eq(0).find('.card-table-row')
-        //   .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
-        //   .find('.quest-item-progress')
-        //   .map((i, e) => $(e).text().trim()
-        //     .toLowerCase()), 2);
-        // let dailyQuest = dailyQuests;
-
-        // if (dailyQuests.length === 0) {
-        //   dailyQuest = [['none', '0']];
-        // }
-        // this.dailyQuestName = cardBody.eq(0).find('.card-table-row')
-        //   .filter((i, e) => !$(e).text().includes('ARP 6.0') && $(e).find('a[href^="/quests"]').length === 0)
-        //   .find('.quest-title')
-        //   .toArray()
-        //   .map((e) => $(e).text().trim()) || ['None'];
-        // this.questInfo.dailyQuest = dailyQuest.map(([status, arp]: Array<string>) => ({
-        //   status,
-        //   arp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[0].trim() || '0',
-        //   extraArp: arp.match(/[\d\s+]+/)?.[0]?.split('+')[1]?.trim() || '0'
-        // }));
-        // this.dailyQuestNumber = cardBody.eq(0).find('.card-table-row')
-        //   .filter((i, e) => $(e).find('a[href^="/quests"]').length === 0)
-        //   .find('.quest-item-progress')
-        //   .map((i, e) => $(e).text().trim()
-        //     .toLowerCase())
-        //   .filter((i, e) => e === 'incomplete').length;
-
-        // this.clickQuestId = $('a.quest-title[data-award-on-click="true"][href]').filter((i, e) => !/^\/quests\//.test($(e).attr('href') as string)).attr('data-quest-id');
 
         // Steam 挂机任务
         this.questInfo.steamQuest = cardBody.eq(1).find('.card-table-row')
@@ -450,52 +418,16 @@ class AWA {
       });
   }
 
-  async changeBorder(): Promise<boolean> {
-    const logger = new Logger(`${time()}${__('changing', chalk.yellow('Border'))}`, false);
-    const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/border/select`,
-      method: 'POST',
-      headers: {
-        ...this.headers,
-        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${globalThis.awaHost}`,
-        referer: `https://${globalThis.awaHost}/account/personalization`
-      },
-      data: { id: this.borderId },
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-
-    return axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.data.success) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
-        new Logger(response.data?.message || response);
-        return false;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        new Logger(error);
-        return false;
-      });
-  }
-
   async changeAvatar(): Promise<boolean> {
-    await this.getAvatar();
     const logger = new Logger(`${time()}${__('changing', chalk.yellow('Avatar'))}`, false);
     const options: myAxiosConfig = {
       url: `https://${globalThis.awaHost}/ajax/user/avatar/save/${this.userId}`,
       method: 'POST',
       headers: {
         ...this.headers,
-        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'content-type': 'application/json',
         origin: `https://${globalThis.awaHost}`,
-        referer: `https://${globalThis.awaHost}/avatar/edit/hat`
+        referer: `https://${globalThis.awaHost}/account/personalization`
       },
       data: this.avatar,
       Logger: logger
@@ -728,38 +660,6 @@ class AWA {
         return false;
       });
   }
-  // async replyChecker(): Promise<boolean> {
-  //   const logger = new Logger(`${time()}${__('checkingReply')}`, false);
-  //   const getOptions: myAxiosConfig = {
-  //     url: `https://${globalThis.awaHost}/account/arp-log?max=20`,
-  //     method: 'GET',
-  //     headers: {
-  //       ...this.headers,
-  //       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-  //       referer: `https://${globalThis.awaHost}/`
-  //     },
-  //     Logger: logger
-  //   };
-  //   if (this.httpsAgent) getOptions.httpsAgent = this.httpsAgent;
-
-  //   return axios(getOptions)
-  //     .then((response) => {
-  //       globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-  //       if (response.status === 200) {
-  //         const $ = load(response.data);
-  //         this.postReplied = !!$('.table.account__table tr').toArray().find((e) => $(e).text().includes('Add Post') && $(e).text().includes(dayjs().format('YYYY-MM-DD')));
-  //         return this.postReplied;
-  //       }
-  //       ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
-  //       return false;
-  //     })
-  //     .catch((error) => {
-  //       ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
-  //       globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-  //       new Logger(error);
-  //       return false;
-  //     });
-  // }
 
   async sharePost(postId: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('sharingPost', chalk.yellow(postId))}`, false);
@@ -953,19 +853,37 @@ class AWA {
         }
 
         const [, , awaUserId] = response.data.match(/(var|let)[\s]+?user_id[\s]*?=[\s]*?([\d]+);/);
-        const [, , awaBorderId] = response.data.match(/(var|let)[\s]+?selectedBorder[\s]*?=[\s]*?([\d]+);/) || [];
         this.userId = awaUserId;
 
-        if (!awaBorderId) {
+        const userAvatarInfo = Object.fromEntries($('div.user-avatar').eq(0).find('img')
+          .toArray()
+          .map((img) => {
+            const Img = $(img);
+            const imgSrc = Img.attr('src')?.split('?')?.[0];
+            const datdaId = $(`img[src^="${imgSrc}"]`).parents('.account-personalization__personalization-item').attr('data-id') as string;
+            if (Img.hasClass('user-avatar__background')) {
+              return ['background', datdaId];
+            }
+            if (Img.hasClass('user-avatar__border')) {
+              return ['border', datdaId];
+            }
+            if (Img.hasClass('user-avatar__avatar')) {
+              return ['avatar', datdaId];
+            }
+            return null;
+          })
+          .filter((e) => e) as Array<Array<string>>);
+
+        if (!userAvatarInfo.border) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noBorder')}`));
           return 604;
         }
 
-        this.borderId = awaBorderId;
+        this.borderId = userAvatarInfo.border;
         fs.writeFileSync('.awa-info.json', JSON.stringify({
           awaUserId: this.userId,
           awaBorderId: this.borderId,
-          awaAvatar: this.avatar
+          awaAvatar: userAvatarInfo
         }));
         if (os.type() === 'Windows_NT') {
           try {
@@ -985,67 +903,6 @@ class AWA {
       });
   }
 
-  async getAvatar(): Promise<number> {
-    const logger = new Logger(`${time()}${__('gettingUserInfo', chalk.yellow('Avatar'))}`, false);
-    const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/avatar/edit`,
-      method: 'GET',
-      headers: {
-        ...this.headers,
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        referer: `https://${globalThis.awaHost}/account/personalization`
-      },
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-
-        if (response.status !== 200) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
-          return 0;
-        }
-
-        const $ = load(response.data);
-        if ($('a.nav-link-login').length > 0) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
-          return 602;
-        }
-
-        const awaAvatar = JSON.stringify({
-          body: null, hat: null, top: null, item: null, legs: null,
-          ...Object.fromEntries($('.drag-drop').toArray().map((e) => [$(e).attr('data-slot-type')?.split('-')[0], {
-            id: $(e).attr('data-id'),
-            img: $(e).attr('data-img'),
-            slotType: $(e).attr('data-slot-type'),
-            altimg: $(e).attr('data-altImg') || undefined
-          }]))
-        });
-
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-        this.avatar = awaAvatar;
-        fs.writeFileSync('.awa-info.json', JSON.stringify({
-          awaUserId: this.userId,
-          awaBorderId: this.borderId,
-          awaAvatar: this.avatar
-        }));
-        if (os.type() === 'Windows_NT') {
-          try {
-            execSync('attrib +h .awa-info.json');
-          } catch (_e) {
-            //
-          }
-        }
-        return 200;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        new Logger(error);
-        return 0;
-      });
-  }
   async getSteamCommunityEventPath(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('gettingSteamCommunityEventPath')}`, false);
     const options: myAxiosConfig = {
@@ -1320,14 +1177,7 @@ class AWA {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
-        // const { userActiveArtifacts } = JSON.parse(`{${response.data.match(/artifactsData.*?=.*?{(.+?)};/m)?.[1] || ''}}`) || {};
-        // if (userActiveArtifacts) {
-        //   Object.values(userActiveArtifacts).forEach((artifact: any) => {
-        //     this.additionalTwitchARP += parseFloat(artifact?.perkTextShort?.match(/Twitch quests by ([\d]+)/)?.[1] || '0');
-        //   });
-        //   ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-        //   return true;
-        // }
+
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
         new Logger(response.data?.message || response);
         return false;
@@ -1380,14 +1230,6 @@ class AWA {
 
   formatQuestInfo() {
     const result = {
-      // [`${__('dailyTask', '')}[${this.questInfo.dailyQuest[0].name}]`]: {
-      //   // eslint-disable-next-line no-nested-ternary
-      //   [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : __('undone'),
-      //   // [__('status')]: this.questInfo.dailyQuest?.[0]?.status === 'complete' ? __('done') : (this.questStatus.dailyQuest === 'skip' ? __('skipped') : __('undone')),
-      //   [__('obtainedARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[0] || '0',
-      //   [__('extraARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.[1] || '0',
-      //   [__('maxAvailableARP')]: this.questInfo.dailyQuest?.[0]?.arp?.split('+')?.map((num) => parseInt(num, 10))?.reduce((acr, cur) => acr + cur) || 0
-      // },
       [__('timeOnSite')]: {
         [__('status')]: this.questInfo.timeOnSite?.addedArp === this.questInfo.timeOnSite?.maxArp ? __('done') : __('undone'),
         [__('obtainedARP')]: this.questInfo.timeOnSite?.addedArp,
@@ -1411,9 +1253,6 @@ class AWA {
         };
       });
     }
-    // if (!this.dailyQuestName[0]) {
-    //   delete result[`${__('dailyTask', '')}[${this.dailyQuestName[0]}]`];
-    // }
     if (this.questInfo.dailyQuest && this.questInfo.dailyQuest.length > 0) {
       for (let i = 0; i < this.questInfo.dailyQuest.length; i++) {
         result[`${__('dailyTask', '')}[${this.questInfo.dailyQuest[i].name}]`] = {

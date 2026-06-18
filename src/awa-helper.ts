@@ -191,7 +191,6 @@ const startHelper = async () => {
       'changeAvatar',
       'viewNews'
     ],
-    // awaDailyQuestNumber1: true,
     asfProtocol: 'http'
   };
   // 读取配置文件
@@ -216,10 +215,8 @@ const startHelper = async () => {
     autoUpdate,
     awaCookie,
     awaHost,
-    // awaBoosterNotice,
     awaQuests,
     awaDailyQuestType,
-    // awaDailyQuestNumber1,
     twitchCookie,
     steamUse,
     asfProtocol,
@@ -230,7 +227,6 @@ const startHelper = async () => {
     proxy,
     webUI,
     pusher,
-    // awaSafeReply,
     joinSteamCommunityEvent,
     TLSRejectUnauthorized,
     managerServer

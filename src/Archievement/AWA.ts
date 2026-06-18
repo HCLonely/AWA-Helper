@@ -13,7 +13,7 @@ import { load, Cheerio } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import chalk from 'chalk';
 import { Logger, time, netError, http as axios, formatProxy, Cookie } from './tool';
-import { Achievement, Border, AvailableStreams } from './types';
+import { Achievement, Id, userAvatarInfo, avatarIds, AvailableStreams } from './types';
 
 class AWA {
   headers: RawAxiosRequestHeaders;
@@ -159,7 +159,7 @@ class AWA {
       });
   }
 
-  async getBorders(): Promise<Array<Border> | null> {
+  async getAvatars(type: 'avatar' | 'border'): Promise<avatarIds | null> {
     const logger = new Logger(`${time()}${__('getting', chalk.yellow('Borders'))}`, false);
     const options: myAxiosConfig = {
       url: `https://${this.awaHost}/account/personalization`,
@@ -187,41 +187,52 @@ class AWA {
         const [, , awaUserId] = response.data.match(/(var|let)[\s]+?user_id[\s]*?=[\s]*?([\d]+);/);
         this.userId = awaUserId;
 
-        const borderElements = $('.account-borders__list-wrapper a[data-border-name]');
+        const elements = $(`div.account-personalization__personalization-item.account-personalization__${type}`);
 
-        const borders: Border[] = [];
-        borderElements.each((_, element) => {
-          const borderId = $(element).attr('data-border-id');
-          const borderName = $(element).attr('data-border-name');
+        const ids: Id[] = [];
+        elements.each((_, element) => {
+          const id = $(element).attr('data-id');
+          const name = $(element).find('div.account-personalization__name').text();
 
-          if (borderId && borderName) {
-            borders.push({
-              id: borderId,
-              name: borderName
+          if (id && name) {
+            ids.push({
+              id,
+              name
             });
           }
         });
 
-        if (!borders.length) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noAvailableBorder')}`));
+        const userAvatarInfo: userAvatarInfo = Object.fromEntries($('div.user-avatar').eq(0).find('img')
+          .toArray()
+          .map((img) => {
+            const Img = $(img);
+            const imgSrc = Img.attr('src')?.split('?')?.[0];
+            const datdaId = $(`img[src^="${imgSrc}"]`).parents('.account-personalization__personalization-item').attr('data-id') as string;
+            if (Img.hasClass('user-avatar__background')) {
+              return ['background', datdaId];
+            }
+            if (Img.hasClass('user-avatar__border')) {
+              return ['border', datdaId];
+            }
+            if (Img.hasClass('user-avatar__avatar')) {
+              return ['avatar', datdaId];
+            }
+            return null;
+          })
+          .filter((e) => e) as Array<Array<string>>);
+
+        if (!ids.length) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__(type === 'border' ? 'noAvailableBorder' : 'noAvailableAvatar')}`));
+          return null;
+        }
+        if (!userAvatarInfo[type]) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('getUserAvatarInfoError')}`));
           return null;
         }
 
-        // this.borderId = awaBorderId;
-        // fs.writeFileSync('.awa-info.json', JSON.stringify({
-        //   awaUserId: this.userId,
-        //   awaBorderId: this.borderId,
-        //   awaAvatar: this.avatar
-        // }));
-        // if (os.type() === 'Windows_NT') {
-        //   try {
-        //     execSync('attrib +h .awa-info.json');
-        //   } catch (e) {
-        //     //
-        //   }
-        // }
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-        return borders;
+
+        return { userAvatarInfo, ids };
       })
       .catch((error: AxiosError) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
@@ -230,25 +241,25 @@ class AWA {
       });
   }
 
-  async changeBorder(borderId: number): Promise<boolean> {
-    const logger = new Logger(`${time()}${__('changing', chalk.yellow('Border'))}`, false);
+  async changeAvatar(type: 'Avatar' | 'Border', avatarInfo: userAvatarInfo): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('changing', chalk.yellow(type))}`, false);
     const options: myAxiosConfig = {
-      url: `https://${this.awaHost}/border/select`,
+      url: `https://${this.awaHost}/ajax/user/avatar/save/${this.userId}`,
       method: 'POST',
       headers: {
         ...this.headers,
-        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'content-type': 'application/json',
         origin: `https://${this.awaHost}`,
         referer: `https://${this.awaHost}/account/personalization`
       },
-      data: JSON.stringify({ id: borderId }),
-      Logger: logger
+      Logger: logger,
+      data: avatarInfo
     };
     if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
 
     return axios(options)
       .then((response: AxiosResponse) => {
-        if (response.data.success) {
+        if (response.data.success === true) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
           return true;
         }
@@ -262,187 +273,6 @@ class AWA {
         return false;
       });
   }
-
-  async getAvatar(): Promise<Array<string> | null> {
-    const logger = new Logger(`${time()}${__('getting', chalk.yellow('Avatar'))}`, false);
-    const options: myAxiosConfig = {
-      url: `https://${this.awaHost}/account/personalization`,
-      method: 'GET',
-      headers: {
-        ...this.headers,
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
-      },
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return axios(options)
-      .then((response: AxiosResponse) => {
-        if (response.status !== 200) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
-          new Logger(response.data || response.statusText);
-          return null;
-        }
-        const $ = load(response.data);
-        if ($('a.nav-link-login').length > 0) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
-          return null;
-        }
-
-        const avatarsId = [...response.data.matchAll(/"\/avatar\/change\/(\d+)"/g)].map((e) => e[1]).filter((e) => e);
-
-        if (!avatarsId.length) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noAvailableAvatar')}`));
-          return null;
-        }
-
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-        return avatarsId;
-      })
-      .catch((error: AxiosError) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-        new Logger(error);
-        return null;
-      });
-  }
-  async changeAvatar(avatarId: string): Promise<boolean> {
-    const logger = new Logger(`${time()}${__('changing', chalk.yellow('Avatar'))}`, false);
-    const options: myAxiosConfig = {
-      url: `https://${this.awaHost}/avatar/change/${avatarId}`,
-      method: 'GET',
-      headers: {
-        ...this.headers,
-        origin: `https://${this.awaHost}`,
-        referer: `https://${this.awaHost}/account/personalization`
-      },
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-
-    return axios(options)
-      .then((response: AxiosResponse) => {
-        if (!response.data.includes(`"/avatar/change/${avatarId}"`)) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
-        new Logger(response.data?.message || response);
-        return false;
-      })
-      .catch((error: AxiosError) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-        new Logger(error);
-        return false;
-      });
-  }
-
-  // async getAvatar(): Promise<{ avatars?: Avatar[], currentAvatar?: AvatarConfig }> {
-  //   const logger = new Logger(`${time()}${__('getting', chalk.yellow('Avatar'))}`, false);
-  //   const options: myAxiosConfig = {
-  //     url: `https://${this.awaHost}/avatar/edit`,
-  //     method: 'GET',
-  //     headers: {
-  //       ...this.headers,
-  //       accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-  //       referer: `https://${this.awaHost}/account/personalization`
-  //     },
-  //     Logger: logger
-  //   };
-  //   if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-  //   return axios(options)
-  //     .then((response: AxiosResponse) => {
-  //       if (response.status !== 200) {
-  //         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
-  //         return {};
-  //       }
-
-  //       const $ = load(response.data);
-  //       if ($('a.nav-link-login').length > 0) {
-  //         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
-  //         return {};
-  //       }
-
-  //       const inventoryContainers = $('.inventory-container[data-slot-type]');
-
-  //       const avatars: Avatar[] = [];
-  //       const currentAvatar: AvatarConfig = {
-  //         body: null,
-  //         hat: null,
-  //         top: null,
-  //         item: null,
-  //         legs: null,
-  //         feet: null
-  //       };
-
-  //       inventoryContainers.each((_, container) => {
-  //         const slotType = $(container).attr('data-slot-type');
-  //         const avatarItems = $(container).find('.avatar-item[data-id]');
-
-  //         avatarItems.each((_, item) => {
-  //           const avatarId = $(item).attr('data-id');
-  //           const avatarName = $(item).attr('title');
-  //           const avatarCategory = $(item).attr('data-category');
-  //           const avatarSlotType = $(item).attr('data-slot-type');
-  //           const isEquipped = $(item).hasClass('equipped');
-
-  //           if (avatarId && avatarName) {
-  //             avatars.push({
-  //               id: avatarId,
-  //               name: avatarName,
-  //               slotType: avatarSlotType || slotType || '',
-  //               category: avatarCategory || '',
-  //               equipped: isEquipped
-  //             });
-
-  //             if (isEquipped) {
-  //               const slot = avatarSlotType || slotType || '';
-  //               const validSlots: (keyof AvatarConfig)[] = ['body', 'hat', 'top', 'item', 'legs', 'feet'];
-  //               if (validSlots.includes(slot as keyof AvatarConfig)) {
-  //                 currentAvatar[slot as keyof AvatarConfig] = { id: avatarId };
-  //               }
-  //             }
-  //           }
-  //         });
-  //       });
-  //       return { avatars, currentAvatar };
-  //     })
-  //     .catch((error: AxiosError) => {
-  //       ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-  //       new Logger(error);
-  //       return {};
-  //     });
-  // }
-  // async changeAvatar(avatarInfo: AvatarConfig): Promise<boolean> {
-  //   const logger = new Logger(`${time()}${__('changing', chalk.yellow('Avatar'))}`, false);
-  //   const options: myAxiosConfig = {
-  //     url: `https://${this.awaHost}/ajax/user/avatar/save/${this.userId}`,
-  //     method: 'POST',
-  //     headers: {
-  //       ...this.headers,
-  //       'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-  //       origin: `https://${this.awaHost}`,
-  //       referer: `https://${this.awaHost}/avatar/edit/hat`
-  //     },
-  //     data: JSON.stringify(avatarInfo),
-  //     Logger: logger
-  //   };
-  //   if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-
-  //   return axios(options)
-  //     .then((response: AxiosResponse) => {
-  //       if (response.data.success === 'true') {
-  //         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-  //         return true;
-  //       }
-  //       ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
-  //       new Logger(response.data?.message || response);
-  //       return false;
-  //     })
-  //     .catch((error: AxiosError) => {
-  //       ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-  //       new Logger(error);
-  //       return false;
-  //     });
-  // }
 
   async getAvailableStreams(): Promise<AvailableStreams> {
     const logger = new Logger(`${time()}${__('getting', chalk.yellow('AvailableStreams'))}`, false);
