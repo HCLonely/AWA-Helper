@@ -69,7 +69,7 @@ export class Archievement {
       fs.mkdirSync('data');
     }
     if (!fs.existsSync(this.actionHistoryPath)) {
-      fs.writeFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: {} } }));
+      fs.writeFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
     }
   }
   async run(): Promise<void> {
@@ -137,7 +137,7 @@ export class Archievement {
     }
 
     // new Logger(`${time()}${__('gettingBorder')}`);
-    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars('border') || {};
+    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars(type) || {};
     const userAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids) {
       return;
@@ -198,7 +198,7 @@ export class Archievement {
     }
 
     // new Logger(`${time()}${__('gettingBorder')}`);
-    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars('border') || {};
+    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars(type) || {};
     const userAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids) {
       return;
