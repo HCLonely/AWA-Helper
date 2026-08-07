@@ -23,7 +23,9 @@
 const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
 async function openLog(path, secret) {
   const response = await axios.post(path, { secret }, { responseType: 'blob' });
-  const objectUrl = URL.createObjectURL(response.data);
+  const text = await response.data.text();
+  const utf8Blob = new Blob(['\uFEFF', text], { type: 'text/plain;charset=utf-8' });
+  const objectUrl = URL.createObjectURL(utf8Blob);
   window.open(objectUrl, '_blank', 'noopener,noreferrer');
   setTimeout(() => URL.revokeObjectURL(objectUrl), 60 * 1000);
 }

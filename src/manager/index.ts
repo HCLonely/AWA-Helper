@@ -203,10 +203,6 @@ const startManager = async (startHelper: boolean) => {
     new Logger(time() + chalk.red('managerServer.secret must contain at least 16 characters.'));
     return;
   }
-  if (managerServer.local === false && !(managerServer.ssl?.key && managerServer.ssl.cert)) {
-    new Logger(time() + chalk.red('Public Manager access requires HTTPS. Configure managerServer.ssl or enable local mode.'));
-    return;
-  }
   if (!Array.prototype.findLast) {
     Array.prototype.findLast = function (callback) {
       if (this === null) {
@@ -241,7 +237,7 @@ const startManager = async (startHelper: boolean) => {
     app.use((_, res, next) => {
       res.set({
         'Cache-Control': 'no-store',
-        'Content-Security-Policy': 'default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; connect-src \'self\' ws: wss:; object-src \'none\'; frame-ancestors \'none\'; base-uri \'self\'',
+        'Content-Security-Policy': 'default-src \'self\'; img-src \'self\' data:; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; connect-src \'self\' ws: wss:; object-src \'none\'; frame-ancestors \'none\'; base-uri \'self\'',
         'Referrer-Policy': 'no-referrer',
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY'
@@ -333,33 +329,36 @@ const startManager = async (startHelper: boolean) => {
       return res.status(200).end();
     });
 
-    app.post('/updateCookie', (req, res) => {
+    app.post(['/api/cookies/awa', '/updateCookie'], (req, res) => {
       if (isValidSecret(req.body?.secret)) {
-        if (req.body?.cookie) {
+        if (typeof req.body?.cookie === 'string' && req.body.cookie.trim()) {
           const fields: Record<string, string> = { awaCookie: req.body.cookie };
-          if (req.headers['user-agent']) {
-            fields.UA = req.headers['user-agent'];
+          const userAgent = typeof req.body?.userAgent === 'string'
+            ? req.body.userAgent
+            : req.headers['user-agent'];
+          if (userAgent && userAgent.length <= 1024) {
+            fields.UA = userAgent;
           }
           updateYamlFieldsSync(configPath, fields);
           new Logger(time() + __('cookieUpdated', chalk.yellow(req.ip)));
-          return res.status(200).end();
+          return res.status(200).json({ status: 'success' });
         }
-        return res.status(500).end();
+        return res.status(400).json({ error: 'cookie is required' });
       }
       return res.status(401).end();
     });
 
-    app.post('/updateTwitchCookie', (req, res) => {
+    app.post(['/api/cookies/twitch', '/updateTwitchCookie'], (req, res) => {
       if (isValidSecret(req.body?.secret)) {
-        if (req.body?.cookie) {
+        if (typeof req.body?.cookie === 'string' && req.body.cookie.trim()) {
           if (!req.body.cookie.includes('auth-token=') || !req.body.cookie.includes('unique_id=')) {
-            return res.status(502).end();
+            return res.status(422).json({ error: 'invalid Twitch cookie' });
           }
           updateYamlFieldsSync(configPath, { twitchCookie: req.body.cookie });
           new Logger(time() + __('twitchCookieUpdated', chalk.yellow(req.ip)));
-          return res.status(200).end();
+          return res.status(200).json({ status: 'success' });
         }
-        return res.status(500).end();
+        return res.status(400).json({ error: 'cookie is required' });
       }
       return res.status(401).end();
     });
@@ -453,9 +452,9 @@ const startManager = async (startHelper: boolean) => {
       if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('watchLogs'));
         if (fs.existsSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`)) {
-          return res.type('text/plain').status(200).send(fs.readFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`).toString());
+          return res.status(200).set('Content-Type', 'text/plain; charset=utf-8').send(fs.readFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, 'utf8'));
         }
-        return res.type('text/plain').status(200).send('');
+        return res.status(200).set('Content-Type', 'text/plain; charset=utf-8').send('');
       }
       return res.status(401).end();
     });
@@ -463,9 +462,9 @@ const startManager = async (startHelper: boolean) => {
       if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('watchLogs'));
         if (fs.existsSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`)) {
-          return res.type('text/plain').status(200).send(fs.readFileSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`).toString());
+          return res.status(200).set('Content-Type', 'text/plain; charset=utf-8').send(fs.readFileSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`, 'utf8'));
         }
-        return res.type('text/plain').status(200).send('');
+        return res.status(200).set('Content-Type', 'text/plain; charset=utf-8').send('');
       }
       return res.status(401).end();
     });

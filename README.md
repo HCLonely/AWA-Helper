@@ -439,7 +439,3 @@ flowchart TD
 - [rollup](https://github.com/rollup/rollup)
 - [TypeScript](https://github.com/Microsoft/TypeScript)
 - [UglifyJS](https://github.com/mishoo/UglifyJS)
-
-# Todo
-
-- [ ] webUI可以不设https

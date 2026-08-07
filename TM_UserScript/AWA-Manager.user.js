@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AWA-Manager
 // @namespace    AWA-Manager
-// @version      3.2.5
+// @version      3.2.6
 // @description  AWA Cookie更新
 // @author       HCLonely
 // @icon         https://github.com/HCLonely/AWA-Helper/raw/main/static/icon.ico
@@ -209,7 +209,9 @@
       if (!error) {
         const cookie = cookies.map((e) => `${e.name}=${e.value}`).filter((e) => e).join(';');
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在同步Cookie...`);
-        GM_Axios.post(`${url}updateCookie`, { data: { secret, cookie } }).then((response) => {
+        GM_Axios.post(new URL('/api/cookies/awa', url).href, {
+          data: { secret, cookie, userAgent: navigator.userAgent }
+        }).then((response) => {
           if (response.status === 200) { // { lastRunTime, runStatus }
             GM_setValue('time', Date.now());
             $('.cookie-server-status').text('Success');
@@ -244,7 +246,7 @@
       if (!error) {
         const cookie = cookies.map((e) => (['auth-token', 'unique_id'].includes(e.name) ? `${e.name}=${e.value}` : null)).filter((e) => e).join(';');
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在同步Twitch Cookie...`);
-        GM_Axios.post(`${url}updateTwitchCookie`, { data: { secret, cookie } }).then((response) => {
+        GM_Axios.post(new URL('/api/cookies/twitch', url).href, { data: { secret, cookie } }).then((response) => {
           if (response.status === 200) {
             $('#awa-manager-server-logs').text(`${time()}AWA-Manager: Twitch Cookie同步成功！`);
             $('#log-area').append(`<li>${time()}AWA-Manager: Twitch Cookie同步成功！</li>`);
