@@ -335,5 +335,6 @@ realtimeLogs: 实时日志
 configManagerServerSecret: 配置Manager Server Secret
 secretKey: Secret 密钥
 enterSecretKey: 请输入Secret密钥
+rememberSecret: 记住密钥
 cancel: 取消
 confirm: 确定

@@ -328,5 +328,6 @@ realtimeLogs: Realtime Logs
 configManagerServerSecret: Configure Manager Server Secret
 secretKey: Secret Key
 enterSecretKey: Please enter Secret key
+rememberSecret: Remember secret
 cancel: Cancel
 confirm: Confirm

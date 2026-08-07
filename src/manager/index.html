@@ -609,13 +609,19 @@
               <input id="secret" type="password" class="form-control form-control-custom"
                      placeholder="" data-i18n-placeholder="enterSecretKey" aria-label="Secret" aria-describedby="basic-addon1">
             </div>
+            <div class="form-check mt-3">
+              <input id="remember-secret" class="form-check-input" type="checkbox">
+              <label class="form-check-label" for="remember-secret" data-i18n="rememberSecret">
+                记住密钥
+              </label>
+            </div>
           </div>
         </div>
         <div class="modal-footer modal-footer-custom">
           <button type="button" class="btn btn-secondary btn-custom modal-btn-cancel" data-bs-dismiss="modal">
             <i class="fas fa-times"></i> <span data-i18n="cancel">取消</span>
           </button>
-          <button type="button" class="btn btn-primary btn-custom modal-btn-save save-secret">
+          <button type="button" class="btn btn-primary btn-custom modal-btn-save save-secret" data-bs-dismiss="modal">
             <i class="fas fa-check"></i> <span data-i18n="confirm">确定</span>
           </button>
         </div>

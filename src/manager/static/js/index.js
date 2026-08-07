@@ -6,7 +6,7 @@
  * @FilePath     : /AWA-Helper/src/manager/static/js/index.js
  * @Description  : 管理器
  */
-/* global window, sessionStorage, $, __, dayjs, axios */
+/* global window, localStorage, sessionStorage, $, __, dayjs, axios */
 // eslint-disable-next-line no-underscore-dangle
 // function __(text, ...argv) {
 //   let result = text;
@@ -287,7 +287,15 @@ async function statusChecker(secret, status, times = 1) {
   }
   return 'error';
 }
-let managerServerSecret = sessionStorage.getItem('managerServerSecret');
+const rememberedManagerServerSecret = localStorage.getItem('managerServerSecret');
+let managerServerSecret = rememberedManagerServerSecret || sessionStorage.getItem('managerServerSecret');
+if (managerServerSecret) {
+  $('#secret').val(managerServerSecret);
+}
+if (rememberedManagerServerSecret) {
+  sessionStorage.setItem('managerServerSecret', rememberedManagerServerSecret);
+  $('#remember-secret').prop('checked', true);
+}
 $('button.awa-helper-config').click(() => {
   window.open('/configer', '_target');
 });
@@ -360,6 +368,11 @@ $('button.awa-manager-stop').click(() => {
 $('button.save-secret').click(() => {
   managerServerSecret = $('#secret').val();
   sessionStorage.setItem('managerServerSecret', managerServerSecret);
+  if ($('#remember-secret').prop('checked')) {
+    localStorage.setItem('managerServerSecret', managerServerSecret);
+  } else {
+    localStorage.removeItem('managerServerSecret');
+  }
   $('#log-area').append(`<li>${time()}${__('managerSecretSaved')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
 });
