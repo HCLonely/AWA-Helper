@@ -6,7 +6,6 @@
  * @FilePath     : /AWA-Helper/src/main.ts
  * @Description  : 启动文件
  */
-process.removeAllListeners('warning');
 import * as fs from 'fs';
 import * as os from 'os';
 import { startHelper } from './awa-helper';
@@ -15,6 +14,10 @@ import { startManager } from './manager/index';
 import exampleConfig from './config.example.yml';
 
 process.chdir(__dirname);
+
+if (process.argv.includes('--healthcheck')) {
+  process.exit(0);
+}
 
 const createIfNotExists = (path: string, content?: string) => {
   if (!fs.existsSync(path)) {
@@ -53,7 +56,13 @@ if (isWindows) {
 if (process.argv.includes('--init')) {
   process.exit(0);
 } else if (process.argv.includes('--manager') || (process.argv.length === 2 && process.env.helperMode === 'manager')) {
-  startManager(process.argv.includes('--helper'));
+  void startManager(process.argv.includes('--helper')).catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 } else {
-  startHelper();
+  void startHelper().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 }

@@ -105,6 +105,7 @@ class SteamQuestASF {
       url: `https://${globalThis.awaHost}/steam/quests`,
       method: 'GET',
       headers: {
+        cookie: this.awaCookie.stringify(),
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
@@ -123,10 +124,16 @@ class SteamQuestASF {
         }
 
         const $ = load(response.data);
+        if ($('a.nav-link-login').length > 0) {
+          new Logger(time() + chalk.red(__('tokenExpired')));
+          return false;
+        }
         const gamesInfo = [];
         for (const row of $('div.container>div.row').toArray()) {
           const $row = $(row);
-          const questLink = new URL($row.find('a.btn-steam-quest[href]').attr('href') as string, `https://${globalThis.awaHost}/`).href;
+          const questPath = $row.find('a.btn-steam-quest[href]').attr('href');
+          if (!questPath) continue;
+          const questLink = new URL(questPath, `https://${globalThis.awaHost}/`).href;
           const [id, started] = await this.getQuestInfo(questLink);
 
           if (!started || !id) continue;
@@ -307,7 +314,7 @@ class SteamQuestASF {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow('Warning'));
           new Logger(response.data || response.statusText);
         }
-        return true;
+        return false;
       })
       .catch((error) => {
         ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
@@ -384,56 +391,58 @@ class SteamQuestASF {
         return false;
       });
   }
-  async checkStatus(): Promise<boolean> {
-    if (this.status === 'stopped') return true;
-    for (const index in this.taskStatus) {
-      const logger = new Logger(`${time()}${__('checkingProgress', chalk.yellow(this.taskStatus[index].link))}`, false);
-      const options: myAxiosConfig = {
-        url: this.taskStatus[index].link,
-        method: 'GET',
-        responseType: 'text',
-        headers: {
-          cookie: this.awaCookie.stringify(),
-          accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-          'accept-encoding': 'gzip, deflate, br',
-          'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-          'user-agent': globalThis.userAgent,
-          referer: `https://${globalThis.awaHost}/steam/quests`
-        },
-        Logger: logger
-      };
-      if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
-      await axios(options)
-        .then((response) => {
-          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-          if (!response.data.includes('aria-valuenow')) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('noProgressBar')));
+  async checkStatus(signal?: AbortSignal): Promise<boolean> {
+    while (!signal?.aborted) {
+      if (this.status === 'stopped') return true;
+      for (const index in this.taskStatus) {
+        const logger = new Logger(`${time()}${__('checkingProgress', chalk.yellow(this.taskStatus[index].link))}`, false);
+        const options: myAxiosConfig = {
+          url: this.taskStatus[index].link,
+          method: 'GET',
+          responseType: 'text',
+          headers: {
+            cookie: this.awaCookie.stringify(),
+            accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+            'user-agent': globalThis.userAgent,
+            referer: `https://${globalThis.awaHost}/steam/quests`
+          },
+          Logger: logger
+        };
+        if (globalThis.quest.httpsAgent) options.httpsAgent = globalThis.quest.httpsAgent;
+        await axios(options)
+          .then((response) => {
+            globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+            if (!response.data.includes('aria-valuenow')) {
+              ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('noProgressBar')));
+              return false;
+            }
+            const progress = response.data.match(/aria-valuenow="([\d]+?)"/)?.[1];
+            if (progress) {
+              this.taskStatus[index].progress = progress;
+              ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(`${progress}%`));
+              return true;
+            }
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('noProgress')));
             return false;
-          }
-          const progress = response.data.match(/aria-valuenow="([\d]+?)"/)?.[1];
-          if (progress) {
-            this.taskStatus[index].progress = progress;
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(`${progress}%`));
-            return true;
-          }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('noProgress')));
-          return false;
-        })
-        .catch((error) => {
-          ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
-          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-          new Logger(error);
-          return false;
-        });
-    }
+          })
+          .catch((error) => {
+            ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
+            globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+            new Logger(error);
+            return false;
+          });
+      }
 
-    if (this.taskStatus?.filter((e) => parseInt(e.progress || '0', 10) >= 100)?.length === this.taskStatus?.length && !globalThis.steamEventGameId) {
-      new Logger(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
-      await this.resume();
-      return true;
+      if (this.taskStatus?.filter((e) => parseInt(e.progress || '0', 10) >= 100)?.length === this.taskStatus?.length && !globalThis.steamEventGameId) {
+        new Logger(time() + chalk.yellow('Steam') + chalk.green(__('steamQuestFinished')));
+        await this.resume();
+        return true;
+      }
+      if (!await sleep(60 * 10, signal)) return true;
     }
-    await sleep(60 * 10);
-    return await this.checkStatus();
+    return true;
   }
   async getOwnedGames(): Promise<boolean> {
     if (!await this.getSteamQuests()) return false;
@@ -482,7 +491,7 @@ class SteamQuestASF {
         return false;
       });
   }
-  async do(): Promise<boolean> {
+  async do(signal?: AbortSignal): Promise<boolean> {
     if (!await this.getOwnedGames()) {
       this.status = 'stopped';
       return false;
@@ -490,7 +499,7 @@ class SteamQuestASF {
     if (this.ownedAllGames.length === 0) {
       new Logger(time() + chalk.yellow(__('noGamesAlert')));
       this.status = 'stopped';
-      return false;
+      return true;
     }
 
     if (!this.taskStatus?.length) {
@@ -534,8 +543,11 @@ class SteamQuestASF {
         return false;
       });
     if (!started) return false;
-    await sleep(10 * 60);
-    return await this.checkStatus();
+    if (!await sleep(10 * 60, signal)) {
+      await this.resume();
+      return true;
+    }
+    return await this.checkStatus(signal);
   }
   async resume(): Promise<boolean> {
     if (this.status === 'stopped') return true;

@@ -54,7 +54,7 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
 
 ##### 更新
 
-- 自动更新: 在 config 文件中配置`autoUpdate: true`;
+- 更新检查：程序会提示新版本；自动安装暂时禁用，请从 GitHub Release 手动更新；
 - 手动更新: 双击'update.bat'.
 
 #### Linux
@@ -89,7 +89,7 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
 
 #### 更新
 
-- 自动更新: 在 config 文件中配置`autoUpdate: true`;
+- 更新检查：程序会提示新版本；自动安装暂时禁用，请从 GitHub Release 手动更新；
 - 手动更新: `./update.sh`.
 
 ### 通过 NodeJS 运行
@@ -125,7 +125,7 @@ AWA-Manager 是一个 AWA-Helper 的管理器，开启后可在浏览器前端�
 
 #### 更新
 
-- 自动更新: 在 config 文件中配置`autoUpdate: true`;
+- 更新检查：程序会提示新版本；自动安装暂时禁用，请从 GitHub Release 手动更新；
 - 手动更新: `node main.js --update`;
 
 ### 使用 Docker
@@ -182,7 +182,7 @@ timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
-autoUpdate: true # 自动更新
+autoUpdate: false # 检查更新；自动安装暂时禁用
 ```
 
 ### AWA-Manager 配置
@@ -193,7 +193,7 @@ autoUpdate: true # 自动更新
 managerServer:
   enable: false # 需同时启用webUI
   secret: '' # AWA-Manager Secret，强烈建议修改
-  local: true # 仅内网访问，false为开启外网访问
+  local: true # 非容器环境仅本机访问；Docker 中为支持端口转发会监听容器全部接口
   port: 2345 # AWA managerServer端口
   # ssl: # managerServer启用SSL
     # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
@@ -422,7 +422,6 @@ flowchart TD
 - [cheerio](https://github.com/cheeriojs/cheerio)
 - [cron-parser](https://github.com/harrisiirak/cron-parser)
 - [dayjs](https://github.com/iamkun/dayjs)
-- [decompress](https://github.com/kevva/decompress)
 - [express](https://github.com/expressjs/express)
 - [express-ws](https://github.com/HenningM/express-ws)
 - [form-data](https://github.com/form-data/form-data)
@@ -440,3 +439,7 @@ flowchart TD
 - [rollup](https://github.com/rollup/rollup)
 - [TypeScript](https://github.com/Microsoft/TypeScript)
 - [UglifyJS](https://github.com/mishoo/UglifyJS)
+
+# Todo
+
+- [ ] webUI可以不设https

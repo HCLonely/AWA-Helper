@@ -24,11 +24,15 @@ import { execSync, spawn } from 'child_process';
 import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax';
 import axios from 'axios';
+import * as crypto from 'crypto';
 import * as corn from 'node-cron';
 import { CronExpressionParser } from 'cron-parser';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { Artifacts } from './Artifacts';
 import { Archievement } from '../Archievement/Archievement';
+import { atomicWriteFileSync, updateYamlFieldsSync, validateYaml } from '../core/config/yamlConfig';
+import { deepMerge, validateHelperConfig } from '../core/config/configSchema';
+import { getManagerListenHost } from './network';
 // @ts-ignore
 import indexHtml from './dist/index.html';
 // @ts-ignore
@@ -37,9 +41,6 @@ import configerHtml from './dist/configer.html';
 import templateYml from './static/js/template.yml';
 // @ts-ignore
 import templateYmlEN from './static/js/template_en.yml';
-// @ts-ignore
-import icon from './static/img/icon.ico';
-
 // @ts-ignore
 import * as zh from '../locales/zh.json';
 // @ts-ignore
@@ -145,7 +146,8 @@ const startManager = async (startHelper: boolean) => {
     },
     webUI: {
       enable: true,
-      port: 3456
+      port: 3456,
+      local: true
     },
     awaHost: 'www.alienwarearena.com'
   };
@@ -154,7 +156,12 @@ const startManager = async (startHelper: boolean) => {
   await yamlLint
     .lint(configString)
     .then(() => {
-      config = { ...defaultConfig, ...parse(configString) };
+      const parsedConfig = deepMerge(defaultConfig, parse(configString));
+      const validationErrors = validateHelperConfig(parsedConfig);
+      if (validationErrors.length > 0) {
+        throw new Error(`Invalid configuration: ${validationErrors.join('; ')}`);
+      }
+      config = parsedConfig;
     })
     .catch((error) => {
       new Logger(time() + chalk.red(__('configFileErrorAlter', error.mark?.line ? chalk.blue(error.mark.line + 1) : '???', chalk.yellow(__('configFileErrorLocation')))));
@@ -192,6 +199,14 @@ const startManager = async (startHelper: boolean) => {
     new Logger(time() + chalk.red(__('managerServerSecretNotSet')));
     return;
   }
+  if (managerServer.secret.length < 16) {
+    new Logger(time() + chalk.red('managerServer.secret must contain at least 16 characters.'));
+    return;
+  }
+  if (managerServer.local === false && !(managerServer.ssl?.key && managerServer.ssl.cert)) {
+    new Logger(time() + chalk.red('Public Manager access requires HTTPS. Configure managerServer.ssl or enable local mode.'));
+    return;
+  }
   if (!Array.prototype.findLast) {
     Array.prototype.findLast = function (callback) {
       if (this === null) {
@@ -220,9 +235,26 @@ const startManager = async (startHelper: boolean) => {
     let archievement: Archievement | null = null;
     let archievementCorn: corn.ScheduledTask | null = null;
     const app = express();
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+    app.disable('x-powered-by');
+    app.use(express.json({ limit: '64kb' }));
+    app.use(express.urlencoded({ extended: true, limit: '64kb' }));
+    app.use((_, res, next) => {
+      res.set({
+        'Cache-Control': 'no-store',
+        'Content-Security-Policy': 'default-src \'self\'; script-src \'self\' \'unsafe-inline\'; style-src \'self\' \'unsafe-inline\'; connect-src \'self\' ws: wss:; object-src \'none\'; frame-ancestors \'none\'; base-uri \'self\'',
+        'Referrer-Policy': 'no-referrer',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY'
+      });
+      next();
+    });
     app.set('query parser', (str: string) => qs.parse(str));
+    const isValidSecret = (candidate: unknown): boolean => {
+      if (typeof candidate !== 'string') return false;
+      const actual = Buffer.from(managerServer.secret);
+      const provided = Buffer.from(candidate);
+      return actual.length === provided.length && crypto.timingSafeEqual(actual, provided);
+    };
     if (options?.key && options?.cert) {
       server = https.createServer(options, app);
     }
@@ -280,40 +312,35 @@ const startManager = async (startHelper: boolean) => {
     });
 
     app.post('/getConfig', (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
-        res.send(
-          fs.readFileSync(configPath).toString()).end();
+      if (!isValidSecret(req.body?.secret)) {
+        return res.status(401).end();
       }
-      return res.status(401).end();
+      return res.type('text/yaml').status(200).send(fs.readFileSync(configPath).toString());
     });
     app.post('/setConfig', (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
-        if (req.body?.config) {
-          fs.writeFileSync(configPath, req.body.config);
-        }
-        res.status(200).end();
+      if (!isValidSecret(req.body?.secret)) {
+        return res.status(401).end();
       }
-      return res.status(401).end();
+      if (typeof req.body?.config !== 'string' || !req.body.config.trim()) {
+        return res.status(400).end();
+      }
+      try {
+        validateYaml(req.body.config);
+        atomicWriteFileSync(configPath, req.body.config);
+      } catch (_error) {
+        return res.status(422).end();
+      }
+      return res.status(200).end();
     });
 
     app.post('/updateCookie', (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         if (req.body?.cookie) {
-          let oldConfigStringRaw = fs.readFileSync(configPath).toString();
+          const fields: Record<string, string> = { awaCookie: req.body.cookie };
           if (req.headers['user-agent']) {
-            const oldUA = oldConfigStringRaw.match(/^UA:.+/m)?.[0];
-            if (oldUA) {
-              oldConfigStringRaw = oldConfigStringRaw.replaceAll(oldUA, `UA: '${req.headers['user-agent']}'`);
-            } else {
-              oldConfigStringRaw = `${oldConfigStringRaw}\n\n` + `UA: '${req.headers['user-agent']}'`;
-            }
+            fields.UA = req.headers['user-agent'];
           }
-          const oldCookie = oldConfigStringRaw.match(/^awaCookie:.+/m)?.[0];
-          if (!oldCookie) {
-            return res.status(501).end();
-          }
-          const newConfigStringRaw = oldConfigStringRaw.replaceAll(oldCookie, `awaCookie: '${req.body.cookie}'`);
-          fs.writeFileSync(configPath, newConfigStringRaw);
+          updateYamlFieldsSync(configPath, fields);
           new Logger(time() + __('cookieUpdated', chalk.yellow(req.ip)));
           return res.status(200).end();
         }
@@ -323,18 +350,12 @@ const startManager = async (startHelper: boolean) => {
     });
 
     app.post('/updateTwitchCookie', (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         if (req.body?.cookie) {
-          const oldConfigStringRaw = fs.readFileSync(configPath).toString();
           if (!req.body.cookie.includes('auth-token=') || !req.body.cookie.includes('unique_id=')) {
             return res.status(502).end();
           }
-          const oldCookie = oldConfigStringRaw.match(/^twitchCookie:.+/m)?.[0];
-          if (!oldCookie) {
-            return res.status(501).end();
-          }
-          const newConfigStringRaw = oldConfigStringRaw.replaceAll(oldCookie, `twitchCookie: '${req.body.cookie}'`);
-          fs.writeFileSync(configPath, newConfigStringRaw);
+          updateYamlFieldsSync(configPath, { twitchCookie: req.body.cookie });
           new Logger(time() + __('twitchCookieUpdated', chalk.yellow(req.ip)));
           return res.status(200).end();
         }
@@ -344,12 +365,11 @@ const startManager = async (startHelper: boolean) => {
     });
 
     app.post('/runStatus', async (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         const lastRunDate = dayjs.max(fs.readdirSync('logs').filter((e) => /^[\d]{4}-[\d]{2}-[\d]{2}.txt$/.test(e)).map((e) => dayjs(e.replace('.txt', ''))))?.format('YYYY-MM-DD');
 
         if (!lastRunDate) {
-          res.json({ lastRunTime: 'Null', runStatus: 'Stop' }).status(200).end();
-          return;
+          return res.status(200).json({ lastRunTime: 'Null', runStatus: 'Stop' });
         }
         const lastRunTime = fs.readFileSync(`logs/${lastRunDate}.txt`).toString().split('\n')
           .filter((e) => e.trim())
@@ -369,17 +389,15 @@ const startManager = async (startHelper: boolean) => {
         };
 
         if (runStatus === 'Running') {
-          res.json({ lastRunTime, runStatus, webui }).status(200).end();
-        } else {
-          res.json({ lastRunTime, runStatus }).status(200).end();
+          return res.status(200).json({ lastRunTime, runStatus, webui });
         }
-      } else {
-        res.status(401).end();
+        return res.status(200).json({ lastRunTime, runStatus });
       }
+      return res.status(401).end();
     });
 
     app.post('/start', async (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('startHelper'));
         if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
           const awaHelper = spawn('./AWA-Helper', ['--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
@@ -388,14 +406,13 @@ const startManager = async (startHelper: boolean) => {
           const awaHelper = spawn('node', ['main.js', '--helper', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
           awaHelper.unref();
         }
-        res.send('success').status(200).end();
-      } else {
-        res.status(401).end();
+        return res.status(200).send('success');
       }
+      return res.status(401).end();
     });
 
     app.post('/stop', async (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('stopHelper'));
         const pid = await getPid();
         if (pid) {
@@ -405,76 +422,61 @@ const startManager = async (startHelper: boolean) => {
             } else {
               execSync(`kill ${pid}`);
             }
-            res.send('success').status(200).end();
+            return res.status(200).send('success');
           } catch (_e) {
-            res.send('error').status(501).end();
+            return res.status(500).send('error');
           }
         } else {
-          res.send('success').status(200).end();
+          return res.status(200).send('success');
         }
       } else {
-        res.status(401).end();
+        return res.status(401).end();
       }
     });
     app.post('/stopManager', async (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('stopManager'));
-        process.exit(0);
-        res.send('success').status(200).end();
+        res.status(200).send('success');
+        setImmediate(() => process.exit(0));
       } else {
         res.status(401).end();
       }
     });
     app.post('/update', async (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('updateHelper'));
-        if (['Windows_NT', 'Linux'].includes(os.type()) && !/.*main\.js$/.test(process.argv[1])) {
-          const awaHelper = spawn('./AWA-Helper', ['--update', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
-          awaHelper.unref();
-        } else {
-          const awaHelper = spawn('node', ['main.js', '--update', '--color'], { detached: true, windowsHide: true, stdio: 'ignore' });
-          awaHelper.unref();
-        }
-        res.send('success').status(200).end();
-      } else {
-        res.status(401).end();
+        return res.status(501).send('Automatic installation is disabled; install a signed release manually.');
       }
+      return res.status(401).end();
     });
-    app.get('/runLogs', async (req, res) => {
-      if (req.query?.secret === managerServer.secret) {
+    app.post('/runLogs', async (req, res) => {
+      if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('watchLogs'));
         if (fs.existsSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`)) {
-          res.send(`<html><head><title>${__('log')}</title><link rel="shortcut icon"
-    href="${icon}" type="image/x-icon"></head><body style="width:100%;height:100%"><textarea style="width:100%;height:100%">${fs.readFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`).toString()}</textarea></body></html>`).status(200).end();
-        } else {
-          res.send('').status(200).end();
+          return res.type('text/plain').status(200).send(fs.readFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`).toString());
         }
-      } else {
-        res.status(401).end();
+        return res.type('text/plain').status(200).send('');
       }
+      return res.status(401).end();
     });
-    app.get('/awaArchievementLogs', async (req, res) => {
-      if (req.query?.secret === managerServer.secret) {
+    app.post('/awaArchievementLogs', async (req, res) => {
+      if (isValidSecret(req.body?.secret)) {
         new Logger(time() + __('watchLogs'));
         if (fs.existsSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`)) {
-          res.send(`<html><head><title>AWA Archievement ${__('log')}</title><link rel="shortcut icon"
-    href="${icon}" type="image/x-icon"></head><body style="width:100%;height:100%"><textarea style="width:100%;height:100%">${fs.readFileSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`).toString()}</textarea></body></html>`).status(200).end();
-        } else {
-          res.send('').status(200).end();
+          return res.type('text/plain').status(200).send(fs.readFileSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`).toString());
         }
-      } else {
-        res.status(401).end();
+        return res.type('text/plain').status(200).send('');
       }
+      return res.status(401).end();
     });
 
-    app.get('/pid', async (_, res) => {
-      res.send(`${process.pid}`).status(200).end();
+    app.get('/health/live', async (_, res) => {
+      res.status(200).json({ status: 'live', version });
     });
     app.post('/startArchievement', async (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+      if (isValidSecret(req.body?.secret)) {
         if (!awaCookie) {
-          res.send('awaCookie is not set').status(200).end();
-          return;
+          return res.status(400).send('awaCookie is not set');
         }
         if (!fs.existsSync('data')) {
           fs.mkdirSync('data');
@@ -515,13 +517,12 @@ const startManager = async (startHelper: boolean) => {
         });
         await archievement.init();
         archievement.run();
-        res.send('success').status(200).end();
-      } else {
-        res.status(401).end();
+        return res.status(200).send('success');
       }
+      return res.status(401).end();
     });
-    app.get('/stopArchievement', async (req, res) => {
-      if (req.body?.secret === managerServer.secret) {
+    app.post('/stopArchievement', async (req, res) => {
+      if (isValidSecret(req.body?.secret)) {
         if (fs.existsSync('data/Archievement')) {
           fs.rmSync('data/Archievement');
         }
@@ -529,10 +530,9 @@ const startManager = async (startHelper: boolean) => {
         archievement = null;
         archievementCorn?.stop();
         archievementCorn = null;
-        res.send('success').status(200).end();
-      } else {
-        res.status(401).end();
+        return res.status(200).send('success');
       }
+      return res.status(401).end();
     });
 
     if (webUI.enable) {
@@ -583,9 +583,13 @@ const startManager = async (startHelper: boolean) => {
     };
   }
   const server = createServer(options);
-  const hostname = managerServer.local ? '127.0.0.1' : '0.0.0.0';
+  const containerRuntime = process.env.AWA_HELPER_CONTAINER === 'true' || (process.platform === 'linux' && fs.existsSync('/.dockerenv'));
+  const hostname = getManagerListenHost(managerServer.local, containerRuntime);
   server.listen(managerServer.port, hostname, () => {
     new Logger(time() + __('managerServerStart', chalk.yellow(`${managerServer.ssl?.cert ? 'https' : 'http'}://127.0.0.1:${managerServer.port}/`)));
+    if (managerServer.local && containerRuntime) {
+      new Logger(time() + chalk.yellow(`Container mode: Manager is listening on 0.0.0.0:${managerServer.port} for port forwarding.`));
+    }
     if (!managerServer.local) new Logger(time() + __('publicNetworkNotice', `${managerServer.port}`));
   });
 

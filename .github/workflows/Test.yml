@@ -6,17 +6,20 @@ on:
     branches: [ main ]
 jobs:
   release:
+    permissions:
+      contents: read
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v7
         with:
-          node-version: 22.x
-      - run: npm install
-      - name: Build Test
-        run: npm run test
+          node-version: 22.13.1
+          cache: npm
+      - run: npm ci
+      - name: Verify
+        run: npm run verify
       - name: Run Test
         shell: pwsh
         run: ./test.ps1

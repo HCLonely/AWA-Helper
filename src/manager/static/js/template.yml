@@ -66,9 +66,9 @@
       type: text
       defaultValue: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47'
     autoUpdate:
-      name: 是否启用自动更新
+      name: 是否检查更新（自动安装暂时禁用）
       type: boolean
-      defaultValue: true
+      defaultValue: false
     managerServer:
       name: AWA-Manager配置
       type: object
@@ -83,7 +83,7 @@
           type: text
           defaultValue: ''
         local:
-          name: 是否仅内网可访问
+          name: 是否仅本机可访问
           type: boolean
           defaultValue: true
         port:

@@ -226,7 +226,6 @@ class TwitchTrack {
     return axios(options)
       .then(async (response) => {
         globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        console.log(JSON.stringify(response.data, null, 2));
         const extensions = response.data?.[0]?.data?.user?.channel?.selfInstalledExtensions;
         if (!extensions?.length) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('noExt')}`));
@@ -237,12 +236,13 @@ class TwitchTrack {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(1): ${__('noExt')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
-        const { jwt } = ART_EXT.token;
-        if (!jwt) {
+        const { extensionID, jwt } = ART_EXT.token as { extensionID?: string, jwt?: string };
+        if (!jwt || !extensionID) {
           ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error(2): ${__('getJwtFailed')}`));
           return await this.getExtInfo((returnedIndex as number) + 1);
         }
         this.jwt = jwt;
+        this.extensionID = extensionID;
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
         return true;
       })
@@ -253,97 +253,98 @@ class TwitchTrack {
         return await this.getExtInfo((returnedIndex as number) + 1);
       });
   }
-  async do(retried = false):Promise<boolean> {
-    if (!(globalThis.quest.questInfo.watchTwitch?.[0] !== '15' || parseFloat(globalThis.quest.questInfo.watchTwitch?.[1] || '0') < globalThis.quest.additionalTwitchARP)) {
-      return true;
-    }
-    if (!this.channelId || !this.jwt) {
-      if (await this.getExtInfo() !== true) {
-        await sleep(60 * 5);
-        return this.do();
+  async do(signal?: AbortSignal):Promise<boolean> {
+    let retried = false;
+    while (!signal?.aborted) {
+      if (!(globalThis.quest.questInfo.watchTwitch?.[0] !== '15' || parseFloat(globalThis.quest.questInfo.watchTwitch?.[1] || '0') < globalThis.quest.additionalTwitchARP)) {
+        return true;
       }
-    }
-    const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
-    const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/twitch/extensions/track`,
-      method: 'GET',
-      headers: {
-        origin: `https://${this.extensionID}.ext-twitch.tv`,
-        referer: `https://${this.extensionID}.ext-twitch.tv/`,
-        'user-agent': globalThis.userAgent,
-        'x-extension-channel': this.channelId,
-        'x-extension-jwt': this.jwt,
-        'User-Agent': globalThis.userAgent
-      },
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    const status = await axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.data.success) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          this.trackError = 0;
-          this.trackTimes++;
-          let returnText: boolean | string = true;
-          switch (response.data.state) {
-            case 'daily_cap_reached':
-              this.complete = true;
-              new Logger(time() + chalk.green(response.data.message || __('obtainedArp')));
-              returnText = 'complete';
-              break;
-            case 'streamer_offline':
-              new Logger(time() + chalk.blue(__('liveOffline', chalk.yellow(this.channelId))));
-              returnText = 'offline';
-              break;
-            case 'streamer_online':
-              break;
-            default:
-              break;
+      if (!this.channelId || !this.jwt || !this.extensionID) {
+        if (await this.getExtInfo() !== true) {
+          if (!await sleep(60 * 5, signal)) return true;
+          continue;
+        }
+      }
+      const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
+      const options: myAxiosConfig = {
+        url: `https://${globalThis.awaHost}/twitch/extensions/track`,
+        method: 'GET',
+        headers: {
+          origin: `https://${this.extensionID}.ext-twitch.tv`,
+          referer: `https://${this.extensionID}.ext-twitch.tv/`,
+          'user-agent': globalThis.userAgent,
+          'x-extension-channel': this.channelId,
+          'x-extension-jwt': this.jwt,
+          'User-Agent': globalThis.userAgent
+        },
+        Logger: logger
+      };
+      if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
+      const wasRetried = retried;
+      const status = await axios(options)
+        .then((response) => {
+          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
+          if (response.data.success) {
+            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
+            this.trackError = 0;
+            this.trackTimes++;
+            let returnText: boolean | string = true;
+            switch (response.data.state) {
+              case 'daily_cap_reached':
+                this.complete = true;
+                new Logger(time() + chalk.green(response.data.message || __('obtainedArp')));
+                returnText = 'complete';
+                break;
+              case 'streamer_offline':
+                new Logger(time() + chalk.blue(__('liveOffline', chalk.yellow(this.channelId))));
+                returnText = 'offline';
+                break;
+              case 'streamer_online':
+                break;
+              default:
+                break;
+            }
+            return returnText;
           }
-          return returnText;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
-        new Logger(response.data?.message || response.statusText);
-        this.trackError++;
-        return false;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        new Logger(error);
-        if (error.response?.status !== 403) {
+          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
+          new Logger(response.data?.message || response.statusText);
+          this.trackError++;
           return false;
-        }
-        if (retried) {
-          this.complete = true;
-          return 'complete';
-        }
-        return 'Forbidden';
-      });
-    if ((['complete'] as Array<string|boolean>).includes(status) &&
-      (parseInt(globalThis.quest.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(globalThis.quest.questInfo.watchTwitch?.[1] || '0')) >= (15 + globalThis.quest.additionalTwitchARP)) {
-      return true;
-    }
-    if (status === 'Forbidden') {
-      if (await this.init() === true) {
-        await sleep(60);
-        this.channelId = undefined;
-        this.clientId = undefined;
-        this.jwt = undefined;
-        this.extensionID = undefined;
-        this.availableStreams = [];
-        this.availableStreamsInfo = [];
-        return this.do(true);
+        })
+        .catch((error) => {
+          ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
+          globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
+          new Logger(error);
+          if (error.response?.status !== 403) return false;
+          if (wasRetried) {
+            this.complete = true;
+            return 'complete';
+          }
+          return 'Forbidden';
+        });
+      if ((['complete'] as Array<string|boolean>).includes(status) &&
+        (parseInt(globalThis.quest.questInfo.watchTwitch?.[0] || '0', 10) + parseFloat(globalThis.quest.questInfo.watchTwitch?.[1] || '0')) >= (15 + globalThis.quest.additionalTwitchARP)) {
+        return true;
       }
-      this.complete = true;
-      return false;
+      if (status === 'Forbidden') {
+        if (!retried && await this.init() === true) {
+          retried = true;
+          if (!await sleep(60, signal)) return true;
+          this.channelId = undefined;
+          this.clientId = undefined;
+          this.jwt = undefined;
+          this.extensionID = undefined;
+          this.availableStreams = [];
+          this.availableStreamsInfo = [];
+          continue;
+        }
+        this.complete = true;
+        return false;
+      }
+      if (status === 'offline') this.channelId = '';
+      if (!await sleep(60, signal)) return true;
     }
-    if (status === 'offline') {
-      this.channelId = '';
-    }
-    await sleep(60);
-    return this.do();
+    return true;
   }
 }
 

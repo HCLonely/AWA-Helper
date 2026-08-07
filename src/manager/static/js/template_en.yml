@@ -68,9 +68,9 @@
       defaultValue: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
         like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47
     autoUpdate:
-      name: Enable automatic updates
+      name: Check for updates (automatic installation is disabled)
       type: boolean
-      defaultValue: true
+      defaultValue: false
     managerServer:
       name: AWA-Manager configuration
       type: object
@@ -84,7 +84,7 @@
           desp: AWA-Manager access key, it is strongly recommended to modify
           type: text
         local:
-          name: Whether only the local network is accessible
+          name: Local access only
           type: boolean
           defaultValue: true
         port:

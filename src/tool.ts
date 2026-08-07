@@ -6,26 +6,35 @@
  * @FilePath     : /AWA-Helper/src/tool.ts
  * @Description  :
  */
-/* eslint-disable no-nested-ternary */
-/* global __, proxy, logs, ws, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
+/* global __, proxy, logs, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
 import chalk from 'chalk';
 import dayjs from 'dayjs';
 import * as fs from 'fs-extra';
-import * as os from 'os';
-import * as crypto from 'crypto';
 import axios, { AxiosError } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
 import { parse } from 'yaml';
-import { format, promisify } from 'util';
+import { format } from 'util';
 import { PushApi } from 'all-pusher-api';
 import type { Interface } from 'readline';
-import decompress from 'decompress';
-import * as stream from 'stream';
-import { spawn } from 'child_process';
-import * as path from 'path';
 
 globalThis.logs = { type: 'logs' };
+globalThis.wsClients = new Set();
+
+const broadcastWebUi = (data: unknown): void => {
+  const message = JSON.stringify(data);
+  globalThis.wsClients.forEach((client) => {
+    if (client.readyState !== 1) {
+      globalThis.wsClients.delete(client);
+      return;
+    }
+    try {
+      client.send(message);
+    } catch (_error) {
+      globalThis.wsClients.delete(client);
+    }
+  });
+};
 
 const getSecertValue = (): Array<string> => {
   if (!fs.existsSync('config.yml')) {
@@ -60,21 +69,28 @@ const hideSectets = (data: string): string => {
   globalThis.secrets.filter((secret) => secret && secret.length > 5).forEach((secret) => data = data.replaceAll(secret, '********'));
   return data;
 };
+const escapeHtml = (data: string): string => data
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll('\'', '&#39;');
 
 globalThis.secrets = getSecertValue();
 
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
     // eslint-disable-next-line no-control-regex
-    return e.replace(/\x1B\[[\d]*?m/g, '');
+    return hideSectets(e.replace(/\x1B\[[\d]*?m/g, ''));
   }
 
-  return format(e);
+  return hideSectets(format(e));
 };
 const toHtmlJSON = (e: any): string => {
   if (typeof e === 'string') {
+    const safeText = escapeHtml(e);
     // eslint-disable-next-line no-control-regex
-    return hideSectets(e.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
+    return hideSectets(safeText.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
     // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[31m(.+?)\x1B\[39m/g, '<font class="red">$1</font>')
       // eslint-disable-next-line no-control-regex
@@ -104,7 +120,7 @@ const toHtmlJSON = (e: any): string => {
       .replace(/\n/g, '</br>'));
   }
 
-  return hideSectets(format(e));
+  return escapeHtml(hideSectets(format(e)));
 };
 
 class Logger {
@@ -125,9 +141,7 @@ class Logger {
         data: data.data,
         type: 'questInfo'
       };
-      if (ws) {
-        ws.send(JSON.stringify(logs.questInfo));
-      }
+      broadcastWebUi(logs.questInfo);
       return;
     }
     fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(data) + (newLine ? '\n' : ''));
@@ -144,9 +158,11 @@ class Logger {
       data: toHtmlJSON(this.data),
       type: 'log'
     };
-    if (ws) {
-      ws.send(JSON.stringify(logs[this.id.toString()]));
+    const logIds = Object.keys(logs).filter((id) => /^\d+$/.test(id));
+    if (logIds.length > 1000) {
+      logIds.slice(0, logIds.length - 1000).forEach((id) => delete logs[id]);
     }
+    broadcastWebUi(logs[this.id.toString()]);
   }
   static consoleLog(text: any, newLine = true): void {
     if (text.type === 'questInfo') {
@@ -163,11 +179,18 @@ class Logger {
   }
 }
 
-const sleep = (time: number): Promise<true> => new Promise((resolve) => {
+const sleep = (time: number, signal?: AbortSignal): Promise<boolean> => new Promise((resolve) => {
+  if (signal?.aborted) {
+    resolve(false);
+    return;
+  }
   const timeout = setTimeout(() => {
-    clearTimeout(timeout);
     resolve(true);
   }, time * 1000);
+  signal?.addEventListener('abort', () => {
+    clearTimeout(timeout);
+    resolve(false);
+  }, { once: true });
 });
 
 const random = (minNum: number, maxNum: number): number => Math.floor((Math.random() * (maxNum - minNum + 1)) + minNum);
@@ -224,9 +247,6 @@ const formatProxy = (proxy: proxy): any => {
       proxy: proxyOptions
     });
   }
-  if (agent.options) {
-    agent.options.rejectUnauthorized = false;
-  }
   return agent;
 };
 
@@ -237,11 +257,19 @@ const http = axios.create({
 http.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const { config } = error;
+    const { config, response } = error;
     if (!config) return Promise.reject(error);
 
+    const method = (config.method || 'get').toUpperCase();
+    const status = response?.status as number | undefined;
+    const retryableMethod = ['GET', 'HEAD', 'OPTIONS'].includes(method);
+    const retryableFailure = !status || [408, 429, 502, 503, 504].includes(status);
+    if (!retryableMethod || !retryableFailure) {
+      return Promise.reject(error);
+    }
+
     config.retryCount = config.retryCount || 0;
-    if (config.retryCount >= (config.times || 3)) {
+    if (config.retryCount >= (config.retryTimes || 3)) {
       return Promise.reject(error);
     }
 
@@ -250,17 +278,20 @@ http.interceptors.response.use(
       config.Logger.log(chalk.red('Error'));
       config.Logger = new Logger(`${time()}${chalk.yellow(__('retrying', chalk.blue(config.retryCount)))}`, false);
     }
+    const retryAfter = Number.parseInt(response?.headers?.['retry-after'] || '', 10);
+    const exponentialDelay = Math.min((config.retryDelay || 1000) * (2 ** (config.retryCount - 1)), 30 * 1000);
+    const delay = Number.isFinite(retryAfter) ? retryAfter * 1000 : exponentialDelay + Math.floor(Math.random() * 250);
     const delayHttp = new Promise((resolve) => {
       setTimeout(() => {
         resolve(true);
-      }, config.delay || 1000);
+      }, delay);
     });
     await delayHttp;
     return await http(config);
   }
 );
 
-const checkUpdate = async (version: string, managerServer: managerServer | undefined, autoUpdate: boolean, CHANGELOG: string, proxy?: proxy): Promise<void> => {
+const checkUpdate = async (version: string, _managerServer: managerServer | undefined, autoUpdate: boolean, CHANGELOG: string, proxy?: proxy): Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   const options: myAxiosConfig = {
     validateStatus: (status: number) => status === 302,
@@ -285,14 +316,11 @@ const checkUpdate = async (version: string, managerServer: managerServer | undef
       if (isNewVersion(version, latestVersion)) {
         ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('newVersion', chalk.yellow(`V${latestVersion}`))));
 
-        if (!autoUpdate || process.argv.includes('--no-update')) {
-          new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
-          globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
-          return;
+        if (autoUpdate && !process.argv.includes('--no-update')) {
+          new Logger(time() + chalk.yellow('Automatic installation is disabled until signed updates are available.'));
         }
-
-        const downloadUrl = getDownloadUrl(response.headers.location);
-        await update(downloadUrl, managerServer, proxy);
+        new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
+        globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latestVersion}`)}\n${__('downloadLink', response.headers.location)}`;
         return;
       }
 
@@ -320,240 +348,6 @@ const isNewVersion = (currentVersion: string, latestVersion: string): boolean =>
     (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] > currentVersionArr[1]) ||
     (latestVersionArr[0] === currentVersionArr[0] && latestVersionArr[1] === currentVersionArr[1] && latestVersionArr[2] > currentVersionArr[2])
   );
-};
-
-const getDownloadUrl = (location: string): string => {
-  let arch = '';
-  if (!/.*main\.js$/.test(process.argv[1])) {
-    if (os.type() === 'Linux') {
-      if (os.arch() === 'arm') {
-        arch = '-armv7';
-      } else if (os.arch() === 'arm64') {
-        arch = '-armv8';
-      } else if (os.arch() === 'x64') {
-        arch = '-x64';
-      }
-    }
-    return `${location.replace('/tag/', '/download/')}/AWA-Helper-${os.type() === 'Windows_NT' ? 'Win' : `Linux${arch}`}.tar.gz`;
-  }
-  return `${location.replace('/tag/', '/download/')}/main.js`;
-};
-
-async function downloadFile(link: string, proxy?: proxy): Promise<any> {
-  const logger = new Logger(`${time()}${__('downloading')}`, false);
-  const options: myAxiosConfig = {
-    Logger: logger,
-    responseType: 'stream'
-  };
-  if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
-    options.httpsAgent = formatProxy(proxy);
-  }
-  if (!fs.existsSync('temp/')) {
-    fs.mkdirSync('temp');
-  }
-  const finished = promisify(stream.finished);
-  const writer = fs.createWriteStream('temp/AWA-Helper.tar.gz');
-  return await http.get(link, options)
-    .then(async (response) => {
-      response.data.pipe(writer);
-      ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('OK')));
-      await finished(writer);
-      return true;
-    })
-    .catch((error) => {
-      ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-      new Logger(error);
-      if (writer.writable) {
-        writer.close();
-      }
-      return;
-    });
-}
-
-const update = async (link: string, managerServer: managerServer | undefined, proxy?: proxy): Promise<void> => {
-  const logPath = path.resolve('./logs/', `${dayjs().format('YYYY-MM-DD')}.txt`);
-
-  if (!/.*main\.js$/.test(process.argv[1])) {
-    if (!await downloadFile(link, proxy) || !fs.existsSync('temp/AWA-Helper.tar.gz')) {
-      return; // Early return if download fails or file doesn't exist
-    }
-
-    const logger = new Logger(`${time()}${__('decompressing')}`, false);
-    const decompressResult = await decompress('temp/AWA-Helper.tar.gz', 'temp/AWA-Helper')
-      .then(() => {
-        logger.log(chalk.green(__('OK')));
-        return true;
-      })
-      .catch((error) => {
-        logger.log(chalk.red('Error'));
-        new Logger(error);
-        return false;
-      });
-
-    if (!decompressResult) {
-      return;
-    }
-
-    if (os.type() === 'Windows_NT') {
-      createWindowsUpdateScript(logPath, managerServer);
-    } else if (os.type() === 'Linux') {
-      createLinuxUpdateScript(logPath, managerServer);
-    }
-  } else {
-    const logger = new Logger(`${time()}${__('downloadingMainJs')}`, false);
-    const options: myAxiosConfig = {
-      Logger: logger,
-      responseType: 'text'
-    };
-
-    if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
-      options.httpsAgent = formatProxy(proxy);
-    }
-
-    const mainJsMd5 = await http.get(link.replace('main.js', 'md5.txt'), options)
-      .then(async (response) => response.data)
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Get MD5 Failed') + netError(error));
-        new Logger(error);
-        return;
-      });
-
-    if (!mainJsMd5) {
-      return;
-    }
-
-    const result = await http.get(link, options)
-      .then(async (response) => {
-        const hash = crypto.createHash('md5');
-        hash.update(response.data);
-        const md5 = hash.digest('hex');
-        if (md5 === mainJsMd5) {
-          fs.writeFileSync('main.js', response.data);
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green(__('OK')));
-          return true;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('Error: MD5 not matched!')));
-        return false;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error') + netError(error));
-        new Logger(error);
-        return false;
-      });
-
-    if (result) {
-      if (!fs.existsSync('temp/')) {
-        fs.mkdirSync('temp');
-      }
-
-      const managerPid = managerServer?.enable ? await axios.get(`${managerServer?.ssl?.cert ? 'https' : 'http'}://127.0.0.1:${managerServer.port}/pid`)
-        .then((response) => response.data)
-        .catch(() => null) : null;
-
-      if (os.type() === 'Windows_NT') {
-        createWindowsMainJsUpdateScript(logPath, !!managerServer?.enable, managerPid);
-      } else if (os.type() === 'Linux') {
-        createLinuxMainJsUpdateScript(logPath, !!managerServer?.enable, managerPid);
-      }
-    }
-  }
-};
-
-const createWindowsUpdateScript = (logPath: string, managerServer?: managerServer) => {
-  const scriptContent = `@echo off
-cd "%~dp0"
-echo kill process ... >> ${logPath}
-taskkill /f /t /im AWA-Helper.exe >> ${logPath}
-if exist ".\\AWA-Helper" (
-echo Moving AWA-Helper... >> ${logPath}
-xcopy /y /e "${path.resolve('./temp/AWA-Helper/output')}" "${path.resolve('./')}\\" >> ${logPath}
-)
-cd ..
-${
-  process.argv.includes('--update')
-    ? ''
-    : (managerServer?.enable ? 'start cmd /k "AWA-Helper.exe --manager --helper"' : 'start cmd /k "AWA-Helper.exe --helper --no-update"')}
-echo remove temp dir >> ${logPath}
-rmdir /s /q temp >> ${logPath}
-echo update success >> ${logPath}
-exit
-`;
-  fs.writeFileSync('temp/update.bat', scriptContent);
-  const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
-  updater.unref();
-};
-
-const createLinuxUpdateScript = (logPath: string, managerServer?: managerServer) => {
-  const scriptContent = `#!/bin/bash
-sleep 5
-cd ${path.resolve('./temp')}
-echo kill process ... >> ${logPath}
-kill -9 $(pidof AWA-Helper) >> ${logPath}
-if [ -d "./AWA-Helper" ]; then
-  echo Moving AWA-Helper... >> ${logPath}
-  cp -rf ${path.resolve('./temp/AWA-Helper/output')}/* ${path.resolve('./')} >> ${logPath}
-fi
-cd ..
-echo remove temp dir >> ${logPath}
-rm -rf temp
-${
-  process.argv.includes('--update')
-    ? ''
-    : (managerServer?.enable ? './AWA-Helper --manager --helper' : './AWA-Helper --helper --no-update')}
-echo update success >> ${logPath}
-`;
-  fs.writeFileSync('temp/update.sh', scriptContent);
-  try {
-    fs.chmodSync('temp/update.sh', 0o777);
-  } catch (_e) {
-    // Handle error if needed
-  }
-  const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
-  updater.unref();
-};
-
-const createWindowsMainJsUpdateScript = (logPath: string, managerServerEnable: boolean, managerPid?: string) => {
-  const scriptContent = `@echo off
-cd ${path.resolve('./')}
-echo kill process ... >> ${logPath}
-taskkill /f /t /pid ${process.pid}${managerPid ? ` /pid ${managerPid}` : ''} >> ${logPath}
-${
-  process.argv.includes('--update')
-    ? ''
-    : (managerServerEnable ? 'start cmd /k "node main.js --manager --helper"' : 'start cmd /k "node main.js --helper --no-update"')}
-echo remove temp dir >> ${logPath}
-rmdir /s /q temp >> ${logPath}
-echo update success >> ${logPath}
-exit
-`;
-  fs.writeFileSync('temp/update.bat', scriptContent);
-  const updater = spawn('start', [path.resolve('temp/update.bat')], { detached: true, shell: true, stdio: 'ignore' });
-  updater.unref();
-};
-
-const createLinuxMainJsUpdateScript = (logPath: string, managerServerEnable: boolean, managerPid?: string) => {
-  const scriptContent = `#!/bin/bash
-sleep 5
-cd ${path.resolve('./')}
-echo kill process ... >> ${logPath}
-kill -9 ${process.pid} >> ${logPath}
-${managerPid ? `kill -9 ${managerPid} >> ${logPath}` : ''}
-echo remove temp dir >> ${logPath}
-rm -rf temp
-${
-  process.argv.includes('--update')
-    ? ''
-    : (managerServerEnable ? 'node main.js --manager --helper' : 'node main.js --helper --no-update')}
-echo update success >> ${logPath}
-`;
-  fs.writeFileSync('temp/update.sh', scriptContent);
-  try {
-    fs.chmodSync('temp/update.sh', 0o777);
-  } catch (_e) {
-    // Handle error if needed
-  }
-  const updater = spawn('bash', [path.resolve('temp/update.sh')], { detached: true, shell: true, stdio: 'ignore' });
-  updater.unref();
 };
 
 const ask = (rl: Interface, question: string, answers?: Array<string>): Promise<string> => new Promise((resolve) => {
@@ -648,7 +442,12 @@ class Cookie {
 
   static ToJson(data: string | Array<string> | null | undefined): cookies {
     if (typeof data === 'string') {
-      return Object.fromEntries(data.split(';').filter((cookies) => cookies.trim()).map((cookies) => cookies.trim().split('=').map(((str) => str.trim()))));
+      return Object.fromEntries(data.split(';').flatMap((cookieText) => {
+        const cookie = cookieText.trim();
+        const separator = cookie.indexOf('=');
+        if (separator <= 0) return [];
+        return [[cookie.slice(0, separator).trim(), cookie.slice(separator + 1).trim()]];
+      }));
     }
     if (Array.isArray(data)) {
       return Object.fromEntries(data.map((ck) => Object.entries(this.ToJson(ck.split(';')[0]))[0]));

@@ -102,9 +102,6 @@ const formatProxy = (proxy: proxy): any => {
       proxy: proxyOptions
     });
   }
-  if (agent.options) {
-    agent.options.rejectUnauthorized = false;
-  }
   return agent;
 };
 
@@ -143,7 +140,12 @@ class Cookie {
 
   static ToJson(data: string | Array<string> | null | undefined): cookies {
     if (typeof data === 'string') {
-      return Object.fromEntries(data.split(';').filter((cookies) => cookies.trim()).map((cookies) => cookies.trim().split('=').map(((str) => str.trim()))));
+      return Object.fromEntries(data.split(';').flatMap((cookieText) => {
+        const cookie = cookieText.trim();
+        const separator = cookie.indexOf('=');
+        if (separator <= 0) return [];
+        return [[cookie.slice(0, separator).trim(), cookie.slice(separator + 1).trim()]];
+      }));
     }
     if (Array.isArray(data)) {
       return Object.fromEntries(data.map((ck) => Object.entries(this.ToJson(ck.split(';')[0]))[0]));

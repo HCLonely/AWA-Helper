@@ -45,14 +45,22 @@ const createServer = (options?: { key: Buffer, cert: Buffer }) => {
         .replace('__I18N__', JSON.stringify(langs))
     ).end();
   });
-  app.get('/run-status', (_, res) => {
+  app.get('/health/live', (_, res) => {
+    res.status(200).json({ status: 'live', version: globalThis.version });
+  });
+  app.get('/run-status', (req, res) => {
+    const remoteAddress = req.socket.remoteAddress || '';
+    if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remoteAddress)) {
+      res.status(404).end();
+      return;
+    }
     res.send(`${process.pid}`).end();
   });
 
   // @ts-ignore
   app.ws('/ws', (ws: WebSocket, _) => {
     new Logger(time() + chalk.blue(__('webUIConnect')));
-    globalThis.ws = ws;
+    globalThis.wsClients.add(ws);
     ws.send(JSON.stringify(logs));
     /*
   ws.on('message', (msg:any) => {
@@ -61,7 +69,7 @@ const createServer = (options?: { key: Buffer, cert: Buffer }) => {
   */
 
     ws.on('close', (e: any) => {
-      globalThis.ws = null;
+      globalThis.wsClients.delete(ws);
       new Logger(time() + chalk.blue(__('webUIDisconnect')));
     });
   });

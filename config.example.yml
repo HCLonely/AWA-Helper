@@ -12,13 +12,13 @@ timeout: 86400 # 超时设置，单位：秒，默认86400s(24h), 0为不限制�
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
-autoUpdate: true # 自动更新
+autoUpdate: false # 自动安装已暂时禁用；程序仍会检查并提示新版本
 
 #### AWA managerServer配置 ####
 managerServer:
   enable: false # 需同时启用webUI
-  secret: '' # AWA-Manager Secret，强烈建议修改
-  local: true # 仅内网访问，false为开启外网访问
+  secret: '' # AWA-Manager Secret，启用管理器时至少设置16个字符
+  local: true # 非容器环境仅本机访问；Docker 中为支持端口转发会监听容器全部接口
   port: 2345 # AWA managerServer端口
   # ssl: # managerServer启用SSL
     # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！

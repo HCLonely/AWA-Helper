@@ -6,7 +6,7 @@
  * @FilePath     : /AWA-Helper/src/manager/static/js/index.js
  * @Description  : 管理器
  */
-/* global window, localStorage, $, __, dayjs, axios */
+/* global window, sessionStorage, $, __, dayjs, axios */
 // eslint-disable-next-line no-underscore-dangle
 // function __(text, ...argv) {
 //   let result = text;
@@ -21,6 +21,12 @@
 //   return result;
 // }
 const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
+async function openLog(path, secret) {
+  const response = await axios.post(path, { secret }, { responseType: 'blob' });
+  const objectUrl = URL.createObjectURL(response.data);
+  window.open(objectUrl, '_blank', 'noopener,noreferrer');
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60 * 1000);
+}
 function getStatus(secret) {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingHelperStatus')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
@@ -168,7 +174,7 @@ async function managerStatusChecker(status, times = 1) {
       return 'error';
     }
     await sleep(3);
-    return await statusChecker(status, times + 1);
+    return await managerStatusChecker(status, times + 1);
   }
   return 'error';
 }
@@ -279,7 +285,7 @@ async function statusChecker(secret, status, times = 1) {
   }
   return 'error';
 }
-let managerServerSecret = localStorage.getItem('managerServerSecret');
+let managerServerSecret = sessionStorage.getItem('managerServerSecret');
 $('button.awa-helper-config').click(() => {
   window.open('/configer', '_target');
 });
@@ -332,13 +338,13 @@ $('button.awa-archievement-stop').click(() => {
   }
   stopArchievement(managerServerSecret);
 });
-$('button.awa-archievement-logs').click(() => {
+$('button.awa-archievement-logs').click(async () => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     return;
   }
-  window.open(`/awaArchievementLogs?secret=${managerServerSecret}`);
+  await openLog('/awaArchievementLogs', managerServerSecret);
 });
 
 $('button.awa-manager-stop').click(() => {
@@ -351,18 +357,18 @@ $('button.awa-manager-stop').click(() => {
 });
 $('button.save-secret').click(() => {
   managerServerSecret = $('#secret').val();
-  localStorage.setItem('managerServerSecret', managerServerSecret);
+  sessionStorage.setItem('managerServerSecret', managerServerSecret);
   $('#log-area').append(`<li>${time()}${__('managerSecretSaved')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
 });
 
-$('a.run-logs').click(() => {
+$('a.run-logs').click(async () => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     return;
   }
-  window.open(`/runLogs?secret=${managerServerSecret}`);
+  await openLog('/runLogs', managerServerSecret);
 });
 
 $('button.install-user-js').click(() => {

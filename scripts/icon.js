@@ -2,26 +2,31 @@ const fs = require('fs');
 const path = require('path');
 const stream = require('stream');
 const axios = require('axios');
-const decompress = require('decompress');
 const { promisify } = require('util');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 (async () => {
   if (await downloadFile()) {
     if (!fs.existsSync('./resource_hacker/ResourceHacker.exe')) {
       console.log('Decompressing resource_hacker.zip ...');
-      const decompressResult = await decompress('resource_hacker.zip', 'resource_hacker')
-        .then(() => true)
-        .catch((error) => {
-          console.error(error);
-          return false;
-        });
-      if (!decompressResult) {
+      try {
+        fs.mkdirSync('resource_hacker', { recursive: true });
+        // Extract only the executable needed by the build. This prevents archive
+        // entries from writing arbitrary paths outside the destination.
+        execFileSync('tar', ['-xf', 'resource_hacker.zip', '-C', 'resource_hacker', 'ResourceHacker.exe']);
+      } catch (error) {
+        console.error(error);
         return;
       }
     }
     // eslint-disable-next-line max-len
-    execSync(`${path.resolve('./resource_hacker/ResourceHacker')} -open "${path.resolve('output/AWA-helper-raw.exe')}" -save "${path.resolve('output/AWA-helper.exe')}" -action addoverwrite -res "${path.resolve('static/icon.ico')}" -mask ICONGROUP,1,1033`);
+    execFileSync(path.resolve('./resource_hacker/ResourceHacker.exe'), [
+      '-open', path.resolve('output/AWA-Helper-raw.exe'),
+      '-save', path.resolve('output/AWA-Helper.exe'),
+      '-action', 'addoverwrite',
+      '-res', path.resolve('static/icon.ico'),
+      '-mask', 'ICONGROUP,1,1033'
+    ]);
   }
 })();
 

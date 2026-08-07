@@ -1,4 +1,4 @@
-/* global window, document, location, localStorage, FileReader, $, bootstrap, axios, jsyaml */
+/* global window, document, location, sessionStorage, FileReader, $, bootstrap, axios, jsyaml */
 (async () => {
   $(document).ready(() => {
     $(window).scroll(function () {
@@ -518,10 +518,10 @@
     }
   }
   async function getConfig() {
-    if (!localStorage?.managerServerSecret) {
+    if (!sessionStorage?.managerServerSecret) {
       return false;
     }
-    return axios.post('/getConfig', { secret: localStorage.managerServerSecret }).then(async (response) => {
+    return axios.post('/getConfig', { secret: sessionStorage.managerServerSecret }).then(async (response) => {
       console.log(response);
       if (response.status === 200) {
         try {
@@ -537,10 +537,10 @@
     });
   }
   async function setConfig(data) {
-    if (!localStorage?.managerServerSecret) {
+    if (!sessionStorage?.managerServerSecret) {
       return false;
     }
-    return axios.post('/setConfig', { secret: localStorage.managerServerSecret, config: data }).then(async (response) => {
+    return axios.post('/setConfig', { secret: sessionStorage.managerServerSecret, config: data }).then(async (response) => {
       console.log(response);
       if (response.status === 200) {
         showMsg('Success');

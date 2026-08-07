@@ -16,7 +16,18 @@ function generateTaskInfo(data) {
   if (data) {
     Object.entries(data).filter(([name]) => name.includes(__('dailyTask', ''))).forEach(([name, value], index) => {
       if (value.link) {
-        $(`#daily-quest-${index}`).find('th').html(`<a href="${value.link}" target="_blank" style="border: none;">${name}</a>`);
+        try {
+          const link = new URL(value.link, window.location.href);
+          if (!['http:', 'https:'].includes(link.protocol)) throw new Error('Unsupported protocol');
+          const anchor = $('<a>').attr({
+            href: link.href,
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          }).css('border', 'none').text(name);
+          $(`#daily-quest-${index}`).find('th').empty().append(anchor);
+        } catch (_error) {
+          $(`#daily-quest-${index}`).find('th').text(name);
+        }
       } else {
         $(`#daily-quest-${index}`).find('th').text(name);
       }

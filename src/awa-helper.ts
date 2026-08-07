@@ -27,6 +27,9 @@ import dayjs from 'dayjs';
 import CHANGELOG from './CHANGELOG.txt';
 import { execSync } from 'child_process';
 import * as os from 'os';
+import { ProcessLock } from './core/process/ProcessLock';
+import { updateYamlFieldsSync } from './core/config/yamlConfig';
+import { deepMerge, validateHelperConfig } from './core/config/configSchema';
 
 // @ts-ignore
 import * as zh from './locales/zh.json';
@@ -35,27 +38,43 @@ import * as en from './locales/en.json';
 
 const startHelper = async () => {
   globalThis.log = true;
+  const helperLock = new ProcessLock(path.join('data', 'helper.lock'));
+  const shutdownController = new AbortController();
+  let activeTaskCompletion: Promise<Array<PromiseSettledResult<unknown>>> = Promise.resolve([]);
+  const waitForTaskCleanup = async (): Promise<void> => {
+    await Promise.race([
+      activeTaskCompletion,
+      new Promise((resolve) => setTimeout(resolve, 15 * 1000))
+    ]);
+    await helperLock.release();
+  };
+  process.once('exit', () => helperLock.releaseSync());
   process.on('SIGTERM', async () => {
+    shutdownController.abort(new Error('SIGTERM'));
     new Logger(time() + chalk.yellow(__('processWasKilled')));
     try {
       await push(`${__('pushTitle')}:\n${__('processWasKilled')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
     } catch (_e) {
       await push(`${__('pushTitle')}:\n${__('processWasKilled')}${globalThis.newVersionNotice}`);
     }
+    await waitForTaskCleanup();
     process.exit(0);
   });
 
   process.on('SIGINT', async () => {
+    shutdownController.abort(new Error('SIGINT'));
     new Logger(time() + chalk.yellow(__('processWasInterrupted')));
     try {
       await push(`${__('pushTitle')}:\n${__('processWasInterrupted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
     } catch (_e) {
       await push(`${__('pushTitle')}:\n${__('processWasInterrupted')}${globalThis.newVersionNotice}`);
     }
+    await waitForTaskCleanup();
     process.exit(0);
   });
 
   process.on('uncaughtException', async (err) => {
+    shutdownController.abort(err);
     if (err.message.includes('EPIPE')) {
       globalThis.log = false;
       new Logger(time() + chalk.yellow(__('processError')));
@@ -71,7 +90,8 @@ const startHelper = async () => {
       await push(`${__('pushTitle')}:\n${__('processError')}\n\n${__('errorMessage')}:\nUncaught Exception: ${err.message}${globalThis.newVersionNotice}`);
     }
     new Logger(`Uncaught Exception: ${err.message}\n${err.stack}`);
-    process.exit(0);
+    await waitForTaskCleanup();
+    process.exit(1);
   });
 
   // 国际化
@@ -84,42 +104,12 @@ const startHelper = async () => {
     defaultLocale: 'zh',
     register: globalThis
   });
-  globalThis.ws = null;
+  globalThis.wsClients = new Set();
   globalThis.webUI = true;
-  // 检查是否已运行
-  if (fs.existsSync('.lock')) {
-    try {
-      fs.unlinkSync('.lock');
-    } catch (_e) {
-      new Logger(chalk.red(__('running')));
-      new Logger(chalk.blue(__('multipleAccountAlert')));
-      new Logger(__('exitAlert'));
-      process.stdin.setRawMode(true);
-      process.stdin.on('data', () => process.exit(0));
-      return;
-    }
-  }
-  const locked = await new Promise((resolve) => {
-    fs.open('.lock', 'w', (error) => {
-      if (error) {
-        resolve(true);
-      }
-      if (os.type() === 'Windows_NT') {
-        try {
-          execSync('attrib +h .lock');
-        } catch (_e) {
-          //
-        }
-      }
-      resolve(false);
-    });
-  });
-  if (locked) {
+  // 检查是否已运行。使用排他创建确保多个进程不能同时获得锁。
+  if (!await helperLock.acquire()) {
     new Logger(time() + chalk.red(__('running')));
     new Logger(time() + chalk.blue(__('multipleAccountAlert')));
-    new Logger(__('exitAlert'));
-    process.stdin.setRawMode(true);
-    process.stdin.on('data', () => process.exit(0));
     return;
   }
   // 打印版本信息
@@ -180,6 +170,12 @@ const startHelper = async () => {
     language: 'zh',
     timeout: 86400,
     logsExpire: 30,
+    webUI: {
+      enable: false,
+      port: 3456,
+      local: true,
+      reverseProxyPort: 0
+    },
     awaHost: 'www.alienwarearena.com',
     awaBoosterNotice: true,
     awaQuests: ['getStarted', 'dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
@@ -199,7 +195,12 @@ const startHelper = async () => {
   await yamlLint
     .lint(configString)
     .then(() => {
-      config = { ...defaultConfig, ...parse(configString) };
+      const parsedConfig = deepMerge(defaultConfig, parse(configString));
+      const validationErrors = validateHelperConfig(parsedConfig);
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join('; '));
+      }
+      config = parsedConfig;
     })
     .catch((error) => {
       new Logger(time() + chalk.red(__('configFileErrorAlter', error.mark?.line ? chalk.blue(error.mark?.line + 1) : '???', chalk.yellow(__('configFileErrorLocation')))));
@@ -262,8 +263,10 @@ const startHelper = async () => {
   // 设置超时
   if (timeout && typeof timeout === 'number' && timeout > 0) {
     setTimeout(async () => {
+      shutdownController.abort(new Error('Process timeout'));
       new Logger(chalk.yellow(__('processTimeout')));
       await push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+      await waitForTaskCleanup();
       process.exit(0);
     }, timeout * 1000);
   }
@@ -343,7 +346,7 @@ const startHelper = async () => {
     }
     process.exit(0);
   }
-  fs.writeFileSync(configPath, configString.replace(awaCookie as string, awa.newCookie));
+  updateYamlFieldsSync(configPath, { awaCookie: awa.newCookie });
   globalThis.quest = awa;
 
   // 每日任务
@@ -359,11 +362,11 @@ const startHelper = async () => {
     await dailyQuestOld.do();
   }
 
-  const quests: Array<Promise<any>> = [];
+  const quests: Array<{ name: string, promise: Promise<unknown> }> = [];
 
   // AWA在线时长
   if (awaQuests.includes('timeOnSite') && awa.questInfo.timeOnSite?.addedArp !== awa.questInfo.timeOnSite?.maxArp) {
-    quests.push(TimeOnSite.do());
+    quests.push({ name: 'AWA TimeOnSite', promise: TimeOnSite.do(shutdownController.signal) });
   }
   await sleep(10);
 
@@ -375,7 +378,7 @@ const startHelper = async () => {
       if (twitchCookie) {
         const twitch = new TwitchTrack({ cookie: twitchCookie, proxy });
         if (await twitch.init() === true) {
-          quests.push(twitch.do());
+          quests.push({ name: 'Twitch', promise: twitch.do(shutdownController.signal) });
           await sleep(10);
         }
       } else {
@@ -408,15 +411,30 @@ const startHelper = async () => {
           proxy
         });
         if (await steamQuest.init()) {
-          quests.push(steamQuest.do());
+          quests.push({ name: 'Steam ASF', promise: steamQuest.do(shutdownController.signal) });
           await sleep(30);
         }
       }
     }
   }
 
-  awa.listen();
-  await Promise.allSettled(quests);
+  void awa.listen(shutdownController.signal).catch((error) => {
+    new Logger(`${time()}AWA listener failed: ${error instanceof Error ? error.message : String(error)}`);
+  });
+  activeTaskCompletion = Promise.allSettled(quests.map(({ promise }) => promise));
+  const questResults = await activeTaskCompletion;
+  const failedQuests = questResults.flatMap((result, index) => {
+    if (result.status === 'rejected' || result.value === false) {
+      return [quests[index]?.name || `Task ${index + 1}`];
+    }
+    return [];
+  });
+  if (failedQuests.length > 0) {
+    const errorMessage = `${__('processError')}: ${failedQuests.join(', ')}`;
+    new Logger(time() + chalk.red(errorMessage));
+    await push(`${__('pushTitle')}:\n${errorMessage}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+    process.exit(1);
+  }
   new Logger(time() + chalk.green(__('allTaskCompleted')));
   await push(`${__('pushTitle')}:\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
   process.exit(0);

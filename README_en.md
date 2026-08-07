@@ -53,7 +53,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 ##### Update
 
-- Automatic update: Configure `autoUpdate: true` in the config file;
+- Update checks notify you about new releases; automatic installation is temporarily disabled;
 - Manual update: Double-click 'update.bat'.
 
 #### Linux
@@ -89,7 +89,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 #### Update
 
-- Automatic update: Configure `autoUpdate: true` in the config file;
+- Update checks notify you about new releases; automatic installation is temporarily disabled;
 - Manual update: `./update.sh` .
 
 ### Run via NodeJS
@@ -127,7 +127,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 #### Update
 
-- Automatic update: Configure `autoUpdate: true` in the config file;
+- Update checks notify you about new releases; automatic installation is temporarily disabled;
 - Manual update: `node main.js --update` ;
 
 ### Docker
@@ -184,7 +184,7 @@ timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
-autoUpdate: true # 自动更新
+autoUpdate: false # Check for updates; automatic installation is temporarily disabled
 ```
 
 ### AWA-Manager configuration
@@ -195,7 +195,7 @@ autoUpdate: true # 自动更新
 managerServer:
   enable: false # 需同时启用webUI
   secret: '' # AWA-Manager Secret，强烈建议修改
-  local: true # 仅内网访问，false为开启外网访问
+  local: true # Local-only outside containers; Docker listens on all container interfaces for port forwarding
   port: 2345 # AWA managerServer端口
   # ssl: # managerServer启用SSL
     # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
@@ -423,7 +423,6 @@ flowchart TD
 - [cheerio](https://github.com/cheeriojs/cheerio)
 - [cron-parser](https://github.com/harrisiirak/cron-parser)
 - [dayjs](https://github.com/iamkun/dayjs)
-- [decompress](https://github.com/kevva/decompress)
 - [express](https://github.com/expressjs/express)
 - [express-ws](https://github.com/HenningM/express-ws)
 - [form-data](https://github.com/form-data/form-data)

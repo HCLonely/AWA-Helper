@@ -142,6 +142,7 @@ declare global {
     delay?: number
   }
   interface myAxiosConfig extends AxiosRequestConfig {
+    retryCount?: number
     retryTimes?: number
     retryDelay?: number
     Logger?: Logger
@@ -173,7 +174,7 @@ declare global {
   }
   var secrets: Array<string>;
   var userAgent: string;
-  var ws: WebSocket | null;
+  var wsClients: Set<WebSocket>;
   var webUI: boolean;
   var logs: logs;
   var language: string;

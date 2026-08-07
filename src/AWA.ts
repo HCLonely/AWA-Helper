@@ -104,8 +104,11 @@ class AWA {
           return result;
         }
       }
-    } else if (!(await this.getPersonalization())) {
-      return 603;
+    } else {
+      const personalizationResult = await this.getPersonalization();
+      if (personalizationResult !== 200) {
+        return personalizationResult;
+      }
     }
     this.newCookie = this.cookie.stringify();
 
@@ -169,10 +172,11 @@ class AWA {
       });
   }
 
-  async listen(): Promise<void> {
-    await this.updateDailyQuests();
-    await sleep(60 * 5);
-    this.listen();
+  async listen(signal?: AbortSignal): Promise<void> {
+    while (!signal?.aborted) {
+      await this.updateDailyQuests();
+      if (!await sleep(60 * 5, signal)) return;
+    }
   }
 
   async updateDailyQuests(verify = false): Promise<number> {
