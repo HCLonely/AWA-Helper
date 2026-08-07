@@ -19,7 +19,6 @@ const { execFileSync } = require('child_process');
         return;
       }
     }
-    // eslint-disable-next-line max-len
     execFileSync(path.resolve('./resource_hacker/ResourceHacker.exe'), [
       '-open', path.resolve('output/AWA-Helper-raw.exe'),
       '-save', path.resolve('output/AWA-Helper.exe'),

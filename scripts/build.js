@@ -47,7 +47,6 @@
     const mermaidJs = fs.readFileSync('static/mermaid.min.js').toString();
     const highlightCss = fs.readFileSync('static/github-dark-dimmed.css').toString();
     const highlightJs = fs.readFileSync('static/highlight.min.js').toString();
-    // eslint-disable-next-line max-len
     fs.writeFileSync(`dist/${e}.html`, `<style>${highlightCss}pre code.hljs{width:fit-content;}</style>${mainHtml}<script>${mermaidJs}</script><script>${highlightJs}</script><script>mermaid.initialize({startOnLoad:true});</script>`);
   });
 

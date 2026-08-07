@@ -13,15 +13,14 @@ import * as fs from 'fs-extra';
 import axios, { AxiosError } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
-import { format } from 'util';
+import { formatLogValue } from '../core/logging/sanitize';
 
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
-    // eslint-disable-next-line no-control-regex
-    return e.replace(/\x1B\[[\d]*?m/g, '');
+    return formatLogValue(e, true);
   }
 
-  return format(e);
+  return formatLogValue(e, true);
 };
 
 class Logger {
@@ -32,13 +31,13 @@ class Logger {
   }
   log(data: any, newLine = true): void {
     fs.appendFileSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(data) + (newLine ? '\n' : ''));
-    if (newLine) console.log(data);
-    else process.stdout.write(data);
+    if (newLine) console.log(formatLogValue(data));
+    else process.stdout.write(formatLogValue(data));
   }
   static consoleLog(text: any, newLine = true): void {
     fs.appendFileSync(`logs/Archievement-${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(text) + (newLine ? '\n' : ''));
-    if (newLine) console.log(text);
-    else process.stdout.write(text);
+    if (newLine) console.log(formatLogValue(text));
+    else process.stdout.write(formatLogValue(text));
   }
 }
 

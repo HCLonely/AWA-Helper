@@ -1,10 +1,16 @@
 .history/
+.git/
+.github/
 node_modules/
 config.yml
 config1.yml
 config2.yml
 AWA-Helper.exe
 *.zip
+*.tar
+*.tar.gz
+*.tar.xz
+*.blob
 output/
 log.txt
 version
@@ -25,3 +31,7 @@ test.js
 test.ts
 test.exe
 node_linux/
+node-*/
+resource_hacker/
+upx/
+tests/

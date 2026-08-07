@@ -1,5 +1,4 @@
-/* global window, WebSocket, $, I18n, lang, dayjs */
-// eslint-disable-next-line no-underscore-dangle
+/* global $, I18n, lang, dayjs */
 function __(text, ...argv) {
   let result = text;
   if (I18n[lang]?.[text]) {
@@ -73,7 +72,6 @@ function generateTaskInfo(data) {
     if (data[__('timeOnSite')][__('obtainedARP')] === data[__('timeOnSite')][__('maxAvailableARP')]) {
       $('#time-on-site').attr('class', 'table-success');
     }
-    // eslint-disable-next-line max-len
     if ((parseInt(data[__('watchTwitch')][__('obtainedARP')], 10) + parseInt(data[__('watchTwitch')][__('extraARP')], 10)) === data[__('watchTwitch')][__('maxAvailableARP')]) {
       $('#watch-twitch').attr('class', 'table-success');
     }
@@ -111,7 +109,19 @@ function connectWebUIServer(retry = 0) {
     wsPort = window.location.protocol === 'https:' ? ':443' : ':80';
   }
 
-  const ws = new WebSocket(`${wsProtocol}://${window.location.host}${wsPort}/ws`);
+  let protocols;
+  if (window.location.pathname.startsWith('/awa-helper')) {
+    const managerSecret = sessionStorage.getItem('managerServerSecret') || localStorage.getItem('managerServerSecret');
+    if (managerSecret) {
+      const bytes = new TextEncoder().encode(managerSecret);
+      let binary = '';
+      bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+      const encodedSecret = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      protocols = ['awa-manager', encodedSecret];
+    }
+  }
+  const wsUrl = `${wsProtocol}://${window.location.host}${wsPort}/ws`;
+  const ws = protocols ? new WebSocket(wsUrl, protocols) : new WebSocket(wsUrl);
   ws.onopen = function () {
     console.log(__('connectWebUISuccess'));
     $('#log-area').html('');

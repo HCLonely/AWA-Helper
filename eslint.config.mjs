@@ -4,7 +4,29 @@ import js from '@eslint/js';
 import globals from 'globals';
 
 export default [
+  {
+    ignores: ['**/*.min.js', 'src/**/dist/**', 'dist/**', 'output/**', 'node_modules/**'],
+  },
   js.configs.recommended,
+  {
+    files: ['scripts/**/*.js', 'tests/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: globals.node,
+    },
+  },
+  {
+    files: ['src/manager/configer/index.js', 'src/manager/static/js/index.js', 'src/webUI/static/js/index.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: globals.browser,
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+    },
+  },
   {
     files: ['src/**/*.ts'],
     languageOptions: {

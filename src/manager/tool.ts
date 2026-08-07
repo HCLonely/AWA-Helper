@@ -2,9 +2,9 @@
 import chalk from 'chalk';
 import dayjs from 'dayjs';
 import * as fs from 'fs';
-import { format } from 'util';
 import axios from 'axios';
 import { PushApi } from 'all-pusher-api';
+import { formatLogValue } from '../core/logging/sanitize';
 
 interface pushOptions {
   name: string
@@ -37,11 +37,10 @@ interface pusher {
 }
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
-    // eslint-disable-next-line no-control-regex
-    return e.replace(/\x1B\[[\d]*?m/g, '');
+    return formatLogValue(e, true);
   }
 
-  return format(e);
+  return formatLogValue(e, true);
 };
 
 class Logger {
@@ -52,13 +51,13 @@ class Logger {
   }
   log(data: any, newLine = true): void {
     fs.appendFileSync(`logs/Manager-${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(data) + (newLine ? '\n' : ''));
-    if (newLine) console.log(data);
-    else process.stdout.write(data);
+    if (newLine) console.log(formatLogValue(data));
+    else process.stdout.write(formatLogValue(data));
   }
   static consoleLog(text: any, newLine = true): void {
     fs.appendFileSync(`logs/Manager-${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(text) + (newLine ? '\n' : ''));
-    if (newLine) console.log(text);
-    else process.stdout.write(text);
+    if (newLine) console.log(formatLogValue(text));
+    else process.stdout.write(formatLogValue(text));
   }
 }
 

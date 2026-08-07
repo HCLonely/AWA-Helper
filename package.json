@@ -7,7 +7,7 @@
     "node": "^22.13.0 || >=24.0.0"
   },
   "scripts": {
-    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\"",
+    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\" \"src/manager/configer/index.js\" \"src/manager/static/js/index.js\" \"src/webUI/static/js/index.js\"",
     "typecheck": "tsc --noEmit",
     "test:unit": "npm run tsc --silent && node --test tests/*.test.js",
     "test": "npm run lint && npm run typecheck && npm run test:unit",

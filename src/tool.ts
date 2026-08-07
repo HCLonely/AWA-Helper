@@ -13,10 +13,9 @@ import * as fs from 'fs-extra';
 import axios, { AxiosError } from 'axios';
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, SocksProxyAgentOptions } from 'socks-proxy-agent';
-import { parse } from 'yaml';
-import { format } from 'util';
 import { PushApi } from 'all-pusher-api';
 import type { Interface } from 'readline';
+import { formatLogValue } from './core/logging/sanitize';
 
 globalThis.logs = { type: 'logs' };
 globalThis.wsClients = new Set();
@@ -36,39 +35,6 @@ const broadcastWebUi = (data: unknown): void => {
   });
 };
 
-const getSecertValue = (): Array<string> => {
-  if (!fs.existsSync('config.yml')) {
-    return ['______________'];
-  }
-  try {
-    const {
-      awaCookie,
-      twitchCookie,
-      asfPassword,
-      proxy: {
-        host,
-        username,
-        password
-      },
-      asfHost,
-      autoLogin: {
-        username: username1,
-        password: password1
-      }
-    } = parse(fs.readFileSync('config.yml').toString());
-    const secrets = ['______________'];
-    secrets.push(...Object.values(Cookie.ToJson(awaCookie || '')));
-    secrets.push(...Object.values(Cookie.ToJson(twitchCookie || '')));
-    secrets.push(asfPassword, host, username, password, asfHost, username1, password1);
-    return [...new Set(secrets)];
-  } catch {
-    return ['______________'];
-  }
-};
-const hideSectets = (data: string): string => {
-  globalThis.secrets.filter((secret) => secret && secret.length > 5).forEach((secret) => data = data.replaceAll(secret, '********'));
-  return data;
-};
 const escapeHtml = (data: string): string => data
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
@@ -76,21 +42,19 @@ const escapeHtml = (data: string): string => data
   .replaceAll('"', '&quot;')
   .replaceAll('\'', '&#39;');
 
-globalThis.secrets = getSecertValue();
+globalThis.secrets = [];
 
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
-    // eslint-disable-next-line no-control-regex
-    return hideSectets(e.replace(/\x1B\[[\d]*?m/g, ''));
+    return formatLogValue(e, true);
   }
-
-  return hideSectets(format(e));
+  return formatLogValue(e, true);
 };
 const toHtmlJSON = (e: any): string => {
   if (typeof e === 'string') {
-    const safeText = escapeHtml(e);
+    const safeText = escapeHtml(formatLogValue(e));
     // eslint-disable-next-line no-control-regex
-    return hideSectets(safeText.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
+    return safeText.replace(/\x1B\[90m(.+?)\x1B\[39m/g, '<font class="gray">$1</font>')
     // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[31m(.+?)\x1B\[39m/g, '<font class="red">$1</font>')
       // eslint-disable-next-line no-control-regex
@@ -117,10 +81,10 @@ const toHtmlJSON = (e: any): string => {
       .replace(/\x1B\[33m(.+)/g, '<font class="yellow">$1</font>')
       // eslint-disable-next-line no-control-regex
       .replace(/\x1B\[34m(.+)/g, '<font class="blue">$1</font>')
-      .replace(/\n/g, '</br>'));
+      .replace(/\n/g, '</br>');
   }
 
-  return escapeHtml(hideSectets(format(e)));
+  return escapeHtml(formatLogValue(e));
 };
 
 class Logger {
@@ -147,9 +111,9 @@ class Logger {
     fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(data) + (newLine ? '\n' : ''));
     if (globalThis.log) {
       if (newLine)  {
-        console.log(data);
+        console.log(formatLogValue(data));
       } else {
-        process.stdout.write(data);
+        process.stdout.write(formatLogValue(data));
       }
     }
     this.data += data;
@@ -171,9 +135,9 @@ class Logger {
     fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, toJSON(text) + (newLine ? '\n' : ''));
     if (globalThis.log) {
       if (newLine) {
-        console.log(text);
+        console.log(formatLogValue(text));
       } else {
-        process.stdout.write(text);
+        process.stdout.write(formatLogValue(text));
       }
     }
   }
@@ -184,13 +148,17 @@ const sleep = (time: number, signal?: AbortSignal): Promise<boolean> => new Prom
     resolve(false);
     return;
   }
-  const timeout = setTimeout(() => {
-    resolve(true);
-  }, time * 1000);
-  signal?.addEventListener('abort', () => {
+  let settled = false;
+  const finish = (result: boolean): void => {
+    if (settled) return;
+    settled = true;
     clearTimeout(timeout);
-    resolve(false);
-  }, { once: true });
+    signal?.removeEventListener('abort', onAbort);
+    resolve(result);
+  };
+  const onAbort = (): void => finish(false);
+  const timeout = setTimeout(() => finish(true), time * 1000);
+  signal?.addEventListener('abort', onAbort, { once: true });
 });
 
 const random = (minNum: number, maxNum: number): number => Math.floor((Math.random() * (maxNum - minNum + 1)) + minNum);

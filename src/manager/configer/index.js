@@ -1,4 +1,4 @@
-/* global window, document, location, sessionStorage, FileReader, $, bootstrap, axios, jsyaml */
+/* global $, bootstrap, axios, jsyaml */
 (async () => {
   $(document).ready(() => {
     $(window).scroll(function () {
@@ -526,7 +526,7 @@
       if (response.status === 200) {
         try {
           return jsyaml.load(response.data);
-        } catch (e) {
+        } catch (_e) {
           return false;
         }
       }

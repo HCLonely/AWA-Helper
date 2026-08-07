@@ -14,6 +14,7 @@ import { sleep, Logger, time } from './tool';
 import { Twitch } from './Twitch';
 import chalk from 'chalk';
 import * as fs from 'fs';
+import { atomicWriteFileSync } from '../core/config/yamlConfig';
 
 export class Archievement {
   awa: AWA;
@@ -62,14 +63,41 @@ export class Archievement {
       this.twitchCookie = twitchCookie;
     }
   }
+  private readActionHistory(): ActionHistory {
+    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: [] } };
+    try {
+      const parsed = JSON.parse(fs.readFileSync(this.actionHistoryPath, 'utf8')) as Partial<ActionHistory>;
+      return {
+        border: {
+          date: typeof parsed.border?.date === 'string' ? parsed.border.date : '',
+          used: Array.isArray(parsed.border?.used) ? parsed.border.used.filter((id): id is string => typeof id === 'string') : []
+        },
+        avatar: {
+          date: typeof parsed.avatar?.date === 'string' ? parsed.avatar.date : '',
+          used: Array.isArray(parsed.avatar?.used) ? parsed.avatar.used.filter((id): id is string => typeof id === 'string') : []
+        }
+      };
+    } catch (_error) {
+      return defaultHistory;
+    }
+  }
+  private writeActionHistory(actionHistory: ActionHistory): void {
+    atomicWriteFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
+  }
+  private localDate(now: Date): string {
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
   async init(): Promise<void> {
-    await this.awa.init();
+    if (!await this.awa.init()) throw new Error('Achievement AWA initialization failed');
     this.Achievements = await this.awa.getAchievements();
     if (!fs.existsSync('data')) {
       fs.mkdirSync('data');
     }
     if (!fs.existsSync(this.actionHistoryPath)) {
-      fs.writeFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
+      atomicWriteFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
     }
   }
   async run(): Promise<void> {
@@ -92,10 +120,11 @@ export class Archievement {
 
   async border25(): Promise<void> {
     const { userAvatarInfo: UAI, ids: borders } = await this.awa.getAvatars('border') || {};
-    const userAvatarInfo = this.userAvatarInfo || UAI;
-    if (!borders || !userAvatarInfo) {
+    const existingAvatarInfo = this.userAvatarInfo || UAI;
+    if (!borders || !existingAvatarInfo) {
       return;
     }
+    const userAvatarInfo = { ...existingAvatarInfo };
     const borderIds = borders.map((border:Id) => border.id);
     if (borderIds.length < 25) {
       new Logger(`${time()}${__('notEnoughBorders', chalk.yellow('25'))}`);
@@ -106,7 +135,7 @@ export class Archievement {
 
     for (let i = 0; i < 25; i++) {
       userAvatarInfo.border = borderIds[i];
-      await this.awa.changeAvatar('Border', userAvatarInfo);
+      if (!await this.awa.changeAvatar('Border', userAvatarInfo)) return;
       this.userAvatarInfo = userAvatarInfo;
       // new Logger(`${time()}${__('changeBorder', chalk.yellow(borderId))}`, false);
       await sleep(5);
@@ -123,13 +152,8 @@ export class Archievement {
       return;
     }
 
-    const [today] = now.toISOString().split('T');
-
-    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: [] } };
-    const actionHistory: ActionHistory = JSON.parse(fs.readFileSync(this.actionHistoryPath).toString()) || defaultHistory;
-    if (!Array.isArray(actionHistory.avatar.used)) {
-      actionHistory.avatar.used = [];
-    }
+    const today = this.localDate(now);
+    const actionHistory = this.readActionHistory();
 
     if (actionHistory[type]?.date === today) {
       new Logger(`${time()}${__(type === 'border' ? 'todayAlreadyChangedBorder' : 'todayAlreadyChangedAvatar')}`);
@@ -138,15 +162,16 @@ export class Archievement {
 
     // new Logger(`${time()}${__('gettingBorder')}`);
     const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars(type) || {};
-    const userAvatarInfo = this.userAvatarInfo || UAI;
-    if (!ids) {
+    const existingAvatarInfo = this.userAvatarInfo || UAI;
+    if (!ids || !existingAvatarInfo) {
       return;
     }
+    const userAvatarInfo = { ...existingAvatarInfo } as userAvatarInfo;
 
     const usedIds = actionHistory[type].used || [];
     const availableIds = ids.filter((id: Id) => !usedIds.includes(id.id));
 
-    if (availableIds.length === 0 || !userAvatarInfo) {
+    if (availableIds.length === 0) {
       new Logger(`${time()}${__(type === 'border' ? 'noAvailableBorder' : 'noAvailableAvatar')}`);
       return;
     }
@@ -155,13 +180,13 @@ export class Archievement {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo);
+    if (!await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo)) return;
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
     actionHistory[type].date = today;
     actionHistory[type].used.push(selectedId.id);
-    fs.writeFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
+    this.writeActionHistory(actionHistory);
 
     new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
   }
@@ -184,13 +209,8 @@ export class Archievement {
       return;
     }
 
-    const currentMonth = now.toISOString().substring(0, 7);
-
-    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: [] } };
-    const actionHistory: ActionHistory = JSON.parse(fs.readFileSync(this.actionHistoryPath).toString()) || defaultHistory;
-    if (!Array.isArray(actionHistory.avatar.used)) {
-      actionHistory.avatar.used = [];
-    }
+    const currentMonth = this.localDate(now).slice(0, 7);
+    const actionHistory = this.readActionHistory();
 
     if (actionHistory[type].date === currentMonth) {
       new Logger(`${time()}${__(`${type}OnceAMonthForAYearAlreadyDone`)}`);
@@ -199,15 +219,16 @@ export class Archievement {
 
     // new Logger(`${time()}${__('gettingBorder')}`);
     const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars(type) || {};
-    const userAvatarInfo = this.userAvatarInfo || UAI;
-    if (!ids) {
+    const existingAvatarInfo = this.userAvatarInfo || UAI;
+    if (!ids || !existingAvatarInfo) {
       return;
     }
+    const userAvatarInfo = { ...existingAvatarInfo } as userAvatarInfo;
 
     const usedIds = actionHistory[type].used || [];
     const availableIds = ids.filter((id: Id) => !usedIds.includes(id.id));
 
-    if (availableIds.length === 0 || !userAvatarInfo) {
+    if (availableIds.length === 0) {
       new Logger(`${time()}${__(type === 'border' ? 'noAvailableBorder' : 'noAvailableAvatar')}`);
       return;
     }
@@ -216,13 +237,13 @@ export class Archievement {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo);
+    if (!await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo)) return;
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
     actionHistory[type].date = currentMonth;
     actionHistory[type].used.push(selectedId.id);
-    fs.writeFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
+    this.writeActionHistory(actionHistory);
 
     new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
   }

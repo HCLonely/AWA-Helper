@@ -30,9 +30,12 @@ import { CronExpressionParser } from 'cron-parser';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { Artifacts } from './Artifacts';
 import { Archievement } from '../Archievement/Archievement';
-import { atomicWriteFileSync, updateYamlFieldsSync, validateYaml } from '../core/config/yamlConfig';
+import { atomicWriteFileSync, createConfigValidationError, updateYamlFieldsSync, validateYaml } from '../core/config/yamlConfig';
 import { deepMerge, validateHelperConfig } from '../core/config/configSchema';
 import { getManagerListenHost } from './network';
+import { setLogSecrets } from '../core/logging/sanitize';
+import { cleanupExpiredLogs } from '../core/logging/retention';
+import { decodeManagerWebSocketSecret } from './websocketAuth';
 // @ts-ignore
 import indexHtml from './dist/index.html';
 // @ts-ignore
@@ -159,12 +162,14 @@ const startManager = async (startHelper: boolean) => {
       const parsedConfig = deepMerge(defaultConfig, parse(configString));
       const validationErrors = validateHelperConfig(parsedConfig);
       if (validationErrors.length > 0) {
-        throw new Error(`Invalid configuration: ${validationErrors.join('; ')}`);
+        throw createConfigValidationError(configString, validationErrors);
       }
       config = parsedConfig;
+      setLogSecrets(parsedConfig);
     })
     .catch((error) => {
-      new Logger(time() + chalk.red(__('configFileErrorAlter', error.mark?.line ? chalk.blue(error.mark.line + 1) : '???', chalk.yellow(__('configFileErrorLocation')))));
+      const errorLine = Number.isInteger(error.mark?.line) ? chalk.blue(error.mark.line + 1) : '???';
+      new Logger(time() + chalk.red(__('configFileErrorAlter', errorLine, chalk.yellow(__('configFileErrorLocation')))));
       new Logger(error.message);
     });
   if (!config) {
@@ -179,15 +184,9 @@ const startManager = async (startHelper: boolean) => {
   }
 
   if (fs.existsSync('logs')) {
-    const logFiles = fs.readdirSync('logs');
-    if (logsExpire && logsExpire < logFiles.length) {
+    if (logsExpire) {
       const logger = new Logger(`${time()}${__('clearingLogs')}`, false);
-      const now = dayjs();
-      logFiles.forEach((filename) => {
-        if (now.diff(filename.replace('.txt', '').replace('Manager-', '').replace('Archievement-', ''), 'day') >= logsExpire) {
-          fs.unlinkSync(join('logs', filename));
-        }
-      });
+      cleanupExpiredLogs('logs', logsExpire);
       logger.log(chalk.green('OK'));
     }
   }
@@ -257,23 +256,16 @@ const startManager = async (startHelper: boolean) => {
 
     if (awaCookie && fs.existsSync('data/Archievement')) {
       archievementCorn = corn.schedule('0 14 * * *', async () => {
-        new Logger(time() + __('startArchievement'));
-        if (archievement) {
-          archievement.destroy();
-          archievement = null;
+        try {
+          new Logger(time() + __('startArchievement'));
+          if (archievement) archievement.destroy();
+          archievement = new Archievement({ awaCookie, proxy, awaHost, twitchCookie, userAgent: UA });
+          await archievement.init();
+          await archievement.run();
+          new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(CronExpressionParser.parse('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+        } catch (error) {
+          new Logger(error);
         }
-
-        archievement = new Archievement({
-          awaCookie,
-          proxy,
-          awaHost,
-          twitchCookie,
-          userAgent: UA
-        });
-        await archievement.init();
-        archievement.run();
-
-        new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(CronExpressionParser.parse('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
       });
 
       archievement = new Archievement({
@@ -283,12 +275,10 @@ const startManager = async (startHelper: boolean) => {
         twitchCookie,
         userAgent: UA
       });
-      archievement.init().then(() => {
-        archievement?.run();
-      });
+      archievement.init().then(() => archievement?.run()).catch((error) => new Logger(error));
     }
 
-    expressWs(app, server);
+    expressWs(app, server, { wsOptions: { maxPayload: 64 * 1024 } });
     app.get('/', (_, res) => {
       let htmlContext = indexHtml.replace('__LANG__', language)
         .replaceAll('__VERSION__', version)
@@ -322,6 +312,12 @@ const startManager = async (startHelper: boolean) => {
       }
       try {
         validateYaml(req.body.config);
+        const parsedConfig = deepMerge(defaultConfig, parse(req.body.config));
+        const validationErrors = validateHelperConfig(parsedConfig);
+        if (validationErrors.length > 0) {
+          const validationError = createConfigValidationError(req.body.config, validationErrors);
+          return res.status(422).json({ errors: validationError.issues });
+        }
         atomicWriteFileSync(configPath, req.body.config);
       } catch (_error) {
         return res.status(422).end();
@@ -480,26 +476,18 @@ const startManager = async (startHelper: boolean) => {
         if (!fs.existsSync('data')) {
           fs.mkdirSync('data');
         }
-        fs.writeFileSync('data/Archievement', '');
-
+        archievementCorn?.stop();
         archievementCorn = corn.schedule('0 14 * * *', async () => {
-          new Logger(time() + __('startArchievement'));
-          if (archievement) {
-            archievement.destroy();
-            archievement = null;
+          try {
+            new Logger(time() + __('startArchievement'));
+            if (archievement) archievement.destroy();
+            archievement = new Archievement({ awaCookie, proxy, awaHost, twitchCookie, userAgent: UA });
+            await archievement.init();
+            await archievement.run();
+            new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(CronExpressionParser.parse('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
+          } catch (error) {
+            new Logger(error);
           }
-
-          archievement = new Archievement({
-            awaCookie,
-            proxy,
-            awaHost,
-            twitchCookie,
-            userAgent: UA
-          });
-          await archievement.init();
-          archievement.run();
-
-          new Logger(time() + __('nextArchievementRestart', chalk.blue(dayjs(CronExpressionParser.parse('0 14 * * *').next().toString()).format('YYYY-MM-DD HH:mm:ss'))));
         });
 
         if (archievement) {
@@ -515,7 +503,8 @@ const startManager = async (startHelper: boolean) => {
           userAgent: UA
         });
         await archievement.init();
-        archievement.run();
+        await archievement.run();
+        fs.writeFileSync('data/Archievement', '');
         return res.status(200).send('success');
       }
       return res.status(401).end();
@@ -540,20 +529,46 @@ const startManager = async (startHelper: boolean) => {
         changeOrigin: true
       }));
       const targetUrl = `ws://127.0.0.1:${webUI.port}/ws`;
+      let activeWebSocketConnections = 0;
+      const maxWebSocketConnections = 20;
       // @ts-ignore
-      app.ws('/ws', (ws: WebSocket) => {
+      app.ws('/ws', (ws: WebSocket, req) => {
+        const candidate = decodeManagerWebSocketSecret(req.headers['sec-websocket-protocol']);
+        if (!isValidSecret(candidate)) {
+          ws.close(1008, 'Authentication required');
+          return;
+        }
+        if (activeWebSocketConnections >= maxWebSocketConnections) {
+          ws.close(1013, 'Too many connections');
+          return;
+        }
+        activeWebSocketConnections++;
+        let connectionClosed = false;
+        const closeConnection = (): void => {
+          if (connectionClosed) return;
+          connectionClosed = true;
+          activeWebSocketConnections--;
+        };
         const targetWs = new WebSocket(targetUrl);
-        ws.on('message', (data) => {
-          targetWs.send(typeof data === 'string' ? data : data.toString());
-        });
+        const canClose = (socket: WebSocket): boolean => socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN;
         targetWs.on('message', (data) => {
-          ws.send(typeof data === 'string' ? data : data.toString());
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(typeof data === 'string' ? data : data.toString());
+          }
         });
         ws.on('close', () => {
-          targetWs.close();
+          closeConnection();
+          if (canClose(targetWs)) targetWs.close();
         });
         targetWs.on('close', () => {
-          ws.close();
+          if (canClose(ws)) ws.close();
+        });
+        ws.on('error', () => {
+          closeConnection();
+          if (canClose(targetWs)) targetWs.close();
+        });
+        targetWs.on('error', () => {
+          if (canClose(ws)) ws.close(1011, 'Helper WebSocket unavailable');
         });
       });
     }

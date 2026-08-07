@@ -4,7 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 const { parse } = require('yaml');
-const { updateYamlFieldsSync, validateYaml } = require('../dist/core/config/yamlConfig');
+const { createConfigValidationError, getYamlFieldLine, updateYamlFieldsSync, validateYaml } = require('../dist/core/config/yamlConfig');
 
 test('updateYamlFieldsSync safely updates secrets and preserves unrelated fields', (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-config-'));
@@ -25,4 +25,17 @@ test('updateYamlFieldsSync safely updates secrets and preserves unrelated fields
 
 test('validateYaml rejects malformed YAML', () => {
   assert.throws(() => validateYaml('key: [unterminated'));
+});
+
+test('configuration validation errors include exact or nearest YAML line', () => {
+  const content = 'language: zh\nproxy:\n  enable: []\n  host: ""\n  port: 0\n';
+  assert.equal(getYamlFieldLine(content, 'proxy.host'), 4);
+  assert.equal(getYamlFieldLine(content, 'proxy.username'), 2);
+  const error = createConfigValidationError(content, [
+    'proxy.host must be a non-empty string',
+    'proxy.port must be an integer between 1 and 65535'
+  ]);
+  assert.equal(error.mark.line, 3);
+  assert.match(error.message, /line 4 \(proxy\.host\)/);
+  assert.match(error.message, /line 5 \(proxy\.port\)/);
 });

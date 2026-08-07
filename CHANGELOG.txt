@@ -1,13 +1,22 @@
-- 使用原子进程锁，支持崩溃后的陈旧锁恢复，并修复锁创建竞争窗口。
-- 修正任务失败仍显示“全部完成”、异常退出码为 0、递归轮询堆积等问题。
-- Twitch、Steam ASF、在线时长任务支持取消信号和优雅退出。
-- 修复 Twitch 扩展 JWT、Steam Cookie、Cookie 中 = 被截断等问题。
-- 配置改为深度合并、运行时校验和原子写入，避免字符串替换破坏 YAML。
-- 禁用未签名自动更新及管理器伪“更新成功”行为，发布校验改用 SHA-256。
-- Manager 增加强密钥要求、恒定时间比较、安全响应头、请求体限制。
-- 日志接口从 URL 查询密钥改为 POST，请求密钥使用 sessionStorage。
-- 修复 WebUI 日志和任务链接注入风险。
-- WebSocket 改为多客户端集合并限制内存日志数量。
-- HTTP 重试仅允许幂等请求，并支持退避、抖动和 Retry-After。
-- Node、CI、Docker、SEA 发布运行时统一到 Node 22.13.1。
-- Docker 改为非 root 用户运行，并加入健康检查。
+- 使用原子进程锁，支持崩溃后的陈旧锁恢复，并修复锁创建竞争窗口
+- 修正任务失败仍显示“全部完成”、异常退出码为 0、递归轮询堆积等问题
+- Twitch、Steam ASF、在线时长任务支持取消信号和优雅退出
+- 修复 Twitch 扩展 JWT、Steam Cookie、Cookie 中 = 被截断等问题
+- 配置改为深度合并、运行时校验和原子写入，避免字符串替换破坏 YAML
+- 禁用未签名自动更新及管理器伪“更新成功”行为，发布校验改用 SHA-256
+- Manager 增加强密钥要求、恒定时间比较、安全响应头、请求体限制
+- 日志接口从 URL 查询密钥改为 POST，请求密钥使用 sessionStorage
+- 修复 WebUI 日志和任务链接注入风险
+- WebSocket 改为多客户端集合并限制内存日志数量
+- HTTP 重试仅允许幂等请求，并支持退避、抖动和 Retry-After
+- Node、CI、Docker、SEA 发布运行时统一到 Node 22.13.1
+- Docker 改为非 root 用户运行，并加入健康检查
+- 统一安全日志脱敏，AxiosError 不再输出请求头、Cookie、密码和 Token
+- Manager WebSocket 增加 Secret 认证、连接/消息限制和完整错误处理
+- /setConfig 增加完整语义校验
+- 修复 sleep() 遗留 AbortSignal 监听器
+- 健康检查改为真实端口/进程探测
+- 修复日志过期清理条件
+- 修复 Achievement 重复定时器、异常丢失、UTC/本地日期混用、失败后错误记录历史、历史文件损坏和非原子写入
+- JS lint 扩展到浏览器代码、构建脚本和测试
+- 优化 .dockerignore

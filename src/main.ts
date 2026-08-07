@@ -12,12 +12,9 @@ import { startHelper } from './awa-helper';
 import { startManager } from './manager/index';
 // @ts-ignore
 import exampleConfig from './config.example.yml';
+import { runHealthcheck } from './core/process/healthcheck';
 
 process.chdir(__dirname);
-
-if (process.argv.includes('--healthcheck')) {
-  process.exit(0);
-}
 
 const createIfNotExists = (path: string, content?: string) => {
   if (!fs.existsSync(path)) {
@@ -36,33 +33,37 @@ const createIfNotExists = (path: string, content?: string) => {
   }
 };
 
-createIfNotExists('logs');
-createIfNotExists('config');
-createIfNotExists('config/config.example.yml', exampleConfig);
+const main = async (): Promise<void> => {
+  if (process.argv.includes('--healthcheck')) {
+    process.exit(await runHealthcheck() ? 0 : 1);
+  }
 
-const isWindows = os.type() === 'Windows_NT';
-const isMainJs = /.*main\.js$/.test(process.argv[1]);
+  createIfNotExists('logs');
+  createIfNotExists('config');
+  createIfNotExists('config/config.example.yml', exampleConfig);
 
-if (isWindows) {
-  createIfNotExists('AWA-Manager.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node main.js --manager"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --manager"');
-  createIfNotExists('AWA-Helper.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node main.js --helper"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --helper"');
-  createIfNotExists('update.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node main.js --update"' : '@echo off\ncd "%~dp0"\ntaskkill /f /t /im AWA-Helper.exe\nstart cmd /k "AWA-Helper.exe --update"');
-} else {
-  createIfNotExists('AWA-Manager.sh', isMainJs ? 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nnode main.js --manager' : 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --manager');
-  createIfNotExists('AWA-Helper.sh', isMainJs ? 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nnode main.js --helper' : 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --helper');
-  createIfNotExists('update.sh', isMainJs ? 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nnode main.js --update' : 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nkill -9 $(pidof AWA-Helper)\nchmod +x ./AWA-Helper\n./AWA-Helper --update');
-}
+  const isWindows = os.type() === 'Windows_NT';
+  const isMainJs = /.*main\.js$/.test(process.argv[1]);
 
-if (process.argv.includes('--init')) {
-  process.exit(0);
-} else if (process.argv.includes('--manager') || (process.argv.length === 2 && process.env.helperMode === 'manager')) {
-  void startManager(process.argv.includes('--helper')).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-} else {
-  void startHelper().catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-}
+  if (isWindows) {
+    createIfNotExists('AWA-Manager.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node main.js --manager"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --manager"');
+    createIfNotExists('AWA-Helper.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node main.js --helper"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --helper"');
+    createIfNotExists('update.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node main.js --update"' : '@echo off\ncd "%~dp0"\ntaskkill /f /t /im AWA-Helper.exe\nstart cmd /k "AWA-Helper.exe --update"');
+  } else {
+    createIfNotExists('AWA-Manager.sh', isMainJs ? 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nnode main.js --manager' : 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --manager');
+    createIfNotExists('AWA-Helper.sh', isMainJs ? 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nnode main.js --helper' : 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --helper');
+    createIfNotExists('update.sh', isMainJs ? 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nnode main.js --update' : 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nkill -9 $(pidof AWA-Helper)\nchmod +x ./AWA-Helper\n./AWA-Helper --update');
+  }
+
+  if (process.argv.includes('--init')) return;
+  if (process.argv.includes('--manager') || (process.argv.length === 2 && process.env.helperMode === 'manager')) {
+    await startManager(process.argv.includes('--helper'));
+    return;
+  }
+  await startHelper();
+};
+
+void main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

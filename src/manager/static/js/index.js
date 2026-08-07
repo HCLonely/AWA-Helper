@@ -6,8 +6,7 @@
  * @FilePath     : /AWA-Helper/src/manager/static/js/index.js
  * @Description  : 管理器
  */
-/* global window, localStorage, sessionStorage, $, __, dayjs, axios */
-// eslint-disable-next-line no-underscore-dangle
+/* global $, __, dayjs, axios */
 // function __(text, ...argv) {
 //   let result = text;
 //   if (I18n[lang]?.[text]) {

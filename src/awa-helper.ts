@@ -22,14 +22,15 @@ import chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
 import { createServer } from './webUI/index';
-import dayjs from 'dayjs';
 // @ts-ignore
 import CHANGELOG from './CHANGELOG.txt';
 import { execSync } from 'child_process';
 import * as os from 'os';
 import { ProcessLock } from './core/process/ProcessLock';
-import { updateYamlFieldsSync } from './core/config/yamlConfig';
+import { createConfigValidationError, updateYamlFieldsSync } from './core/config/yamlConfig';
 import { deepMerge, validateHelperConfig } from './core/config/configSchema';
+import { setLogSecrets } from './core/logging/sanitize';
+import { cleanupExpiredLogs } from './core/logging/retention';
 
 // @ts-ignore
 import * as zh from './locales/zh.json';
@@ -198,12 +199,14 @@ const startHelper = async () => {
       const parsedConfig = deepMerge(defaultConfig, parse(configString));
       const validationErrors = validateHelperConfig(parsedConfig);
       if (validationErrors.length > 0) {
-        throw new Error(validationErrors.join('; '));
+        throw createConfigValidationError(configString, validationErrors);
       }
       config = parsedConfig;
+      setLogSecrets(parsedConfig);
     })
     .catch((error) => {
-      new Logger(time() + chalk.red(__('configFileErrorAlter', error.mark?.line ? chalk.blue(error.mark?.line + 1) : '???', chalk.yellow(__('configFileErrorLocation')))));
+      const errorLine = Number.isInteger(error.mark?.line) ? chalk.blue(error.mark.line + 1) : '???';
+      new Logger(time() + chalk.red(__('configFileErrorAlter', errorLine, chalk.yellow(__('configFileErrorLocation')))));
       new Logger(error.message);
     });
   if (!config) {
@@ -243,15 +246,9 @@ const startHelper = async () => {
 
   // 清理日志
   if (fs.existsSync('logs')) {
-    const logFiles = fs.readdirSync('logs');
-    if (logsExpire && logsExpire < logFiles.length) {
+    if (logsExpire) {
       const logger = new Logger(`${time()}${__('clearingLogs')}`, false);
-      const now = dayjs();
-      logFiles.forEach((filename) => {
-        if (now.diff(filename.replace('.txt', ''), 'day') >= logsExpire) {
-          fs.unlinkSync(path.join('logs', filename));
-        }
-      });
+      cleanupExpiredLogs('logs', logsExpire);
       logger.log(chalk.green('OK'));
     }
   }
