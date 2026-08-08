@@ -3,17 +3,19 @@ import type { Achievement, AvailableStreams, avatarIds, userAvatarInfo } from '.
 import { AWAContext, type AWAContextOptions } from './AWAContext';
 import { getAchievements, getAvailableStreams, getAvatarItems, refreshSession, saveAvatar, sendTwitchTrack, verifySession } from './APIs';
 import type { TwitchTrackResult } from './APIs/twitch/sendTwitchTrack';
-import { SteamQuestAPI } from './APIs/steam';
+import { CommunityEventAPI, SteamQuestAPI } from './APIs/steam';
 import { ArtifactAPI } from './APIs/artifacts';
 
 export class AWAApiClient {
   readonly context: AWAContext;
   readonly steam: SteamQuestAPI;
   readonly artifacts: ArtifactAPI;
+  readonly communityEvent: CommunityEventAPI;
   constructor(options: AWAContextOptions) {
     this.context = new AWAContext(options);
     this.steam = new SteamQuestAPI(this.context);
     this.artifacts = new ArtifactAPI(this.context);
+    this.communityEvent = new CommunityEventAPI(this.context);
   }
   get newCookie(): string { return this.context.cookie.stringify(); }
   async init(): Promise<boolean> { await refreshSession(this.context); await verifySession(this.context); return true; }

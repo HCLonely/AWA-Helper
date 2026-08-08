@@ -3,14 +3,14 @@
  * @description Runs one complete DailyQuest job under Manager lifecycle control.
  */
 /* global config, __ */
-import { AWAClient } from '../../client/AWA/AWAClient';
+import { DailyQuestRuntime } from './DailyQuestRuntime';
 import { DailyTask } from './tasks/DailyTask';
 import { LegacyDailyTask } from './tasks/LegacyDailyTask';
 import { TimeOnSiteTask } from './tasks/TimeOnSiteTask';
 import { TwitchClient } from '../../client/Twitch/TwitchClient';
-import { AWAApiClient } from '../../client/AWA/AWAApiClient';
 import { TwitchQuestTask } from './tasks/TwitchQuestTask';
 import { SteamQuestTask } from './tasks/SteamQuestTask';
+import { formatQuestReport } from './QuestReporter';
 import { SteamClient } from '../../client/Steam/SteamClient';
 import * as fs from 'fs';
 import { join, resolve } from 'path';
@@ -42,6 +42,11 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   if (signal?.aborted) abortFromManager();
   else signal?.addEventListener('abort', abortFromManager, { once: true });
   let activeTaskCompletion: Promise<Array<PromiseSettledResult<unknown>>> = Promise.resolve([]);
+  const runtimeHolder: { current?: DailyQuestRuntime } = {};
+  const currentPushInfo = () => (runtimeHolder.current ? {
+    report: formatQuestReport(runtimeHolder.current.state), dailyArp: runtimeHolder.current.state.dailyArp,
+    signArp: runtimeHolder.current.state.signArp
+  } : undefined);
   const waitForTaskCleanup = async (): Promise<void> => {
     await Promise.race([
       activeTaskCompletion,
@@ -180,7 +185,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     const timeoutHandle = setTimeout(async () => {
       shutdownController.abort(new Error('Process timeout'));
       new Logger(chalk.yellow(__('processTimeout')));
-      await push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+      await push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
       await waitForTaskCleanup();
     }, timeout * 1000);
     timeoutHandle.unref();
@@ -204,15 +209,17 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   }
 
   // 初始化AWA
-  const awa = new AWAClient({
+  const runtime = new DailyQuestRuntime({
     awaCookie: awaCookie as string,
+    host: globalThis.awaHost,
     proxy,
     joinSteamCommunityEvent,
-    // awaDailyQuestNumber1,
-    getStarted: awaQuests.includes('getStarted')
+    getStarted: awaQuests.includes('getStarted'),
+    userAgent: globalThis.userAgent
   });
+  runtimeHolder.current = runtime;
 
-  const initResult = await awa.init();
+  const initResult = await runtime.init();
   if (initResult !== 200) {
     const errorMap = {
       0: __('netError'),
@@ -231,23 +238,17 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     shutdownController.abort(new Error('DailyQuest initialization failed'));
     return false;
   }
-  updateYamlFieldsSync(configPath, { awaCookie: awa.newCookie });
-  globalThis.quest = awa;
-  const awaAPIs = new AWAApiClient({
-    cookie: awa.newCookie,
-    host: globalThis.awaHost,
-    proxy,
-    userAgent: globalThis.userAgent
-  });
+  updateYamlFieldsSync(configPath, { awaCookie: runtime.newCookie });
+  const awaAPIs = runtime.awa;
 
   // 每日任务
-  if (awaQuests.includes('dailyQuest') && (awa.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (awa.questInfo.dailyQuest || []).length) {
-    const dailyQuest = new DailyTask(awa);
+  if (awaQuests.includes('dailyQuest') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
+    const dailyQuest = new DailyTask(runtime);
     await dailyQuest.do();
   }
   // 每日任务(旧版)
-  if (awaQuests.includes('dailyQuestOld') && (awa.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (awa.questInfo.dailyQuest || []).length) {
-    const dailyQuestOld = new LegacyDailyTask(awa, {
+  if (awaQuests.includes('dailyQuestOld') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
+    const dailyQuestOld = new LegacyDailyTask(runtime, {
       awaDailyQuestType
     });
     await dailyQuestOld.do();
@@ -256,20 +257,20 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   const quests: Array<{ name: string, promise: Promise<unknown> }> = [];
 
   // AWA在线时长
-  if (awaQuests.includes('timeOnSite') && awa.questInfo.timeOnSite?.addedArp !== awa.questInfo.timeOnSite?.maxArp) {
-    quests.push({ name: 'AWA TimeOnSite', promise: TimeOnSiteTask.do(awa, shutdownController.signal) });
+  if (awaQuests.includes('timeOnSite') && runtime.state.questInfo.timeOnSite?.addedArp !== runtime.state.questInfo.timeOnSite?.maxArp) {
+    quests.push({ name: 'AWA TimeOnSite', promise: TimeOnSiteTask.do(runtime, shutdownController.signal) });
   }
   await sleep(10);
 
   // Twitch直播心跳
   // let twitch: TwitchTrack | null = null;
   if (awaQuests.includes('watchTwitch')) {
-    await awa.getTwitchTech();
-    if (awa.questInfo.watchTwitch?.[0] !== '15' || parseFloat(awa.questInfo.watchTwitch?.[1] || '0') < awa.additionalTwitchARP) {
+    await runtime.loadTwitchBonus();
+    if (runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
       if (twitchCookie) {
         const twitch = new TwitchClient({ cookie: twitchCookie, proxy });
         if (await twitch.init() === true) {
-          const twitchTask = new TwitchQuestTask(awa, awaAPIs, twitch);
+          const twitchTask = new TwitchQuestTask(runtime, awaAPIs, twitch);
           quests.push({ name: 'Twitch', promise: twitchTask.run(shutdownController.signal) });
           await sleep(10);
         }
@@ -303,7 +304,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
           proxy
         });
         if (await steamQuest.init()) {
-          const steamTask = new SteamQuestTask(awaAPIs, steamQuest);
+          const steamTask = new SteamQuestTask(awaAPIs, steamQuest, runtime.state.communityEvent?.gameId);
           quests.push({ name: 'Steam ASF', promise: steamTask.run(shutdownController.signal) });
           await sleep(30);
         }
@@ -311,7 +312,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     }
   }
 
-  void awa.listen(shutdownController.signal).catch((error) => {
+  void runtime.monitor(shutdownController.signal).catch((error) => {
     new Logger(`${time()}AWA listener failed: ${error instanceof Error ? error.message : String(error)}`);
   });
   activeTaskCompletion = Promise.allSettled(quests.map(({ promise }) => promise));
@@ -325,13 +326,13 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   if (failedQuests.length > 0) {
     const errorMessage = `${__('processError')}: ${failedQuests.join(', ')}`;
     new Logger(time() + chalk.red(errorMessage));
-    await push(`${__('pushTitle')}:\n${errorMessage}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+    await push(`${__('pushTitle')}:\n${errorMessage}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
     shutdownController.abort(new Error('DailyQuest failed'));
     signal?.removeEventListener('abort', abortFromManager);
     return false;
   }
   new Logger(time() + chalk.green(__('allTaskCompleted')));
-  await push(`${__('pushTitle')}:\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat()}${globalThis.newVersionNotice}`);
+  await push(`${__('pushTitle')}:\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
   shutdownController.abort(new Error('DailyQuest completed'));
   signal?.removeEventListener('abort', abortFromManager);
   return true;

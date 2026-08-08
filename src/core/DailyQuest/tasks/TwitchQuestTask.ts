@@ -4,43 +4,64 @@
  */
 import chalk from 'chalk';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
-import type { AWAClient } from '../../../client/AWA/AWAClient';
 import { TwitchClient } from '../../../client/Twitch/TwitchClient';
+import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 import { Logger, sleep, time } from '../../../tools';
 
 export class TwitchQuestTask {
   constructor(
-    private readonly questState: AWAClient,
+    private readonly runtime: DailyQuestRuntime,
     private readonly awa: AWAApiClient,
     private readonly twitch: TwitchClient
   ) {}
 
   private isComplete(): boolean {
-    const progress = this.questState.questInfo.watchTwitch;
-    return progress?.[0] === '15' && parseFloat(progress?.[1] || '0') >= this.questState.additionalTwitchARP;
+    const progress = this.runtime.state.questInfo.watchTwitch;
+    return progress?.[0] === '15' && parseFloat(progress?.[1] || '0') >= this.runtime.state.additionalTwitchARP;
   }
 
   async run(signal?: AbortSignal): Promise<boolean> {
     let retriedAuthorization = false;
     while (!signal?.aborted && !this.isComplete()) {
-      const streams = await this.awa.getAvailableStreams();
-      const trackingInfo = await this.twitch.findTrackingChannel([...streams.Hive, ...streams.Nexus]);
-      if (!trackingInfo) {
-        new Logger(`${time()}${__('noLive')}`);
+      const streamLogger = new Logger(`${time()}${__('gettingLiveInfo')}`, false);
+      const streams = await this.awa.getAvailableStreams().catch((error) => {
+        streamLogger.log(chalk.red('Error'));
+        new Logger(error);
+        return null;
+      });
+      if (!streams) {
         if (!await sleep(5 * 60, signal)) return true;
         continue;
       }
+      const streamCount = streams.Hive.length + streams.Nexus.length;
+      streamLogger.log(streamCount > 0 ? chalk.green(`OK (${streamCount})`) : chalk.blue(__('noLive')));
+      const channelLogger = new Logger(`${time()}${__('gettingChannelInfo', chalk.yellow('Twitch'))}`, false);
+      const trackingInfo = await this.twitch.findTrackingChannel([...streams.Hive, ...streams.Nexus]);
+      if (!trackingInfo) {
+        channelLogger.log(chalk.red('Error'));
+        if (!await sleep(5 * 60, signal)) return true;
+        continue;
+      }
+      channelLogger.log(chalk.green(`OK (${trackingInfo.streamerName || trackingInfo.channelId})`));
+      const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
       try {
         const result = await this.awa.sendTwitchTrack(trackingInfo);
-        if (result.state === 'daily_cap_reached') return true;
+        logger.log(result.success ? chalk.green(`OK (${result.state})`) : chalk.red(`Error (${result.state})`));
+        if (result.state === 'daily_cap_reached') {
+          new Logger(`${time()}${chalk.green(result.message || __('obtainedArp'))}`);
+          return true;
+        }
         if (result.state === 'streamer_offline' || result.state === 'no_channel_found') {
+          new Logger(`${time()}${chalk.blue(result.state === 'streamer_offline' ? __('liveOffline', chalk.yellow(trackingInfo.channelId)) : __('noChannelFound', chalk.yellow(trackingInfo.channelId)))}`);
           if (!await sleep(60, signal)) return true;
           continue;
         }
         if (!result.success) return false;
         retriedAuthorization = false;
       } catch (error: any) {
+        logger.log(chalk.red('Error'));
         if (error?.response?.status === 403 && !retriedAuthorization) {
+          new Logger(`${time()}${chalk.yellow('Twitch authorization expired, retrying')}`);
           retriedAuthorization = true;
           if (!await this.twitch.init()) return false;
         } else {

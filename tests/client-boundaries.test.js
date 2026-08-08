@@ -35,3 +35,10 @@ test('duplicate Achievement clients were removed', () => {
   assert.equal(fs.existsSync(path.join(root, 'src/client/AWA/AchievementAWAClient.ts')), false);
   assert.equal(fs.existsSync(path.join(root, 'src/client/Twitch/AchievementTwitchClient.ts')), false);
 });
+
+test('legacy AWAClient and global quest singleton were removed', () => {
+  assert.equal(fs.existsSync(path.join(root, 'src/client/AWA/AWAClient.ts')), false);
+  const source = combinedSource('src');
+  assert.doesNotMatch(source, /globalThis\.quest/);
+  assert.doesNotMatch(fs.readFileSync(path.join(root, 'src/global.d.ts'), 'utf8'), /var quest:/);
+});

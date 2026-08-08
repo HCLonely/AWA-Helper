@@ -2,7 +2,6 @@
 import { AxiosRequestConfig } from 'axios';
 import type { I18n } from 'i18n';
 import type WebSocket from 'ws';
-import type { AWAClient } from './client/AWA/AWAClient';
 import { Logger } from './tools';
 
 declare global {
@@ -194,12 +193,10 @@ declare global {
   var language: string;
   var pusher: pusher | undefined;
   var pusherProxy: proxy;
-  var quest: AWAClient;
   var initError: string;
   var awaHost: string;
   var __: I18n['__'];
   var newVersionNotice: string;
-  var steamEventGameId: string;
   var log: boolean;
   var version: string;
 }

@@ -5,12 +5,12 @@
 /* global __ */
 import chalk from 'chalk';
 import { Logger, time } from '../../../tools';
-import type { AWAClient } from '../../../client/AWA/AWAClient';
+import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 class DailyTask {
-  constructor(private readonly awa: AWAClient) {}
+  constructor(private readonly runtime: DailyQuestRuntime) {}
   async do(): Promise<any> {
-    if (!this.awa.questInfo.dailyQuest?.[0]) {
+    if (!this.runtime.state.questInfo.dailyQuest?.[0]) {
       new Logger(time() + chalk.yellow(__('noDailyQuest')));
       return true;
     }
@@ -18,22 +18,22 @@ class DailyTask {
     if (this.checkDailyQuestCompleted()) {
       return true;
     }
-    for (const questInfo of this.awa.questInfo.dailyQuest) {
+    for (const questInfo of this.runtime.state.questInfo.dailyQuest) {
       if (questInfo.id) {
-        await this.awa.questAward(questInfo.id);
-        await this.awa.updateDailyQuests();
+        await this.runtime.claimQuest(questInfo.id);
+        await this.runtime.updateDailyQuests();
         if (this.checkDailyQuestCompleted()) {
           return true;
         }
       }
     }
-    if (this.awa.dailyQuestLink) {
-      await this.awa.openLink(this.awa.dailyQuestLink);
-      const postId = this.awa.dailyQuestLink.match(/ucf\/show\/([\d]+)/)?.[1];
+    if (this.runtime.state.dailyQuestLink) {
+      await this.runtime.visit(this.runtime.state.dailyQuestLink);
+      const postId = this.runtime.state.dailyQuestLink.match(/ucf\/show\/([\d]+)/)?.[1];
       if (postId) {
-        await this.awa.viewPost(postId);
+        await this.runtime.viewPost(postId);
       }
-      await this.awa.updateDailyQuests();
+      await this.runtime.updateDailyQuests();
       if (this.checkDailyQuestCompleted()) {
         return true;
       }
@@ -43,8 +43,8 @@ class DailyTask {
     return true;
   }
   private checkDailyQuestCompleted(): boolean {
-    if ((this.awa.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (this.awa.questInfo.dailyQuest || []).length) {
-      if ((this.awa.questInfo.dailyQuest?.length || 0) < 2) {
+    if ((this.runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (this.runtime.state.questInfo.dailyQuest || []).length) {
+      if ((this.runtime.state.questInfo.dailyQuest?.length || 0) < 2) {
         new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }
       return true;

@@ -351,15 +351,15 @@ const push = async (message: string) => {
   new Logger(result[0].result);
 };
 
-const pushQuestInfoFormat = () => {
-  if (!globalThis.quest?.formatQuestInfo) {
+const pushQuestInfoFormat = (quest?: { report: Record<string, any>; dailyArp: string; signArp: { daily?: string; monthly?: string } }) => {
+  if (!quest) {
     return '';
   }
   const otherTaskInfo = new Array(1);
   const dailyTaskInfo: Array<any> = [];
   const onlineTaskInfo = new Array(2);
   const steamTaskInfo: Array<any> = [];
-  Object.entries(globalThis.quest.formatQuestInfo()).forEach(
+  Object.entries(quest.report).forEach(
     ([name, value]) => {
       if (name === __('timeOnSite')) {
         onlineTaskInfo[0] = [name, value];
@@ -376,10 +376,10 @@ const pushQuestInfoFormat = () => {
       }
     });
   const sortedTaskInfo = [...dailyTaskInfo, ...onlineTaskInfo, ...steamTaskInfo, ...otherTaskInfo].filter((e) => e);
-  return `👉${__('dailyArp', globalThis.quest.dailyArp)}\n\n${
-    globalThis.quest.signArp.daily ? `✔️${__('dailySign', globalThis.quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`
+  return `👉${__('dailyArp', quest.dailyArp)}\n\n${
+    quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`
   }${
-    globalThis.quest.signArp.monthly ? `✔️${__('monthlySign', globalThis.quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`
+    quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`
   }---\n${
     sortedTaskInfo.map(
       ([name, value]) => {
