@@ -1,279 +1,80 @@
-/**
- * @file ArtifactService
- * @description Queries and replaces AWA Artifacts under Manager scheduling.
- */
-/* global __, proxy, myAxiosConfig */
-import { RawAxiosRequestHeaders } from 'axios';
+/** Manager-owned orchestration for reading and replacing AWA artifacts. */
+/* global __ */
 import * as fs from 'fs';
-import { load } from 'cheerio';
 import chalk from 'chalk';
-import { time, netError, formatProxy, Cookie, Logger, http as axios, push } from '../../tools';
+import { load } from 'cheerio';
 import { parse } from 'yaml';
+import { AWAApiClient } from '../../client/AWA/AWAApiClient';
+import { AWAError } from '../../client/AWA/AWAError';
+import { getControlCenter, refreshSession } from '../../client/AWA/APIs';
+import { Logger, push, time } from '../../tools';
 
 class ArtifactService {
-  headers!: RawAxiosRequestHeaders;
-  cookie!: Cookie;
-  httpsAgent!: myAxiosConfig['httpsAgent'];
-  newCookie!: string;
-  proxy?: {
-    server: string
-    username?: string
-    password?: string
-  };
-  userProfileUrl!: string;
-  oldArtifacts!: Array<number>;
-  activePerks!: string;
+  readonly awa?: AWAApiClient;
+  userProfileUrl?: string;
+  oldArtifacts: number[] = [];
+  activePerks = '';
   initted = true;
 
   constructor(configPath: string) {
-    const configString = fs.readFileSync(configPath).toString();
-    const { awaCookie, proxy }: { awaCookie?: string, proxy?: proxy } = parse(configString);
+    const { awaCookie, awaHost, proxy }: { awaCookie?: string; awaHost?: string; proxy?: proxy } = parse(fs.readFileSync(configPath, 'utf8'));
     if (!awaCookie) {
       new Logger(time() + chalk.yellow(__('missingAwaCookie')));
       this.initted = false;
-      return this;
+      return;
     }
-
-    this.newCookie = awaCookie;
-    this.cookie = new Cookie(awaCookie);
-    this.headers = {
-      cookie: this.cookie.stringify(),
-      'user-agent': globalThis.userAgent,
-      'accept-encoding': 'gzip, deflate, br',
-      'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
-    };
-    if (proxy?.enable?.includes('awa') && proxy.host && proxy.port) {
-      this.httpsAgent = formatProxy(proxy);
-      this.proxy = {
-        server: `${proxy.protocol || 'http'}://${proxy.host}:${proxy.port}`
-      };
-      if (proxy.username && proxy.password) {
-        this.proxy.username = proxy.username;
-        this.proxy.password = proxy.password;
-      }
-    }
+    this.awa = new AWAApiClient({ cookie: awaCookie, host: awaHost, proxy, userAgent: globalThis.userAgent });
   }
+
+  get newCookie(): string { return this.awa?.newCookie || ''; }
+
   async init(): Promise<number> {
-    await this.updateCookie();
-    const result = await this.updateInfo();
-    if (result !== 200) {
-      return result;
+    if (!this.awa) return 0;
+    try {
+      await refreshSession(this.awa.context);
+      const html = await getControlCenter(this.awa.context);
+      const $ = load(html);
+      if ($('a.nav-link-login').length) return 602;
+      this.userProfileUrl = html.match(/user_profile_url.*?=.*?"(.+?)"/)?.[1];
+      return this.userProfileUrl ? 200 : 0;
+    } catch (error) {
+      return error instanceof AWAError ? error.statusCode || 0 : 0;
     }
-    this.newCookie = this.cookie.stringify();
-    return 200;
   }
 
-  async updateCookie(): Promise<boolean> {
-    const logger = new Logger(`${time()}${__('updatingCookie', chalk.yellow('AWA Cookie'))}...`, false);
-    const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/`,
-      method: 'GET',
-      headers: {
-        ...this.headers,
-        cookie: this.cookie.stringify(),
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
-      },
-      maxRedirects: 0,
-      validateStatus: (status: number) => status === 302 || status === 200,
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.status === 200 && response.data.toLowerCase().includes('we have detected an issue with your network')) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
-          return false;
-        }
-        if (!response.headers['set-cookie']?.length) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
-        }
-        this.headers.cookie = this.cookie.update(response.headers['set-cookie']).stringify();
-        if (response.status === 200) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
-        }
-        if (response.status === 302) {
-          const homeSite = this.cookie.get('home_site');
-          if (homeSite && globalThis.awaHost !== homeSite) {
-            globalThis.awaHost = homeSite;
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.yellow(__('redirected')));
-            return this.updateCookie();
-          }
-          if (this.cookie.get('REMEMBERME') === 'deleted') {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(`Error: ${__('cookieExpired', chalk.yellow('awaCookie'))}`));
-            return false;
-          }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
-        new Logger(response);
-        return false;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        new Logger(error);
-        return false;
-      });
-  }
-  async updateInfo(): Promise<number> {
-    const logger = new Logger(time() + __('verifyingToken', chalk.yellow('AWA Token')), false);
-    const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/control-center`,
-      method: 'GET',
-      headers: {
-        ...this.headers,
-        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
-      },
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return axios(options)
-      .then(async (response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.status === 200) {
-          if (response.data.toLowerCase().includes('we have detected an issue with your network')) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('ipBanned')));
-            return 610;
-          }
-          const $ = load(response.data);
-          if ($('a.nav-link-login').length > 0) {
-            ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red(__('tokenExpired')));
-            return 602;
-          }
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          if (!this.userProfileUrl) {
-            this.userProfileUrl = response.data.match(/user_profile_url.*?=.*?"(.+?)"/)?.[1];
-          }
-          return 200;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Net Error'));
-        return response.status;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)') + netError(error));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        new Logger(error);
-        return 0;
-      });
-  }
-  async start(newArtifacts: Array<number>): Promise<boolean> {
-    if (!await this.getArtifactsInfo()) {
-      new Logger(`${time()}${chalk.red(__('changeArtifactsFailed'))}`);
-      return false;
-    }
-    const oldArtifactsSet = new Set(this.oldArtifacts);
-    const newArtifactsSet = new Set(newArtifacts);
-    const diffArtifacts: Array<number> = newArtifacts.filter((artifact) => !oldArtifactsSet.has(artifact));
-    const sameArtifactsIndex = this.oldArtifacts.filter((artifact) => newArtifactsSet.has(artifact)).map((artifact) => this.oldArtifacts.indexOf(artifact));
-    if (diffArtifacts.length === 0) {
-      new Logger(`${time()}${chalk.green(__('changeArtifactsSuccess'))}`);
-      try {
-        await push(`${__('artifactsStatus')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`);
-      } catch (_e) {
-        new Logger(`${time()}${chalk.red(__('artifactsStatusPushFailed'))}`);
-      }
-      return true;
-    }
-
-    const positions = [0, 1, 2].filter((index) => !sameArtifactsIndex.includes(index)).map((index) => index + 1);
-
+  async start(newArtifacts: number[]): Promise<boolean> {
+    if (!await this.getArtifactsInfo()) return false;
+    const oldSet = new Set(this.oldArtifacts);
+    const newSet = new Set(newArtifacts);
+    const replacements = newArtifacts.filter((artifact) => !oldSet.has(artifact));
+    const unchangedPositions = this.oldArtifacts.filter((artifact) => newSet.has(artifact)).map((artifact) => this.oldArtifacts.indexOf(artifact));
+    const positions = [0, 1, 2].filter((index) => !unchangedPositions.includes(index)).map((index) => index + 1);
     for (let index = 0; index < positions.length; index++) {
-      await this.changeArtifact(diffArtifacts[index], positions[index]);
+      if (!await this.changeArtifact(replacements[index], positions[index])) return false;
     }
     await this.getArtifactsInfo();
-    if (this.oldArtifacts.filter((artifact) => !newArtifactsSet.has(artifact)).length === 0) {
-      new Logger(`${time()}${chalk.green(__('changeArtifactsSuccess'))}`);
-      try {
-        await push(`${__('artifactsStatus')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`);
-      } catch (_e) {
-        new Logger(`${time()}${chalk.red(__('artifactsStatusPushFailed'))}`);
-      }
-      return true;
-    }
-    try {
-      await push(`${__('artifactsStatusError')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`);
-    } catch (_e) {
-      new Logger(`${time()}${chalk.red(__('artifactsStatusPushFailed'))}`);
-    }
-    new Logger(`${time()}${chalk.red(__('changeArtifactsFailed'))}`);
-    return false;
+    const success = this.oldArtifacts.every((artifact) => newSet.has(artifact));
+    new Logger(`${time()}${success ? chalk.green(__('changeArtifactsSuccess')) : chalk.red(__('changeArtifactsFailed'))}`);
+    await push(`${success ? __('artifactsStatus') : __('artifactsStatusError')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`).catch(() => undefined);
+    return success;
   }
+
   async getArtifactsInfo(): Promise<boolean> {
-    if (!this.userProfileUrl) return false;
-    const logger = new Logger(`${time()}${__('gettingArtifactsInfo')}`, false);
-    const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}${this.userProfileUrl}/artifacts`,
-      method: 'GET',
-      headers: {
-        ...this.headers,
-        referer: `${globalThis.awaHost}`
-      },
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-    return axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        const { userActiveArtifacts } = JSON.parse(`{${response.data.match(/artifactsData.*?=.*?{(.+?)};/m)?.[1] || ''}}`) || {};
-        if (userActiveArtifacts) {
-          this.oldArtifacts = Object.values(userActiveArtifacts).map((artifact: any) => artifact.id);
-          this.activePerks = Object.values(userActiveArtifacts).map((artifact: any) => {
-            const perkTextShort = artifact.perkTextShort.replace(/\d+/, 's%');
-            const [num] = artifact.perkTextShort.match(/\d+/);
-            return `* ${__(perkTextShort, num)}`;
-          }).join('\n');
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
-        new Logger(response.data?.message || response);
-        return false;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        new Logger(error);
-        return false;
-      });
+    if (!this.awa || !this.userProfileUrl) return false;
+    const artifacts = await this.awa.artifacts.getEquipped(this.userProfileUrl).catch(() => []);
+    if (!artifacts.length) return false;
+    this.oldArtifacts = artifacts.map(({ id }) => id);
+    this.activePerks = artifacts.map(({ perkTextShort }) => {
+      const key = perkTextShort.replace(/\d+/, 's%');
+      const value = perkTextShort.match(/\d+/)?.[0] || '';
+      return `* ${__(key, value)}`;
+    }).join('\n');
+    return true;
   }
 
   async changeArtifact(id: number, position: number): Promise<boolean> {
-    const logger = new Logger(`${time()}${__('changingArtifact', chalk.blue(id), chalk.blue(position))}`, false);
-    const options: myAxiosConfig = {
-      url: `https://${globalThis.awaHost}/change-user-artifacts`,
-      method: 'POST',
-      headers: {
-        ...this.headers,
-        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: `https://${globalThis.awaHost}`,
-        referer: `https://${globalThis.awaHost}${this.userProfileUrl}/artifacts`
-      },
-      data: `{"artifactId":"${id}","position":"${position}"}`,
-      Logger: logger
-    };
-    if (this.httpsAgent) options.httpsAgent = this.httpsAgent;
-
-    return axios(options)
-      .then((response) => {
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
-        if (response.status === 200) {
-          ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.green('OK'));
-          return true;
-        }
-        ((response.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(1)'));
-        new Logger(response.data?.message || response);
-        return false;
-      })
-      .catch((error) => {
-        ((error.config as myAxiosConfig)?.Logger || logger).log(chalk.red('Error(0)'));
-        globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(error.response?.headers?.['set-cookie']))])];
-        new Logger(error);
-        return false;
-      });
+    if (!this.awa || !this.userProfileUrl || !id || !position) return false;
+    return this.awa.artifacts.equip(this.userProfileUrl, id, position);
   }
 }
 

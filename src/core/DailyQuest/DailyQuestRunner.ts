@@ -8,6 +8,9 @@ import { DailyTask } from './tasks/DailyTask';
 import { LegacyDailyTask } from './tasks/LegacyDailyTask';
 import { TimeOnSiteTask } from './tasks/TimeOnSiteTask';
 import { TwitchClient } from '../../client/Twitch/TwitchClient';
+import { AWAApiClient } from '../../client/AWA/AWAApiClient';
+import { TwitchQuestTask } from './tasks/TwitchQuestTask';
+import { SteamQuestTask } from './tasks/SteamQuestTask';
 import { SteamClient } from '../../client/Steam/SteamClient';
 import * as fs from 'fs';
 import { join, resolve } from 'path';
@@ -230,15 +233,21 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   }
   updateYamlFieldsSync(configPath, { awaCookie: awa.newCookie });
   globalThis.quest = awa;
+  const awaAPIs = new AWAApiClient({
+    cookie: awa.newCookie,
+    host: globalThis.awaHost,
+    proxy,
+    userAgent: globalThis.userAgent
+  });
 
   // 每日任务
   if (awaQuests.includes('dailyQuest') && (awa.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (awa.questInfo.dailyQuest || []).length) {
-    const dailyQuest = new DailyTask();
+    const dailyQuest = new DailyTask(awa);
     await dailyQuest.do();
   }
   // 每日任务(旧版)
   if (awaQuests.includes('dailyQuestOld') && (awa.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (awa.questInfo.dailyQuest || []).length) {
-    const dailyQuestOld = new LegacyDailyTask({
+    const dailyQuestOld = new LegacyDailyTask(awa, {
       awaDailyQuestType
     });
     await dailyQuestOld.do();
@@ -248,7 +257,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
 
   // AWA在线时长
   if (awaQuests.includes('timeOnSite') && awa.questInfo.timeOnSite?.addedArp !== awa.questInfo.timeOnSite?.maxArp) {
-    quests.push({ name: 'AWA TimeOnSite', promise: TimeOnSiteTask.do(shutdownController.signal) });
+    quests.push({ name: 'AWA TimeOnSite', promise: TimeOnSiteTask.do(awa, shutdownController.signal) });
   }
   await sleep(10);
 
@@ -260,7 +269,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       if (twitchCookie) {
         const twitch = new TwitchClient({ cookie: twitchCookie, proxy });
         if (await twitch.init() === true) {
-          quests.push({ name: 'Twitch', promise: twitch.do(shutdownController.signal) });
+          const twitchTask = new TwitchQuestTask(awa, awaAPIs, twitch);
+          quests.push({ name: 'Twitch', promise: twitchTask.run(shutdownController.signal) });
           await sleep(10);
         }
       } else {
@@ -293,7 +303,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
           proxy
         });
         if (await steamQuest.init()) {
-          quests.push({ name: 'Steam ASF', promise: steamQuest.do(shutdownController.signal) });
+          const steamTask = new SteamQuestTask(awaAPIs, steamQuest);
+          quests.push({ name: 'Steam ASF', promise: steamTask.run(shutdownController.signal) });
           await sleep(30);
         }
       }

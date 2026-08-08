@@ -21,3 +21,4 @@
 - JS lint 扩展到浏览器代码、构建脚本和测试
 - 优化 .dockerignore
 - 修复新版每日任务 ARP 识别
+- [ ] Docker不需要Lock文件

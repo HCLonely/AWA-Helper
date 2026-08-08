@@ -1,3 +1,6 @@
 /** @description Functional Steam/ASF API entry points. */
-export * from './init';
-export * from './questStatus';
+/** Steam directory contains ASF-only remote operations. */
+export * from './session';
+export * from './commands';
+export * from './bot';
+export * from './licenses';

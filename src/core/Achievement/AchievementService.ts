@@ -5,16 +5,17 @@
 
 /* global __, proxy */
 import { Achievement, ActionHistory, Id, userAvatarInfo } from '../../types/achievement';
-import { AchievementAWAClient } from '../../client/AWA/AchievementAWAClient';
+import { AWAApiClient } from '../../client/AWA/AWAApiClient';
 import { sleep, Logger, time } from '../../tools';
-import { AchievementTwitchClient } from '../../client/Twitch/AchievementTwitchClient';
+import { TwitchClient } from '../../client/Twitch/TwitchClient';
+import type { TwitchChannelTrackingInfo } from '../../client/Twitch/types';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import { atomicWriteFileSync } from '../../tools/config/YamlConfig';
 
 export class AchievementService {
-  awa: AchievementAWAClient;
-  twitch!: AchievementTwitchClient | null;
+  awa: AWAApiClient;
+  twitch!: TwitchClient | null;
   twitchCookie?: string;
   availableAchievements: Array<string> = [
     'Use 25 different borders',
@@ -49,10 +50,10 @@ export class AchievementService {
     };
 
   constructor({ awaCookie, proxy, awaHost, twitchCookie, userAgent }: { awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string }) {
-    this.awa = new AchievementAWAClient({
-      awaCookie,
+    this.awa = new AWAApiClient({
+      cookie: awaCookie,
       proxy,
-      awaHost,
+      host: awaHost,
       userAgent
     });
     if (twitchCookie) {
@@ -113,7 +114,7 @@ export class AchievementService {
   }
 
   async border25(): Promise<void> {
-    const { userAvatarInfo: UAI, ids: borders } = await this.awa.getAvatars('border') || {};
+    const { userAvatarInfo: UAI, ids: borders } = await this.awa.getAvatarItems('border') || {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!borders || !existingAvatarInfo) {
       return;
@@ -129,7 +130,7 @@ export class AchievementService {
 
     for (let i = 0; i < 25; i++) {
       userAvatarInfo.border = borderIds[i];
-      if (!await this.awa.changeAvatar('Border', userAvatarInfo)) return;
+      if (!await this.awa.saveAvatar(userAvatarInfo)) return;
       this.userAvatarInfo = userAvatarInfo;
       // new Logger(`${time()}${__('changeBorder', chalk.yellow(borderId))}`, false);
       await sleep(5);
@@ -155,7 +156,7 @@ export class AchievementService {
     }
 
     // new Logger(`${time()}${__('gettingBorder')}`);
-    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars(type) || {};
+    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatarItems(type) || {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
       return;
@@ -174,7 +175,7 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo)) return;
+    if (!await this.awa.saveAvatar(userAvatarInfo)) return;
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
@@ -212,7 +213,7 @@ export class AchievementService {
     }
 
     // new Logger(`${time()}${__('gettingBorder')}`);
-    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatars(type) || {};
+    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatarItems(type) || {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
       return;
@@ -231,7 +232,7 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!await this.awa.changeAvatar(type === 'border' ? 'Border' : 'Avatar', userAvatarInfo)) return;
+    if (!await this.awa.saveAvatar(userAvatarInfo)) return;
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
@@ -256,7 +257,7 @@ export class AchievementService {
         return;
       }
 
-      this.twitch = new AchievementTwitchClient({ cookie: this.twitchCookie });
+      this.twitch = new TwitchClient({ cookie: this.twitchCookie });
       // await twitch.start(type);
 
       const initStatus = await this.twitch.init();
@@ -270,33 +271,27 @@ export class AchievementService {
       new Logger(`${time()}${__('foundNexusLive', chalk.yellow(Nexus.length))}`);
 
       if (Hive.length > 0 && this.watchTwitchStatus.type.has('hive')) {
-        const { channelId, jwt, extensionID } = await this.twitch.getChannelInfo(Hive);
-        if (!channelId || !jwt) {
-          this.twitch?.destroy();
+        const trackingInfo = await this.twitch.findTrackingChannel(Hive);
+        if (!trackingInfo) {
           this.twitch = null;
           return this.watchTwitch();
         }
-
-        await this.twitch.sendTrack({ channelId, jwt, extensionID }).catch(async () => {
+        await this.trackTwitchChannel(trackingInfo).catch(async () => {
           await sleep(5 * 60);
-          this.twitch?.destroy();
           this.twitch = null;
           return this.watchTwitch();
         });
       }
 
       if (Nexus.length > 0 && this.watchTwitchStatus.type.has('nexus')) {
-        const { channelId, jwt, extensionID } = await this.twitch.getChannelInfo(Nexus);
-        if (!channelId || !jwt) {
-          this.twitch?.destroy();
+        const trackingInfo = await this.twitch.findTrackingChannel(Nexus);
+        if (!trackingInfo) {
           this.twitch = null;
           return this.watchTwitch();
         }
-
-        await this.twitch.sendTrack({ channelId, jwt, extensionID }).catch(async () => {
+        await this.trackTwitchChannel(trackingInfo).catch(async () => {
           new Logger(`${time()}${__('watchTwitchAfter5min')}`);
           await sleep(5 * 60);
-          this.twitch?.destroy();
           this.twitch = null;
           return this.watchTwitch();
         });
@@ -306,15 +301,23 @@ export class AchievementService {
     }
   }
 
+  /** Manager-owned Achievement orchestration for repeated AWA heartbeats. */
+  private async trackTwitchChannel(info: TwitchChannelTrackingInfo): Promise<void> {
+    while (this.watchTwitchStatus.running) {
+      const result = await this.awa.sendTwitchTrack(info);
+      if (!result.success || result.state === 'streamer_offline' || result.state === 'no_channel_found') {
+        throw new Error(`AWA Twitch tracking failed: ${result.state}`);
+      }
+      if (result.state === 'daily_cap_reached') return;
+      await sleep(60);
+    }
+  }
+
   destroy(): void {
     // Destroy AWA instance
-    if (this.awa) {
-      this.awa.destroy();
-      this.awa = null as any;
-    }
+    this.awa = null as any;
     // Destroy Twitch instance
     if (this.twitch) {
-      this.twitch.destroy();
       this.twitch = null as any;
     }
     this.watchTwitchStatus = {
