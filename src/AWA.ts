@@ -344,13 +344,13 @@ class AWA {
             link: new URL($(e).find('a[href^="/quests/"]').attr('href') as string, `https://${globalThis.awaHost}/`).href,
             title: $(e).find('.quest-title').text()
               .trim(),
-            arp: $(e).find('.quest-item-progress').toArray()
+            arp: $(e).find('.quest-item-progress,a.text-info').toArray()
               .map((e) => $(e).text().trim()
                 .toLowerCase())
               .at(-1)
               ?.match(/[\d\s+]+/)?.[0]
               ?.split('+')?.[0]?.trim() || '0',
-            extraArp: $(e).find('.quest-item-progress').toArray()
+            extraArp: $(e).find('.quest-item-progress,a.text-info').toArray()
               .map((e) => $(e).text().trim()
                 .toLowerCase())
               .at(-1)
