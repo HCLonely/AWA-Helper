@@ -4,7 +4,7 @@ const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 const { parse } = require('yaml');
-const { createConfigValidationError, getYamlFieldLine, updateYamlFieldsSync, validateYaml } = require('../dist/core/config/yamlConfig');
+const { createConfigValidationError, getYamlFieldLine, updateYamlFieldsSync, validateYaml } = require('../dist/tools/config/YamlConfig');
 
 test('updateYamlFieldsSync safely updates secrets and preserves unrelated fields', (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-config-'));

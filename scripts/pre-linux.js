@@ -8,11 +8,11 @@
  */
 const fs = require('fs');
 
-fs.unlinkSync('output/AWA-Helper.exe');
-fs.unlinkSync('output/AWA-Helper.bat');
-fs.unlinkSync('output/AWA-Manager.bat');
-fs.unlinkSync('output/update.bat');
+fs.rmSync('output/AWA-Helper.exe', { force: true });
+fs.rmSync('output/AWA-DailyQuest.bat', { force: true });
+fs.rmSync('output/AWA-Manager.bat', { force: true });
+fs.rmSync('output/update.bat', { force: true });
 
 fs.writeFileSync('output/AWA-Manager.sh', 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --manager');
-fs.writeFileSync('output/AWA-Helper.sh', 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --helper');
+fs.writeFileSync('output/AWA-DailyQuest.sh', 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nchmod +x ./AWA-Helper\n./AWA-Helper --daily');
 fs.writeFileSync('output/update.sh', 'SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)\ncd ${SCRIPT_DIR}\nkill -9 $(pidof AWA-Helper)\nchmod +x ./AWA-Helper\n./AWA-Helper --update');

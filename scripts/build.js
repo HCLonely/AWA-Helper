@@ -6,10 +6,8 @@
   const { marked } = await import('marked');
   const hljs = require('highlight.js');
 
-  fs.writeFileSync('dist/awa-helper.js',
-    fs.readFileSync('dist/awa-helper.js').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
-  fs.writeFileSync('dist/manager/index.js',
-    fs.readFileSync('dist/manager/index.js').toString().replace('V__VERSION__', `v${fs.readJSONSync('package.json').version}`));
+  fs.writeFileSync('dist/index.js',
+    fs.readFileSync('dist/index.js').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
   const fileList = [
     'config.example.yml',
     'CHANGELOG.txt',
@@ -59,11 +57,10 @@
   });
 
   fs.copySync('src/webUI', 'dist/webUI', { filter: (fileName) => !/\.ts$/.test(fileName) });
-  fs.copySync('src/manager', 'dist/manager', { filter: (fileName) => !/\.ts$/.test(fileName) });
-  fs.writeFileSync('dist/manager/static/js/template.yml',
-    fs.readFileSync('dist/manager/static/js/template.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
-  fs.writeFileSync('dist/manager/static/js/template_en.yml',
-    fs.readFileSync('dist/manager/static/js/template_en.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
+  fs.writeFileSync('dist/webUI/static/templates/config.zh.yml',
+    fs.readFileSync('dist/webUI/static/templates/config.zh.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
+  fs.writeFileSync('dist/webUI/static/templates/config.en.yml',
+    fs.readFileSync('dist/webUI/static/templates/config.en.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
   if (!fs.existsSync('dist/config')) {
     fs.mkdirSync('dist/config');
   }
@@ -78,10 +75,10 @@
   fs.copySync('dist/README_en.html', 'output/README_en.html');
   // windows
   fs.writeFileSync('output/AWA-Manager.bat', 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --manager"');
-  fs.writeFileSync('output/AWA-Helper.bat', 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --helper"');
+  fs.writeFileSync('output/AWA-DailyQuest.bat', 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --daily"');
   fs.writeFileSync('output/update.bat', '@echo off\ncd "%~dp0"\ntaskkill /f /t /im AWA-Helper.exe\nstart cmd /k "AWA-Helper.exe --update"');
   // linux
   // fs.writeFileSync('output/AWA-Manager.sh', 'awapath=$(dirname $0)\ncd ${awapath}\n./AWA-Helper --manager');
-  // fs.writeFileSync('output/AWA-Helper.sh', 'awapath=$(dirname $0)\ncd ${awapath}\n./AWA-Helper --helper');
+  // DailyQuest uses --daily; --helper remains a deprecated runtime alias only.
   // fs.writeFileSync('output/update.sh', '@echo off\ncd "%~dp0"\ntaskkill /f /t /im AWA-Helper.exe\nstart cmd /k "AWA-Helper.exe --update"');
 })();

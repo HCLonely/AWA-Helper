@@ -1,9 +1,9 @@
-/* eslint-disable no-underscore-dangle, no-unused-vars */
+/* eslint-disable no-underscore-dangle */
 import { AxiosRequestConfig } from 'axios';
 import type { I18n } from 'i18n';
 import type WebSocket from 'ws';
-import type { AWA } from './AWA';
-import { Logger } from './tool';
+import type { AWAClient } from './client/AWA/AWAClient';
+import { Logger } from './tools';
 
 declare global {
   interface Array<T> {
@@ -25,12 +25,19 @@ declare global {
   interface managerServer {
     enable: boolean
     secret: string
+    local?: boolean
     port?: number
     ssl?: {
       key?: string
       cert?: string
     }
     corn?: string
+    cron?: string
+    artifacts?: Array<{
+      corn?: string
+      cron?: string
+      ids: string | number[]
+    }>
   }
   interface config {
     language: string
@@ -38,7 +45,14 @@ declare global {
     logsExpire?: number
     TLSRejectUnauthorized?: boolean
     autoUpdate?: boolean
+    UA?: string
     managerServer?: managerServer
+    manager?: {
+      secret?: string
+      dailyQuest?: { cron?: string }
+      achievement?: { enable?: boolean; cron?: string }
+      artifacts?: Array<{ cron: string; ids: number[] }>
+    }
     awaCookie?: string
     awaHost: string
     awaBoosterNotice?: boolean
@@ -180,7 +194,7 @@ declare global {
   var language: string;
   var pusher: pusher | undefined;
   var pusherProxy: proxy;
-  var quest: AWA;
+  var quest: AWAClient;
   var initError: string;
   var awaHost: string;
   var __: I18n['__'];

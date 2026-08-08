@@ -1,12 +1,28 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { deepMerge, validateHelperConfig } = require('../dist/core/config/configSchema');
-const { Cookie } = require('../dist/tool');
-const { getManagerListenHost } = require('../dist/manager/network');
+const { deepMerge, validateHelperConfig } = require('../dist/tools/config/ConfigSchema');
+const { Cookie } = require('../dist/tools');
+const { getManagerListenHost } = require('../dist/server/network');
+const { normalizeManagerConfig } = require('../dist/tools/config/ConfigMigration');
 
 test('deepMerge preserves nested defaults', () => {
   const merged = deepMerge({ webUI: { enable: true, port: 3456, local: true } }, { webUI: { port: 8080 } });
   assert.deepEqual(merged, { webUI: { enable: true, port: 8080, local: true } });
+});
+
+test('legacy managerServer scheduling migrates without a second port', () => {
+  const manager = normalizeManagerConfig({
+    managerServer: {
+      enable: true,
+      secret: '1234567890123456',
+      port: 2345,
+      corn: '0 0 * * *',
+      artifacts: [{ corn: '0 1 * * *', ids: '1, 2' }]
+    }
+  });
+  assert.equal(manager.dailyQuestCron, '0 0 * * *');
+  assert.deepEqual(manager.artifacts, [{ cron: '0 1 * * *', ids: [1, 2] }]);
+  assert.equal(Object.hasOwn(manager, 'port'), false);
 });
 
 test('validateHelperConfig reports invalid ports and arrays', () => {

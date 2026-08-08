@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { ProcessLock } = require('../dist/core/process/ProcessLock');
+const { ProcessLock } = require('../dist/tools/process/ProcessLock');
 
 test('only one ProcessLock can own a live lock', async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-lock-'));

@@ -14,7 +14,7 @@ import { importAsString } from 'rollup-plugin-string-import';
 import terser from '@rollup/plugin-terser';
 
 export default {
-  input: 'dist/main.js',
+  input: 'dist/index.js',
   // Undici conditionally uses the Node 22.13+ built-in SQLite cache store.
   // Keep it external like the other Node built-ins instead of bundling it.
   external: (id) => id.includes('node:sqlite'),

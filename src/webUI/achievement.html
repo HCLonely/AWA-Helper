@@ -1,0 +1,28 @@
+<!-- Achievement status and controls served by the unified Manager. -->
+<!doctype html>
+<html lang="__LANG__">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWA Achievement</title>
+  <link href="static/css/bootstrap.min.css" rel="stylesheet" inline>
+</head>
+<body class="bg-dark text-light">
+  <main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>AWA Achievement <small class="fs-6">__VERSION__</small></h1>
+      <a class="btn btn-outline-light" href="/">Manager</a>
+    </div>
+    <div class="card bg-secondary text-light">
+      <div class="card-body">
+        <h2 class="card-title fs-4">Status: <span id="achievement-status">unknown</span></h2>
+        <p id="achievement-message" class="card-text"></p>
+        <button id="achievement-start" class="btn btn-success">Start</button>
+        <button id="achievement-stop" class="btn btn-danger">Stop</button>
+        <button id="achievement-refresh" class="btn btn-primary">Refresh</button>
+      </div>
+    </div>
+  </main>
+  <script src="static/js/pages/achievement.js" inline></script>
+</body>
+</html>

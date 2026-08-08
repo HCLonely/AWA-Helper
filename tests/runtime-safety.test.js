@@ -5,11 +5,11 @@ const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { cleanupExpiredLogs } = require('../dist/core/logging/retention');
-const { formatLogValue, setLogSecrets } = require('../dist/core/logging/sanitize');
-const { requestHealthEndpoint } = require('../dist/core/process/healthcheck');
-const { sleep } = require('../dist/tool');
-const { decodeManagerWebSocketSecret } = require('../dist/manager/websocketAuth');
+const { cleanupExpiredLogs } = require('../dist/tools/logging/retention');
+const { formatLogValue, setLogSecrets } = require('../dist/tools/logging/sanitize');
+const { requestHealthEndpoint } = require('../dist/tools/process/healthcheck');
+const { sleep } = require('../dist/tools');
+const { decodeManagerWebSocketSecret } = require('../dist/server/websocket/authenticate');
 
 test('log formatting removes configured secrets and Axios request headers', () => {
   const secret = 'very-sensitive-cookie-value';

@@ -17,7 +17,7 @@ export default [
     },
   },
   {
-    files: ['src/manager/configer/index.js', 'src/manager/static/js/index.js', 'src/webUI/static/js/index.js'],
+    files: ['src/webUI/static/js/pages/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',
@@ -48,7 +48,9 @@ export default [
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
       'prefer-const': ['error', { destructuring: 'any', ignoreReadBeforeAssign: false }],
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'no-var': 'error',
       'no-new-object': 'error',
       'object-shorthand': 'error',

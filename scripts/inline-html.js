@@ -5,8 +5,9 @@ const { minify } = require('html-minifier-terser');
 
 const tasks = [
   { src: 'src/webUI/index.html', dest: 'src/webUI/dist/' },
-  { src: 'src/manager/index.html', dest: 'src/manager/dist/' },
-  { src: 'src/manager/configer/index.html', dest: 'src/manager/dist/', rename: 'configer.html' },
+  { src: 'src/webUI/dailyQuest.html', dest: 'src/webUI/dist/' },
+  { src: 'src/webUI/achievement.html', dest: 'src/webUI/dist/' },
+  { src: 'src/webUI/settings.html', dest: 'src/webUI/dist/' },
 ];
 
 async function processHtml({ src, dest, rename }) {

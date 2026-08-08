@@ -36,6 +36,7 @@ temp/
 src/DailyQuestUS.ts
 src/SteamQuestSU.ts
 babel.index.js
+*.babel.js
 src/package.json
 node_linux/*
 src/webUI/dist

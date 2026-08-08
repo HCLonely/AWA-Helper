@@ -7,14 +7,14 @@
     "node": "^22.13.0 || >=24.0.0"
   },
   "scripts": {
-    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\" \"src/manager/configer/index.js\" \"src/manager/static/js/index.js\" \"src/webUI/static/js/index.js\"",
+    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\" \"src/webUI/static/js/pages/*.js\"",
     "typecheck": "tsc --noEmit",
     "test:unit": "npm run tsc --silent && node --test tests/*.test.js",
     "test": "npm run lint && npm run typecheck && npm run test:unit",
     "verify": "npm run test && npm run build:pre",
-    "start": "cd output && node main.js --manager",
+    "start": "cd output && node index.js --manager",
     "build:docker": "npm run build:configer && npm run gulp && node scripts/pre.js && tsc && node scripts/build.js --docker && rollup -c",
-    "build:configer": "babel src/manager/configer/index.js --out-file src/manager/configer/babel.index.js && uglifyjs src/manager/configer/babel.index.js --compress --mangle -o src/manager/static/js/configer.min.js",
+    "build:configer": "babel src/webUI/static/js/pages/settings.source.js --out-file src/webUI/static/js/pages/settings.babel.js && uglifyjs src/webUI/static/js/pages/settings.babel.js --compress --mangle -o src/webUI/static/js/pages/settings.min.js",
     "tsc": "tsc",
     "gulp": "node scripts/inline-html.js",
     "updateDailyQuestDb": "node scripts/updateDailyQuestDb.js",
@@ -22,7 +22,7 @@
     "upx": "upx --brute ./output/AWA-Helper.exe",
     "build:pre": "npm run build:configer && npm run gulp && npm run rollup",
     "pack:win": "node --experimental-sea-config AWA-Helper-config.json && node -e \"require('fs').copyFileSync(process.execPath, 'output/AWA-Helper-raw.exe')\" && npx postject output/AWA-Helper-raw.exe NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 && node scripts/icon.js && node -e \"require('fs').rmSync('output/AWA-Helper-raw.exe')\"",
-    "build:win": "npm run pack:win && npm run upx && tar --exclude main.js --exclude sha256.txt -zcvf AWA-Helper-Win.tar.gz ./output",
+    "build:win": "npm run pack:win && npm run upx && tar --exclude index.js --exclude sha256.txt -zcvf AWA-Helper-Win.tar.gz ./output",
     "zip:linux": "node scripts/pre-linux.js && tar -zcvf AWA-Helper-Linux.tar.gz ./output",
     "build": "npm run build:pre && npm run build:win"
   },

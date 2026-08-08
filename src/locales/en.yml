@@ -199,7 +199,7 @@ downloading: Downloading installation package...
 decompressing: Unzipping the installation package...
 updateSuccess: The update is successful and will take effect the next time you start
   it!
-nextRunTime: 'Next time to start AWA-Helper: %s'
+nextRunTime: 'Next time to start DailyQuest: %s'
 nextArchievementRestart: 'Next time to restart AWA-Achievement: %s'
 downloadingMainJs: Downloading main.js...
 autoUpdated: Automatically updated to %s
@@ -220,22 +220,27 @@ cookieUpdated: Cookie updated successfully, source IP %s
 twitchCookieUpdated: Twitch cookie updated successfully, source IP %s
 publicNetworkNotice: If you need public network access, please replace 127.0.0.1 with
   your public network IP and open the %s port
-startHelper: Start AWA-Helper
-stopHelper: Terminate AWA-Helper
+startDailyQuest: Start DailyQuest
+stopDailyQuest: Terminate DailyQuest
 stopManager: Terminate AWA-Manager
 updateHelper: Update AWA-Helper
-cornEnabled: Successfully configured scheduled start of AWA-Helper
+cornEnabled: Successfully configured scheduled start of DailyQuest
 cornError: cron format error
+invalidCronExpression: 'Invalid Cron expression: %s'
+managerStarted: 'Manager started in %s mode on port %s'
+managerMode_persistent: persistent
+managerMode_once: one-shot
+codSafetyNotice: '* Important: Running this program at the same time as COD may result in a COD account ban. Please close this program when playing COD!'
 watchLogs: View log
 changeArtifacts: Change Artifacts
-gettingHelperStatus: Obtaining AWA-Helper running status...
-getHelperStatusSuccess: The running status was obtained successfully!
-getHelperStatusFailed: Failed to obtain running status
+gettingDailyQuestStatus: Obtaining DailyQuest running status...
+getDailyQuestStatusSuccess: The running status was obtained successfully!
+getDailyQuestStatusFailed: Failed to obtain running status
 gettingManagerStatus: Obtaining AWA-Manager running status...
-startingHelper: Starting AWA-Helper...
+startingDailyQuest: Starting DailyQuest...
 startSuccess: Started successfully!
 startFailed: Startup failed
-stoppingHelper: Terminating AWA-Helper...
+stoppingDailyQuest: Terminating DailyQuest...
 stopSuccess: Termination successful!
 stopFailed: Termination failed
 stoppingManager: Terminating AWA-Manager...
@@ -309,9 +314,7 @@ configAWAHelper: Configure AWA-Helper
 refreshStatus: Refresh Status
 syncCookie: Sync Cookie
 syncTwitchCookie: Sync Twitch Cookie
-awaHelperControl: AWA-Helper Control
-startAWAHelper: Start AWA-Helper
-stopAWAHelper: Stop AWA-Helper
+dailyQuestControl: DailyQuest Control
 updateAWAHelper: Update AWA-Helper
 stopAWAManager: Stop AWA-Manager
 installCookieScript: Install Cookie Sync Script

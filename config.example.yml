@@ -7,23 +7,17 @@ webUI:
   # ssl: # WebUI启用SSL
     # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
     # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
-  reverseProxyPort: 0 # 反向代理端口，0为不启用
 timeout: 86400 # 超时设置，单位：秒，默认86400s(24h), 0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
 autoUpdate: false # 自动安装已暂时禁用；程序仍会检查并提示新版本
 
-#### AWA managerServer配置 ####
-managerServer:
-  enable: false # 需同时启用webUI
-  secret: '' # AWA-Manager Secret，启用管理器时至少设置16个字符
-  local: true # 非容器环境仅本机访问；Docker 中为支持端口转发会监听容器全部接口
-  port: 2345 # AWA managerServer端口
-  # ssl: # managerServer启用SSL
-    # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
-    # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
-  corn: '3 30 14,21 * * *' # 定时启动AWA-Helper，需开启managerServer
+#### Manager配置 ####
+manager:
+  secret: '' # Manager API密钥；为空时首次启动会生成随机密钥并写入配置
+  dailyQuest:
+    cron: '3 30 14,21 * * *' # 定时运行DailyQuest
 #        ┬ ┬─ ──┬── ┬ ┬ ┬
 #        │ │    │   │ │ |
 #        │ │    │   │ │ └─────────────── 一周的第几天 (0 - 7, 1L - 7L) (0或7是周日) ┐
@@ -32,13 +26,16 @@ managerServer:
 #        │ │    └───────────────────── 小时 (0 - 23) ┐
 #        │ └────────────────────────── 分钟 (0 - 59) ├─ 时间
 #        └──────────────────────────── 秒　 (0 - 59) ┘
-# 示例中的表达式代表每天的14:30:03和21:30:03启动AWA-Helper
+# 示例中的表达式代表每天的14:30:03和21:30:03运行DailyQuest
 # !! 注意每次运行的时间间隔要大于前面设置的timeout
+  achievement:
+    enable: false # 是否启用Achievement定时任务
+    cron: '0 14 * * *'
   artifacts: # 定时更换遗物
-    - corn: '7 29 9 * * 1' # 写法格式同上
-      ids: '636,17056,30235' # 遗物id, 英文逗号分隔
-    - corn: '36 44 10 * * 2'
-      ids: '636,17056,53672'
+    - cron: '7 29 9 * * 1' # 写法格式同上
+      ids: [636, 17056, 30235]
+    - cron: '36 44 10 * * 2'
+      ids: [636, 17056, 53672]
 # !! 注意每次更换遗物的时间间隔要大于24小时
 
 #### AWA 配置(必需) ####

@@ -21,15 +21,15 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 - Cookie synchronization;
 - Configuration file parameter settings;
-- View AWA-Helper running status;
-- Control starting/terminating AWA-Helper
+- View DailyQuest running status;
+- Control starting/terminating DailyQuest
 - ...
 
 > It is recommended that users who do not shut down or mount to the server for a long time use this AWA-Manager.
 
 ### Cookie synchronization
 
-1. Configure [managerServer](#AWA-Manager-%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E) and [webUI](#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E) in the configuration file, and run AWA-Manager;
+1. Configure `manager` and `webUI` in the configuration file, then run Manager;
 2. Install [the Tampermonkey BETA](https://www.tampermonkey.net/index.php) extension in the browser ( **note that it is the red BETA version, the regular version cannot obtain cookies!!!** );
 3. Install [AWA-Manager](https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js) user script;
 4. Open the [https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center) page to configure `ManagerServer` ;
@@ -48,7 +48,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 1. Download [AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
 2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
 3. Run (choose one of the following two):
-    - Run AWA-Helper: Double-click `AWA-Helper.bat` ;
+    - Run DailyQuest once: double-click `AWA-DailyQuest.bat`;
     - Run AWA-Manager: Double-click `AWA-Manager.bat` to run AWA-Manager;
 
 ##### Update
@@ -71,7 +71,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
     tar -xzvf AWA-Helper-linux-x64.tar.gz
     sudo mv dist AWA-Helper
     cd AWA-Helper
-    sudo chmod +x AWA-Helper.sh
+    sudo chmod +x AWA-DailyQuest.sh
     sudo chmod +x AWA-Manager.sh
     sudo chmod +x update.sh
     ```
@@ -84,7 +84,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 3. Run (choose one of the following two):
 
-    - Run AWA-Helper: `./AWA-Helper.sh` ;
+    - Run DailyQuest once: `./AWA-DailyQuest.sh`;
     - Run AWA-Manager: `./AWA-Manager.sh` .
 
 #### Update
@@ -100,18 +100,18 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 1. (Only required for first time installation) Install [NodeJs](https://nodejs.org/en/download/package-manager) &gt;= v16.0.0;
 
-2. Download [main.js](https://github.com/HCLonely/AWA-Helper/releases/latest) ;
+2. Download [index.js](https://github.com/HCLonely/AWA-Helper/releases/latest) ;
 
     ```bash
     mkdir AWA-Helper
     cd AWA-Helper
-    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/main.js # 注意替换版本号为最新版
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/index.js # replace with the latest version
     ```
 
 3. (Only required for first time installation) Initialization
 
     ```bash
-    node main.js
+    node index.js --init
     ```
 
 4. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
@@ -122,24 +122,25 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 5. Run (choose one of the following two):
 
-    - Run AWA-Helper: `node main.js --helper` ;
-    - Run AWA-Manager: `node main.js --manager` .
+    - Run DailyQuest once: `node index.js --daily`;
+    - Run persistent Manager: `node index.js --manager` or `node index.js`.
+    - The deprecated `--helper` flag remains an alias for `--daily`.
 
 #### Update
 
 - Update checks notify you about new releases; automatic installation is temporarily disabled;
-- Manual update: `node main.js --update` ;
+- Manual update: `node index.js --update` ;
 
 ### Docker
 
 #### Run
 
-> !!! When running in Docker mode, do not modify `port` of `managerServer` and `webUI` , and set `autoUpdate` and `local` of `managerServer` to `false` !!!
+> Docker exposes only the unified `webUI.port`, which defaults to 3456.
 
 - AWA-Manager (recommended)
 
 ```shell
-docker run -d --name awa-helper -p 2345:2345 -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data -e helperMode=manager hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
 ```
 
 - or AWA-Helper
@@ -153,14 +154,14 @@ docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src
 > `/usr/src/app/dist/logs`: corresponding to the local paths `/data/awa-helper/logs`
 > `/usr/src/app/dist/data`: corresponding to the local paths `/data/awa-helper/data`
 
-## Archievement Helper
+## Achievement
 
-> This function is based on AWA-Manager, AWA-Helper cannot be used alone!
+> Achievement is scheduled by AWA-Manager and cannot run independently of Manager.
 
 ### Usage method
 
 1. Open `AWA-Manager` management background;
-2. Click the `启动AWA-Archievement` button.
+2. Click the `Start AWA-Achievement` button.
 
 ## config (File configuration)
 
@@ -179,7 +180,6 @@ webUI:
   ssl: # WebUI启用SSL
     key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
     cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
-  reverseProxyPort: 0 # 反向代理端口，0为不启用
 timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
@@ -192,31 +192,16 @@ autoUpdate: false # Check for updates; automatic installation is temporarily dis
 #### AWA-Manager configuration parameter description
 
 ```yml
-managerServer:
-  enable: false # 需同时启用webUI
-  secret: '' # AWA-Manager Secret，强烈建议修改
-  local: true # Local-only outside containers; Docker listens on all container interfaces for port forwarding
-  port: 2345 # AWA managerServer端口
-  # ssl: # managerServer启用SSL
-    # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
-    # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
-  corn: '3 30 14,21 * * *' # 定时启动AWA-Helper，需开启managerServer
-#        ┬ ┬─ ──┬── ┬ ┬ ┬
-#        │ │    │   │ │ |
-#        │ │    │   │ │ └─────────────── 一周的第几天 (0 - 7, 1L - 7L) (0或7是周日) ┐
-#        │ │    │   │ └───────────────── 月份　　　　 (1 - 12)　 　　　             ├─ 日期
-#        │ │    │   └─────────────────── 每月的第几天 (1 - 31, L)　　　　           ┘
-#        │ │    └───────────────────── 小时 (0 - 23) ┐
-#        │ └────────────────────────── 分钟 (0 - 59) ├─ 时间
-#        └───────────────────────── ───秒　 (0 - 59) ┘
-# 示例中的表达式代表每天的14:30:03和21:30:03启动AWA-Helper
-# !! 注意每次运行的时间间隔要大于前面设置的timeout
-  artifacts: # 定时更换遗物
-    - corn: '7 29 9 * * 1' # 写法格式同上
-      ids: '636,17056,30235' # 遗物id, 英文逗号分隔
-    - corn: '36 44 10 * * 2'
-      ids: '636,17056,53672'
-# !! 注意每次更换遗物的时间间隔要大于24小时
+manager:
+  secret: '' # generated automatically on first startup when empty
+  dailyQuest:
+    cron: '3 30 14,21 * * *'
+  achievement:
+    enable: false
+    cron: '0 14 * * *'
+  artifacts:
+    - cron: '7 29 9 * * 1'
+      ids: [636, 17056, 30235]
 ```
 
 ### AWA configuration (Required)
