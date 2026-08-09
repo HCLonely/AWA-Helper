@@ -76,6 +76,7 @@ test('Steam quest preparation belongs to Core and not AWA API modules', () => {
 test('Achievement tracking remains awaited and abort-aware under Manager', () => {
   const source = fs.readFileSync(path.join(root, 'src/core/Achievement/AchievementService.ts'), 'utf8');
   assert.match(source, /await this\.watchTwitch\(signal\)/);
-  assert.match(source, /sleep\(60, signal\)/);
+  assert.match(source, /heartbeatIntervalSeconds = 60/);
+  assert.match(source, /sleep\(heartbeatIntervalSeconds, signal\)/);
   assert.doesNotMatch(source, /return this\.watchTwitch\(/);
 });

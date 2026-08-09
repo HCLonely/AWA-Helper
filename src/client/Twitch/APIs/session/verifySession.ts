@@ -27,6 +27,7 @@ export const verifySession = async (context: TwitchContext): Promise<string> => 
     return clientId;
   } catch (error) {
     if (error instanceof TwitchError) throw error;
+    console.debug(error);
     throw new TwitchError('verifySession', 'Unable to verify Twitch session', true, undefined, { cause: error });
   }
 };

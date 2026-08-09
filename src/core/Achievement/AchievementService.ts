@@ -353,7 +353,12 @@ export class AchievementService {
           if (!await sleep(5 * 60, signal)) return;
           continue;
         }
-        await this.trackTwitchChannel(trackingLookup.value, signal);
+        const trackingResult = await this.trackTwitchChannel(trackingLookup.value, signal);
+        if (trackingResult === 'retry') {
+          new Logger(`${time()}${__('watchTwitchAfter5min')}`);
+          if (!await sleep(5 * 60, signal)) return;
+          continue;
+        }
         return;
       } catch (error) {
         if (signal?.aborted || !this.watchTwitchStatus.running) return;
@@ -370,17 +375,31 @@ export class AchievementService {
    * 处理 track Twitch Channel 相关逻辑。
    * @param info - 提交 Twitch 跟踪请求所需的频道信息，类型为 `TwitchChannelTrackingInfo`。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
-   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   * @param heartbeatIntervalSeconds - 两次心跳之间的等待秒数；生产环境固定使用 60 秒。
+   * @returns `Promise<'retry' | 'stopped'>`，直播不可用时要求重新选台，任务停止时返回 stopped。
    */
-  private async trackTwitchChannel(info: TwitchChannelTrackingInfo, signal?: AbortSignal): Promise<void> {
+  private async trackTwitchChannel(
+    info: TwitchChannelTrackingInfo,
+    signal?: AbortSignal,
+    heartbeatIntervalSeconds = 60
+  ): Promise<'retry' | 'stopped'> {
     while (this.watchTwitchStatus.running && !signal?.aborted) {
+      const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
       const result = await this.awa.twitch.sendTrack(info);
-      if (!result.success || result.state === 'streamer_offline' || result.state === 'no_channel_found') {
+      logger.log(result.success ? chalk.green(`OK (${result.state})`) : chalk.red(`Error (${result.state})`));
+      if (result.state === 'streamer_offline' || result.state === 'no_channel_found') {
+        new Logger(`${time()}${chalk.blue(result.state === 'streamer_offline'
+          ? __('liveOffline', chalk.yellow(info.channelId))
+          : __('noChannelFound', chalk.yellow(info.channelId)))}`);
+        return 'retry';
+      }
+      if (!result.success) {
         throw new Error(`AWA Twitch tracking failed: ${result.state}`);
       }
-      if (result.state === 'daily_cap_reached') return;
-      if (!await sleep(60, signal)) return;
+      // Achievement watch-time must keep accumulating after the daily ARP cap is reached.
+      if (!await sleep(heartbeatIntervalSeconds, signal)) return 'stopped';
     }
+    return 'stopped';
   }
 
   /**

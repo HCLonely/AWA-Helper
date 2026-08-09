@@ -1,27 +1,56 @@
-- 使用原子进程锁，支持崩溃后的陈旧锁恢复，并修复锁创建竞争窗口
-- 修正任务失败仍显示“全部完成”、异常退出码为 0、递归轮询堆积等问题
-- Twitch、Steam ASF、在线时长任务支持取消信号和优雅退出
-- 修复 Twitch 扩展 JWT、Steam Cookie、Cookie 中 = 被截断等问题
-- 配置改为深度合并、运行时校验和原子写入，避免字符串替换破坏 YAML
-- 禁用未签名自动更新及管理器伪“更新成功”行为，发布校验改用 SHA-256
-- Manager 增加强密钥要求、恒定时间比较、安全响应头、请求体限制
-- 日志接口从 URL 查询密钥改为 POST，请求密钥使用 sessionStorage
-- 修复 WebUI 日志和任务链接注入风险
-- WebSocket 改为多客户端集合并限制内存日志数量
-- HTTP 重试仅允许幂等请求，并支持退避、抖动和 Retry-After
-- Node、CI、Docker、SEA 发布运行时统一到 Node 22.13.1
-- Docker 改为非 root 用户运行，并加入健康检查
-- 统一安全日志脱敏，AxiosError 不再输出请求头、Cookie、密码和 Token
-- Manager WebSocket 增加 Secret 认证、连接/消息限制和完整错误处理
-- /setConfig 增加完整语义校验
-- 修复 sleep() 遗留 AbortSignal 监听器
-- 健康检查改为真实端口/进程探测
-- 修复日志过期清理条件
-- 修复 Achievement 重复定时器、异常丢失、UTC/本地日期混用、失败后错误记录历史、历史文件损坏和非原子写入
-- JS lint 扩展到浏览器代码、构建脚本和测试
-- 优化 .dockerignore
-- 修复新版每日任务 ARP 识别
-- 取消 Docker 的 Lock 文件机制
-- [ ] 日志区分
-- [ ] Tools
-- [ ] server route
+### Features
+
+- feat: 优化 Manager WebUI，集中管理每日任务、成就任务和遗物任务
+- feat: 优化任务调度器、作业协调器和状态存储，支持按 Cron 表达式运行各类任务
+- feat: 统一 HTTP/WebSocket 服务及任务状态、控制、日志和配置接口
+- feat: 新增 CLI 命令解析，支持初始化、健康检查及不同运行模式
+- feat: 优化 AWA、Steam ASF 和 Twitch 的独立 API、会话及上下文客户端
+- feat: 优化 Manager、DailyQuest 和 Achievement 分类日志查看功能
+
+### Bug Fixes
+
+- fix: 修复无可用 Twitch 直播或追踪频道时任务意外退出的问题，改为定时重试
+- fix: 修复对象类型日志显示为错误字符串的问题
+- fix: 修复 WebUI 日志内容及任务日志分类不同步的问题
+- fix: 修复 WebUI 日志按钮未正确校验 Manager 密钥的问题
+- fix: Docker 容器环境不再创建进程锁，避免容器重启后出现锁冲突
+
+### Refactoring
+
+- refactor: 将项目重构为 CLI、客户端、核心服务、服务器、工具和 WebUI 分层架构
+- refactor: 将 AWA、Steam 和 Twitch 客户端拆分为独立 API、解析器、类型及错误处理模块
+- refactor: 抽离共享 HTTP 传输、Cookie、代理、Result 和平台错误处理能力
+- refactor: 将每日任务拆分为运行时、状态、报告器及 Daily、Legacy、Steam、Twitch 和在线时长任务
+- refactor: 将 Achievement、Artifact 和 DailyQuest 接入统一 Manager 作业模型
+- refactor: 将日志、配置、HTTP、代理、通知、更新、进程及国际化能力拆分为独立工具模块
+- refactor: 统一 API 调用结果和响应解析，减少平台客户端中的重复业务逻辑
+- refactor: 重组 WebUI 页面、脚本、配置模板和静态资源目录
+- refactor: 将程序入口由 `main` 调整为 `index`
+- refactor: 将 Manager 配置迁移至新的 `manager` 配置结构，并规范 Cron 和遗物 ID 格式
+
+### Documentation
+
+- docs: 新增基于 VitePress 的使用文档站点
+- docs: 新增快速开始、运行方式和完整配置参考文档
+- docs: 新增项目架构及数据目录说明
+- docs: 为客户端、核心服务、服务器和工具模块补充代码注释
+- docs: 更新中英文 README 和配置示例以匹配新架构
+
+### Styling
+
+- style: 优化 Manager WebUI 的按钮布局、状态区域和日志区域样式
+
+### Tests
+
+- test: 新增 CLI、客户端 API、AWA 解析器及模块边界测试
+- test: 新增任务协调器、控制中心解析和 Twitch 任务重试测试
+- test: 新增日志作用域、工具目录结构、配置及运行时安全测试
+
+### Build
+
+- build: 将构建产物由 `main.js` 更名为 `index.js`
+- build: 更新 Docker、SEA 和 GitHub Release 流程以使用新的入口文件
+- build: 更新构建、静态资源内联和 Linux 预处理脚本以适配新目录结构
+- build: 新增 VitePress 开发、构建和预览命令
+- build: 更新依赖锁文件及相关开发依赖
+- build: 调整 ESLint 检查范围以覆盖重组后的 WebUI 脚本
