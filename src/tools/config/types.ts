@@ -1,6 +1,6 @@
 /**
- * @file config types
- * @description Defines the normalized Manager configuration while retaining legacy fields during migration.
+ * @file src/tools/config/types.ts
+ * @description 定义当前配置、旧版兼容配置以及加载完成后的标准配置类型。
  */
 export interface ArtifactScheduleConfig {
   cron: string

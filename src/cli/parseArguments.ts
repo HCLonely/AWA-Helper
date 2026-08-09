@@ -1,9 +1,14 @@
 /**
- * @file parseArguments
- * @description Parses public CLI flags without allowing ambiguous runtime modes.
+ * @file src/cli/parseArguments.ts
+ * @description 解析命令行参数，校验互斥运行模式，并转换为类型安全的命令对象。
  */
 import type { Command } from './Command';
 
+/**
+ * 解析 parse Arguments 相关数据。
+ * @param args - 待解析的命令行参数列表，类型为 `string[]`。
+ * @returns `Command`，parseArguments 解析得到的结构化结果。
+ */
 const parseArguments = (args: string[]): Command => {
   const hasManager = args.includes('--manager');
   const hasDaily = args.includes('--daily');

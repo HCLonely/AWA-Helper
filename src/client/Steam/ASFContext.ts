@@ -1,4 +1,7 @@
-/** Connection state for ArchiSteamFarm IPC requests. */
+/**
+ * @file src/client/Steam/ASFContext.ts
+ * @description 维护 ASF IPC 地址、身份请求头和可注入 HTTP 传输状态。
+ */
 import type { RawAxiosRequestHeaders } from 'axios';
 import { http } from '../../tools';
 import { createHttpTransport, createProxyAgent, type HttpTransport } from '../shared';
@@ -20,6 +23,10 @@ export class ASFContext {
   readonly httpsAgent?: myAxiosConfig['httpsAgent'];
   readonly transport: HttpTransport;
 
+  /**
+   * 初始化 ASFContext 实例。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `ASFContextOptions`。
+   */
   constructor(options: ASFContextOptions) {
     const baseURL = `${options.protocol}://${options.host}:${options.port}`;
     this.transport = options.transport || createHttpTransport(http);
@@ -38,6 +45,11 @@ export class ASFContext {
     }
   }
 
+  /**
+   * 请求 request 相关数据。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `myAxiosConfig`。
+   * @returns `Promise<AxiosResponse<T, any, {}, any>>`，request 请求返回的响应结果。
+   */
   request<T = unknown>(options: myAxiosConfig) {
     const requestOptions: myAxiosConfig = { ...options, headers: { ...this.headers, ...options.headers } };
     if (this.httpsAgent && !requestOptions.httpsAgent) requestOptions.httpsAgent = this.httpsAgent;

@@ -1,6 +1,6 @@
 /**
- * @file tools
- * @description Shared logging, HTTP, proxy, notification, cookie, and timing utilities.
+ * @file src/tools/index.ts
+ * @description 实现日志输出、HTTP 请求、Cookie、代理、通知、版本检查和通用时间工具。
  */
 /* global __, proxy, logs, webUI, myAxiosConfig, pusher, pushOptions, cookies, managerServer */
 import chalk from 'chalk';
@@ -16,6 +16,11 @@ import { formatLogValue } from './logging/sanitize';
 globalThis.logs = { type: 'logs' };
 globalThis.wsClients = new Set();
 
+/**
+ * 处理 broadcast Web Ui 相关逻辑。
+ * @param data - 当前请求或操作使用的数据内容，类型为 `unknown`。
+ * @returns `void`，该函数仅执行副作用，不返回值。
+ */
 const broadcastWebUi = (data: unknown): void => {
   const message = JSON.stringify(data);
   globalThis.wsClients.forEach((client) => {
@@ -31,6 +36,11 @@ const broadcastWebUi = (data: unknown): void => {
   });
 };
 
+/**
+ * 处理 escape Html 相关逻辑。
+ * @param data - 当前请求或操作使用的数据内容，类型为 `string`。
+ * @returns `string`，escapeHtml 获取或生成的文本内容。
+ */
 const escapeHtml = (data: string): string => data
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
@@ -40,12 +50,22 @@ const escapeHtml = (data: string): string => data
 
 globalThis.secrets = [];
 
+/**
+ * 处理 to JSON 相关逻辑。
+ * @param e - 需要序列化或格式化的原始值，类型为 `any`。
+ * @returns `string`，toJSON 获取或生成的文本内容。
+ */
 const toJSON = (e: any): string => {
   if (typeof e === 'string') {
     return formatLogValue(e, true);
   }
   return formatLogValue(e, true);
 };
+/**
+ * 处理 to Html JSON 相关逻辑。
+ * @param e - 需要序列化或格式化的原始值，类型为 `any`。
+ * @returns `string`，toHtmlJSON 获取或生成的文本内容。
+ */
 const toHtmlJSON = (e: any): string => {
   if (typeof e === 'string') {
     const safeText = escapeHtml(formatLogValue(e));
@@ -87,6 +107,11 @@ class Logger {
   id = Date.now();
   data = '';
 
+  /**
+   * 初始化 Logger 实例。
+   * @param text - 需要记录、推送或格式化的文本内容，类型为 `any`。
+   * @param newLine - 用于决定输出后是否追加换行符，类型为 `boolean`。
+   */
   constructor(text: any, newLine = true) {
     if (webUI) {
       this.log(text, newLine);
@@ -94,6 +119,12 @@ class Logger {
     }
     Logger.consoleLog(text, newLine);
   }
+  /**
+   * 处理 log 相关逻辑。
+   * @param data - 当前请求或操作使用的数据内容，类型为 `any`。
+   * @param newLine - 用于决定输出后是否追加换行符，类型为 `boolean`。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   log(data: any, newLine = true): void {
     if (data.type === 'questInfo') {
       logs.questInfo = {
@@ -124,6 +155,12 @@ class Logger {
     }
     broadcastWebUi(logs[this.id.toString()]);
   }
+  /**
+   * 处理 console Log 相关逻辑。
+   * @param text - 需要记录、推送或格式化的文本内容，类型为 `any`。
+   * @param newLine - 用于决定输出后是否追加换行符，类型为 `boolean`。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   static consoleLog(text: any, newLine = true): void {
     if (text.type === 'questInfo') {
       return;
@@ -139,12 +176,23 @@ class Logger {
   }
 }
 
+/**
+ * 等待 sleep 相关数据。
+ * @param time - 计算或比较时使用的时间，类型为 `number`。
+ * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+ * @returns `Promise<boolean>`，表示 sleep 检查是否通过。
+ */
 const sleep = (time: number, signal?: AbortSignal): Promise<boolean> => new Promise((resolve) => {
   if (signal?.aborted) {
     resolve(false);
     return;
   }
   let settled = false;
+  /**
+   * 处理 finish 相关逻辑。
+   * @param result - 上一处理步骤产生的响应结果，类型为 `boolean`。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   const finish = (result: boolean): void => {
     if (settled) return;
     settled = true;
@@ -152,13 +200,32 @@ const sleep = (time: number, signal?: AbortSignal): Promise<boolean> => new Prom
     signal?.removeEventListener('abort', onAbort);
     resolve(result);
   };
+    /**
+     * 处理 on Abort 相关逻辑。
+     * @returns `void`，该函数仅执行副作用，不返回值。
+     */
   const onAbort = (): void => finish(false);
   const timeout = setTimeout(() => finish(true), time * 1000);
   signal?.addEventListener('abort', onAbort, { once: true });
 });
 
+/**
+ * 处理 random 相关逻辑。
+ * @param minNum - 随机数可取的最小整数，类型为 `number`。
+ * @param maxNum - 随机数可取的最大整数，类型为 `number`。
+ * @returns `number`，random 计算或读取到的数值。
+ */
 const random = (minNum: number, maxNum: number): number => Math.floor((Math.random() * (maxNum - minNum + 1)) + minNum);
+/**
+ * 处理 time 相关逻辑。
+ * @returns `string`，time 获取或生成的文本内容。
+ */
 const time = (): string => chalk.gray(`[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `);
+/**
+ * 处理 net Error 相关逻辑。
+ * @param error - 需要处理或转换的异常对象，类型为 `AxiosError<unknown, any, any>`。
+ * @returns `string`，netError 获取或生成的文本内容。
+ */
 const netError = (error: AxiosError): string => {
   if (error.message.includes('ETIMEDOUT')) {
     return `: ${chalk.yellow(__('timeout'))}`;
@@ -182,6 +249,11 @@ const netError = (error: AxiosError): string => {
   return '';
 };
 
+/**
+ * 格式化 format Proxy 相关数据。
+ * @param proxy - 连接远程服务时使用的代理配置，类型为 `proxy`。
+ * @returns `any`，formatProxy 生成的格式化结果。
+ */
 const formatProxy = (proxy: proxy): any => {
   let agent: any;
   const proxyOptions: tunnel.ProxyOptions & SocksProxyAgentOptions = {
@@ -255,9 +327,23 @@ http.interceptors.response.use(
   }
 );
 
+/**
+ * 检查 check Update 相关数据。
+ * @param version - 用于比较或展示的应用版本号，类型为 `string`。
+ * @param _managerServer - 兼容旧调用方式而保留的 Manager 服务配置，类型为 `managerServer | undefined`。
+ * @param autoUpdate - 是否在发现新版本后自动执行更新，类型为 `boolean`。
+ * @param CHANGELOG - 用于展示版本变更内容的更新日志文本，类型为 `string`。
+ * @param proxy - 连接远程服务时使用的代理配置，类型为 `proxy | undefined`。
+ * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+ */
 const checkUpdate = async (version: string, _managerServer: managerServer | undefined, autoUpdate: boolean, CHANGELOG: string, proxy?: proxy): Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   const options: myAxiosConfig = {
+    /**
+     * 检查 validate Status 相关数据。
+     * @param status - 当前对象或任务的状态，类型为 `number`。
+     * @returns `boolean`，表示 validateStatus 检查是否通过。
+     */
     validateStatus: (status: number) => status === 302,
     maxRedirects: 0,
     Logger: logger
@@ -303,6 +389,12 @@ const checkUpdate = async (version: string, _managerServer: managerServer | unde
     });
 };
 
+/**
+ * 检查 is New Version 相关数据。
+ * @param currentVersion - 用于比较或展示的应用版本号，类型为 `string`。
+ * @param latestVersion - 用于比较或展示的应用版本号，类型为 `string`。
+ * @returns `boolean`，表示 isNewVersion 检查是否通过。
+ */
 const isNewVersion = (currentVersion: string, latestVersion: string): boolean => {
   const currentVersionArr = currentVersion.replace('V', '').split('.').map((e) => parseInt(e, 10));
   const latestVersionArr = latestVersion.split('.').map((e: string) => parseInt(e, 10));
@@ -314,6 +406,13 @@ const isNewVersion = (currentVersion: string, latestVersion: string): boolean =>
   );
 };
 
+/**
+ * 处理 ask 相关逻辑。
+ * @param rl - 读取终端输入所用的 Readline 接口，类型为 `Interface`。
+ * @param question - 向用户显示的提问文本，类型为 `string`。
+ * @param answers - 允许用户选择的候选答案列表，类型为 `string[] | undefined`。
+ * @returns `Promise<string>`，ask 获取或生成的文本内容。
+ */
 const ask = (rl: Interface, question: string, answers?: Array<string>): Promise<string> => new Promise((resolve) => {
   rl.question(`${question}`, (chunk) => {
     const answer = chunk.toString().trim();
@@ -324,6 +423,11 @@ const ask = (rl: Interface, question: string, answers?: Array<string>): Promise<
   });
 });
 
+/**
+ * 处理 push 相关逻辑。
+ * @param message - 需要记录、推送或格式化的文本内容，类型为 `string`。
+ * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+ */
 const push = async (message: string) => {
   if (!globalThis.pusher?.enable) {
     return;
@@ -351,6 +455,11 @@ const push = async (message: string) => {
   new Logger(result[0].result);
 };
 
+/**
+ * 处理 push Quest Info Format 相关逻辑。
+ * @param quest - 需要格式化、上报或执行的任务信息，类型为 `{ report: Record<string, any>; dailyArp: string; signArp: { daily?: string; monthly?: string; }; } | undefined`。
+ * @returns `string`，pushQuestInfoFormat 获取或生成的文本内容。
+ */
 const pushQuestInfoFormat = (quest?: { report: Record<string, any>; dailyArp: string; signArp: { daily?: string; monthly?: string } }) => {
   if (!quest) {
     return '';
@@ -404,6 +513,11 @@ const pushQuestInfoFormat = (quest?: { report: Record<string, any>; dailyArp: st
 class Cookie {
   cookie: cookies;
 
+  /**
+   * 处理 To Json 相关逻辑。
+   * @param data - 当前请求或操作使用的数据内容，类型为 `string | string[] | null | undefined`。
+   * @returns `cookies`，将当前 Cookie 集合转换得到的键值对象。
+   */
   static ToJson(data: string | Array<string> | null | undefined): cookies {
     if (typeof data === 'string') {
       return Object.fromEntries(data.split(';').flatMap((cookieText) => {
@@ -418,6 +532,11 @@ class Cookie {
     }
     return {};
   }
+  /**
+   * 处理 To String 相关逻辑。
+   * @param data - 当前请求或操作使用的数据内容，类型为 `object | string[]`。
+   * @returns `string`，ToString 获取或生成的文本内容。
+   */
   static ToString(data: object | Array<string>): string {
     if (Array.isArray(data)) {
       data = this.ToJson(data);
@@ -428,6 +547,10 @@ class Cookie {
     return '';
   }
 
+  /**
+   * 初始化 Cookie 实例。
+   * @param data - 当前请求或操作使用的数据内容，类型为 `string | string[] | { [name: string]: string; } | undefined`。
+   */
   constructor(data?: string | Array<string> | { [name: string]: string }) {
     if (typeof data === 'string' || Array.isArray(data)) {
       this.cookie = Cookie.ToJson(data);
@@ -439,12 +562,24 @@ class Cookie {
     }
     this.cookie = {};
   }
+  /**
+   * 解析 parse 相关数据。
+   * @returns `cookies`，parse 解析得到的结构化结果。
+   */
   parse() {
     return this.cookie;
   }
+  /**
+   * 处理 stringify 相关逻辑。
+   * @returns `string`，stringify 获取或生成的文本内容。
+   */
   stringify() {
     return Cookie.ToString(this.cookie);
   }
+  /**
+   * 处理 browserify 相关逻辑。
+   * @returns `{ name: string; value: string; domain: string; path: string; }[]`，browserify 收集或筛选得到的数据列表。
+   */
   browserify() {
     return Object.entries(this.cookie).map(([name, value]) => ({
       name,
@@ -453,6 +588,11 @@ class Cookie {
       path: '/'
     }));
   }
+  /**
+   * 更新 update 相关数据。
+   * @param data - 当前请求或操作使用的数据内容，类型为 `string | string[] | cookies`。
+   * @returns `this`，update 操作完成后的结果。
+   */
   update(data: string | Array<string> | cookies) {
     if (typeof data === 'string' || Array.isArray(data)) {
       data = Cookie.ToJson(data);
@@ -463,12 +603,22 @@ class Cookie {
     };
     return this;
   }
+  /**
+   * 删除 remove 相关数据。
+   * @param name - 用于定位目标对象的名称，类型为 `string`。
+   * @returns `this`，remove 操作完成后的结果。
+   */
   remove(name: string) {
     if (this.cookie[name]) {
       delete this.cookie[name];
     }
     return this;
   }
+  /**
+   * 获取 get 相关数据。
+   * @param name - 用于定位目标对象的名称，类型为 `string`。
+   * @returns `string | null`，get 获取到的数据。
+   */
   get(name: string): string | null {
     return this.cookie[name];
   }

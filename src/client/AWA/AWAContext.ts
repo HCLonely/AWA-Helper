@@ -1,4 +1,7 @@
-/** Mutable AWA session state shared by the small AWA API modules. */
+/**
+ * @file src/client/AWA/AWAContext.ts
+ * @description 维护 AWA 基础地址、身份 Cookie、请求头和可注入 HTTP 传输状态。
+ */
 import type { RawAxiosRequestHeaders } from 'axios';
 import { Cookie, http } from '../../tools';
 import { createHttpTransport, createProxyAgent, DEFAULT_AWA_HOST, DEFAULT_USER_AGENT, type CookieStore, type HttpTransport } from '../shared';
@@ -21,6 +24,10 @@ export class AWAContext {
   userId?: string;
   username?: string;
 
+  /**
+   * 初始化 AWAContext 实例。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `AWAContextOptions`。
+   */
   constructor(options: AWAContextOptions) {
     this.host = options.host || DEFAULT_AWA_HOST;
     this.transport = options.transport || createHttpTransport(http);
@@ -36,15 +43,29 @@ export class AWAContext {
     }
   }
 
+  /**
+   * 获取 base URL。
+   * @returns `string`，baseURL 获取或生成的文本内容。
+   */
   get baseURL(): string {
     return `https://${this.host}`;
   }
 
+  /**
+   * 更新 update Cookies 相关数据。
+   * @param setCookie - 用于身份验证和维持会话的 Cookie，类型为 `string[] | undefined`。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   updateCookies(setCookie?: string[]): void {
     if (!setCookie?.length) return;
     this.headers.cookie = this.cookie.update(setCookie).stringify();
   }
 
+  /**
+   * 请求 request 相关数据。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `myAxiosConfig`。
+   * @returns `Promise<AxiosResponse<T, any, {}, any>>`，request 请求返回的响应结果。
+   */
   async request<T = unknown>(options: myAxiosConfig) {
     const requestOptions: myAxiosConfig = {
       ...options,

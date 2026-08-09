@@ -1,4 +1,7 @@
-/** Typed facade over decomposed AWA APIs; business loops stay in Core. */
+/**
+ * @file src/client/AWA/AWAApiClient.ts
+ * @description 聚合拆分后的 AWA API，为业务层提供类型安全的统一客户端门面。
+ */
 import type { Achievement, AvailableStreams, avatarIds, userAvatarInfo } from '../../types/achievement';
 import { AWAContext, type AWAContextOptions } from './AWAContext';
 import {
@@ -15,51 +18,198 @@ export class AWAApiClient {
   readonly steam: SteamQuestAPI;
   readonly artifacts: ArtifactAPI;
   readonly communityEvent: CommunityEventAPI;
+  /**
+   * 初始化 AWAApi Client 实例。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `AWAContextOptions`。
+   */
   constructor(options: AWAContextOptions) {
     this.context = new AWAContext(options);
     this.steam = new SteamQuestAPI(this.context);
     this.artifacts = new ArtifactAPI(this.context);
     this.communityEvent = new CommunityEventAPI(this.context);
   }
+  /**
+   * 获取 new Cookie。
+   * @returns `string`，当前会话序列化后的 Cookie 字符串。
+   */
   get newCookie(): string { return this.context.cookie.stringify(); }
+  /**
+   * 获取 session。
+   * @returns `{ refresh: () => Promise<string>; verify: () => Promise<{ userId: string; username: string; }>; }`，session 相关操作组成的 API 集合。
+   */
   get session() {
-    return { refresh: () => refreshSession(this.context), verify: () => verifySession(this.context) };
+    return {
+      /**
+       * 更新 refresh 相关数据。
+       * @returns `Promise<string>`，refresh 获取或生成的文本内容。
+       */
+      refresh: () => refreshSession(this.context),
+      /**
+       * 检查 verify 相关数据。
+       * @returns `Promise<{ userId: string; username: string; }>`，表示 verify 的检查结论。
+       */
+      verify: () => verifySession(this.context)
+    };
   }
+  /**
+   * 获取 quests。
+   * @returns `object`，quests 相关操作组成的 API 集合。
+   */
   get quests() {
     return {
+      /**
+       * 获取 get Control Center 相关数据。
+       * @returns `Promise<string>`，getControlCenter 获取或生成的文本内容。
+       */
       getControlCenter: () => getControlCenter(this.context),
+      /**
+       * 完成 claim Award 相关数据。
+       * @param questId - 目标资源的唯一标识，类型为 `string`。
+       * @returns `Promise<boolean>`，表示 claimAward 检查是否通过。
+       */
       claimAward: (questId: string) => claimQuestAward(this.context, questId),
+      /**
+       * 发送 send Time On Site 相关数据。
+       * @param link - 需要访问或提交的目标页面链接，类型为 `string | undefined`。
+       * @returns `Promise<boolean>`，表示 sendTimeOnSite 检查是否通过。
+       */
       sendTimeOnSite: (link?: string) => sendTimeOnSiteTrack(this.context, link),
+      /**
+       * 完成 complete Get Started Item 相关数据。
+       * @param link - 需要访问或提交的目标页面链接，类型为 `string`。
+       * @returns `Promise<boolean>`，表示 completeGetStartedItem 检查是否通过。
+       */
       completeGetStartedItem: (link: string) => completeGetStartedItem(this.context, link)
     };
   }
+  /**
+   * 获取 content。
+   * @returns `object`，content 相关操作组成的 API 集合。
+   */
   get content() {
     return {
+      /**
+       * 请求 open Page 相关数据。
+       * @param link - 需要访问或提交的目标页面链接，类型为 `string`。
+       * @returns `Promise<string>`，openPage 获取或生成的文本内容。
+       */
       openPage: (link: string) => openPage(this.context, link),
+      /**
+       * 处理 record Post View 相关逻辑。
+       * @param postId - 目标资源的唯一标识，类型为 `string`。
+       * @returns `Promise<boolean>`，表示 recordPostView 检查是否通过。
+       */
       recordPostView: (postId: string) => recordPostView(this.context, postId),
+      /**
+       * 处理 reply Post 相关逻辑。
+       * @param postId - 目标资源的唯一标识，类型为 `string | undefined`。
+       * @returns `Promise<boolean>`，表示 replyPost 检查是否通过。
+       */
       replyPost: (postId?: string) => replyPost(this.context, postId),
+      /**
+       * 处理 share Post 相关逻辑。
+       * @param postId - 目标资源的唯一标识，类型为 `string`。
+       * @returns `Promise<boolean>`，表示 sharePost 检查是否通过。
+       */
       sharePost: (postId: string) => sharePost(this.context, postId),
+      /**
+       * 处理 record Promotion View 相关逻辑。
+       * @param id - 目标资源的唯一标识，类型为 `string`。
+       * @param token - 远程服务用于身份验证的凭据，类型为 `string`。
+       * @returns `Promise<boolean>`，表示 recordPromotionView 检查是否通过。
+       */
       recordPromotionView: (id: string, token: string) => recordPromotionView(this.context, id, token)
     };
   }
+  /**
+   * 获取 personalization。
+   * @returns `object`，personalization 相关操作组成的 API 集合。
+   */
   get personalization() {
     return {
+      /**
+       * 获取 get Avatar Items 相关数据。
+       * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+       * @returns `Promise<avatarIds | null>`，getAvatarItems 获取到的数据。
+       */
       getAvatarItems: (type: 'avatar' | 'border') => getAvatarItems(this.context, type),
+      /**
+       * 保存 save Avatar 相关数据。
+       * @param avatar - 需要保存的用户头像配置，类型为 `userAvatarInfo`。
+       * @returns `Promise<boolean>`，表示 saveAvatar 检查是否通过。
+       */
       saveAvatar: (avatar: userAvatarInfo) => saveAvatar(this.context, avatar)
     };
   }
+  /**
+   * 获取 twitch。
+   * @returns `object`，twitch 相关操作组成的 API 集合。
+   */
   get twitch() {
     return {
+      /**
+       * 获取 get Available Streams 相关数据。
+       * @returns `Promise<AvailableStreams>`，getAvailableStreams 获取到的数据。
+       */
       getAvailableStreams: () => getAvailableStreams(this.context),
+      /**
+       * 获取 get Bonus 相关数据。
+       * @param profilePath - 待读取或写入文件的路径，类型为 `string`。
+       * @returns `Promise<number>`，getBonus 计算或读取到的数值。
+       */
       getBonus: (profilePath: string) => getTwitchBonus(this.context, profilePath),
+      /**
+       * 发送 send Track 相关数据。
+       * @param payload - 当前请求或操作使用的数据内容，类型为 `{ channelId: string; jwt: string; extensionID?: string; }`。
+       * @returns `Promise<TwitchTrackResult>`，sendTrack 请求返回的响应结果。
+       */
       sendTrack: (payload: { channelId: string; jwt: string; extensionID?: string }) => sendTwitchTrack(this.context, payload)
     };
   }
-  get achievement() { return { getAll: () => getAchievements(this.context) }; }
+  /**
+   * 获取 achievement。
+   * @returns `{ getAll: () => Promise<Achievement[]>; }`，achievement 相关操作组成的 API 集合。
+   */
+  get achievement() {
+    return {
+      /**
+       * 获取 get All 相关数据。
+       * @returns `Promise<Achievement[]>`，getAll 收集或筛选得到的数据列表。
+       */
+      getAll: () => getAchievements(this.context)
+    };
+  }
+  /**
+   * 初始化 init 相关数据。
+   * @returns `Promise<boolean>`，表示 init 检查是否通过。
+   */
   async init(): Promise<boolean> { await this.session.refresh(); await this.session.verify(); return true; }
+  /**
+   * 获取 get Avatar Items 相关数据。
+   * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+   * @returns `Promise<avatarIds | null>`，getAvatarItems 获取到的数据。
+   */
   getAvatarItems(type: 'avatar' | 'border'): Promise<avatarIds | null> { return this.personalization.getAvatarItems(type); }
+  /**
+   * 保存 save Avatar 相关数据。
+   * @param avatar - 需要保存的用户头像配置，类型为 `userAvatarInfo`。
+   * @returns `Promise<boolean>`，表示 saveAvatar 检查是否通过。
+   */
   saveAvatar(avatar: userAvatarInfo): Promise<boolean> { return this.personalization.saveAvatar(avatar); }
+  /**
+   * 获取 get Available Streams 相关数据。
+   * @returns `Promise<AvailableStreams>`，getAvailableStreams 获取到的数据。
+   */
   getAvailableStreams(): Promise<AvailableStreams> { return this.twitch.getAvailableStreams(); }
+  /**
+   * 获取 get Achievements 相关数据。
+   * @returns `Promise<Achievement[]>`，getAchievements 收集或筛选得到的数据列表。
+   */
   getAchievements(): Promise<Achievement[]> { return this.achievement.getAll(); }
+  /**
+   * 发送 send Twitch Track 相关数据。
+   * @param payload - 当前请求或操作使用的数据内容，类型为 `{ channelId: string; jwt: string; extensionID?: string; }`。
+   * @returns `Promise<TwitchTrackResult>`，sendTwitchTrack 请求返回的响应结果。
+   */
   sendTwitchTrack(payload: { channelId: string; jwt: string; extensionID?: string }): Promise<TwitchTrackResult> { return this.twitch.sendTrack(payload); }
 }

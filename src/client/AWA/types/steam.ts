@@ -1,4 +1,7 @@
-/** Structured AWA Steam quest data shared by APIs, parsers, and Core tasks. */
+/**
+ * @file src/client/AWA/types/steam.ts
+ * @description 定义 AWA Steam 任务列表、详情、进度和社区活动数据。
+ */
 export interface AWASteamQuestListing {
   name: string;
   time: number;

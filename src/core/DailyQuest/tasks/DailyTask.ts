@@ -1,6 +1,6 @@
 /**
- * @file DailyTask
- * @description Claims and completes current-generation AWA daily tasks.
+ * @file src/core/DailyQuest/tasks/DailyTask.ts
+ * @description 识别并完成当前版本的 AWA 每日任务，包括领奖和入门任务。
  */
 /* global __ */
 import chalk from 'chalk';
@@ -8,7 +8,15 @@ import { Logger, time } from '../../../tools';
 import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 class DailyTask {
+  /**
+   * 初始化 Daily Task 实例。
+   * @param runtime - 当前任务使用的运行时实例，类型为 `DailyQuestRuntime`。
+   */
   constructor(private readonly runtime: DailyQuestRuntime) {}
+  /**
+   * 处理 do 相关逻辑。
+   * @returns `Promise<boolean>`，表示 do 检查是否通过。
+   */
   async do(): Promise<boolean> {
     if (!this.runtime.state.questInfo.dailyQuest?.[0]) {
       new Logger(time() + chalk.yellow(__('noDailyQuest')));
@@ -42,6 +50,10 @@ class DailyTask {
     new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
     return true;
   }
+  /**
+   * 检查 check Daily Quest Completed 相关数据。
+   * @returns `boolean`，表示 checkDailyQuestCompleted 检查是否通过。
+   */
   private checkDailyQuestCompleted(): boolean {
     if ((this.runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (this.runtime.state.questInfo.dailyQuest || []).length) {
       if ((this.runtime.state.questInfo.dailyQuest?.length || 0) < 2) {

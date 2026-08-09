@@ -1,4 +1,7 @@
-/** Coordinates AWA Steam quest APIs with ASF bot operations. */
+/**
+ * @file src/core/DailyQuest/tasks/SteamQuestTask.ts
+ * @description 协调 AWA Steam 任务信息与 ASF 游戏挂时、许可证和进度轮询。
+ */
 import chalk from 'chalk';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
 import { SteamClient } from '../../../client/Steam/SteamClient';
@@ -6,8 +9,19 @@ import type { AWASteamQuestListing, PreparedSteamQuest } from '../../../client/A
 import { Logger, sleep, time } from '../../../tools';
 
 export class SteamQuestTask {
+  /**
+   * 初始化 Steam Quest Task 实例。
+   * @param awa - 用于调用 Alienware Arena 接口的客户端，类型为 `AWAApiClient`。
+   * @param asf - 用于控制 ArchiSteamFarm 的客户端，类型为 `SteamClient`。
+   * @param eventAppId - 需要处理的 Steam 应用标识列表，类型为 `string | undefined`。
+   */
   constructor(private readonly awa: AWAApiClient, private readonly asf: SteamClient, private readonly eventAppId?: string) {}
 
+  /**
+   * 执行 run 相关数据。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<boolean>`，表示 run 检查是否通过。
+   */
   async run(signal?: AbortSignal): Promise<boolean> {
     const questLogger = new Logger(`${time()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`, false);
     const listings = await this.awa.steam.getSteamQuests().catch((error) => {
@@ -79,7 +93,12 @@ export class SteamQuestTask {
     }
   }
 
-  /** Coordinates the multi-request AWA preparation flow without leaking it into the API layer. */
+  /**
+   * 处理 prepare Quest 相关逻辑。
+   * @param listing - 从 AWA 获取的 Steam 任务列表项，类型为 `AWASteamQuestListing`。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<PreparedSteamQuest | null>`，准备完成的 Steam 任务；任务不可执行时返回 `null`。
+   */
   private async prepareQuest(listing: AWASteamQuestListing, signal?: AbortSignal): Promise<PreparedSteamQuest | null> {
     for (let attempt = 0; attempt < 5 && !signal?.aborted; attempt++) {
       const detail = await this.awa.steam.getQuestDetail(listing.link);

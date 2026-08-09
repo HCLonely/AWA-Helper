@@ -1,11 +1,16 @@
 /**
- * @file ConfigMigration
- * @description Normalizes legacy managerServer, corn, and string Artifact fields without retaining a second port.
+ * @file src/tools/config/ConfigMigration.ts
+ * @description 将旧版 Manager、Cron 和遗物字段迁移为当前配置结构。
  */
 import * as fs from 'fs';
 import { join } from 'path';
 import type { NormalizedManagerConfig } from './types';
 
+/**
+ * 更新 normalize Manager Config 相关数据。
+ * @param value - 需要写入或参与计算的值，类型为 `config`。
+ * @returns `Omit<NormalizedManagerConfig, "secret">`，迁移旧字段并规范化后的 Manager 配置（不含密钥）。
+ */
 const normalizeManagerConfig = (value: config): Omit<NormalizedManagerConfig, 'secret'> => {
   const legacy = value.managerServer;
   const current = value.manager;

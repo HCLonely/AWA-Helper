@@ -1,5 +1,13 @@
-/** Fetches raw control-center HTML; parsers and Core decide which task data is needed. */
+/**
+ * @file src/client/AWA/APIs/quests/getControlCenter.ts
+ * @description 获取 AWA 控制中心原始 HTML，供解析器提取任务状态。
+ */
 import { AWAContext } from '../../AWAContext';
+/**
+ * 获取 get Control Center 相关数据。
+ * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
+ * @returns `Promise<string>`，getControlCenter 获取或生成的文本内容。
+ */
 export const getControlCenter = async (context: AWAContext): Promise<string> => {
   const options: myAxiosConfig = { url: `${context.baseURL}/control-center`, method: 'GET', headers: context.headers };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;

@@ -1,3 +1,7 @@
+/**
+ * @file src/global.d.ts
+ * @description 声明配置、日志、国际化、推送和服务器等由应用运行环境注入的全局类型。
+ */
 /* eslint-disable no-underscore-dangle */
 import { AxiosRequestConfig } from 'axios';
 import type { I18n } from 'i18n';
@@ -6,7 +10,13 @@ import { Logger } from './tools';
 
 declare global {
   interface Array<T> {
-    findLast(
+        /**
+         * 获取 find Last 相关数据。
+         * @param predicate - 用于判断数组元素是否匹配的回调函数，类型为 `(value: T, index: number, obj: T[]) => unknown`。
+         * @param thisArg - 执行回调函数时绑定的 this 值，类型为 `any`。
+         * @returns `T`，findLast 获取到的数据。
+         */
+findLast(
       predicate: (value: T, index: number, obj: T[]) => unknown,
       thisArg?: any
     ): T
@@ -57,7 +67,6 @@ declare global {
     awaBoosterNotice?: boolean
     awaQuests: Array<string>
     awaDailyQuestType: Array<string>
-    // awaDailyQuestNumber1?: boolean
     awaSafeReply?: boolean,
     joinSteamCommunityEvent?: boolean
     twitchCookie?: string

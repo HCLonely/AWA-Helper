@@ -1,8 +1,16 @@
-/** Converts DailyQuest state into localized table/push data. */
+/**
+ * @file src/core/DailyQuest/QuestReporter.ts
+ * @description 将每日任务状态整理为本地化表格、积分摘要和推送报告。
+ */
 import type { DailyQuestState } from './DailyQuestState';
 
 export type QuestReport = Record<string, Record<string, string | number>>;
 
+/**
+ * 格式化 format Quest Report 相关数据。
+ * @param state - 当前对象或任务的状态，类型为 `DailyQuestState`。
+ * @returns `QuestReport`，formatQuestReport 生成的格式化结果。
+ */
 export const formatQuestReport = (state: DailyQuestState): QuestReport => {
   const info = state.questInfo;
   const report: QuestReport = {

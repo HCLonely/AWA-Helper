@@ -1,7 +1,15 @@
-/** Pure parser for the AWA achievement collection page. */
+/**
+ * @file src/client/AWA/parsers/achievements.ts
+ * @description 解析 AWA 成就收藏页面中的成就名称、描述和完成状态。
+ */
 import { load } from 'cheerio';
 import type { Achievement } from '../../../types/achievement';
 
+/**
+ * 解析 parse Achievements 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @returns `Achievement[]`，parseAchievements 收集或筛选得到的数据列表。
+ */
 export const parseAchievements = (html: string): Achievement[] => {
   const $ = load(html);
   const achievements: Achievement[] = [];

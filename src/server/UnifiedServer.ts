@@ -1,6 +1,6 @@
 /**
- * @file UnifiedServer
- * @description Hosts Manager, DailyQuest, Achievement, API, and log WebSocket on one port.
+ * @file src/server/UnifiedServer.ts
+ * @description 在同一端口托管 WebUI、管理 API、日志接口和带身份验证的 WebSocket。
  */
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -18,26 +18,33 @@ import type { LoadedConfig } from '../tools/config/types';
 import type { JobName } from '../core/Manager/Job';
 import type { JobCoordinator } from '../core/Manager/JobCoordinator';
 import { decodeManagerWebSocketSecret } from './websocket/authenticate';
-// @ts-ignore
+// @ts-ignore 由构建流程以内联文本形式提供。
 import managerHtml from '../webUI/dist/index.html';
-// @ts-ignore
+// @ts-ignore 由构建流程以内联文本形式提供。
 import dailyQuestHtml from '../webUI/dist/dailyQuest.html';
-// @ts-ignore
+// @ts-ignore 由构建流程以内联文本形式提供。
 import achievementHtml from '../webUI/dist/achievement.html';
-// @ts-ignore
+// @ts-ignore 由构建流程以内联文本形式提供。
 import settingsHtml from '../webUI/dist/settings.html';
-// @ts-ignore
+// @ts-ignore 由构建流程以内联文本形式提供。
 import templateYml from '../webUI/static/templates/config.zh.yml';
-// @ts-ignore
+// @ts-ignore 由构建流程以内联文本形式提供。
 import templateYmlEN from '../webUI/static/templates/config.en.yml';
-// @ts-ignore
+// @ts-ignore 由构建流程生成本地化资源。
 import * as zh from '../locales/zh.json';
-// @ts-ignore
+// @ts-ignore 由构建流程生成本地化资源。
 import * as en from '../locales/en.json';
 
 class UnifiedServer {
   private server?: Server;
 
+  /**
+   * 初始化 Unified Server 实例。
+   * @param loaded - 已经加载并通过校验的应用配置，类型为 `LoadedConfig`。
+   * @param coordinator - 负责协调作业启动与停止的协调器，类型为 `JobCoordinator`。
+   * @param version - 用于比较或展示的应用版本号，类型为 `string`。
+   * @param requestShutdown - 请求应用安全关闭的回调函数，类型为 `() => void`。
+   */
   constructor(
     private readonly loaded: LoadedConfig,
     private readonly coordinator: JobCoordinator,
@@ -45,6 +52,10 @@ class UnifiedServer {
     private readonly requestShutdown: () => void
   ) {}
 
+  /**
+   * 执行 start 相关数据。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async start(): Promise<void> {
     const { raw, path: configPath } = this.loaded;
     if (raw.webUI?.enable === false) return;
@@ -73,17 +84,38 @@ class UnifiedServer {
     }
     expressWs(app, server, { wsOptions: { maxPayload: 64 * 1024 } });
     const langs = { zh, en };
+    /**
+     * 格式化 render 相关数据。
+     * @param html - 待解析的 HTML 文本，类型为 `string`。
+     * @returns `string`，render 获取或生成的文本内容。
+     */
     const render = (html: string): string => html.replace('__LANG__', raw.language)
       .replaceAll('__VERSION__', this.version)
       .replace('__I18N__', JSON.stringify(langs));
+    /**
+     * 检查 is Valid Secret 相关数据。
+     * @param candidate - 需要与 Manager 密钥进行安全比较的候选值，类型为 `unknown`。
+     * @returns `boolean`，表示 isValidSecret 检查是否通过。
+     */
     const isValidSecret = (candidate: unknown): boolean => {
       if (typeof candidate !== 'string') return false;
       const expected = Buffer.from(this.loaded.manager.secret);
       const actual = Buffer.from(candidate);
       return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
     };
+    /**
+     * 请求 request Secret 相关数据。
+     * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
+     * @returns `unknown`，requestSecret 请求返回的响应结果。
+     */
     const requestSecret = (req: express.Request): unknown => req.body?.secret ||
       req.headers.authorization?.replace(/^Bearer\s+/i, '');
+    /**
+     * 处理 authenticate 相关逻辑。
+     * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
+     * @param res - 用于返回处理结果的响应对象，类型为 `express.Response<any, Record<string, any>>`。
+     * @returns `boolean`，表示 authenticate 检查是否通过。
+     */
     const authenticate = (req: express.Request, res: express.Response): boolean => {
       if (isValidSecret(requestSecret(req))) return true;
       res.status(401).json({ error: 'Authentication required' });
@@ -156,6 +188,13 @@ class UnifiedServer {
       updateYamlFieldsSync(configPath, { twitchCookie: req.body.cookie });
       return res.json({ status: 'success' });
     });
+    /**
+     * 发送 send Logs 相关数据。
+     * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
+     * @param res - 用于返回处理结果的响应对象，类型为 `express.Response<any, Record<string, any>>`。
+     * @param requestedJob - 需要注册、调度或查询的作业，类型为 `string | undefined`。
+     * @returns `void | express.Response<any, Record<string, any>>`，sendLogs 请求返回的响应结果。
+     */
     const sendLogs = (req: express.Request, res: express.Response, requestedJob?: string): express.Response | void => {
       if (!authenticate(req, res)) return;
       const date = new Date().toISOString().slice(0, 10);
@@ -231,7 +270,7 @@ class UnifiedServer {
       setImmediate(this.requestShutdown);
     });
 
-    // @ts-ignore express-ws augments Express at runtime.
+    // @ts-ignore express-ws 会在运行时扩展 Express。
     app.ws('/ws', (ws: WebSocket, req) => {
       const candidate = decodeManagerWebSocketSecret(req.headers['sec-websocket-protocol']);
       if (raw.webUI?.local === false && !isValidSecret(candidate)) return ws.close(1008, 'Authentication required');
@@ -251,6 +290,10 @@ class UnifiedServer {
     });
   }
 
+  /**
+   * 停止 stop 相关数据。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async stop(): Promise<void> {
     const { server } = this;
     this.server = undefined;

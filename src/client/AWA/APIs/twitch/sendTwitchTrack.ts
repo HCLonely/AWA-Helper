@@ -1,8 +1,17 @@
-/** Sends one Twitch extension heartbeat to AWA; retry policy belongs to Core. */
+/**
+ * @file src/client/AWA/APIs/twitch/sendTwitchTrack.ts
+ * @description 向 AWA 发送一次 Twitch 扩展观看心跳。
+ */
 import { AWAContext } from '../../AWAContext';
 import type { TwitchTrackResult, TwitchTrackState } from '../../types';
 export type { TwitchTrackResult, TwitchTrackState } from '../../types';
 
+/**
+ * 发送 send Twitch Track 相关数据。
+ * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
+ * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ channelId: string; jwt: string; extensionID?: string; }`。
+ * @returns `Promise<TwitchTrackResult>`，sendTwitchTrack 请求返回的响应结果。
+ */
 export const sendTwitchTrack = async (
   context: AWAContext,
   { channelId, jwt, extensionID }: { channelId: string; jwt: string; extensionID?: string }

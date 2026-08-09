@@ -1,6 +1,6 @@
 /**
- * @file LegacyDailyTask
- * @description Matches historical task titles and executes their configured fallback actions.
+ * @file src/core/DailyQuest/tasks/LegacyDailyTask.ts
+ * @description 匹配旧版每日任务标题，并执行对应的浏览、头像或论坛操作。
  */
 /* global __ */
 import chalk from 'chalk';
@@ -21,6 +21,11 @@ class LegacyDailyTask {
   ];
   done: Array<string> = [];
 
+  /**
+   * 初始化 Legacy Daily Task 实例。
+   * @param runtime - 当前任务使用的运行时实例，类型为 `DailyQuestRuntime`。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ awaDailyQuestType?: Array<string>; }`。
+   */
   constructor(private readonly runtime: DailyQuestRuntime, { awaDailyQuestType }: {
     awaDailyQuestType?: Array<string>
   }) {
@@ -29,6 +34,10 @@ class LegacyDailyTask {
     }
   }
 
+  /**
+   * 处理 do 相关逻辑。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async do(): Promise<void> {
     if (!this.runtime.state.questInfo.dailyQuest?.[0]) {
       new Logger(time() + chalk.yellow(__('noDailyQuest')));
@@ -90,16 +99,45 @@ class LegacyDailyTask {
     new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
   }
 
+  /**
+   * 获取 get Action 相关数据。
+   * @param name - 用于定位目标对象的名称，类型为 `string`。
+   * @returns `(() => Promise<unknown>) | undefined`，getAction 获取到的数据。
+   */
   private getAction(name: string): (() => Promise<unknown>) | undefined {
     const actions: Record<string, () => Promise<unknown>> = {
+      /**
+       * 处理 change Border 相关逻辑。
+       * @returns `Promise<boolean>`，表示 changeBorder 检查是否通过。
+       */
       changeBorder: () => this.runtime.refreshPersonalization('border'),
+      /**
+       * 处理 change Avatar 相关逻辑。
+       * @returns `Promise<boolean>`，表示 changeAvatar 检查是否通过。
+       */
       changeAvatar: () => this.runtime.refreshPersonalization('avatar'),
+      /**
+       * 处理 view News 相关逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       viewNews: () => this.runtime.viewNews(),
+      /**
+       * 处理 share Posts 相关逻辑。
+       * @returns `Promise<boolean>`，表示 sharePosts 检查是否通过。
+       */
       sharePosts: () => this.runtime.sharePosts(),
+      /**
+       * 处理 reply Post 相关逻辑。
+       * @returns `Promise<boolean>`，表示 replyPost 检查是否通过。
+       */
       replyPost: () => this.runtime.replyPost()
     };
     return actions[name];
   }
+  /**
+   * 检查 check Daily Quest Completed 相关数据。
+   * @returns `boolean`，表示 checkDailyQuestCompleted 检查是否通过。
+   */
   private checkDailyQuestCompleted(): boolean {
     if ((this.runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (this.runtime.state.questInfo.dailyQuest || []).length) {
       if ((this.runtime.state.questInfo.dailyQuest?.length || 0) < 2) {
@@ -110,6 +148,11 @@ class LegacyDailyTask {
     return false;
   }
 
+  /**
+   * 处理 match Quest 相关逻辑。
+   * @param dailyQuestName - 用于定位目标对象的名称，类型为 `string`。
+   * @returns `string[]`，matchQuest 收集或筛选得到的数据列表。
+   */
   matchQuest(dailyQuestName: string): Array<string> {
     const logger = new Logger(`${time()}${__('matchingDailyQuestDb')}`, false);
     if (!dailyQuestName) {

@@ -1,6 +1,6 @@
 /**
- * @file YamlConfig
- * @description Validates, atomically writes, and selectively updates YAML configuration files.
+ * @file src/tools/config/YamlConfig.ts
+ * @description 校验 YAML 文本，定位错误字段，并以原子方式更新配置文件。
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -12,6 +12,12 @@ type ValidationErrorWithLocation = Error & {
   issues: Array<{ field: string, line?: number, message: string }>
 };
 
+/**
+ * 处理 atomic Write File Sync 相关逻辑。
+ * @param filePath - 待读取或写入文件的路径，类型为 `string`。
+ * @param content - 需要解析、校验或写入的文本内容，类型为 `string`。
+ * @returns `void`，该函数仅执行副作用，不返回值。
+ */
 const atomicWriteFileSync = (filePath: string, content: string): void => {
   const directory = path.dirname(filePath);
   const temporaryPath = path.join(directory, `.${path.basename(filePath)}.${process.pid}.${crypto.randomUUID()}.tmp`);
@@ -23,6 +29,11 @@ const atomicWriteFileSync = (filePath: string, content: string): void => {
   }
 };
 
+/**
+ * 检查 validate Yaml 相关数据。
+ * @param content - 需要解析、校验或写入的文本内容，类型为 `string`。
+ * @returns `void`，该函数仅执行副作用，不返回值。
+ */
 const validateYaml = (content: string): void => {
   const document = parseDocument(content);
   if (document.errors.length > 0) {
@@ -30,6 +41,12 @@ const validateYaml = (content: string): void => {
   }
 };
 
+/**
+ * 获取 get Yaml Field Line 相关数据。
+ * @param content - 需要解析、校验或写入的文本内容，类型为 `string`。
+ * @param field - 需要读取、校验或更新的字段，类型为 `string`。
+ * @returns `number | undefined`，getYamlFieldLine 获取到的数据。
+ */
 const getYamlFieldLine = (content: string, field: string): number | undefined => {
   const lineCounter = new LineCounter();
   const document = parseDocument(content, { lineCounter });
@@ -48,6 +65,12 @@ const getYamlFieldLine = (content: string, field: string): number | undefined =>
   return nearestOffset === undefined ? undefined : lineCounter.linePos(nearestOffset).line;
 };
 
+/**
+ * 创建 create Config Validation Error 相关数据。
+ * @param content - 需要解析、校验或写入的文本内容，类型为 `string`。
+ * @param errors - 配置校验过程中收集的错误信息列表，类型为 `string[]`。
+ * @returns `ValidationErrorWithLocation`，createConfigValidationError 创建的对象或数据。
+ */
 const createConfigValidationError = (content: string, errors: Array<string>): ValidationErrorWithLocation => {
   const issues = errors.map((message) => {
     const [field] = message.split(' ');
@@ -61,6 +84,12 @@ const createConfigValidationError = (content: string, errors: Array<string>): Va
   return error;
 };
 
+/**
+ * 更新 update Yaml Fields Sync 相关数据。
+ * @param filePath - 待读取或写入文件的路径，类型为 `string`。
+ * @param fields - 需要读取、校验或更新的字段，类型为 `Record<string, unknown>`。
+ * @returns `void`，该函数仅执行副作用，不返回值。
+ */
 const updateYamlFieldsSync = (filePath: string, fields: Record<string, unknown>): void => {
   const document = parseDocument(fs.readFileSync(filePath, 'utf8'));
   if (document.errors.length > 0) {

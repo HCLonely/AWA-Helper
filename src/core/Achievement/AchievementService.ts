@@ -1,6 +1,6 @@
 /**
- * @file AchievementService
- * @description Executes Achievement automation exclusively as a Manager-owned job.
+ * @file src/core/Achievement/AchievementService.ts
+ * @description 编排头像、边框和 Twitch 时长等成就任务，并持久化成就操作历史。
  */
 
 /* global __, proxy */
@@ -30,12 +30,40 @@ export class AchievementService {
   achievement2action: {
     [key in typeof this.availableAchievements[number]]: () => Promise<void>;
   } = {
+      /**
+       * 处理当前映射项的回调逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       'Use 25 different borders': () => this.border25(),
+      /**
+       * 处理当前映射项的回调逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       'Change your border once a day for a week': () => this.onceADayForAWeek('border'),
+      /**
+       * 处理当前映射项的回调逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       'Change your border once a month for a year': () => this.onceAMonthForAYear('border'),
+      /**
+       * 处理当前映射项的回调逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       'Change your avatar items every day for a week': () => this.onceADayForAWeek('avatar'),
+      /**
+       * 处理当前映射项的回调逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       'Change your avatar once a month for 1 year': () => this.onceAMonthForAYear('avatar'),
+      /**
+       * 处理当前映射项的回调逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       'Watch 1000 Hours of Twitch.tv on Hive channels': () => this.addWatchTwitch('hive'),
+      /**
+       * 处理当前映射项的回调逻辑。
+       * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+       */
       'Watch 1000 Hours of Twitch.tv on Nexus channels': () => this.addWatchTwitch('nexus')
     };
   incompletedAchievements: Array<string> = [];
@@ -49,6 +77,10 @@ export class AchievementService {
       type: new Set()
     };
 
+  /**
+   * 初始化 Achievement Service 实例。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string; }`。
+   */
   constructor({ awaCookie, proxy, awaHost, twitchCookie, userAgent }: { awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string }) {
     this.awa = new AWAApiClient({
       cookie: awaCookie,
@@ -60,6 +92,10 @@ export class AchievementService {
       this.twitchCookie = twitchCookie;
     }
   }
+  /**
+   * 获取 read Action History 相关数据。
+   * @returns `ActionHistory`，readActionHistory 获取到的数据。
+   */
   private readActionHistory(): ActionHistory {
     const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: [] } };
     try {
@@ -78,15 +114,29 @@ export class AchievementService {
       return defaultHistory;
     }
   }
+  /**
+   * 保存 write Action History 相关数据。
+   * @param actionHistory - 记录头像或边框更换情况的操作历史，类型为 `ActionHistory`。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   private writeActionHistory(actionHistory: ActionHistory): void {
     atomicWriteFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
   }
+  /**
+   * 处理 local Date 相关逻辑。
+   * @param now - 计算或比较时使用的时间，类型为 `Date`。
+   * @returns `string`，localDate 获取或生成的文本内容。
+   */
   private localDate(now: Date): string {
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+  /**
+   * 初始化 init 相关数据。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async init(): Promise<void> {
     if (!await this.awa.init()) throw new Error('Achievement AWA initialization failed');
     this.Achievements = await this.awa.getAchievements();
@@ -95,6 +145,11 @@ export class AchievementService {
       atomicWriteFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
     }
   }
+  /**
+   * 执行 run 相关数据。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async run(signal?: AbortSignal): Promise<void> {
     new Logger(`${time()}${__('matching', chalk.yellow('Achievements'))}`);
     // addLog('开始匹配可操作的成就', TaskStatus.RUNNING);
@@ -114,6 +169,10 @@ export class AchievementService {
     new Logger(`${time()}${__('doneMatch', chalk.yellow('Achievements'))}`);
   }
 
+  /**
+   * 处理 border25 相关逻辑。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async border25(): Promise<void> {
     const { userAvatarInfo: UAI, ids: borders } = await this.awa.getAvatarItems('border') || {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
@@ -139,6 +198,11 @@ export class AchievementService {
     new Logger(`${time()}${chalk.green(__('doneBorder25'))}`);
   }
 
+  /**
+   * 处理 once ADay For AWeek 相关逻辑。
+   * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async onceADayForAWeek(type: 'border' | 'avatar'): Promise<void> {
     const now = new Date();
     const currentHour = now.getHours();
@@ -156,7 +220,6 @@ export class AchievementService {
       return;
     }
 
-    // new Logger(`${time()}${__('gettingBorder')}`);
     const { userAvatarInfo: UAI, ids } = await this.awa.getAvatarItems(type) || {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
@@ -187,6 +250,11 @@ export class AchievementService {
     new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
   }
 
+  /**
+   * 处理 once AMonth For AYear 相关逻辑。
+   * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async onceAMonthForAYear(type: 'border' | 'avatar'): Promise<void> {
     if (type === 'border' && this.incompletedAchievements.includes('Change your border once a day for a week')) {
       new Logger(`${time()}${__('borderOnceADayForAWeekExist', chalk.blue('Change your border once a day for a week'))}`);
@@ -213,7 +281,6 @@ export class AchievementService {
       return;
     }
 
-    // new Logger(`${time()}${__('gettingBorder')}`);
     const { userAvatarInfo: UAI, ids } = await this.awa.getAvatarItems(type) || {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
@@ -244,6 +311,11 @@ export class AchievementService {
     new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
   }
 
+  /**
+   * 添加 add Watch Twitch 相关数据。
+   * @param type - 用于选择处理分支的类型，类型为 `"hive" | "nexus"`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async addWatchTwitch(type: 'hive' | 'nexus'): Promise<void> {
     try {
       this.watchTwitchStatus.type.add(type);
@@ -252,6 +324,11 @@ export class AchievementService {
     }
   }
 
+  /**
+   * 处理 watch Twitch 相关逻辑。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async watchTwitch(signal?: AbortSignal): Promise<void> {
     if (!this.twitchCookie || this.watchTwitchStatus.type.size === 0 || signal?.aborted) return;
     this.watchTwitchStatus.running = true;
@@ -284,7 +361,12 @@ export class AchievementService {
     }
   }
 
-  /** Manager-owned Achievement orchestration for repeated AWA heartbeats. */
+  /**
+   * 处理 track Twitch Channel 相关逻辑。
+   * @param info - 提交 Twitch 跟踪请求所需的频道信息，类型为 `TwitchChannelTrackingInfo`。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   private async trackTwitchChannel(info: TwitchChannelTrackingInfo, signal?: AbortSignal): Promise<void> {
     while (this.watchTwitchStatus.running && !signal?.aborted) {
       const result = await this.awa.sendTwitchTrack(info);
@@ -296,11 +378,18 @@ export class AchievementService {
     }
   }
 
-  /** Requests cooperative shutdown; the owning Manager job performs final cleanup. */
+  /**
+   * 停止 stop 相关数据。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   stop(): void {
     this.watchTwitchStatus.running = false;
   }
 
+  /**
+   * 处理 destroy 相关逻辑。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   destroy(): void {
     this.twitch = null;
     this.watchTwitchStatus = {

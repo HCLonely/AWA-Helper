@@ -1,9 +1,18 @@
-/** Pure parser for AWA avatar inventory and currently equipped items. */
+/**
+ * @file src/client/AWA/parsers/personalization.ts
+ * @description 解析 AWA 头像库存以及当前装备的头像与边框。
+ */
 import { load } from 'cheerio';
 import type { Id, avatarIds, userAvatarInfo } from '../../../types/achievement';
 
 export interface PersonalizationPage { userId?: string; selection: avatarIds | null }
 
+/**
+ * 解析 parse Personalization 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+ * @returns `PersonalizationPage`，parsePersonalization 解析得到的结构化结果。
+ */
 export const parsePersonalization = (html: string, type: 'avatar' | 'border'): PersonalizationPage => {
   const $ = load(html);
   const userId = html.match(/(?:var|let)\s+user_id\s*=\s*([\d]+);/)?.[1];

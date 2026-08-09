@@ -1,6 +1,6 @@
 /**
- * @file application entry
- * @description Parses CLI commands and starts the single Manager-owned application runtime.
+ * @file src/index.ts
+ * @description 解析命令行选项，创建运行时文件，并启动统一的 Manager 应用运行时。
  */
 import * as fs from 'fs';
 import * as os from 'os';
@@ -9,13 +9,17 @@ import { formatHelp, parseArguments } from './cli';
 import { ManagerRuntime } from './core/Manager';
 import { ProcessLock } from './tools/process/ProcessLock';
 import { runHealthcheck } from './tools/process/healthcheck';
-// @ts-ignore bundled as a string by Rollup.
+// @ts-ignore 由 Rollup 以字符串形式打包。
 import exampleConfig from './config.example.yml';
 
 process.chdir(__dirname);
 
 const version = 'v__VERSION__';
 
+/**
+ * 创建 create Runtime Files 相关数据。
+ * @returns `void`，该函数仅执行副作用，不返回值。
+ */
 const createRuntimeFiles = (): void => {
   fs.mkdirSync('logs', { recursive: true });
   fs.mkdirSync('data', { recursive: true });
@@ -33,6 +37,10 @@ const createRuntimeFiles = (): void => {
   }
 };
 
+/**
+ * 处理 main 相关逻辑。
+ * @returns `Promise<number>`，main 计算或读取到的数值。
+ */
 const main = async (): Promise<number> => {
   const command = parseArguments(process.argv.slice(2));
   if (command.kind === 'help') {
@@ -55,6 +63,10 @@ const main = async (): Promise<number> => {
   if (!await lock.acquire()) throw new Error('Manager is already running');
   process.once('exit', () => lock.releaseSync());
   const runtime = new ManagerRuntime(mode, version);
+  /**
+   * 停止 stop 相关数据。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   const stop = (): void => runtime.requestShutdown();
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);

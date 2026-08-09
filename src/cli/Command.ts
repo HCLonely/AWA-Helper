@@ -1,6 +1,6 @@
 /**
- * @file Command
- * @description Defines supported CLI commands and Manager runtime modes.
+ * @file src/cli/Command.ts
+ * @description 定义命令行支持的运行模式以及帮助、更新、健康检查等命令类型。
  */
 export type RuntimeMode = 'persistent' | 'once';
 

@@ -1,6 +1,6 @@
 /**
- * @file DailyQuestRunner
- * @description Runs one complete DailyQuest job under Manager lifecycle control.
+ * @file src/core/DailyQuest/DailyQuestRunner.ts
+ * @description 创建每日任务运行环境，依次执行配置加载、任务处理、报告推送和资源清理。
  */
 /* global config, __ */
 import { DailyQuestRuntime } from './DailyQuestRuntime';
@@ -19,7 +19,7 @@ import { sleep, Logger, time, checkUpdate, push, pushQuestInfoFormat } from '../
 import chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
-// @ts-ignore
+// @ts-ignore 由构建流程以文本形式导入。
 import CHANGELOG from '../../CHANGELOG.txt';
 import { createConfigValidationError, updateYamlFieldsSync } from '../../tools/config/YamlConfig';
 import { deepMerge, validateHelperConfig } from '../../tools/config/ConfigSchema';
@@ -27,27 +27,44 @@ import { setLogSecrets } from '../../tools/logging/sanitize';
 import { cleanupExpiredLogs } from '../../tools/logging/retention';
 import { DEFAULT_AWA_HOST, DEFAULT_USER_AGENT } from '../../client/shared';
 
-// @ts-ignore
+// @ts-ignore 在构建期间由 YAML 生成。
 import * as zh from '../../locales/zh.json';
-// @ts-ignore
+// @ts-ignore 在构建期间由 YAML 生成。
 import * as en from '../../locales/en.json';
 
 interface DailyQuestRunnerOptions {
   signal?: AbortSignal
 }
 
+/**
+ * 执行 run Daily Quest 相关数据。
+ * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRunnerOptions`。
+ * @returns `Promise<boolean | void>`，runDailyQuest 执行完成后的结果。
+ */
 const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<boolean | void> => {
   globalThis.log = true;
   const shutdownController = new AbortController();
+  /**
+   * 处理 abort From Manager 相关逻辑。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   const abortFromManager = (): void => shutdownController.abort(signal?.reason);
   if (signal?.aborted) abortFromManager();
   else signal?.addEventListener('abort', abortFromManager, { once: true });
   let activeTaskCompletion: Promise<Array<PromiseSettledResult<unknown>>> = Promise.resolve([]);
   const runtimeHolder: { current?: DailyQuestRuntime } = {};
+  /**
+   * 处理 current Push Info 相关逻辑。
+   * @returns `{ report: QuestReport; dailyArp: string; signArp: { daily?: string; monthly?: string; }; } | undefined`，当前可推送的任务报告与积分信息；尚未生成报告时返回 `undefined`。
+   */
   const currentPushInfo = () => (runtimeHolder.current ? {
     report: formatQuestReport(runtimeHolder.current.state), dailyArp: runtimeHolder.current.state.dailyArp,
     signArp: runtimeHolder.current.state.signArp
   } : undefined);
+    /**
+     * 等待 wait For Task Cleanup 相关数据。
+     * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+     */
   const waitForTaskCleanup = async (): Promise<void> => {
     await Promise.race([
       activeTaskCompletion,
@@ -65,7 +82,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     defaultLocale: 'zh',
     register: globalThis
   });
-  // Manager owns project-level startup information and the shared server lifecycle.
+  // Manager 统一管理项目级启动信息和共享服务器的生命周期。
   const { version } = globalThis;
 
   // 获取配置文件路径

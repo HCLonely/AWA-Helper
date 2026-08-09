@@ -1,6 +1,6 @@
 /**
- * @file ManagerRuntime
- * @description Owns the unified server, scheduler, jobs, and application shutdown lifecycle.
+ * @file src/core/Manager/ManagerRuntime.ts
+ * @description 统一管理服务器、计划任务、业务作业以及应用关闭生命周期。
  */
 import * as fs from 'fs';
 import { execSync } from 'child_process';
@@ -16,11 +16,11 @@ import { initializeI18n } from '../../tools/i18n';
 import { JobCoordinator } from './JobCoordinator';
 import { Scheduler } from './Scheduler';
 import { AchievementJob, ArtifactJob, DailyQuestJob } from './jobs';
-// @ts-ignore imported as text by the build pipeline.
+// @ts-ignore 由构建流程以文本形式导入。
 import CHANGELOG from '../../CHANGELOG.txt';
-// @ts-ignore generated from YAML during build.
+// @ts-ignore 在构建期间由 YAML 生成。
 import * as zh from '../../locales/zh.json';
-// @ts-ignore generated from YAML during build.
+// @ts-ignore 在构建期间由 YAML 生成。
 import * as en from '../../locales/en.json';
 
 class ManagerRuntime {
@@ -32,6 +32,11 @@ class ManagerRuntime {
   private resolveShutdown!: () => void;
   private readonly shutdownRequested = new Promise<void>((resolve) => { this.resolveShutdown = resolve; });
 
+  /**
+   * 初始化 Manager Runtime 实例。
+   * @param mode - 用于选择处理分支的类型，类型为 `RuntimeMode`。
+   * @param version - 用于比较或展示的应用版本号，类型为 `string`。
+   */
   constructor(private readonly mode: RuntimeMode, private readonly version: string) {
     this.server = new UnifiedServer(this.loaded, this.coordinator, version, () => this.requestShutdown());
     this.coordinator.register(new DailyQuestJob());
@@ -39,6 +44,10 @@ class ManagerRuntime {
     this.coordinator.register(new ArtifactJob(this.loaded.path));
   }
 
+  /**
+   * 执行 run 相关数据。
+   * @returns `Promise<number>`，run 计算或读取到的数值。
+   */
   async run(): Promise<number> {
     this.initializeEnvironment();
     this.printStartupInformation();
@@ -55,11 +64,19 @@ class ManagerRuntime {
     return 0;
   }
 
+  /**
+   * 请求 request Shutdown 相关数据。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   requestShutdown(): void {
     this.resolveShutdown();
     if (this.mode === 'once') void this.coordinator.stopAll();
   }
 
+  /**
+   * 停止 stop 相关数据。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async stop(): Promise<void> {
     if (this.stopping) return;
     this.stopping = true;
@@ -68,6 +85,10 @@ class ManagerRuntime {
     await this.server.stop();
   }
 
+  /**
+   * 初始化 initialize Environment 相关数据。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   private initializeEnvironment(): void {
     fs.mkdirSync('logs', { recursive: true });
     fs.mkdirSync('data', { recursive: true });
@@ -86,7 +107,10 @@ class ManagerRuntime {
     if (this.loaded.raw.logsExpire) cleanupExpiredLogs('logs', this.loaded.raw.logsExpire);
   }
 
-  /** Prints project-level information exactly once for each Manager process. */
+  /**
+   * 处理 print Startup Information 相关逻辑。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   private printStartupInformation(): void {
     const displayVersion = `V${this.version.replace(/^v/i, '')}`;
     const logArr = '  ______   __       __   ______           __    __            __\n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |\n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______\n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\\n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/\n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |\n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |\n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/\n                                                                 $$ |\n                                                                 $$ |\n                                                                 $$/               by HCLonely '.split('\n');

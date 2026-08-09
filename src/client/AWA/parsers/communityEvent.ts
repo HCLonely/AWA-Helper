@@ -1,10 +1,24 @@
-/** Pure parser for an AWA Steam community-event page. */
+/**
+ * @file src/client/AWA/parsers/communityEvent.ts
+ * @description 解析 AWA Steam 社区活动页面中的进度与奖励信息。
+ */
 import { load } from 'cheerio';
 import type { CommunityEventPage } from '../types';
 
+/**
+ * 解析 parse Community Event Path 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @returns `string | null`，parseCommunityEventPath 解析得到的结构化结果。
+ */
 export const parseCommunityEventPath = (html: string): string | null => load(html)('a[href*="/steam/community-event"]').attr('href')?.split('/')
   .at(-1) || null;
 
+/**
+ * 解析 parse Community Event 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @param path - 待读取或写入文件的路径，类型为 `string`。
+ * @returns `CommunityEventPage`，parseCommunityEvent 解析得到的结构化结果。
+ */
 export const parseCommunityEvent = (html: string, path: string): CommunityEventPage => {
   const $ = load(html);
   return {

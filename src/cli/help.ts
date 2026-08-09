@@ -1,6 +1,10 @@
 /**
- * @file help
- * @description Formats command-line usage for the unified Manager runtime.
+ * @file src/cli/help.ts
+ * @description 生成统一 Manager 运行方式、兼容参数和辅助命令的命令行帮助文本。
+ */
+/**
+ * 格式化 format Help 相关数据。
+ * @returns `string`，formatHelp 获取或生成的文本内容。
  */
 const formatHelp = (): string => [
   'AWA-Helper',

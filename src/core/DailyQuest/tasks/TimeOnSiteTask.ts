@@ -1,6 +1,6 @@
 /**
- * @file TimeOnSiteTask
- * @description Sends cancellable AWA time-on-site tracking heartbeats.
+ * @file src/core/DailyQuest/tasks/TimeOnSiteTask.ts
+ * @description 按任务状态周期发送可取消的 AWA 在线时长心跳。
  */
 /* global __ */
 import chalk from 'chalk';
@@ -8,6 +8,12 @@ import { Logger, sleep, time } from '../../../tools';
 import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 class TimeOnSiteTask {
+  /**
+   * 处理 do 相关逻辑。
+   * @param runtime - 当前任务使用的运行时实例，类型为 `DailyQuestRuntime`。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<boolean>`，表示 do 检查是否通过。
+   */
   static async do(runtime: DailyQuestRuntime, signal?: AbortSignal): Promise<boolean> {
     while (!signal?.aborted) {
       if (runtime.state.trackTimes % 3 === 0) {

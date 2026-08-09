@@ -1,5 +1,8 @@
-/** @description Functional AWA API entry points for consumers that do not use the class facade directly. */
-/** APIs grouped by AWA-owned remote resources. */
+/**
+ * @file src/client/AWA/APIs/index.ts
+ * @description 集中导出 AWA 客户端的函数式远程 API。
+ */
+/** 按 AWA 远程资源分组导出 API。 */
 export * from './session';
 export * from './quests';
 export * from './content';

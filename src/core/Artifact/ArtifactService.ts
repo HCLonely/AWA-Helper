@@ -1,4 +1,7 @@
-/** Manager-owned orchestration for reading and replacing AWA artifacts. */
+/**
+ * @file src/core/Artifact/ArtifactService.ts
+ * @description 读取当前 AWA 遗物配置，并按指定槽位完成遗物替换操作。
+ */
 /* global __ */
 import * as fs from 'fs';
 import chalk from 'chalk';
@@ -16,6 +19,10 @@ class ArtifactService {
   activePerks = '';
   initted = true;
 
+  /**
+   * 初始化 Artifact Service 实例。
+   * @param configPath - 待读取或写入文件的路径，类型为 `string`。
+   */
   constructor(configPath: string) {
     const { awaCookie, awaHost, proxy, UA }: { awaCookie?: string; awaHost?: string; proxy?: proxy; UA?: string } = parse(fs.readFileSync(configPath, 'utf8'));
     if (!awaCookie) {
@@ -26,8 +33,16 @@ class ArtifactService {
     this.awa = new AWAApiClient({ cookie: awaCookie, host: awaHost, proxy, userAgent: UA });
   }
 
+  /**
+   * 获取 new Cookie。
+   * @returns `string`，当前会话序列化后的 Cookie 字符串。
+   */
   get newCookie(): string { return this.awa?.newCookie || ''; }
 
+  /**
+   * 初始化 init 相关数据。
+   * @returns `Promise<boolean>`，表示 init 检查是否通过。
+   */
   async init(): Promise<boolean> {
     if (!this.awa) return false;
     try {
@@ -43,6 +58,11 @@ class ArtifactService {
     }
   }
 
+  /**
+   * 执行 start 相关数据。
+   * @param newArtifacts - 准备装备的新遗物标识列表，类型为 `number[]`。
+   * @returns `Promise<boolean>`，表示 start 检查是否通过。
+   */
   async start(newArtifacts: number[]): Promise<boolean> {
     if (!await this.getArtifactsInfo()) return false;
     const oldSet = new Set(this.oldArtifacts);
@@ -60,6 +80,10 @@ class ArtifactService {
     return success;
   }
 
+  /**
+   * 获取 get Artifacts Info 相关数据。
+   * @returns `Promise<boolean>`，表示 getArtifactsInfo 检查是否通过。
+   */
   async getArtifactsInfo(): Promise<boolean> {
     if (!this.awa || !this.userProfileUrl) return false;
     const artifacts = await this.awa.artifacts.getEquipped(this.userProfileUrl).catch(() => []);
@@ -73,6 +97,12 @@ class ArtifactService {
     return true;
   }
 
+  /**
+   * 处理 change Artifact 相关逻辑。
+   * @param id - 目标资源的唯一标识，类型为 `number`。
+   * @param position - 目标遗物所在的装备槽位，类型为 `number`。
+   * @returns `Promise<boolean>`，表示 changeArtifact 检查是否通过。
+   */
   async changeArtifact(id: number, position: number): Promise<boolean> {
     if (!this.awa || !this.userProfileUrl || !id || !position) return false;
     return this.awa.artifacts.equip(this.userProfileUrl, id, position);

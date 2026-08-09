@@ -1,12 +1,19 @@
 /**
- * @file retention
- * @description Removes log files older than the configured retention period.
+ * @file src/tools/logging/retention.ts
+ * @description 根据保留天数删除过期日志，并容忍暂时被占用的日志文件。
  */
 import * as fs from 'fs';
 import * as path from 'path';
 
 const logDatePattern = /^(?:Manager-|Achievement-|Archievement-)?(\d{4})-(\d{2})-(\d{2})\.txt$/;
 
+/**
+ * 删除 cleanup Expired Logs 相关数据。
+ * @param directory - 需要扫描和清理日志文件的目录，类型为 `string`。
+ * @param expireDays - 日志文件允许保留的天数，类型为 `number`。
+ * @param now - 计算或比较时使用的时间，类型为 `Date`。
+ * @returns `number`，cleanupExpiredLogs 计算或读取到的数值。
+ */
 const cleanupExpiredLogs = (directory: string, expireDays: number, now = new Date()): number => {
   if (!Number.isFinite(expireDays) || expireDays <= 0 || !fs.existsSync(directory)) return 0;
   const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
@@ -23,7 +30,7 @@ const cleanupExpiredLogs = (directory: string, expireDays: number, now = new Dat
       fs.unlinkSync(path.join(directory, filename));
       removed++;
     } catch (_error) {
-      // A locked log can be retried during the next startup.
+      // 被占用的日志文件可在下次启动时重新清理。
     }
   }
   return removed;

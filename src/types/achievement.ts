@@ -1,6 +1,6 @@
 /**
- * @file Achievement types
- * @description Shared data models for achievement automation and action history.
+ * @file src/types/achievement.ts
+ * @description 定义成就记录、头像配置、可装备物品及成就操作历史的数据结构。
  */
 interface Achievement {
     id: string;
@@ -13,14 +13,6 @@ interface Id {
     id: string;
     name: string;
 }
-
-// interface Avatar {
-//     id: string;
-//     name: string;
-//     slotType: string;
-//     category: string;
-//     equipped: boolean;
-// }
 
 interface userAvatarInfo {
     avatar: string

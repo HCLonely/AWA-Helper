@@ -1,7 +1,16 @@
-/** Pure parsers for AWA Steam quest list and detail pages. */
+/**
+ * @file src/client/AWA/parsers/steamQuest.ts
+ * @description 解析 AWA Steam 任务列表、详情和进度数据。
+ */
 import { load } from 'cheerio';
 import type { AWASteamQuestDetail, AWASteamQuestListing } from '../types';
 
+/**
+ * 解析 parse Steam Quest Listings 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @param baseURL - 目标资源或服务的 URL，类型为 `string`。
+ * @returns `AWASteamQuestListing[]`，parseSteamQuestListings 收集或筛选得到的数据列表。
+ */
 export const parseSteamQuestListings = (html: string, baseURL: string): AWASteamQuestListing[] => {
   const $ = load(html);
   return $('div.container>div.row').toArray().flatMap((row) => {
@@ -21,6 +30,11 @@ export const parseSteamQuestListings = (html: string, baseURL: string): AWASteam
   });
 };
 
+/**
+ * 解析 parse Steam Quest Detail 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @returns `AWASteamQuestDetail`，parseSteamQuestDetail 解析得到的结构化结果。
+ */
 export const parseSteamQuestDetail = (html: string): AWASteamQuestDetail => {
   const $ = load(html);
   const appId = $('img[src*="steam/apps/"]').first().attr('src')
@@ -34,8 +48,18 @@ export const parseSteamQuestDetail = (html: string): AWASteamQuestDetail => {
   return { appId, state: 'unknown' };
 };
 
+/**
+ * 解析 parse Selectable Steam Game Id 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @returns `string | null`，parseSelectableSteamGameId 解析得到的结构化结果。
+ */
 export const parseSelectableSteamGameId = (html: string): string | null => load(html)('#userGames>option').first().attr('value') || null;
 
+/**
+ * 解析 parse Steam Quest Progress 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @returns `number | null`，parseSteamQuestProgress 解析得到的结构化结果。
+ */
 export const parseSteamQuestProgress = (html: string): number | null => {
   const progress = html.match(/aria-valuenow="([\d]+?)"/)?.[1];
   return progress ? parseInt(progress, 10) : null;

@@ -1,11 +1,16 @@
 /**
- * @file sanitize
- * @description Removes configured secrets and sensitive HTTP details from log output.
+ * @file src/tools/logging/sanitize.ts
+ * @description 递归清理日志对象中的密钥、Cookie、请求头和 ANSI 控制序列。
  */
 import { format } from 'util';
 
 const sensitiveKeyPattern = /(authorization|authentication|cookie|password|secret|token|api[-_]?key|proxy[-_]?auth)/i;
 
+/**
+ * 处理 redact Known Secrets 相关逻辑。
+ * @param text - 需要记录、推送或格式化的文本内容，类型为 `string`。
+ * @returns `string`，redactKnownSecrets 获取或生成的文本内容。
+ */
 const redactKnownSecrets = (text: string): string => {
   let result = text;
   for (const secret of globalThis.secrets || []) {
@@ -16,9 +21,20 @@ const redactKnownSecrets = (text: string): string => {
   return result;
 };
 
+/**
+ * 处理 collect Log Secrets 相关逻辑。
+ * @param value - 需要写入或参与计算的值，类型为 `unknown`。
+ * @returns `string[]`，collectLogSecrets 收集或筛选得到的数据列表。
+ */
 const collectLogSecrets = (value: unknown): Array<string> => {
   const secrets = new Set<string>();
   const visited = new WeakSet<object>();
+  /**
+   * 处理 visit 相关逻辑。
+   * @param item - 需要遍历或处理的数据集合，类型为 `unknown`。
+   * @param key - 用于读取或更新目标数据的键，类型为 `string`。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
   const visit = (item: unknown, key = ''): void => {
     if (typeof item === 'string') {
       if (sensitiveKeyPattern.test(key) && item.length > 5) {
@@ -41,10 +57,21 @@ const collectLogSecrets = (value: unknown): Array<string> => {
   return [...secrets];
 };
 
+/**
+ * 保存 set Log Secrets 相关数据。
+ * @param config - 控制当前操作行为的配置，类型为 `unknown`。
+ * @returns `void`，该函数仅执行副作用，不返回值。
+ */
 const setLogSecrets = (config: unknown): void => {
   globalThis.secrets = [...new Set([...(globalThis.secrets || []), ...collectLogSecrets(config)])];
 };
 
+/**
+ * 处理 sanitize Object 相关逻辑。
+ * @param value - 需要写入或参与计算的值，类型为 `unknown`。
+ * @param visited - 用于记录已经清理过的对象并避免循环引用，类型为 `WeakSet<object>`。
+ * @returns `unknown`，移除敏感字段并处理循环引用后的安全值。
+ */
 const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknown => {
   if (value instanceof Error) {
     const error = value as Error & {
@@ -71,6 +98,12 @@ const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknow
   ]));
 };
 
+/**
+ * 格式化 format Log Value 相关数据。
+ * @param value - 需要写入或参与计算的值，类型为 `unknown`。
+ * @param stripAnsi - 用于决定是否移除文本中的 ANSI 控制序列，类型为 `boolean`。
+ * @returns `string`，formatLogValue 获取或生成的文本内容。
+ */
 const formatLogValue = (value: unknown, stripAnsi = false): string => {
   const safeValue = typeof value === 'string' ? value : sanitizeObject(value);
   let output = typeof safeValue === 'string' ? safeValue : format(safeValue);

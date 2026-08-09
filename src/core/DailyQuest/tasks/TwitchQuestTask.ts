@@ -1,6 +1,6 @@
 /**
- * Coordinates AWA task state, Twitch channel discovery and AWA heartbeats.
- * Neither platform client knows about the other one.
+ * @file src/core/DailyQuest/tasks/TwitchQuestTask.ts
+ * @description 发现可用 Twitch 频道并向 AWA 周期提交直播观看跟踪心跳。
  */
 import chalk from 'chalk';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
@@ -9,6 +9,13 @@ import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 import { Logger, sleep, time } from '../../../tools';
 
 export class TwitchQuestTask {
+  /**
+   * 初始化 Twitch Quest Task 实例。
+   * @param runtime - 当前任务使用的运行时实例，类型为 `DailyQuestRuntime`。
+   * @param awa - 用于调用 Alienware Arena 接口的客户端，类型为 `AWAApiClient`。
+   * @param twitch - 用于调用 Twitch 接口的客户端，类型为 `TwitchClient`。
+   * @param retryDelaySeconds - 控制等待时长的数值，类型为 `number`。
+   */
   constructor(
     private readonly runtime: DailyQuestRuntime,
     private readonly awa: AWAApiClient,
@@ -16,11 +23,20 @@ export class TwitchQuestTask {
     private readonly retryDelaySeconds = 5 * 60
   ) {}
 
+  /**
+   * 检查 is Complete 相关数据。
+   * @returns `boolean`，表示 isComplete 检查是否通过。
+   */
   private isComplete(): boolean {
     const progress = this.runtime.state.questInfo.watchTwitch;
     return progress?.[0] === '15' && parseFloat(progress?.[1] || '0') >= this.runtime.state.additionalTwitchARP;
   }
 
+  /**
+   * 执行 run 相关数据。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<boolean>`，表示 run 检查是否通过。
+   */
   async run(signal?: AbortSignal): Promise<boolean> {
     let retriedAuthorization = false;
     while (!signal?.aborted && !this.isComplete()) {
@@ -82,7 +98,11 @@ export class TwitchQuestTask {
     return true;
   }
 
-  /** Waits before reloading the AWA stream list when no usable live channel exists. */
+  /**
+   * 等待 wait For Available Streams 相关数据。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<boolean>`，表示 waitForAvailableStreams 检查是否通过。
+   */
   private async waitForAvailableStreams(signal?: AbortSignal): Promise<boolean> {
     new Logger(`${time()}${chalk.blue(__('getLiveInfoAlert', String(this.retryDelaySeconds / 60)))}`);
     return sleep(this.retryDelaySeconds, signal);

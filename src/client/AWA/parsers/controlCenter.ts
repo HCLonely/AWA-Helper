@@ -1,8 +1,17 @@
-/** Pure parser for AWA control-center HTML. It performs no requests or logging. */
+/**
+ * @file src/client/AWA/parsers/controlCenter.ts
+ * @description 解析 AWA 控制中心页面中的任务、签到、积分和用户状态。
+ */
 import { load } from 'cheerio';
 import type { ControlCenterSnapshot, PromotionalCalendarEntry } from '../types';
 export type { ControlCenterSnapshot } from '../types';
 
+/**
+ * 解析 parse Control Center 相关数据。
+ * @param html - 待解析的 HTML 文本，类型为 `string`。
+ * @param baseURL - 目标资源或服务的 URL，类型为 `string`。
+ * @returns `ControlCenterSnapshot`，parseControlCenter 解析得到的结构化结果。
+ */
 export const parseControlCenter = (html: string, baseURL: string): ControlCenterSnapshot => {
   const $ = load(html);
   const rewardBonusArp = html.match(/bonusCalendarArp.*?=.*?([\d]+?)/)?.[1] || '';

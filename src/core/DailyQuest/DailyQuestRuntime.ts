@@ -1,6 +1,6 @@
 /**
- * Manager-owned DailyQuest runtime. It coordinates AWA APIs and owns task state,
- * while HTTP details and HTML parsing remain in client/AWA.
+ * @file src/core/DailyQuest/DailyQuestRuntime.ts
+ * @description 维护单次每日任务运行状态，并协调 AWA 页面访问、任务刷新和论坛操作。
  */
 /* global __ */
 import * as fs from 'fs';
@@ -33,14 +33,26 @@ export class DailyQuestRuntime {
   private readonly getStarted: boolean;
   private readonly joinSteamCommunityEvent: boolean;
 
+  /**
+   * 初始化 Daily Quest Runtime 实例。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRuntimeOptions`。
+   */
   constructor(options: DailyQuestRuntimeOptions) {
     this.awa = new AWAApiClient({ cookie: options.awaCookie, host: options.host, proxy: options.proxy, userAgent: options.userAgent });
     this.getStarted = !!options.getStarted;
     this.joinSteamCommunityEvent = !!options.joinSteamCommunityEvent;
   }
 
+  /**
+   * 获取 new Cookie。
+   * @returns `string`，当前会话序列化后的 Cookie 字符串。
+   */
   get newCookie(): string { return this.awa.newCookie; }
 
+  /**
+   * 初始化 init 相关数据。
+   * @returns `Promise<DailyQuestRefreshResult>`，初始化完成后得到的每日任务刷新结果。
+   */
   async init(): Promise<DailyQuestRefreshResult> {
     const logger = new Logger(`${time()}${__('updatingCookie', chalk.yellow('AWA Cookie'))}...`, false);
     try {
@@ -56,6 +68,11 @@ export class DailyQuestRuntime {
     }
   }
 
+  /**
+   * 更新 update Daily Quests 相关数据。
+   * @param verify - 用于决定是否重新验证任务状态，类型为 `boolean`。
+   * @returns `Promise<DailyQuestRefreshResult>`，updateDailyQuests 操作完成后的结果。
+   */
   async updateDailyQuests(verify = false): Promise<DailyQuestRefreshResult> {
     const logger = new Logger(time() + (verify ? __('verifyingToken', chalk.yellow('AWA Token')) : __('gettingTaskInfo')), false);
     try {
@@ -116,6 +133,10 @@ export class DailyQuestRuntime {
     }
   }
 
+  /**
+   * 加载 load Twitch Bonus 相关数据。
+   * @returns `Promise<boolean>`，表示 loadTwitchBonus 检查是否通过。
+   */
   async loadTwitchBonus(): Promise<boolean> {
     if (!this.state.userProfileUrl) return false;
     const logger = new Logger(`${time()}${__('gettingTwitchTech')}`, false);
@@ -130,11 +151,21 @@ export class DailyQuestRuntime {
     }
   }
 
+  /**
+   * 更新 refresh Personalization 相关数据。
+   * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+   * @returns `Promise<boolean>`，表示 refreshPersonalization 检查是否通过。
+   */
   async refreshPersonalization(type: 'avatar' | 'border'): Promise<boolean> {
     const selection = await this.awa.personalization.getAvatarItems(type);
     return selection ? this.awa.personalization.saveAvatar(selection.userAvatarInfo) : false;
   }
 
+  /**
+   * 完成 claim Quest 相关数据。
+   * @param questId - 目标资源的唯一标识，类型为 `string`。
+   * @returns `Promise<boolean>`，表示 claimQuest 检查是否通过。
+   */
   async claimQuest(questId: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('doingTask', chalk.yellow(questId))}`, false);
     try {
@@ -147,6 +178,11 @@ export class DailyQuestRuntime {
       return false;
     }
   }
+  /**
+   * 处理 visit 相关逻辑。
+   * @param link - 需要访问或提交的目标页面链接，类型为 `string`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async visit(link: string): Promise<void> {
     const logger = new Logger(`${time()}${__('visitingPage', chalk.yellow(link))}`, false);
     try {
@@ -157,6 +193,11 @@ export class DailyQuestRuntime {
       new Logger(error);
     }
   }
+  /**
+   * 处理 view Post 相关逻辑。
+   * @param postId - 目标资源的唯一标识，类型为 `string`。
+   * @returns `Promise<boolean>`，表示 viewPost 检查是否通过。
+   */
   async viewPost(postId: string): Promise<boolean> {
     await this.visit(`${this.awa.context.baseURL}/ucf/show/${postId}`);
     const logger = new Logger(`${time()}${__('sendingViewRecord', chalk.yellow(postId))}`, false);
@@ -171,10 +212,20 @@ export class DailyQuestRuntime {
       return false;
     }
   }
+  /**
+   * 处理 view Posts 相关逻辑。
+   * @param postIds - 需要查看或分享的论坛帖子标识列表，类型为 `string[]`。
+   * @returns `Promise<boolean>`，表示 viewPosts 检查是否通过。
+   */
   async viewPosts(postIds = this.state.posts): Promise<boolean> {
     for (const postId of postIds.slice(0, 3)) { await this.viewPost(postId); await sleep(random(1, 5)); }
     return postIds.length > 0;
   }
+  /**
+   * 处理 share Posts 相关逻辑。
+   * @param postIds - 需要查看或分享的论坛帖子标识列表，类型为 `string[]`。
+   * @returns `Promise<boolean>`，表示 sharePosts 检查是否通过。
+   */
   async sharePosts(postIds = this.state.posts): Promise<boolean> {
     for (const postId of postIds.slice(0, 2)) {
       const logger = new Logger(`${time()}${__('sharingPost', chalk.yellow(postId))}`, false);
@@ -189,6 +240,11 @@ export class DailyQuestRuntime {
     }
     return postIds.length > 0;
   }
+  /**
+   * 处理 reply Post 相关逻辑。
+   * @param postId - 目标资源的唯一标识，类型为 `string | undefined`。
+   * @returns `Promise<boolean>`，表示 replyPost 检查是否通过。
+   */
   async replyPost(postId?: string): Promise<boolean> {
     const logger = new Logger(`${time()}${__('replyingPost', chalk.yellow(postId || 'Daily Quest'))}`, false);
     try {
@@ -203,6 +259,10 @@ export class DailyQuestRuntime {
       return false;
     }
   }
+  /**
+   * 处理 view News 相关逻辑。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async viewNews(): Promise<void> {
     const newsId = '2162951';
     const html = await openPage(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${newsId}/boards/awa-information/News/arp-6-0`);
@@ -214,6 +274,10 @@ export class DailyQuestRuntime {
     }
     await this.viewPost(newsId);
   }
+  /**
+   * 发送 send Time On Site 相关数据。
+   * @returns `Promise<boolean>`，表示 sendTimeOnSite 检查是否通过。
+   */
   async sendTimeOnSite(): Promise<boolean> {
     const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('AWA'))}`, false);
     try {
@@ -228,10 +292,19 @@ export class DailyQuestRuntime {
       return false;
     }
   }
+  /**
+   * 处理 monitor 相关逻辑。
+   * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   async monitor(signal?: AbortSignal): Promise<void> {
     while (!signal?.aborted) { await this.updateDailyQuests(); if (!await sleep(5 * 60, signal)) return; }
   }
 
+  /**
+   * 初始化 initialize Community Event 相关数据。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   private async initializeCommunityEvent(): Promise<void> {
     const pathLogger = new Logger(`${time()}${__('gettingSteamCommunityEventPath')}`, false);
     const path = await this.awa.communityEvent.findPath().catch((error) => {
@@ -269,6 +342,10 @@ export class DailyQuestRuntime {
     };
     logger.log(joined ? chalk.green('OK') : chalk.yellow(__('notOwned')));
   }
+  /**
+   * 更新 refresh Community Event 相关数据。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
   private async refreshCommunityEvent(): Promise<void> {
     const event = this.state.communityEvent;
     if (!event?.path) return;
