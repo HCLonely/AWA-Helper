@@ -33,7 +33,7 @@ jobs:
           body_path: CHANGELOG.txt
           files: |
             AWA-Helper-Win.tar.gz
-            output/main.js
+            output/index.js
             output/sha256.txt
           token: ${{ github.TOKEN }}
   release-linux:
@@ -63,7 +63,7 @@ jobs:
           cp node-v${{ env.node_version }}-linux-x64/bin/node output/AWA-Helper
           npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
           # upx --brute ./output/AWA-Helper
-          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-x64.tar.gz ./output
+          tar --exclude index.js --exclude *.bat -zcvf AWA-Helper-Linux-x64.tar.gz ./output
           rm -rf output/AWA-Helper
       - name: build-armv7
         run: |
@@ -72,7 +72,7 @@ jobs:
           cp node-v${{ env.node_version }}-linux-armv7l/bin/node output/AWA-Helper
           npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
           # upx --brute ./output/AWA-Helper
-          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-armv7.tar.gz ./output
+          tar --exclude index.js --exclude *.bat -zcvf AWA-Helper-Linux-armv7.tar.gz ./output
           rm -rf output/AWA-Helper
       - name: build-armv8
         run: |
@@ -81,7 +81,7 @@ jobs:
           cp node-v${{ env.node_version }}-linux-arm64/bin/node output/AWA-Helper
           npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
           # upx --brute ./output/AWA-Helper
-          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-armv8.tar.gz ./output
+          tar --exclude index.js --exclude *.bat -zcvf AWA-Helper-Linux-armv8.tar.gz ./output
           rm -rf output/AWA-Helper
       - name: Release
         uses: softprops/action-gh-release@v3

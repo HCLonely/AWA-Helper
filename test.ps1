@@ -2,10 +2,10 @@ $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) "awa-helper-smoke-$PID-$
 New-Item -ItemType Directory -Path $testRoot | Out-Null
 
 try {
-  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'output/main.js') -Destination $testRoot
+  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'output/index.js') -Destination $testRoot
   Push-Location $testRoot
   try {
-    $result = node main.js --helper 2>&1
+    $result = node index.js --helper 2>&1
   }
   finally {
     Pop-Location
