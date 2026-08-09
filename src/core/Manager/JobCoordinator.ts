@@ -4,6 +4,7 @@
  */
 import type { Job, JobName, JobResult } from './Job';
 import { JobStateStore } from './JobStateStore';
+import { runWithLogScope } from '../../tools/logging';
 
 interface ActiveJob {
   controller: AbortController
@@ -40,7 +41,7 @@ class JobCoordinator {
     const controller = new AbortController();
     const startedAt = new Date().toISOString();
     this.states.update(name, 'running', { startedAt, finishedAt: undefined, message: undefined });
-    const completion = job.run(controller.signal, payload)
+    const completion = runWithLogScope(name, () => job.run(controller.signal, payload))
       .then((success) => {
         const result: JobResult = {
           success: success !== false && !controller.signal.aborted,

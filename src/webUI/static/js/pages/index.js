@@ -13,8 +13,11 @@
 //   return result;
 // }
 const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
-async function openLog(path, secret) {
-  const response = await axios.post(path, { secret }, { responseType: 'blob' });
+async function openLog(scope, secret) {
+  const response = await axios.get(`/api/logs/${scope}`, {
+    headers: { Authorization: `Bearer ${secret}` },
+    responseType: 'blob'
+  });
   const text = await response.data.text();
   const utf8Blob = new Blob(['\uFEFF', text], { type: 'text/plain;charset=utf-8' });
   const objectUrl = URL.createObjectURL(utf8Blob);
@@ -347,7 +350,7 @@ $('button.awa-archievement-logs').click(async () => {
     $('#log-area li:last')[0].scrollIntoView();
     return;
   }
-  await openLog('/awaArchievementLogs', managerServerSecret);
+  await openLog('achievement', managerServerSecret);
 });
 
 $('button.awa-manager-stop').click(() => {
@@ -370,13 +373,22 @@ $('button.save-secret').click(() => {
   $('#log-area li:last')[0].scrollIntoView();
 });
 
-$('a.run-logs').click(async () => {
+$('a.run-logs, button.daily-quest-logs').click(async () => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     return;
   }
-  await openLog('/runLogs', managerServerSecret);
+  await openLog('dailyQuest', managerServerSecret);
+});
+
+$('button.manager-logs').click(async () => {
+  if (!managerServerSecret) {
+    $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
+    $('#log-area li:last')[0].scrollIntoView();
+    return;
+  }
+  await openLog('manager', managerServerSecret);
 });
 
 $('button.install-user-js').click(() => {

@@ -143,7 +143,7 @@ function connectWebUIServer(retry = 0) {
     const data = JSON.parse(e.data);
     if (data.type === 'logs') {
       for (const value of Object.values(data)) {
-        if (value === 'logs' || (typeof value.data === 'string' && value.data.includes('by HCLonely'))) continue;
+        if (!value || typeof value !== 'object' || value.scope !== 'dailyQuest') continue;
         if (value.type === 'questInfo') {
           generateTaskInfo(value.data);
           continue;
@@ -157,7 +157,7 @@ function connectWebUIServer(retry = 0) {
         $('#log-area').append(`<li id="log-${value.id}">${value.data}</li>`);
         $(`#log-${value.id}`)[0].scrollIntoView();
       }
-    } else if (data.type === 'log') {
+    } else if (data.type === 'log' && data.scope === 'dailyQuest') {
       const logEle = $(`#log-${data.id}`);
       if (logEle.length > 0) {
         logEle.html(data.data);
@@ -166,7 +166,7 @@ function connectWebUIServer(retry = 0) {
         $('#log-area').append(`<li id="log-${data.id}">${data.data}</li>`);
         $(`#log-${data.id}`)[0].scrollIntoView();
       }
-    } else if (data.type === 'questInfo') {
+    } else if (data.type === 'questInfo' && data.scope === 'dailyQuest') {
       generateTaskInfo(data.data);
     }
   };

@@ -16,3 +16,5 @@
 Dependencies flow from CLI and Server into Manager, then into Core jobs, Clients, and Tools. Clients and Tools must not import Core or Server modules.
 
 Cross-platform workflows are always composed in Core. For example, `TwitchQuestTask` combines AWA tracking with Twitch channel discovery, and `SteamQuestTask` combines AWA quest preparation with ASF game control. Client APIs perform remote operations but do not schedule, retry, poll, or manage process lifetime.
+
+`tools/index.ts` is an export-only compatibility facade. Implementations are owned by `tools/common`, `config`, `http`, `i18n`, `logging`, `notification`, `process`, `proxy`, and `update`. Manager jobs run inside an asynchronous log scope, producing independent `Manager-`, `DailyQuest-`, `Achievement-`, and `Artifact-YYYY-MM-DD.txt` files. WebSocket entries carry the same scope so each WebUI page renders only its corresponding job.

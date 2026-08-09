@@ -18,6 +18,7 @@ import type { LoadedConfig } from '../tools/config/types';
 import type { JobName } from '../core/Manager/Job';
 import type { JobCoordinator } from '../core/Manager/JobCoordinator';
 import { decodeManagerWebSocketSecret } from './websocket/authenticate';
+import { getLogFilePath, isLogScope } from '../tools/logging';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import managerHtml from '../webUI/dist/index.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -197,12 +198,9 @@ class UnifiedServer {
      */
     const sendLogs = (req: express.Request, res: express.Response, requestedJob?: string): express.Response | void => {
       if (!authenticate(req, res)) return;
-      const date = new Date().toISOString().slice(0, 10);
-      const job = requestedJob || req.params.job;
-      let prefix = '';
-      if (job === 'manager') prefix = 'Manager-';
-      if (job === 'achievement') prefix = 'Achievement-';
-      const filename = path.join('logs', `${prefix}${date}.txt`);
+      const candidate = requestedJob || req.params.job || 'manager';
+      if (!isLogScope(candidate)) return res.status(404).json({ error: 'Unknown log scope' });
+      const filename = getLogFilePath(candidate);
       return res.type('text/plain').send(fs.existsSync(filename) ? fs.readFileSync(filename, 'utf8') : '');
     };
     app.get('/api/logs', (req, res) => sendLogs(req, res));

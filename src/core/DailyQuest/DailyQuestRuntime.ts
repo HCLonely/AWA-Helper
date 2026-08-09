@@ -4,7 +4,6 @@
  */
 /* global __ */
 import * as fs from 'fs';
-import dayjs from 'dayjs';
 import { load } from 'cheerio';
 import chalk from 'chalk';
 import { AWAApiClient } from '../../client/AWA/AWAApiClient';
@@ -17,6 +16,7 @@ import { Logger, random, sleep, time } from '../../tools';
 import { DailyQuestState } from './DailyQuestState';
 import { formatQuestReport } from './QuestReporter';
 import { AWAError } from '../../client/AWA/AWAError';
+import { getLogFilePath } from '../../tools/logging';
 
 export interface DailyQuestRuntimeOptions {
   awaCookie: string; host: string; proxy?: proxy; userAgent?: string;
@@ -119,7 +119,7 @@ export class DailyQuestRuntime {
 
       const report = formatQuestReport(this.state);
       fs.mkdirSync('logs', { recursive: true });
-      fs.appendFileSync(`logs/${dayjs().format('YYYY-MM-DD')}.txt`, `${JSON.stringify(report, null, 2)}\n`);
+      fs.appendFileSync(getLogFilePath('dailyQuest'), `${JSON.stringify(report, null, 2)}\n`);
       if (!verify) {
         Logger.consoleLog(`${time()}${__('taskInfo')}`);
         console.table(report);

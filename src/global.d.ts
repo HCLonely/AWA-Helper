@@ -161,8 +161,15 @@ findLast(
     retryDelay?: number
     Logger?: Logger
   }
+  interface webLogEntry {
+    id: number
+    data: unknown
+    type: 'log' | 'questInfo'
+    scope: 'manager' | 'dailyQuest' | 'achievement' | 'artifact'
+  }
   interface logs {
-    [name: string]: any
+    type: 'logs'
+    [name: string]: webLogEntry | 'logs'
   }
   interface pushOptions {
     name: string

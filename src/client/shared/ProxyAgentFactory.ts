@@ -2,7 +2,7 @@
  * @file src/client/shared/ProxyAgentFactory.ts
  * @description 根据 HTTP、HTTPS 或 SOCKS 地址创建项目支持的代理代理器。
  */
-import { formatProxy } from '../../tools';
+import { formatProxy } from '../../tools/proxy';
 
 /**
  * 创建 create Proxy Agent 相关数据。
