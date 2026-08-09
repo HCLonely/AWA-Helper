@@ -4,6 +4,7 @@
  */
 import type { Job, JobName, JobResult } from './Job';
 import { JobStateStore } from './JobStateStore';
+import { Logger, time } from '../../tools';
 import { runWithLogScope } from '../../tools/logging';
 
 interface ActiveJob {
@@ -35,23 +36,33 @@ class JobCoordinator {
    */
   start(name: JobName, payload?: unknown): Promise<JobResult> {
     const running = this.active.get(name);
-    if (running) return running.completion;
+    if (running) {
+      new Logger(`${time()}${__('jobDuplicateStart', name)}`);
+      return running.completion;
+    }
     const job = this.jobs.get(name);
     if (!job) throw new Error(`Unknown job: ${name}`);
     const controller = new AbortController();
     const startedAt = new Date().toISOString();
+    new Logger(`${time()}${__('jobDispatching', name)}`);
     this.states.update(name, 'running', { startedAt, finishedAt: undefined, message: undefined });
-    const completion = runWithLogScope(name, () => job.run(controller.signal, payload))
+    const completion = runWithLogScope(name, async () => {
+      new Logger(`${time()}${__('jobStarted', name)}`);
+      return job.run(controller.signal, payload);
+    })
       .then((success) => {
         const result: JobResult = {
           success: success !== false && !controller.signal.aborted,
-          message: controller.signal.aborted ? 'Job cancelled' : undefined,
+          message: controller.signal.aborted ? __('jobCancelledMessage') : undefined,
           startedAt,
           finishedAt: new Date().toISOString()
         };
         let status: 'cancelled' | 'completed' | 'failed' = result.success ? 'completed' : 'failed';
         if (controller.signal.aborted) status = 'cancelled';
         this.states.update(name, status, result);
+        const localizedStatus = __(`jobStatus_${status}`);
+        runWithLogScope(name, () => new Logger(`${time()}${__('jobFinished', name, localizedStatus)}`));
+        new Logger(`${time()}${__('managerJobFinished', name, localizedStatus)}`);
         return result;
       })
       .catch((error: unknown) => {
@@ -61,7 +72,11 @@ class JobCoordinator {
           startedAt,
           finishedAt: new Date().toISOString()
         };
-        this.states.update(name, controller.signal.aborted ? 'cancelled' : 'failed', result);
+        const status = controller.signal.aborted ? 'cancelled' : 'failed';
+        this.states.update(name, status, result);
+        const localizedStatus = __(`jobStatus_${status}`);
+        runWithLogScope(name, () => new Logger(`${time()}${__('jobFinishedWithMessage', name, localizedStatus, result.message || '')}`));
+        new Logger(`${time()}${__('managerJobFinishedWithMessage', name, localizedStatus, result.message || '')}`);
         return result;
       })
       .finally(() => this.active.delete(name));
@@ -76,9 +91,14 @@ class JobCoordinator {
    */
   async stop(name: JobName): Promise<void> {
     const running = this.active.get(name);
-    if (!running) return;
+    if (!running) {
+      new Logger(`${time()}${__('jobStopIgnored', name)}`);
+      return;
+    }
+    new Logger(`${time()}${__('jobStopRequested', name)}`);
+    runWithLogScope(name, () => new Logger(`${time()}${__('jobCancellationRequested')}`));
     this.states.update(name, 'stopping');
-    running.controller.abort(new Error('Stopped by Manager'));
+    running.controller.abort(new Error(__('jobStoppedByManager')));
     await running.completion;
   }
 
@@ -87,8 +107,10 @@ class JobCoordinator {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async stopAll(): Promise<void> {
+    new Logger(`${time()}${__('jobStoppingAll', String(this.active.size))}`);
     await Promise.all([...this.active.keys()].map((name) => this.stop(name)));
     await Promise.all([...this.jobs.values()].map(async (job) => job.dispose?.()));
+    new Logger(`${time()}${__('jobAllDisposed')}`);
   }
 }
 

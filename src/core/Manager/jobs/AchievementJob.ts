@@ -27,7 +27,8 @@ class AchievementJob implements Job {
       awaHost: this.appConfig.awaHost,
       twitchCookie: this.appConfig.twitchCookie,
       proxy: this.appConfig.proxy,
-      userAgent: this.appConfig.UA
+      userAgent: this.appConfig.UA,
+      logRequests: this.appConfig.debug?.http === true
     });
     /**
      * 处理 abort 相关逻辑。

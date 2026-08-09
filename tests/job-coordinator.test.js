@@ -1,7 +1,16 @@
 /** @description Verifies Manager job deduplication and cancellation. */
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { parse } = require('yaml');
 const { JobCoordinator } = require('../dist/core/Manager/JobCoordinator');
+const { initializeI18n } = require('../dist/tools/i18n');
+
+initializeI18n('en', {
+  en: parse(fs.readFileSync(path.resolve(__dirname, '../src/locales/en.yml'), 'utf8')),
+  zh: parse(fs.readFileSync(path.resolve(__dirname, '../src/locales/zh.yml'), 'utf8'))
+});
 
 test('JobCoordinator deduplicates a running job', async () => {
   const coordinator = new JobCoordinator();

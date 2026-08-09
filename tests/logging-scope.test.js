@@ -4,7 +4,15 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { Logger, getLogFilePath, runWithLogScope } = require('../dist/tools/logging');
+const { Logger, getLogFilePath, runWithLogScope, safeRequestTarget } = require('../dist/tools/logging');
+
+test('external request log targets remove query strings and fragments', () => {
+  assert.equal(
+    safeRequestTarget('https://example.com/path?token=secret&foo=bar#result'),
+    'https://example.com/path'
+  );
+  assert.equal(safeRequestTarget('/relative/path?secret=value'), '/relative/path');
+});
 
 test('Logger separates Manager, DailyQuest, Achievement, and Artifact files', async () => {
   const originalDirectory = process.cwd();

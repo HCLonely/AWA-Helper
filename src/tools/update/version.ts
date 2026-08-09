@@ -29,11 +29,11 @@ export const checkUpdate = async (
     const response = await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options);
     globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
     const latest = response.headers.location?.match(/tag\/v?([\d.]+)/)?.[1];
-    if (!latest) return logger.log(chalk.red('Failed'));
+    if (!latest) return logger.log(chalk.red(__('logStatusFailed')));
     if (isNewVersion(version, latest)) {
       logger.log(chalk.green(__('newVersion', chalk.yellow(`V${latest}`))));
       if (autoUpdate && !process.argv.includes('--no-update')) {
-        new Logger(time() + chalk.yellow('Automatic installation is disabled until signed updates are available.'));
+        new Logger(time() + chalk.yellow(__('automaticInstallDisabled')));
       }
       new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
       globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latest}`)}\n${__('downloadLink', response.headers.location)}`;
@@ -45,7 +45,7 @@ export const checkUpdate = async (
     logger.log(chalk.green(__('noUpdate')));
   } catch (error) {
     const requestError = error as Parameters<typeof netError>[0];
-    logger.log(chalk.red('Error') + netError(requestError));
+    logger.log(chalk.red(__('logStatusError')) + netError(requestError));
     globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(requestError.response?.headers?.['set-cookie']))])];
     new Logger(error);
   }

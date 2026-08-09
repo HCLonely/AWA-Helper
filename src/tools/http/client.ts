@@ -18,7 +18,7 @@ http.interceptors.response.use((response) => response, async (error) => {
   if (config.retryCount >= (config.retryTimes || 3)) return Promise.reject(error);
   config.retryCount++;
   if (config.Logger) {
-    config.Logger.log(chalk.red('Error'));
+    config.Logger.log(chalk.red(__('logStatusError')));
     config.Logger = new Logger(`${time()}${chalk.yellow(__('retrying', chalk.blue(config.retryCount)))}`, false);
   }
   const retryAfter = Number.parseInt(response?.headers?.['retry-after'] || '', 10);

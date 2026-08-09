@@ -4,6 +4,7 @@
  */
 import type { RawAxiosRequestHeaders } from 'axios';
 import { Cookie, http } from '../../tools';
+import { observeExternalRequest, safeRequestTarget } from '../../tools/logging';
 import { createHttpTransport, createProxyAgent, DEFAULT_AWA_HOST, DEFAULT_USER_AGENT, type CookieStore, type HttpTransport } from '../shared';
 import { AWAError } from './AWAError';
 
@@ -13,6 +14,8 @@ export interface AWAContextOptions {
   userAgent?: string;
   proxy?: proxy;
   transport?: HttpTransport;
+  /** 是否记录真实网络请求；注入测试 transport 时默认关闭。 */
+  logRequests?: boolean;
 }
 
 export class AWAContext {
@@ -21,6 +24,7 @@ export class AWAContext {
   readonly headers: RawAxiosRequestHeaders;
   readonly httpsAgent?: myAxiosConfig['httpsAgent'];
   readonly transport: HttpTransport;
+  readonly logRequests: boolean;
   userId?: string;
   username?: string;
 
@@ -31,6 +35,7 @@ export class AWAContext {
   constructor(options: AWAContextOptions) {
     this.host = options.host || DEFAULT_AWA_HOST;
     this.transport = options.transport || createHttpTransport(http);
+    this.logRequests = options.logRequests ?? false;
     this.cookie = new Cookie(options.cookie);
     this.headers = {
       cookie: this.cookie.stringify(),
@@ -73,7 +78,10 @@ export class AWAContext {
     };
     if (this.httpsAgent && !requestOptions.httpsAgent) requestOptions.httpsAgent = this.httpsAgent;
     try {
-      const response = await this.transport.request<T>(requestOptions);
+      const execute = () => this.transport.request<T>(requestOptions);
+      const response = this.logRequests
+        ? await observeExternalRequest('AWA', requestOptions, execute)
+        : await execute();
       this.updateCookies(response.headers?.['set-cookie']);
       return response;
     } catch (error) {
@@ -81,7 +89,7 @@ export class AWAContext {
       const statusCode = error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { status?: number } }).response?.status
         : undefined;
-      throw new AWAError('request', `AWA request failed: ${String(options.url)}`, statusCode === undefined || statusCode >= 500, statusCode, { cause: error });
+      throw new AWAError('request', `AWA request failed: ${safeRequestTarget(options.url)}`, statusCode === undefined || statusCode >= 500, statusCode, { cause: error });
     }
   }
 }

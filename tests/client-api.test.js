@@ -11,6 +11,16 @@ const { playGames } = require('../dist/client/Steam/APIs/bot');
 
 const response = (data, headers = {}) => ({ data, headers, status: 200, statusText: 'OK', config: {} });
 
+test('platform HTTP request logging is disabled by default and requires explicit opt-in', () => {
+  const transport = { request: async () => response({}) };
+  assert.equal(new AWAContext({ cookie: '', transport }).logRequests, false);
+  assert.equal(new TwitchContext({ cookie: '', transport }).logRequests, false);
+  assert.equal(new ASFContext({ protocol: 'http', host: 'localhost', port: 1242, botName: 'bot', transport }).logRequests, false);
+  assert.equal(new AWAContext({ cookie: '', transport, logRequests: true }).logRequests, true);
+  assert.equal(new TwitchContext({ cookie: '', transport, logRequests: true }).logRequests, true);
+  assert.equal(new ASFContext({ protocol: 'http', host: 'localhost', port: 1242, botName: 'bot', transport, logRequests: true }).logRequests, true);
+});
+
 test('AWA APIs use injected transport and persist response cookies in context', async () => {
   let request;
   const transport = { request: async (config) => {

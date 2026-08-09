@@ -29,6 +29,7 @@ class ManagerRuntime {
   private readonly scheduler = new Scheduler(this.coordinator, this.loaded.manager);
   private readonly server: UnifiedServer;
   private stopping = false;
+  private shutdownSignalled = false;
   private resolveShutdown!: () => void;
   private readonly shutdownRequested = new Promise<void>((resolve) => { this.resolveShutdown = resolve; });
 
@@ -50,14 +51,21 @@ class ManagerRuntime {
    */
   async run(): Promise<number> {
     this.initializeEnvironment();
+    new Logger(`${time()}${__('managerEnvironmentInitialized', __(`managerMode_${this.mode}`), this.version)}`);
     this.printStartupInformation();
+    const { webUI } = this.loaded.raw;
+    new Logger(`${time()}${webUI?.enable === false
+      ? __('managerWebUiDisabled')
+      : __('managerWebUiStarting', webUI?.local === false ? '0.0.0.0' : '127.0.0.1', String(webUI?.port || 3456))}`);
     await this.server.start();
     new Logger(`${time()}${__('managerStarted', __(`managerMode_${this.mode}`), String(this.loaded.raw.webUI?.port || 3456))}`);
     if (this.mode === 'once') {
+      new Logger(`${time()}${__('managerOneShotSelected')}`);
       const result = await this.coordinator.start('dailyQuest');
       await this.stop();
       return result.success ? 0 : 1;
     }
+    new Logger(`${time()}${__('managerStartingScheduler')}`);
     this.scheduler.start();
     await this.shutdownRequested;
     await this.stop();
@@ -69,6 +77,9 @@ class ManagerRuntime {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   requestShutdown(): void {
+    if (this.shutdownSignalled) return;
+    this.shutdownSignalled = true;
+    new Logger(`${time()}${__('managerShutdownRequested')}`);
     this.resolveShutdown();
     if (this.mode === 'once') void this.coordinator.stopAll();
   }
@@ -80,9 +91,11 @@ class ManagerRuntime {
   async stop(): Promise<void> {
     if (this.stopping) return;
     this.stopping = true;
+    new Logger(`${time()}${__('managerShutdownStarted')}`);
     this.scheduler.stop();
     await this.coordinator.stopAll();
     await this.server.stop();
+    new Logger(`${time()}${__('managerShutdownCompleted')}`);
   }
 
   /**

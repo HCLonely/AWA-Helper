@@ -4,6 +4,7 @@
  */
 import type { RawAxiosRequestHeaders } from 'axios';
 import { http } from '../../tools';
+import { observeExternalRequest } from '../../tools/logging';
 import { createHttpTransport, createProxyAgent, type HttpTransport } from '../shared';
 
 export interface ASFContextOptions {
@@ -14,6 +15,8 @@ export interface ASFContextOptions {
   botName: string;
   proxy?: proxy;
   transport?: HttpTransport;
+  /** 是否记录真实网络请求；注入测试 transport 时默认关闭。 */
+  logRequests?: boolean;
 }
 
 export class ASFContext {
@@ -22,6 +25,7 @@ export class ASFContext {
   readonly botName: string;
   readonly httpsAgent?: myAxiosConfig['httpsAgent'];
   readonly transport: HttpTransport;
+  private readonly logRequests: boolean;
 
   /**
    * 初始化 ASFContext 实例。
@@ -30,6 +34,7 @@ export class ASFContext {
   constructor(options: ASFContextOptions) {
     const baseURL = `${options.protocol}://${options.host}:${options.port}`;
     this.transport = options.transport || createHttpTransport(http);
+    this.logRequests = options.logRequests ?? false;
     this.commandURL = `${baseURL}/Api/Command`;
     this.botName = options.botName;
     this.headers = {
@@ -53,6 +58,7 @@ export class ASFContext {
   request<T = unknown>(options: myAxiosConfig) {
     const requestOptions: myAxiosConfig = { ...options, headers: { ...this.headers, ...options.headers } };
     if (this.httpsAgent && !requestOptions.httpsAgent) requestOptions.httpsAgent = this.httpsAgent;
-    return this.transport.request<T>(requestOptions);
+    const execute = () => this.transport.request<T>(requestOptions);
+    return this.logRequests ? observeExternalRequest('ASF', requestOptions, execute) : execute();
   }
 }

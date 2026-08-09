@@ -55,6 +55,15 @@
       type: text
       inputType: number
       defaultValue: 30
+    debug:
+      name: 调试配置
+      type: object
+      body:
+        http:
+          name: 记录HTTP请求日志
+          desp: 默认关闭。仅记录请求地址（不含查询参数）、状态码和耗时，不记录Cookie、Token、请求头或请求体。
+          type: boolean
+          defaultValue: false
     UA:
       name: 浏览器UA
       desp: 一般不需要修改

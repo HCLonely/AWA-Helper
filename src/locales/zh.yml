@@ -341,3 +341,101 @@ enterSecretKey: 请输入Secret密钥
 rememberSecret: 记住密钥
 cancel: 取消
 confirm: 确定
+
+### Runtime logging ###
+httpRequestStarted: '[HTTP:%s] %s %s 请求开始'
+httpRequestCompleted: '[HTTP:%s] %s %s 请求完成（状态码 %s，耗时 %sms）'
+httpRequestFailed: '[HTTP:%s] %s %s 请求失败（%s，耗时 %sms）'
+managerEnvironmentInitialized: '[Manager] 环境初始化完成（模式=%s，版本=%s）'
+managerWebUiDisabled: '[Manager] WebUI 已被配置禁用'
+managerWebUiStarting: '[Manager] WebUI 正在启动：%s:%s'
+managerOneShotSelected: '[Manager] 已选择单次运行模式，DailyQuest 将执行一次'
+managerStartingScheduler: '[Manager] 正在启动调度器'
+managerShutdownRequested: '[Manager] 收到关闭请求'
+managerShutdownStarted: '[Manager] 关闭流程开始'
+managerShutdownCompleted: '[Manager] 关闭流程完成'
+jobDuplicateStart: '[Manager] 忽略 %s 的重复启动请求：任务正在运行'
+jobDispatching: '[Manager] 正在派发任务：%s'
+jobStarted: '[Job] %s 已启动'
+jobFinished: '[Job] %s 状态：%s'
+managerJobFinished: '[Manager] 任务 %s 状态：%s'
+jobFinishedWithMessage: '[Job] %s 状态：%s，信息：%s'
+managerJobFinishedWithMessage: '[Manager] 任务 %s 状态：%s，信息：%s'
+jobStopIgnored: '[Manager] 忽略 %s 的停止请求：任务未运行'
+jobStopRequested: '[Manager] 正在请求停止任务：%s'
+jobCancellationRequested: '[Job] Manager 已请求取消任务'
+jobStoppingAll: '[Manager] 正在停止 %s 个运行中的任务'
+jobAllDisposed: '[Manager] 所有任务资源均已释放'
+jobStatus_completed: 已完成
+jobStatus_failed: 失败
+jobStatus_cancelled: 已取消
+jobCancelledMessage: 任务已取消
+jobStoppedByManager: 任务已被 Manager 停止
+schedulerStarted: '[Scheduler] 已启动，共 %s 个计划任务'
+schedulerStopping: '[Scheduler] 正在停止 %s 个计划任务'
+schedulerTriggered: '[Scheduler] 已触发：%s'
+schedulerTriggerCompleted: '[Scheduler] 触发执行完成：%s'
+schedulerTriggerFailed: '[Scheduler] 触发执行失败：%s，错误：%s'
+schedulerRegistered: '[Scheduler] 已注册 %s：%s'
+schedulerRestarting: '[Scheduler] 正在重启任务：%s'
+serverWebUiDisabled: '[Server] WebUI 服务已被配置禁用'
+serverAuthenticationRejected: '[Server] 已拒绝未认证请求：%s %s'
+serverJobStartRequested: '[Server] API 请求启动任务：%s'
+serverJobStartRejected: '[Server] 任务启动请求被拒绝：%s'
+serverJobStopRequested: '[Server] API 请求停止任务：%s'
+serverConfigUpdated: '[Server] 配置已更新，需要重启后生效'
+serverConfigRejected: '[Server] 配置更新被拒绝：%s'
+serverAwaCredentialsUpdated: '[Server] AWA 凭据已更新'
+serverTwitchCredentialsUpdated: '[Server] Twitch 凭据已更新'
+serverManagerShutdownRequested: '[Server] API 请求关闭 Manager'
+serverLegacyDailyQuestStart: '[Server] 旧版 API 请求启动 DailyQuest'
+serverLegacyDailyQuestStop: '[Server] 旧版 API 请求停止 DailyQuest'
+serverLegacyAchievementStart: '[Server] 旧版 API 请求启动 Achievement'
+serverLegacyAchievementStop: '[Server] 旧版 API 请求停止 Achievement'
+serverLegacyConfigUpdated: '[Server] 已通过旧版 API 更新配置，需要重启后生效'
+serverLegacyConfigRejected: '[Server] 旧版 API 配置更新被拒绝：%s'
+serverLegacyManagerShutdown: '[Server] 旧版 API 请求关闭 Manager'
+serverListening: '[Server] 正在监听 %s://%s:%s'
+serverStopSkipped: '[Server] 服务未监听，跳过停止操作'
+serverStopping: '[Server] 正在停止 WebUI 服务'
+serverStopped: '[Server] WebUI 服务已停止'
+achievementInitializing: '[Achievement] 正在初始化 AWA 会话和成就列表'
+achievementCatalogLoaded: '[Achievement] 已加载 %s 个成就'
+achievementActionableCount: '[Achievement] 可操作的未完成成就：%s 个'
+achievementTwitchSkippedNoCookie: '[Achievement] 未配置 Twitch Cookie，跳过 Twitch 跟踪'
+achievementTwitchSkippedNoMatch: '[Achievement] 没有匹配的未完成成就，跳过 Twitch 跟踪'
+achievementTwitchSkippedCancelled: '[Achievement] 任务已取消，跳过 Twitch 跟踪'
+achievementTwitchStarted: '[Achievement] Twitch 跟踪已启动，类型：%s'
+achievementTwitchStopRequested: '[Achievement] 已请求停止 Twitch 跟踪'
+achievementReleasingState: '[Achievement] 正在释放服务状态'
+artifactInitializing: '[Artifact] 正在初始化 AWA 会话'
+artifactSessionExpired: '[Artifact] 初始化失败：AWA 会话已过期'
+artifactInitialized: '[Artifact] 初始化完成'
+artifactProfileUrlMissing: '[Artifact] 初始化失败：未找到用户资料地址'
+artifactRequestedSet: '[Artifact] 请求的遗物组合：[%s]'
+artifactReplacementCount: '[Artifact] 需要替换 %s 个遗物'
+artifactNotInitialized: '[Artifact] 初始化完成前无法读取遗物'
+artifactLoadingEquipped: '[Artifact] 正在读取已装备遗物'
+artifactLoadFailed: '[Artifact] 读取已装备遗物失败：%s'
+artifactNoEquippedReturned: '[Artifact] 未返回任何已装备遗物'
+artifactEquippedSet: '[Artifact] 当前已装备遗物：[%s]'
+artifactInvalidReplacement: '[Artifact] 槽位 %s 的替换请求无效'
+artifactEquipping: '[Artifact] 正在将遗物 %s 装备到槽位 %s...'
+artifactEquipFailed: '[Artifact] 装备请求失败：%s'
+personalizationType_avatar: 头像
+personalizationType_border: 边框
+dailyQuestRefreshingPersonalization: '[DailyQuest] 正在刷新%s个性化设置...'
+dailyQuestViewingPosts: '[DailyQuest] 将从 %s 个候选帖子中最多浏览 3 个'
+dailyQuestSharingPosts: '[DailyQuest] 将从 %s 个候选帖子中最多分享 2 个'
+dailyQuestProcessingNews: '[DailyQuest] 正在处理推广新闻帖子 %s'
+dailyQuestNewsCompleted: '[DailyQuest] 推广新闻处理完成'
+dailyQuestMonitorStarted: '[DailyQuest] 任务状态监控已启动（间隔=%s分钟）'
+dailyQuestMonitorStopped: '[DailyQuest] 任务状态监控已停止'
+awaListenerFailed: 'AWA 监听失败：%s'
+twitchAuthorizationExpiredRetrying: Twitch 授权已过期，正在重试
+automaticInstallDisabled: 自动安装已禁用，请等待提供带签名的更新包。
+logStatusOk: 成功
+logStatusError: 错误
+logStatusFailed: 失败
+logStatusClosed: 已关闭
+logStatusFinished: 已结束

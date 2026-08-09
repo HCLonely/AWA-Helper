@@ -56,6 +56,10 @@ const validateHelperConfig = (value: unknown): Array<string> => {
   validateBoolean('TLSRejectUnauthorized', value.TLSRejectUnauthorized);
   validateBoolean('autoUpdate', value.autoUpdate);
   validateBoolean('joinSteamCommunityEvent', value.joinSteamCommunityEvent);
+  if (value.debug !== undefined) {
+    if (!isRecord(value.debug)) errors.push('debug must be an object');
+    else validateBoolean('debug.http', value.debug.http);
+  }
 
   /**
    * 检查 validate Non Negative Number 相关数据。

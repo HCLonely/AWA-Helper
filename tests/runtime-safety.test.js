@@ -23,6 +23,15 @@ test('log formatting removes configured secrets and Axios request headers', () =
   assert.match(output, /401/);
 });
 
+test('awaHost remains visible in logs while credentials stay redacted', () => {
+  const awaHost = 'example.awa-host.test';
+  const cookie = 'REMEMBERME=host-visibility-secret';
+  setLogSecrets({ awaHost, awaCookie: cookie });
+  const output = formatLogValue({ awaHost, awaCookie: cookie });
+  assert.match(output, new RegExp(awaHost.replaceAll('.', '\\.')));
+  assert.equal(output.includes(cookie), false);
+});
+
 test('WebUI logs preserve object details instead of coercing them to object Object', (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-webui-log-'));
   const originalDirectory = process.cwd();

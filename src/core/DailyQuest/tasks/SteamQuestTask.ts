@@ -25,7 +25,7 @@ export class SteamQuestTask {
   async run(signal?: AbortSignal): Promise<boolean> {
     const questLogger = new Logger(`${time()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`, false);
     const listings = await this.awa.steam.getSteamQuests().catch((error) => {
-      questLogger.log(chalk.red('Error'));
+      questLogger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return null;
     });
@@ -36,22 +36,22 @@ export class SteamQuestTask {
       if (prepared) quests.push(prepared);
       if (signal?.aborted) return true;
     }
-    questLogger.log(chalk.green(`OK (${quests.length})`));
+    questLogger.log(chalk.green(`${__('logStatusOk')} (${quests.length})`));
     const { eventAppId } = this;
     const requestedIds = [...quests.map((quest) => quest.id), ...(eventAppId ? [eventAppId] : [])];
     if (!requestedIds.length) return true;
 
     const licenseLogger = new Logger(`${time()}${__('addingLicense')}`, false);
     const licenseResult = await this.asf.licenses.add(requestedIds).catch((error) => {
-      licenseLogger.log(chalk.red('Error'));
+      licenseLogger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return null;
     });
     if (!licenseResult?.ok) return false;
-    licenseLogger.log(chalk.green('OK'));
+    licenseLogger.log(chalk.green(__('logStatusOk')));
     const matchLogger = new Logger(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
     const ownedIds = await this.asf.bot.getOwnedGames(requestedIds).catch((error) => {
-      matchLogger.log(chalk.red('Error'));
+      matchLogger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return null;
     });
@@ -61,7 +61,7 @@ export class SteamQuestTask {
       new Logger(`${time()}${chalk.yellow(__('noGamesAlert'))}`);
       return true;
     }
-    matchLogger.log(chalk.green(`OK (${ownedIds.length})`));
+    matchLogger.log(chalk.green(`${__('logStatusOk')} (${ownedIds.length})`));
     const trackedQuests = quests.filter((quest) => ownedIds.includes(quest.id));
     if (!trackedQuests.length && !eventAppId) return false;
     const playLogger = new Logger(`${time()}${__('usingASF', chalk.yellow('ASF'))}`, false);
@@ -70,10 +70,10 @@ export class SteamQuestTask {
       return null;
     });
     if (!playResult?.ok) {
-      playLogger.log(chalk.red('Error'));
+      playLogger.log(chalk.red(__('logStatusError')));
       return false;
     }
-    playLogger.log(chalk.green('OK'));
+    playLogger.log(chalk.green(__('logStatusOk')));
 
     try {
       if (!await sleep(10 * 60, signal)) return true;
@@ -95,7 +95,7 @@ export class SteamQuestTask {
         new Logger(error);
         return null;
       });
-      stopLogger.log(stopResult?.ok ? chalk.green('OK') : chalk.red('Error'));
+      stopLogger.log(stopResult?.ok ? chalk.green(__('logStatusOk')) : chalk.red(__('logStatusError')));
     }
   }
 

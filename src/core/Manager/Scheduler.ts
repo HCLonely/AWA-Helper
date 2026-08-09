@@ -23,14 +23,15 @@ class Scheduler {
    */
   start(): void {
     if (this.config.dailyQuestCron) {
-      this.schedule(this.config.dailyQuestCron, () => this.restart('dailyQuest'));
+      this.schedule('dailyQuest', this.config.dailyQuestCron, () => this.restart('dailyQuest'));
     }
     if (this.config.achievement.enable) {
-      this.schedule(this.config.achievement.cron, () => this.restart('achievement'));
+      this.schedule('achievement', this.config.achievement.cron, () => this.restart('achievement'));
     }
-    this.config.artifacts.forEach(({ cron: expression, ids }) => {
-      this.schedule(expression, () => this.restart('artifact', ids));
+    this.config.artifacts.forEach(({ cron: expression, ids }, index) => {
+      this.schedule(`artifact#${index + 1}`, expression, () => this.restart('artifact', ids));
     });
+    new Logger(`${time()}${__('schedulerStarted', String(this.tasks.length))}`);
   }
 
   /**
@@ -38,6 +39,7 @@ class Scheduler {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   stop(): void {
+    if (this.tasks.length > 0) new Logger(`${time()}${__('schedulerStopping', String(this.tasks.length))}`);
     this.tasks.forEach((task) => task.stop());
     this.tasks.length = 0;
   }
@@ -48,14 +50,18 @@ class Scheduler {
    * @param action - 满足条件时调用的处理函数，类型为 `() => Promise<unknown>`。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
-  private schedule(expression: string, action: () => Promise<unknown>): void {
+  private schedule(name: string, expression: string, action: () => Promise<unknown>): void {
     if (!cron.validate(expression)) {
       new Logger(`${time()}${__('invalidCronExpression', expression)}`);
       return;
     }
     this.tasks.push(cron.schedule(expression, () => {
-      void action().catch((error) => new Logger(error));
+      new Logger(`${time()}${__('schedulerTriggered', name)}`);
+      void action()
+        .then(() => new Logger(`${time()}${__('schedulerTriggerCompleted', name)}`))
+        .catch((error) => new Logger(`${time()}${__('schedulerTriggerFailed', name, error instanceof Error ? error.message : String(error))}`));
     }));
+    new Logger(`${time()}${__('schedulerRegistered', name, expression)}`);
   }
 
   /**
@@ -65,6 +71,7 @@ class Scheduler {
    * @returns `Promise<unknown>`，目标作业重新启动后产生的异步结果。
    */
   private async restart(name: 'dailyQuest' | 'achievement' | 'artifact', payload?: unknown): Promise<unknown> {
+    new Logger(`${time()}${__('schedulerRestarting', name)}`);
     await this.coordinator.stop(name);
     return this.coordinator.start(name, payload);
   }

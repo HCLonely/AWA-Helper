@@ -52,6 +52,9 @@ findLast(
     language: string
     timeout?: number
     logsExpire?: number
+    debug?: {
+      http?: boolean
+    }
     TLSRejectUnauthorized?: boolean
     autoUpdate?: boolean
     UA?: string

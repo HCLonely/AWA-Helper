@@ -81,12 +81,15 @@ export class AchievementService {
    * 初始化 Achievement Service 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string; }`。
    */
-  constructor({ awaCookie, proxy, awaHost, twitchCookie, userAgent }: { awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string }) {
+  constructor({ awaCookie, proxy, awaHost, twitchCookie, userAgent, logRequests }: {
+    awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string; logRequests?: boolean
+  }) {
     this.awa = new AWAApiClient({
       cookie: awaCookie,
       proxy,
       host: awaHost,
-      userAgent
+      userAgent,
+      logRequests
     });
     if (twitchCookie) {
       this.twitchCookie = twitchCookie;
@@ -138,9 +141,11 @@ export class AchievementService {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async init(): Promise<void> {
+    new Logger(`${time()}${__('achievementInitializing')}`);
     await this.awa.session.refresh();
     await this.awa.session.verify();
     this.Achievements = await this.awa.achievement.getAll();
+    new Logger(`${time()}${__('achievementCatalogLoaded', String(this.Achievements.length))}`);
     fs.mkdirSync('data/achievement', { recursive: true });
     if (!fs.existsSync(this.actionHistoryPath)) {
       atomicWriteFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
@@ -156,6 +161,7 @@ export class AchievementService {
     // addLog('开始匹配可操作的成就', TaskStatus.RUNNING);
 
     this.userAvatarInfo = null;
+    this.incompletedAchievements.length = 0;
     for (const availableAchievement of this.availableAchievements) {
       const achievement = this.Achievements.find((achievement) => achievement.description === availableAchievement && !achievement.completed);
       if (achievement) {
@@ -167,6 +173,7 @@ export class AchievementService {
       }
     }
     await this.watchTwitch(signal);
+    new Logger(`${time()}${__('achievementActionableCount', String(this.incompletedAchievements.length))}`);
     new Logger(`${time()}${__('doneMatch', chalk.yellow('Achievements'))}`);
   }
 
@@ -334,11 +341,23 @@ export class AchievementService {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async watchTwitch(signal?: AbortSignal): Promise<void> {
-    if (!this.twitchCookie || this.watchTwitchStatus.type.size === 0 || signal?.aborted) return;
+    if (!this.twitchCookie) {
+      new Logger(`${time()}${__('achievementTwitchSkippedNoCookie')}`);
+      return;
+    }
+    if (this.watchTwitchStatus.type.size === 0) {
+      new Logger(`${time()}${__('achievementTwitchSkippedNoMatch')}`);
+      return;
+    }
+    if (signal?.aborted) {
+      new Logger(`${time()}${__('achievementTwitchSkippedCancelled')}`);
+      return;
+    }
+    new Logger(`${time()}${__('achievementTwitchStarted', [...this.watchTwitchStatus.type].join(', '))}`);
     this.watchTwitchStatus.running = true;
     while (this.watchTwitchStatus.running && !signal?.aborted) {
       try {
-        this.twitch = new TwitchClient({ cookie: this.twitchCookie });
+        this.twitch = new TwitchClient({ cookie: this.twitchCookie, logRequests: this.awa.context.logRequests });
         await this.twitch.session.verify();
         if (!(await this.twitch.extensions.checkLinked()).ok) return;
         const { Hive, Nexus } = await this.awa.twitch.getAvailableStreams();
@@ -386,7 +405,7 @@ export class AchievementService {
     while (this.watchTwitchStatus.running && !signal?.aborted) {
       const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
       const result = await this.awa.twitch.sendTrack(info);
-      logger.log(result.success ? chalk.green(`OK (${result.state})`) : chalk.red(`Error (${result.state})`));
+      logger.log(result.success ? chalk.green(`${__('logStatusOk')} (${result.state})`) : chalk.red(`${__('logStatusError')} (${result.state})`));
       if (result.state === 'streamer_offline' || result.state === 'no_channel_found') {
         new Logger(`${time()}${chalk.blue(result.state === 'streamer_offline'
           ? __('liveOffline', chalk.yellow(info.channelId))
@@ -407,6 +426,7 @@ export class AchievementService {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   stop(): void {
+    if (this.watchTwitchStatus.running) new Logger(`${time()}${__('achievementTwitchStopRequested')}`);
     this.watchTwitchStatus.running = false;
   }
 
@@ -415,6 +435,7 @@ export class AchievementService {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   destroy(): void {
+    new Logger(`${time()}${__('achievementReleasingState')}`);
     this.twitch = null;
     this.watchTwitchStatus = {
       running: false,

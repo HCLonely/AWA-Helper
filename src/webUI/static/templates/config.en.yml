@@ -56,6 +56,15 @@
       type: text
       inputType: number
       defaultValue: 30
+    debug:
+      name: Debug configuration
+      type: object
+      body:
+        http:
+          name: Log HTTP requests
+          desp: Disabled by default. Logs only the URL without its query string, status code, and duration; never cookies, tokens, headers, or request bodies.
+          type: boolean
+          defaultValue: false
     UA:
       name: BrowserUA
       desp: Generally no modification is needed

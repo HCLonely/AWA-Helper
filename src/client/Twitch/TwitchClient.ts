@@ -2,16 +2,16 @@
  * @file src/client/Twitch/TwitchClient.ts
  * @description 聚合 Twitch 会话、频道和扩展接口，供观看任务编排调用。
  */
-import { TwitchContext } from './TwitchContext';
+import { TwitchContext, type TwitchContextOptions } from './TwitchContext';
 import { checkLinkedExtension, getChannelInfo, getChannelsInfo, getExtensionInfo, verifySession } from './APIs';
 
 export class TwitchClient {
   readonly context: TwitchContext;
   /**
    * 初始化 Twitch Client 实例。
-   * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ cookie: string; proxy?: proxy; userAgent?: string; }`。
+   * @param options - 创建实例或执行操作所需的配置选项，类型为 `TwitchContextOptions`。
    */
-  constructor(options: { cookie: string; proxy?: proxy; userAgent?: string }) { this.context = new TwitchContext(options); }
+  constructor(options: TwitchContextOptions) { this.context = new TwitchContext(options); }
   /**
    * 获取 session。
    * @returns `{ verify: () => Promise<string>; }`，session 相关操作组成的 API 集合。

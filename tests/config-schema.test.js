@@ -4,10 +4,21 @@ const { deepMerge, validateHelperConfig } = require('../dist/tools/config/Config
 const { Cookie } = require('../dist/tools');
 const { getManagerListenHost } = require('../dist/server/network');
 const { normalizeManagerConfig } = require('../dist/tools/config/ConfigMigration');
+const { defaultConfig } = require('../dist/tools/config/ConfigLoader');
 
 test('deepMerge preserves nested defaults', () => {
   const merged = deepMerge({ webUI: { enable: true, port: 3456, local: true } }, { webUI: { port: 8080 } });
   assert.deepEqual(merged, { webUI: { enable: true, port: 8080, local: true } });
+});
+
+test('HTTP debug logging defaults to disabled and validates as a boolean', () => {
+  assert.deepEqual(defaultConfig.debug, { http: false });
+  const base = {
+    language: 'zh', awaHost: 'www.alienwarearena.com', awaQuests: [], awaDailyQuestType: [], webUI: { enable: false }
+  };
+  assert.deepEqual(validateHelperConfig({ ...base, debug: { http: true } }), []);
+  assert.equal(validateHelperConfig({ ...base, debug: { http: 'true' } }).includes('debug.http must be a boolean'), true);
+  assert.equal(validateHelperConfig({ ...base, debug: true }).includes('debug must be an object'), true);
 });
 
 test('legacy managerServer scheduling migrates without a second port', () => {

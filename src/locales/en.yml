@@ -334,3 +334,101 @@ enterSecretKey: Please enter Secret key
 rememberSecret: Remember secret
 cancel: Cancel
 confirm: Confirm
+
+### Runtime logging ###
+httpRequestStarted: '[HTTP:%s] %s %s request started'
+httpRequestCompleted: '[HTTP:%s] %s %s request completed (status %s, %sms)'
+httpRequestFailed: '[HTTP:%s] %s %s request failed (%s, %sms)'
+managerEnvironmentInitialized: '[Manager] Environment initialized (mode=%s, version=%s)'
+managerWebUiDisabled: '[Manager] WebUI is disabled by configuration'
+managerWebUiStarting: '[Manager] WebUI is starting on %s:%s'
+managerOneShotSelected: '[Manager] One-shot mode selected; DailyQuest will run once'
+managerStartingScheduler: '[Manager] Starting scheduler'
+managerShutdownRequested: '[Manager] Shutdown requested'
+managerShutdownStarted: '[Manager] Shutdown sequence started'
+managerShutdownCompleted: '[Manager] Shutdown sequence completed'
+jobDuplicateStart: '[Manager] Ignored duplicate start request for %s; the job is already running'
+jobDispatching: '[Manager] Dispatching job: %s'
+jobStarted: '[Job] %s started'
+jobFinished: '[Job] %s status: %s'
+managerJobFinished: '[Manager] Job %s status: %s'
+jobFinishedWithMessage: '[Job] %s status: %s; message: %s'
+managerJobFinishedWithMessage: '[Manager] Job %s status: %s; message: %s'
+jobStopIgnored: '[Manager] Stop request ignored for %s; the job is not running'
+jobStopRequested: '[Manager] Requesting job stop: %s'
+jobCancellationRequested: '[Job] Cancellation requested by Manager'
+jobStoppingAll: '[Manager] Stopping %s active job(s)'
+jobAllDisposed: '[Manager] All job resources have been disposed'
+jobStatus_completed: completed
+jobStatus_failed: failed
+jobStatus_cancelled: cancelled
+jobCancelledMessage: Job cancelled
+jobStoppedByManager: Job stopped by Manager
+schedulerStarted: '[Scheduler] Started with %s schedule(s)'
+schedulerStopping: '[Scheduler] Stopping %s schedule(s)'
+schedulerTriggered: '[Scheduler] Triggered: %s'
+schedulerTriggerCompleted: '[Scheduler] Trigger completed: %s'
+schedulerTriggerFailed: '[Scheduler] Trigger failed: %s; error: %s'
+schedulerRegistered: '[Scheduler] Registered %s: %s'
+schedulerRestarting: '[Scheduler] Restarting job: %s'
+serverWebUiDisabled: '[Server] WebUI server is disabled by configuration'
+serverAuthenticationRejected: '[Server] Rejected unauthenticated request: %s %s'
+serverJobStartRequested: '[Server] Job start requested through API: %s'
+serverJobStartRejected: '[Server] Job start request rejected: %s'
+serverJobStopRequested: '[Server] Job stop requested through API: %s'
+serverConfigUpdated: '[Server] Configuration updated; restart required'
+serverConfigRejected: '[Server] Configuration update rejected: %s'
+serverAwaCredentialsUpdated: '[Server] AWA credentials updated'
+serverTwitchCredentialsUpdated: '[Server] Twitch credentials updated'
+serverManagerShutdownRequested: '[Server] Manager shutdown requested through API'
+serverLegacyDailyQuestStart: '[Server] DailyQuest start requested through legacy API'
+serverLegacyDailyQuestStop: '[Server] DailyQuest stop requested through legacy API'
+serverLegacyAchievementStart: '[Server] Achievement start requested through legacy API'
+serverLegacyAchievementStop: '[Server] Achievement stop requested through legacy API'
+serverLegacyConfigUpdated: '[Server] Configuration updated through legacy API; restart required'
+serverLegacyConfigRejected: '[Server] Legacy configuration update rejected: %s'
+serverLegacyManagerShutdown: '[Server] Manager shutdown requested through legacy API'
+serverListening: '[Server] Listening on %s://%s:%s'
+serverStopSkipped: '[Server] Stop skipped; server is not listening'
+serverStopping: '[Server] Stopping WebUI server'
+serverStopped: '[Server] WebUI server stopped'
+achievementInitializing: '[Achievement] Initializing AWA session and achievement catalog'
+achievementCatalogLoaded: '[Achievement] Loaded %s achievement(s)'
+achievementActionableCount: '[Achievement] Actionable incomplete achievements: %s'
+achievementTwitchSkippedNoCookie: '[Achievement] Twitch tracking skipped: Twitch cookie is not configured'
+achievementTwitchSkippedNoMatch: '[Achievement] Twitch tracking skipped: no matching incomplete achievement'
+achievementTwitchSkippedCancelled: '[Achievement] Twitch tracking skipped: job was cancelled'
+achievementTwitchStarted: '[Achievement] Twitch tracking started for: %s'
+achievementTwitchStopRequested: '[Achievement] Twitch tracking stop requested'
+achievementReleasingState: '[Achievement] Releasing service state'
+artifactInitializing: '[Artifact] Initializing AWA session'
+artifactSessionExpired: '[Artifact] Initialization failed: AWA session expired'
+artifactInitialized: '[Artifact] Initialization completed'
+artifactProfileUrlMissing: '[Artifact] Initialization failed: profile URL not found'
+artifactRequestedSet: '[Artifact] Requested artifact set: [%s]'
+artifactReplacementCount: '[Artifact] %s replacement(s) required'
+artifactNotInitialized: '[Artifact] Cannot load artifacts before initialization'
+artifactLoadingEquipped: '[Artifact] Loading equipped artifacts'
+artifactLoadFailed: '[Artifact] Failed to load equipped artifacts: %s'
+artifactNoEquippedReturned: '[Artifact] No equipped artifacts were returned'
+artifactEquippedSet: '[Artifact] Equipped artifacts: [%s]'
+artifactInvalidReplacement: '[Artifact] Invalid replacement request for slot %s'
+artifactEquipping: '[Artifact] Equipping artifact %s in slot %s...'
+artifactEquipFailed: '[Artifact] Equip request failed: %s'
+personalizationType_avatar: avatar
+personalizationType_border: border
+dailyQuestRefreshingPersonalization: '[DailyQuest] Refreshing %s personalization...'
+dailyQuestViewingPosts: '[DailyQuest] Viewing up to 3 post(s) from %s candidate(s)'
+dailyQuestSharingPosts: '[DailyQuest] Sharing up to 2 post(s) from %s candidate(s)'
+dailyQuestProcessingNews: '[DailyQuest] Processing promotional news post %s'
+dailyQuestNewsCompleted: '[DailyQuest] Promotional news processing completed'
+dailyQuestMonitorStarted: '[DailyQuest] Quest status monitor started (interval=%sm)'
+dailyQuestMonitorStopped: '[DailyQuest] Quest status monitor stopped'
+awaListenerFailed: 'AWA listener failed: %s'
+twitchAuthorizationExpiredRetrying: Twitch authorization expired, retrying
+automaticInstallDisabled: Automatic installation is disabled until signed updates are available.
+logStatusOk: OK
+logStatusError: Error
+logStatusFailed: Failed
+logStatusClosed: Closed
+logStatusFinished: Finished

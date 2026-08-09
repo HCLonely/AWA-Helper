@@ -18,7 +18,8 @@ import type { LoadedConfig } from '../tools/config/types';
 import type { JobName } from '../core/Manager/Job';
 import type { JobCoordinator } from '../core/Manager/JobCoordinator';
 import { decodeManagerWebSocketSecret } from './websocket/authenticate';
-import { getLogFilePath, isLogScope } from '../tools/logging';
+import { getLogFilePath, isLogScope, Logger } from '../tools/logging';
+import { time } from '../tools/common';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import managerHtml from '../webUI/dist/index.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -59,7 +60,10 @@ class UnifiedServer {
    */
   async start(): Promise<void> {
     const { raw, path: configPath } = this.loaded;
-    if (raw.webUI?.enable === false) return;
+    if (raw.webUI?.enable === false) {
+      new Logger(`${time()}${__('serverWebUiDisabled')}`);
+      return;
+    }
     const app = express();
     app.disable('x-powered-by');
     app.use(express.json({ limit: '64kb' }));
@@ -119,6 +123,7 @@ class UnifiedServer {
      */
     const authenticate = (req: express.Request, res: express.Response): boolean => {
       if (isValidSecret(requestSecret(req))) return true;
+      new Logger(`${time()}${__('serverAuthenticationRejected', req.method, req.path)}`);
       res.status(401).json({ error: 'Authentication required' });
       return false;
     };
@@ -147,14 +152,17 @@ class UnifiedServer {
       if (!authenticate(req, res)) return;
       try {
         const name = req.params.name as JobName;
+        new Logger(`${time()}${__('serverJobStartRequested', name)}`);
         void this.coordinator.start(name, req.body?.payload);
         res.status(202).json(this.coordinator.states.get(name));
       } catch (error) {
+        new Logger(`${time()}${__('serverJobStartRejected', req.params.name)}`);
         res.status(404).json({ error: error instanceof Error ? error.message : String(error) });
       }
     });
     app.post('/api/jobs/:name/stop', async (req, res) => {
       if (!authenticate(req, res)) return;
+      new Logger(`${time()}${__('serverJobStopRequested', req.params.name)}`);
       await this.coordinator.stop(req.params.name as JobName);
       res.json({ status: 'success' });
     });
@@ -170,8 +178,10 @@ class UnifiedServer {
         const errors = validateHelperConfig(parsed);
         if (errors.length > 0) return res.status(422).json({ errors });
         atomicWriteFileSync(configPath, source);
+        new Logger(`${time()}${__('serverConfigUpdated')}`);
         return res.json({ status: 'success', restartRequired: true });
       } catch (error) {
+        new Logger(`${time()}${__('serverConfigRejected', error instanceof Error ? error.name : __('unknownError'))}`);
         return res.status(422).json({ error: error instanceof Error ? error.message : String(error) });
       }
     });
@@ -179,6 +189,7 @@ class UnifiedServer {
       if (!authenticate(req, res)) return;
       if (typeof req.body?.cookie !== 'string' || !req.body.cookie.trim()) return res.status(400).json({ error: 'cookie is required' });
       updateYamlFieldsSync(configPath, { awaCookie: req.body.cookie, ...(req.body.userAgent ? { UA: req.body.userAgent } : {}) });
+      new Logger(`${time()}${__('serverAwaCredentialsUpdated')}`);
       return res.json({ status: 'success' });
     });
     app.post(['/api/cookies/twitch', '/updateTwitchCookie'], (req, res) => {
@@ -187,6 +198,7 @@ class UnifiedServer {
         return res.status(422).json({ error: 'invalid Twitch cookie' });
       }
       updateYamlFieldsSync(configPath, { twitchCookie: req.body.cookie });
+      new Logger(`${time()}${__('serverTwitchCredentialsUpdated')}`);
       return res.json({ status: 'success' });
     });
     /**
@@ -213,6 +225,7 @@ class UnifiedServer {
     });
     app.post('/api/manager/shutdown', (req, res) => {
       if (!authenticate(req, res)) return;
+      new Logger(`${time()}${__('serverManagerShutdownRequested')}`);
       res.json({ status: 'success' });
       setImmediate(this.requestShutdown);
     });
@@ -220,16 +233,19 @@ class UnifiedServer {
     // Legacy API aliases retained for one compatibility cycle.
     app.post('/start', async (req, res) => {
       if (!authenticate(req, res)) return;
+      new Logger(`${time()}${__('serverLegacyDailyQuestStart')}`);
       void this.coordinator.start('dailyQuest');
       res.send('success');
     });
     app.post('/stop', async (req, res) => {
       if (!authenticate(req, res)) return;
+      new Logger(`${time()}${__('serverLegacyDailyQuestStop')}`);
       await this.coordinator.stop('dailyQuest');
       res.send('success');
     });
     app.post('/startArchievement', async (req, res) => {
       if (!authenticate(req, res)) return;
+      new Logger(`${time()}${__('serverLegacyAchievementStart')}`);
       fs.mkdirSync(path.join('data', 'achievement'), { recursive: true });
       fs.writeFileSync(path.join('data', 'achievement', 'enabled'), '');
       void this.coordinator.start('achievement');
@@ -237,6 +253,7 @@ class UnifiedServer {
     });
     app.post('/stopArchievement', async (req, res) => {
       if (!authenticate(req, res)) return;
+      new Logger(`${time()}${__('serverLegacyAchievementStop')}`);
       await this.coordinator.stop('achievement');
       fs.rmSync(path.join('data', 'achievement', 'enabled'), { force: true });
       res.send('success');
@@ -256,14 +273,17 @@ class UnifiedServer {
       try {
         validateYaml(req.body?.config);
         atomicWriteFileSync(configPath, req.body.config);
+        new Logger(`${time()}${__('serverLegacyConfigUpdated')}`);
         res.send('success');
       } catch (error) {
+        new Logger(`${time()}${__('serverLegacyConfigRejected', error instanceof Error ? error.name : __('unknownError'))}`);
         res.status(422).json({ error: error instanceof Error ? error.message : String(error) });
       }
     });
     app.post('/update', (req, res) => authenticate(req, res) && res.status(501).send('Automatic installation is disabled; install a signed release manually.'));
     app.post('/stopManager', (req, res) => {
       if (!authenticate(req, res)) return;
+      new Logger(`${time()}${__('serverLegacyManagerShutdown')}`);
       res.send('success');
       setImmediate(this.requestShutdown);
     });
@@ -286,6 +306,7 @@ class UnifiedServer {
       server.once('error', reject);
       server.listen(port, host);
     });
+    new Logger(`${time()}${__('serverListening', raw.webUI?.ssl?.cert ? 'https' : 'http', host, String(port))}`);
   }
 
   /**
@@ -295,8 +316,13 @@ class UnifiedServer {
   async stop(): Promise<void> {
     const { server } = this;
     this.server = undefined;
-    if (!server?.listening) return;
+    if (!server?.listening) {
+      new Logger(`${time()}${__('serverStopSkipped')}`);
+      return;
+    }
+    new Logger(`${time()}${__('serverStopping')}`);
     await new Promise<void>((resolve) => server.close(() => resolve()));
+    new Logger(`${time()}${__('serverStopped')}`);
   }
 }
 

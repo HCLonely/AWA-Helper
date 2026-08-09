@@ -24,13 +24,15 @@ class ArtifactService {
    * @param configPath - 待读取或写入文件的路径，类型为 `string`。
    */
   constructor(configPath: string) {
-    const { awaCookie, awaHost, proxy, UA }: { awaCookie?: string; awaHost?: string; proxy?: proxy; UA?: string } = parse(fs.readFileSync(configPath, 'utf8'));
+    const { awaCookie, awaHost, proxy, UA, debug }: {
+      awaCookie?: string; awaHost?: string; proxy?: proxy; UA?: string; debug?: { http?: boolean }
+    } = parse(fs.readFileSync(configPath, 'utf8'));
     if (!awaCookie) {
       new Logger(time() + chalk.yellow(__('missingAwaCookie')));
       this.initted = false;
       return;
     }
-    this.awa = new AWAApiClient({ cookie: awaCookie, host: awaHost, proxy, userAgent: UA });
+    this.awa = new AWAApiClient({ cookie: awaCookie, host: awaHost, proxy, userAgent: UA, logRequests: debug?.http === true });
   }
 
   /**
@@ -45,12 +47,17 @@ class ArtifactService {
    */
   async init(): Promise<boolean> {
     if (!this.awa) return false;
+    new Logger(`${time()}${__('artifactInitializing')}`);
     try {
       await refreshSession(this.awa.context);
       const html = await getControlCenter(this.awa.context);
       const $ = load(html);
-      if ($('a.nav-link-login').length) return false;
+      if ($('a.nav-link-login').length) {
+        new Logger(`${time()}${__('artifactSessionExpired')}`);
+        return false;
+      }
       this.userProfileUrl = html.match(/user_profile_url.*?=.*?"(.+?)"/)?.[1];
+      new Logger(`${time()}${this.userProfileUrl ? __('artifactInitialized') : __('artifactProfileUrlMissing')}`);
       return !!this.userProfileUrl;
     } catch (error) {
       new Logger(error instanceof AWAError ? error : String(error));
@@ -64,12 +71,14 @@ class ArtifactService {
    * @returns `Promise<boolean>`，表示 start 检查是否通过。
    */
   async start(newArtifacts: number[]): Promise<boolean> {
+    new Logger(`${time()}${__('artifactRequestedSet', newArtifacts.join('|'))}`);
     if (!await this.getArtifactsInfo()) return false;
     const oldSet = new Set(this.oldArtifacts);
     const newSet = new Set(newArtifacts);
     const replacements = newArtifacts.filter((artifact) => !oldSet.has(artifact));
     const unchangedPositions = this.oldArtifacts.filter((artifact) => newSet.has(artifact)).map((artifact) => this.oldArtifacts.indexOf(artifact));
     const positions = [0, 1, 2].filter((index) => !unchangedPositions.includes(index)).map((index) => index + 1);
+    new Logger(`${time()}${__('artifactReplacementCount', String(replacements.length))}`);
     for (let index = 0; index < positions.length; index++) {
       if (!await this.changeArtifact(replacements[index], positions[index])) return false;
     }
@@ -85,15 +94,26 @@ class ArtifactService {
    * @returns `Promise<boolean>`，表示 getArtifactsInfo 检查是否通过。
    */
   async getArtifactsInfo(): Promise<boolean> {
-    if (!this.awa || !this.userProfileUrl) return false;
-    const artifacts = await this.awa.artifacts.getEquipped(this.userProfileUrl).catch(() => []);
-    if (!artifacts.length) return false;
+    if (!this.awa || !this.userProfileUrl) {
+      new Logger(`${time()}${__('artifactNotInitialized')}`);
+      return false;
+    }
+    new Logger(`${time()}${__('artifactLoadingEquipped')}`);
+    const artifacts = await this.awa.artifacts.getEquipped(this.userProfileUrl).catch((error) => {
+      new Logger(`${time()}${__('artifactLoadFailed', error instanceof Error ? error.name : __('unknownError'))}`);
+      return [];
+    });
+    if (!artifacts.length) {
+      new Logger(`${time()}${__('artifactNoEquippedReturned')}`);
+      return false;
+    }
     this.oldArtifacts = artifacts.map(({ id }) => id);
     this.activePerks = artifacts.map(({ perkTextShort }) => {
       const key = perkTextShort.replace(/\d+/, 's%');
       const value = perkTextShort.match(/\d+/)?.[0] || '';
       return `* ${__(key, value)}`;
     }).join('\n');
+    new Logger(`${time()}${__('artifactEquippedSet', this.oldArtifacts.join('|'))}`);
     return true;
   }
 
@@ -104,8 +124,20 @@ class ArtifactService {
    * @returns `Promise<boolean>`，表示 changeArtifact 检查是否通过。
    */
   async changeArtifact(id: number, position: number): Promise<boolean> {
-    if (!this.awa || !this.userProfileUrl || !id || !position) return false;
-    return (await this.awa.artifacts.equip(this.userProfileUrl, id, position)).ok;
+    if (!this.awa || !this.userProfileUrl || !id || !position) {
+      new Logger(`${time()}${__('artifactInvalidReplacement', String(position))}`);
+      return false;
+    }
+    const logger = new Logger(`${time()}${__('artifactEquipping', String(id), String(position))}`, false);
+    try {
+      const result = await this.awa.artifacts.equip(this.userProfileUrl, id, position);
+      logger.log(result.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${result.state})`));
+      return result.ok;
+    } catch (error) {
+      logger.log(chalk.red(__('logStatusError')));
+      new Logger(`${time()}${__('artifactEquipFailed', error instanceof Error ? error.name : __('unknownError'))}`);
+      return false;
+    }
   }
 }
 

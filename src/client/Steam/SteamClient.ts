@@ -12,11 +12,11 @@ export class SteamClient {
    * 初始化 Steam Client 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ asfProtocol: string; asfHost: string; asfPort: number; asfPassword?: string; asfBotname: string; proxy?: proxy; }`。
    */
-  constructor({ asfProtocol, asfHost, asfPort, asfPassword = '', asfBotname, proxy }: {
-    asfProtocol: string; asfHost: string; asfPort: number; asfPassword?: string; asfBotname: string; proxy?: proxy
+  constructor({ asfProtocol, asfHost, asfPort, asfPassword = '', asfBotname, proxy, logRequests }: {
+    asfProtocol: string; asfHost: string; asfPort: number; asfPassword?: string; asfBotname: string; proxy?: proxy; logRequests?: boolean
   }) {
     this.context = new ASFContext({
-      protocol: asfProtocol, host: asfHost, port: asfPort, password: asfPassword, botName: asfBotname, proxy
+      protocol: asfProtocol, host: asfHost, port: asfPort, password: asfPassword, botName: asfBotname, proxy, logRequests
     });
   }
 

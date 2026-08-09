@@ -110,6 +110,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     language: 'zh',
     timeout: 86400,
     logsExpire: 30,
+    debug: { http: false },
     webUI: {
       enable: false,
       port: 3456,
@@ -155,6 +156,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     language,
     timeout,
     logsExpire,
+    debug,
     autoUpdate,
     awaCookie,
     awaHost,
@@ -190,7 +192,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     if (logsExpire) {
       const logger = new Logger(`${time()}${__('clearingLogs')}`, false);
       cleanupExpiredLogs('logs', logsExpire);
-      logger.log(chalk.green('OK'));
+      logger.log(chalk.green(__('logStatusOk')));
     }
   }
   // 设置推送代理
@@ -233,7 +235,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     proxy,
     joinSteamCommunityEvent,
     getStarted: awaQuests.includes('getStarted'),
-    userAgent
+    userAgent,
+    logRequests: debug?.http === true
   });
   runtimeHolder.current = runtime;
 
@@ -283,17 +286,17 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     await runtime.loadTwitchBonus();
     if (runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
       if (twitchCookie) {
-        const twitch = new TwitchClient({ cookie: twitchCookie, proxy });
+        const twitch = new TwitchClient({ cookie: twitchCookie, proxy, logRequests: debug?.http === true });
         const twitchLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
         let twitchReady = false;
         try {
           await twitch.session.verify();
-          twitchLogger.log(chalk.green('OK'));
+          twitchLogger.log(chalk.green(__('logStatusOk')));
           const authorizationLogger = new Logger(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
           twitchReady = (await twitch.extensions.checkLinked()).ok;
           authorizationLogger.log(twitchReady ? chalk.green(__('authorized')) : chalk.red(__('notAuthorized')));
         } catch (error) {
-          twitchLogger.log(chalk.red('Error'));
+          twitchLogger.log(chalk.red(__('logStatusError')));
           new Logger(error);
         }
         if (twitchReady) {
@@ -328,15 +331,16 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
           asfPort: asfPort as number,
           asfPassword,
           asfBotname: asfBotname as string,
-          proxy
+          proxy,
+          logRequests: debug?.http === true
         });
         const asfLogger = new Logger(`${time()}${__('initing', chalk.yellow('ASF'))}`, false);
         let asfReady = false;
         try {
           asfReady = (await steamQuest.session.verify()).ok;
-          asfLogger.log(asfReady ? chalk.green('OK') : chalk.red('Error'));
+          asfLogger.log(asfReady ? chalk.green(__('logStatusOk')) : chalk.red(__('logStatusError')));
         } catch (error) {
-          asfLogger.log(chalk.red('Error'));
+          asfLogger.log(chalk.red(__('logStatusError')));
           new Logger(error);
         }
         if (asfReady) {
@@ -349,7 +353,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   }
 
   void runtime.monitor(shutdownController.signal).catch((error) => {
-    new Logger(`${time()}AWA listener failed: ${error instanceof Error ? error.message : String(error)}`);
+    new Logger(`${time()}${__('awaListenerFailed', error instanceof Error ? error.message : String(error))}`);
   });
   activeTaskCompletion = Promise.allSettled(quests.map(({ promise }) => promise));
   const questResults = await activeTaskCompletion;

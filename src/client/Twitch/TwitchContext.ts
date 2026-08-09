@@ -4,7 +4,17 @@
  */
 import type { RawAxiosRequestHeaders } from 'axios';
 import { Cookie, http } from '../../tools';
+import { observeExternalRequest } from '../../tools/logging';
 import { createHttpTransport, createProxyAgent, DEFAULT_USER_AGENT, type CookieStore, type HttpTransport } from '../shared';
+
+export interface TwitchContextOptions {
+  cookie: string;
+  proxy?: proxy;
+  userAgent?: string;
+  transport?: HttpTransport;
+  /** 是否记录真实网络请求；注入测试 transport 时默认关闭。 */
+  logRequests?: boolean;
+}
 
 export class TwitchContext {
   readonly cookie: CookieStore;
@@ -13,14 +23,16 @@ export class TwitchContext {
   clientId?: string;
 
   readonly transport: HttpTransport;
+  private readonly logRequests: boolean;
 
   /**
    * 初始化 Twitch Context 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ cookie: string; proxy?: proxy; userAgent?: string; transport?: HttpTransport; }`。
    */
-  constructor({ cookie, proxy, userAgent, transport }: { cookie: string; proxy?: proxy; userAgent?: string; transport?: HttpTransport }) {
+  constructor({ cookie, proxy, userAgent, transport, logRequests }: TwitchContextOptions) {
     this.cookie = new Cookie(cookie);
     this.transport = transport || createHttpTransport(http);
+    this.logRequests = logRequests ?? false;
     this.headers = {
       Authorization: `OAuth ${this.cookie.get('auth-token')}`,
       'Content-Type': 'text/plain;charset=UTF-8',
@@ -43,6 +55,7 @@ export class TwitchContext {
   request<T = unknown>(options: myAxiosConfig) {
     const requestOptions: myAxiosConfig = { ...options, headers: { ...this.headers, ...options.headers } };
     if (this.httpsAgent && !requestOptions.httpsAgent) requestOptions.httpsAgent = this.httpsAgent;
-    return this.transport.request<T>(requestOptions);
+    const execute = () => this.transport.request<T>(requestOptions);
+    return this.logRequests ? observeExternalRequest('Twitch', requestOptions, execute) : execute();
   }
 }

@@ -5,6 +5,7 @@
 import { format } from 'util';
 
 const sensitiveKeyPattern = /(authorization|authentication|cookie|password|secret|token|api[-_]?key|proxy[-_]?auth)/i;
+const visibleConfigKeyPattern = /^awaHost$/i;
 
 /**
  * 处理 redact Known Secrets 相关逻辑。
@@ -37,7 +38,7 @@ const collectLogSecrets = (value: unknown): Array<string> => {
    */
   const visit = (item: unknown, key = ''): void => {
     if (typeof item === 'string') {
-      if (sensitiveKeyPattern.test(key) && item.length > 5) {
+      if (!visibleConfigKeyPattern.test(key) && sensitiveKeyPattern.test(key) && item.length > 5) {
         secrets.add(item);
         if (/cookie/i.test(key)) {
           item.split(';').forEach((part) => {
@@ -94,7 +95,7 @@ const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknow
   if (Array.isArray(value)) return value.map((item) => sanitizeObject(item, visited));
   return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => [
     key,
-    sensitiveKeyPattern.test(key) ? '********' : sanitizeObject(item, visited)
+    !visibleConfigKeyPattern.test(key) && sensitiveKeyPattern.test(key) ? '********' : sanitizeObject(item, visited)
   ]));
 };
 

@@ -20,7 +20,7 @@ import { getLogFilePath } from '../../tools/logging';
 
 export interface DailyQuestRuntimeOptions {
   awaCookie: string; host: string; proxy?: proxy; userAgent?: string;
-  getStarted?: boolean; joinSteamCommunityEvent?: boolean;
+  getStarted?: boolean; joinSteamCommunityEvent?: boolean; logRequests?: boolean;
 }
 
 export type DailyQuestRefreshResult =
@@ -38,7 +38,13 @@ export class DailyQuestRuntime {
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRuntimeOptions`。
    */
   constructor(options: DailyQuestRuntimeOptions) {
-    this.awa = new AWAApiClient({ cookie: options.awaCookie, host: options.host, proxy: options.proxy, userAgent: options.userAgent });
+    this.awa = new AWAApiClient({
+      cookie: options.awaCookie,
+      host: options.host,
+      proxy: options.proxy,
+      userAgent: options.userAgent,
+      logRequests: options.logRequests
+    });
     this.getStarted = !!options.getStarted;
     this.joinSteamCommunityEvent = !!options.joinSteamCommunityEvent;
   }
@@ -57,10 +63,10 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('updatingCookie', chalk.yellow('AWA Cookie'))}...`, false);
     try {
       await refreshSession(this.awa.context);
-      logger.log(chalk.green('OK'));
+      logger.log(chalk.green(__('logStatusOk')));
       return this.updateDailyQuests(true);
     } catch (error) {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       if (error instanceof AWAError && error.statusCode === 610) return { ok: false, reason: 'network-rejected', error };
       if (error instanceof AWAError && error.statusCode === 602) return { ok: false, reason: 'session-expired', error };
@@ -94,7 +100,7 @@ export class DailyQuestRuntime {
       this.state.signArp = snapshot.signArp;
       this.state.promotionalCalendarInfo = snapshot.promotionalCalendarInfo;
       this.state.posts = snapshot.posts;
-      logger.log(chalk.green('OK'));
+      logger.log(chalk.green(__('logStatusOk')));
 
       if (verify && snapshot.signArp.daily) new Logger(`${time()}${__('dailySign', chalk.green(snapshot.signArp.daily))}`);
       if (verify && snapshot.signArp.monthly) new Logger(`${time()}${__('monthlySign', chalk.green(snapshot.signArp.monthly))}`);
@@ -107,9 +113,9 @@ export class DailyQuestRuntime {
           const itemLogger = new Logger(`${time()}${__('doingGetStartedQuest', chalk.yellow(item.name))}`, false);
           try {
             const completed = await completeGetStartedItem(this.awa.context, item.link);
-            itemLogger.log(completed.ok ? chalk.green('OK') : chalk.red(`Error (${completed.state})`));
+            itemLogger.log(completed.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${completed.state})`));
           } catch (error) {
-            itemLogger.log(chalk.red('Error'));
+            itemLogger.log(chalk.red(__('logStatusError')));
             new Logger(error);
           }
         }
@@ -127,7 +133,7 @@ export class DailyQuestRuntime {
       new Logger({ type: 'questInfo', data: report });
       return { ok: true };
     } catch (error) {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return { ok: false, reason: 'request-failed', error };
     }
@@ -142,10 +148,10 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('gettingTwitchTech')}`, false);
     try {
       this.state.additionalTwitchARP = await getTwitchBonus(this.awa.context, this.state.userProfileUrl);
-      logger.log(chalk.green('OK'));
+      logger.log(chalk.green(__('logStatusOk')));
       return true;
     } catch (error) {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return false;
     }
@@ -157,8 +163,11 @@ export class DailyQuestRuntime {
    * @returns `Promise<boolean>`，表示 refreshPersonalization 检查是否通过。
    */
   async refreshPersonalization(type: 'avatar' | 'border'): Promise<boolean> {
+    const logger = new Logger(`${time()}${__('dailyQuestRefreshingPersonalization', __(`personalizationType_${type}`))}`, false);
     const selection = await this.awa.personalization.getAvatarItems(type);
-    return selection.found ? (await this.awa.personalization.saveAvatar(selection.value.userAvatarInfo)).ok : false;
+    const success = selection.found ? (await this.awa.personalization.saveAvatar(selection.value.userAvatarInfo)).ok : false;
+    logger.log(success ? chalk.green(__('logStatusOk')) : chalk.red(__('logStatusError')));
+    return success;
   }
 
   /**
@@ -170,10 +179,10 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('doingTask', chalk.yellow(questId))}`, false);
     try {
       const claimed = await claimQuestAward(this.awa.context, questId);
-      logger.log(claimed.ok ? chalk.green('OK') : chalk.red(`Error (${claimed.state})`));
+      logger.log(claimed.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${claimed.state})`));
       return claimed.ok;
     } catch (error) {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return false;
     }
@@ -187,9 +196,9 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('visitingPage', chalk.yellow(link))}`, false);
     try {
       await openPage(this.awa.context, link);
-      logger.log(chalk.green('OK'));
+      logger.log(chalk.green(__('logStatusOk')));
     } catch (error) {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
     }
   }
@@ -204,10 +213,10 @@ export class DailyQuestRuntime {
     try {
       const viewed = await recordPostView(this.awa.context, postId);
       if (viewed.ok) await sendTimeOnSiteTrack(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${postId}`);
-      logger.log(viewed.ok ? chalk.green('OK') : chalk.red(`Error (${viewed.state})`));
+      logger.log(viewed.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${viewed.state})`));
       return viewed.ok;
     } catch (error) {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return false;
     }
@@ -218,6 +227,7 @@ export class DailyQuestRuntime {
    * @returns `Promise<boolean>`，表示 viewPosts 检查是否通过。
    */
   async viewPosts(postIds = this.state.posts): Promise<boolean> {
+    new Logger(`${time()}${__('dailyQuestViewingPosts', String(postIds.length))}`);
     for (const postId of postIds.slice(0, 3)) { await this.viewPost(postId); await sleep(random(1, 5)); }
     return postIds.length > 0;
   }
@@ -227,13 +237,14 @@ export class DailyQuestRuntime {
    * @returns `Promise<boolean>`，表示 sharePosts 检查是否通过。
    */
   async sharePosts(postIds = this.state.posts): Promise<boolean> {
+    new Logger(`${time()}${__('dailyQuestSharingPosts', String(postIds.length))}`);
     for (const postId of postIds.slice(0, 2)) {
       const logger = new Logger(`${time()}${__('sharingPost', chalk.yellow(postId))}`, false);
       try {
         const shared = await sharePost(this.awa.context, postId);
-        logger.log(shared.ok ? chalk.green('OK') : chalk.red(`Error (${shared.state})`));
+        logger.log(shared.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${shared.state})`));
       } catch (error) {
-        logger.log(chalk.red('Error'));
+        logger.log(chalk.red(__('logStatusError')));
         new Logger(error);
       }
       await sleep(random(1, 5));
@@ -250,11 +261,11 @@ export class DailyQuestRuntime {
     try {
       const replied = await replyPost(this.awa.context, postId);
       this.state.postReplied = replied.ok;
-      logger.log(replied.ok ? chalk.green('OK') : chalk.red(`Error (${replied.state})`));
+      logger.log(replied.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${replied.state})`));
       return replied.ok;
     } catch (error) {
       this.state.postReplied = false;
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return false;
     }
@@ -265,6 +276,7 @@ export class DailyQuestRuntime {
    */
   async viewNews(): Promise<void> {
     const newsId = '2162951';
+    new Logger(`${time()}${__('dailyQuestProcessingNews', newsId)}`);
     const html = await openPage(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${newsId}/boards/awa-information/News/arp-6-0`);
     const $ = load(html);
     for (const script of $('script').toArray().flatMap((element) => ($(element).html()?.includes('/ajax/promo/view/') ? [$(element).html() || ''] : []))) {
@@ -273,6 +285,7 @@ export class DailyQuestRuntime {
       if (id && token) await recordPromotionView(this.awa.context, id, token);
     }
     await this.viewPost(newsId);
+    new Logger(`${time()}${__('dailyQuestNewsCompleted')}`);
   }
   /**
    * 发送 send Time On Site 相关数据。
@@ -283,11 +296,11 @@ export class DailyQuestRuntime {
     try {
       const sent = await sendTimeOnSiteTrack(this.awa.context);
       if (sent.ok) { this.state.trackError = 0; this.state.trackTimes++; } else this.state.trackError++;
-      logger.log(sent.ok ? chalk.green('OK') : chalk.red(`Error (${sent.state})`));
+      logger.log(sent.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${sent.state})`));
       return sent.ok;
     } catch (error) {
       this.state.trackError++;
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return false;
     }
@@ -298,7 +311,12 @@ export class DailyQuestRuntime {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async monitor(signal?: AbortSignal): Promise<void> {
-    while (!signal?.aborted) { await this.updateDailyQuests(); if (!await sleep(5 * 60, signal)) return; }
+    new Logger(`${time()}${__('dailyQuestMonitorStarted', '5')}`);
+    while (!signal?.aborted) {
+      await this.updateDailyQuests();
+      if (!await sleep(5 * 60, signal)) break;
+    }
+    new Logger(`${time()}${__('dailyQuestMonitorStopped')}`);
   }
 
   /**
@@ -308,22 +326,22 @@ export class DailyQuestRuntime {
   private async initializeCommunityEvent(): Promise<void> {
     const pathLogger = new Logger(`${time()}${__('gettingSteamCommunityEventPath')}`, false);
     const pathLookup = await this.awa.communityEvent.findPath().catch((error) => {
-      pathLogger.log(chalk.red('Error'));
+      pathLogger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return null;
     });
     if (!pathLookup?.found) return;
     const path = pathLookup.value;
-    pathLogger.log(chalk.green('OK'));
+    pathLogger.log(chalk.green(__('logStatusOk')));
     const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);
     const page = await this.awa.communityEvent.getEvent(path).catch((error) => {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return null;
     });
     if (!page) return;
     if (page.closed || page.concluded || !page.gameId) {
-      logger.log(chalk.yellow(page.closed ? 'Closed' : 'Finished'));
+      logger.log(chalk.yellow(page.closed ? __('logStatusClosed') : __('logStatusFinished')));
       return;
     }
     let joined = page.started;
@@ -334,7 +352,7 @@ export class DailyQuestRuntime {
       if (owned.ok) {
         const joinLogger = new Logger(`${time()}${__('enteringSteamCommunityEvent')}`, false);
         joined = (await this.awa.communityEvent.join(path)).ok;
-        joinLogger.log(joined ? chalk.green('OK') : chalk.red('Error'));
+        joinLogger.log(joined ? chalk.green(__('logStatusOk')) : chalk.red(__('logStatusError')));
       }
     }
     this.state.communityEvent = {
@@ -352,7 +370,7 @@ export class DailyQuestRuntime {
     if (!event?.path) return;
     const logger = new Logger(`${time()}${__('checkingSteamCommunityEventStatus')}`, false);
     const page = await this.awa.communityEvent.getEvent(event.path).catch((error) => {
-      logger.log(chalk.red('Error'));
+      logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return null;
     });
@@ -363,6 +381,6 @@ export class DailyQuestRuntime {
       event.status = __('done');
       event.gameId = undefined;
     }
-    logger.log(`${chalk.green('OK')}(${chalk.yellow(`${page.playedMinutes}/${page.totalMinutes}min`)})`);
+    logger.log(`${chalk.green(__('logStatusOk'))}(${chalk.yellow(`${page.playedMinutes}/${page.totalMinutes}min`)})`);
   }
 }

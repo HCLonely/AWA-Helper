@@ -9,6 +9,8 @@ webUI:
     # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
 timeout: 86400 # 超时设置，单位：秒，默认86400s(24h), 0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
+debug:
+  http: false # 是否记录HTTP请求地址、状态码和耗时；默认关闭，不记录Cookie、Token、请求头、请求体及URL查询参数
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
 autoUpdate: false # 自动安装已暂时禁用；程序仍会检查并提示新版本
