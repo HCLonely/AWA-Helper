@@ -6,6 +6,7 @@ import type { AxiosResponse } from 'axios';
 import { AWAContext } from '../../AWAContext';
 import { parseSelectableSteamGameId, parseSteamQuestDetail, parseSteamQuestListings, parseSteamQuestProgress } from '../../parsers';
 import type { AWASteamQuestDetail, AWASteamQuestListing } from '../../types';
+import type { ActionResult, LookupResult } from '../../../shared';
 
 export class SteamQuestAPI {
   /**
@@ -49,73 +50,75 @@ export class SteamQuestAPI {
   /**
    * 获取 get Selectable Game Id 相关数据。
    * @param url - 目标资源或服务的 URL，类型为 `string`。
-   * @returns `Promise<string | null>`，getSelectableGameId 获取到的数据。
+   * @returns 找到可选游戏时返回游戏 ID，否则返回 `not-found`。
    */
-  async getSelectableGameId(url: string): Promise<string | null> {
+  async getSelectableGameId(url: string): Promise<LookupResult<string>> {
     const response = await this.request<string>({ url, method: 'GET', responseType: 'text', headers: { referer: `${this.context.baseURL}/steam/quests` } });
-    return parseSelectableSteamGameId(String(response.data));
+    const gameId = parseSelectableSteamGameId(String(response.data));
+    return gameId ? { found: true, value: gameId } : { found: false, reason: 'not-found' };
   }
 
   /**
    * 检查 check Owned Games 相关数据。
    * @param name - 用于定位目标对象的名称，类型为 `string`。
-   * @returns `Promise<boolean>`，表示 checkOwnedGames 检查是否通过。
+   * @returns 返回 `owned`、`not-required` 或 `not-owned` 所有权状态。
    */
-  async checkOwnedGames(name: string): Promise<boolean> {
-    if (name === 'choose-your-own-game') return true;
+  async checkOwnedGames(name: string): Promise<ActionResult<'owned' | 'not-required', 'not-owned'>> {
+    if (name === 'choose-your-own-game') return { ok: true, state: 'not-required' };
     const response = await this.request<{ installed?: boolean }>({
       url: `${this.context.baseURL}/ajax/user/steam/quests/check-owned-games/${name}`,
       method: 'GET', headers: { referer: `${this.context.baseURL}/steam/quests/${name}` }
     });
-    return response.data?.installed === true;
+    return response.data?.installed === true ? { ok: true, state: 'owned' } : { ok: false, state: 'not-owned' };
   }
 
   /**
    * 处理 sync Games 相关逻辑。
    * @param url - 目标资源或服务的 URL，类型为 `string`。
-   * @returns `Promise<boolean>`，表示 syncGames 检查是否通过。
+   * @returns 同步成功时返回 `synced`，远程拒绝时返回 `rejected`。
    */
-  async syncGames(url: string): Promise<boolean> {
+  async syncGames(url: string): Promise<ActionResult<'synced', 'rejected'>> {
     const response = await this.request<{ success?: boolean }>({
       url: url.replace('steam/quests', 'ajax/user/steam/quests/sync-owned-games'), method: 'GET',
       responseType: 'json', headers: { referer: url }
     });
-    return response.data?.success === true;
+    return response.data?.success === true ? { ok: true, state: 'synced' } : { ok: false, state: 'rejected' };
   }
 
   /**
    * 获取 select Game 相关数据。
    * @param url - 目标资源或服务的 URL，类型为 `string`。
    * @param gameId - 需要处理的 Steam 应用标识列表，类型为 `string`。
-   * @returns `Promise<boolean>`，表示 selectGame 检查是否通过。
+   * @returns 选中成功时返回 `selected`，远程拒绝时返回 `rejected`。
    */
-  async selectGame(url: string, gameId: string): Promise<boolean> {
+  async selectGame(url: string, gameId: string): Promise<ActionResult<'selected', 'rejected'>> {
     const response = await this.request<unknown>({
       url: url.replace('steam/quests', 'ajax/user/steam/quests/start-select-own'), method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', referer: url }, data: gameId
     });
-    return response.status === 200;
+    return response.status === 200 ? { ok: true, state: 'selected' } : { ok: false, state: 'rejected' };
   }
 
   /**
    * 执行 start Quest 相关数据。
    * @param url - 目标资源或服务的 URL，类型为 `string`。
-   * @returns `Promise<boolean>`，表示 startQuest 检查是否通过。
+   * @returns 启动成功时返回 `started`，远程拒绝时返回 `rejected`。
    */
-  async startQuest(url: string): Promise<boolean> {
+  async startQuest(url: string): Promise<ActionResult<'started', 'rejected'>> {
     const response = await this.request<{ success?: boolean }>({
       url: url.replace('steam/quests', 'ajax/user/steam/quests/start'), method: 'GET', headers: { referer: url }
     });
-    return response.data?.success === true;
+    return response.data?.success === true ? { ok: true, state: 'started' } : { ok: false, state: 'rejected' };
   }
 
   /**
    * 获取 get Quest Progress 相关数据。
    * @param url - 目标资源或服务的 URL，类型为 `string`。
-   * @returns `Promise<number | null>`，getQuestProgress 获取到的数据。
+   * @returns 进度可解析时返回百分比，否则返回 `unavailable`。
    */
-  async getQuestProgress(url: string): Promise<number | null> {
+  async getQuestProgress(url: string): Promise<LookupResult<number, 'unavailable'>> {
     const response = await this.request<string>({ url, method: 'GET', responseType: 'text', headers: { referer: `${this.context.baseURL}/steam/quests` } });
-    return parseSteamQuestProgress(String(response.data));
+    const progress = parseSteamQuestProgress(String(response.data));
+    return progress === null ? { found: false, reason: 'unavailable' } : { found: true, value: progress };
   }
 }

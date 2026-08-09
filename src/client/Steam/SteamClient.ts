@@ -4,13 +4,9 @@
  */
 import { ASFContext } from './ASFContext';
 import { addLicense, getOwnedGames, getStatus, playGames, stopGames, verifyConnection } from './APIs';
-import chalk from 'chalk';
-import { Logger, time } from '../../tools';
-import type { ASFBotTaskState } from './types';
 
 export class SteamClient {
   readonly context: ASFContext;
-  status: ASFBotTaskState = 'none';
 
   /**
    * 初始化 Steam Client 实例。
@@ -25,30 +21,14 @@ export class SteamClient {
   }
 
   /**
-   * 初始化 init 相关数据。
-   * @returns `Promise<boolean>`，表示 init 检查是否通过。
-   */
-  async init(): Promise<boolean> {
-    const logger = new Logger(`${time()}${__('initing', chalk.yellow('ASF'))}`, false);
-    try {
-      const connected = await verifyConnection(this.context);
-      logger.log(connected ? chalk.green('OK') : chalk.red('Error'));
-      return connected;
-    } catch (error) {
-      logger.log(chalk.red('Error'));
-      new Logger(error);
-      return false;
-    }
-  }
-  /**
    * 获取 session。
-   * @returns `{ verify: () => Promise<boolean>; getStatus: () => Promise<string>; }`，session 相关操作组成的 API 集合。
+   * @returns ASF 连接验证和原始状态查询 API 集合。
    */
   get session() {
     return {
       /**
        * 检查 verify 相关数据。
-       * @returns `Promise<boolean>`，表示 verify 检查是否通过。
+       * @returns 包含 `connected` 或 `empty-response` 状态的结构化结果。
        */
       verify: () => verifyConnection(this.context),
       /**
@@ -73,68 +53,28 @@ export class SteamClient {
       /**
        * 处理 play Games 相关逻辑。
        * @param appIds - 需要处理的 Steam 应用标识列表，类型为 `string[]`。
-       * @returns `Promise<boolean>`，表示 playGames 检查是否通过。
+       * @returns 包含 `started` 或 `no-games` 状态的结构化结果。
        */
-      playGames: (appIds: string[]) => this.playGames(appIds),
+      playGames: (appIds: string[]) => playGames(this.context, appIds),
       /**
        * 停止 stop Games 相关数据。
-       * @returns `Promise<boolean>`，表示 stopGames 检查是否通过。
+       * @returns ASF Bot 恢复后的 `resumed` 结果。
        */
-      stopGames: () => this.resume()
+      stopGames: () => stopGames(this.context)
     };
   }
   /**
    * 获取 licenses。
-   * @returns `{ add: (appIds: string[]) => Promise<boolean>; }`，licenses 相关操作组成的 API 集合。
+   * @returns ASF 应用许可证操作 API 集合。
    */
   get licenses() {
     return {
       /**
        * 添加 add 相关数据。
        * @param appIds - 需要处理的 Steam 应用标识列表，类型为 `string[]`。
-       * @returns `Promise<boolean>`，表示 add 检查是否通过。
+       * @returns 包含 `added` 或 `not-required` 状态的结构化结果。
        */
       add: (appIds: string[]) => addLicense(this.context, appIds)
     };
-  }
-  /**
-   * 获取 get Owned Games 相关数据。
-   * @param appIds - 需要处理的 Steam 应用标识列表，类型为 `string[]`。
-   * @returns `Promise<string[]>`，getOwnedGames 收集或筛选得到的数据列表。
-   */
-  getOwnedGames(appIds: string[]): Promise<string[]> { return getOwnedGames(this.context, appIds); }
-  /**
-   * 添加 add License 相关数据。
-   * @param appIds - 需要处理的 Steam 应用标识列表，类型为 `string[]`。
-   * @returns `Promise<boolean>`，表示 addLicense 检查是否通过。
-   */
-  addLicense(appIds: string[]): Promise<boolean> { return addLicense(this.context, appIds); }
-  /**
-   * 处理 play Games 相关逻辑。
-   * @param appIds - 需要处理的 Steam 应用标识列表，类型为 `string[]`。
-   * @returns `Promise<boolean>`，表示 playGames 检查是否通过。
-   */
-  async playGames(appIds: string[]): Promise<boolean> {
-    const started = await playGames(this.context, appIds);
-    if (started) this.status = 'running';
-    return started;
-  }
-  /**
-   * 处理 resume 相关逻辑。
-   * @returns `Promise<boolean>`，表示 resume 检查是否通过。
-   */
-  async resume(): Promise<boolean> {
-    if (this.status === 'stopped') return true;
-    const logger = new Logger(`${time()}${__('stoppingPlayingGames')}`, false);
-    try {
-      const resumed = await stopGames(this.context);
-      if (resumed) this.status = 'stopped';
-      logger.log(resumed ? chalk.green('OK') : chalk.red('Error'));
-      return resumed;
-    } catch (error) {
-      logger.log(chalk.red('Error'));
-      new Logger(error);
-      return false;
-    }
   }
 }

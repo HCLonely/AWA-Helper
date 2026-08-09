@@ -56,6 +56,16 @@ test('platform clients use injected context and do not read mutable application 
   assert.doesNotMatch(source, /from ['"][^'"]*(?:core|server)\//);
 });
 
+test('platform facades only aggregate contexts and API groups', () => {
+  const facades = [
+    'src/client/AWA/AWAApiClient.ts',
+    'src/client/Twitch/TwitchClient.ts',
+    'src/client/Steam/SteamClient.ts'
+  ].map((file) => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
+  assert.doesNotMatch(facades, /new Logger|chalk|async init\s*\(|status:\s*ASFBotTaskState/);
+  assert.doesNotMatch(facades, /\n\s{2}(?:async\s+)?(?:findTrackingChannel|sendTwitchTrack|getAvailableStreams|addLicense|resume)\s*\(/);
+});
+
 test('Steam quest preparation belongs to Core and not AWA API modules', () => {
   const awaSource = combinedSource('src/client/AWA/APIs');
   const coreSource = combinedSource('src/core/DailyQuest');

@@ -42,15 +42,15 @@ export class SteamQuestTask {
     if (!requestedIds.length) return true;
 
     const licenseLogger = new Logger(`${time()}${__('addingLicense')}`, false);
-    const licenseAdded = await this.asf.addLicense(requestedIds).catch((error) => {
+    const licenseResult = await this.asf.licenses.add(requestedIds).catch((error) => {
       licenseLogger.log(chalk.red('Error'));
       new Logger(error);
-      return false;
+      return null;
     });
-    if (!licenseAdded) return false;
+    if (!licenseResult?.ok) return false;
     licenseLogger.log(chalk.green('OK'));
     const matchLogger = new Logger(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
-    const ownedIds = await this.asf.getOwnedGames(requestedIds).catch((error) => {
+    const ownedIds = await this.asf.bot.getOwnedGames(requestedIds).catch((error) => {
       matchLogger.log(chalk.red('Error'));
       new Logger(error);
       return null;
@@ -65,11 +65,11 @@ export class SteamQuestTask {
     const trackedQuests = quests.filter((quest) => ownedIds.includes(quest.id));
     if (!trackedQuests.length && !eventAppId) return false;
     const playLogger = new Logger(`${time()}${__('usingASF', chalk.yellow('ASF'))}`, false);
-    const started = await this.asf.playGames(ownedIds).catch((error) => {
+    const playResult = await this.asf.bot.playGames(ownedIds).catch((error) => {
       new Logger(error);
-      return false;
+      return null;
     });
-    if (!started) {
+    if (!playResult?.ok) {
       playLogger.log(chalk.red('Error'));
       return false;
     }
@@ -80,7 +80,8 @@ export class SteamQuestTask {
       while (!signal?.aborted) {
         let complete = true;
         for (const quest of trackedQuests) {
-          const progress = await this.awa.steam.getQuestProgress(quest.link);
+          const progressResult = await this.awa.steam.getQuestProgress(quest.link);
+          const progress = progressResult.found ? progressResult.value : null;
           if (progress === null || progress < 100) complete = false;
           new Logger(`${time()}${__('checkingProgress', chalk.yellow(quest.link))}: ${progress ?? '-'}%`);
         }
@@ -89,7 +90,12 @@ export class SteamQuestTask {
       }
       return true;
     } finally {
-      await this.asf.resume().catch(() => false);
+      const stopLogger = new Logger(`${time()}${__('stoppingPlayingGames')}`, false);
+      const stopResult = await this.asf.bot.stopGames().catch((error) => {
+        new Logger(error);
+        return null;
+      });
+      stopLogger.log(stopResult?.ok ? chalk.green('OK') : chalk.red('Error'));
     }
   }
 
@@ -105,19 +111,19 @@ export class SteamQuestTask {
       if (detail.state === 'ready' && detail.appId) return { ...listing, id: detail.appId };
       if (detail.state === 'completed' || detail.state === 'unknown') return null;
       if (detail.state === 'ownership-required') {
-        if (!await this.awa.steam.checkOwnedGames(listing.name)) return null;
+        if (!(await this.awa.steam.checkOwnedGames(listing.name)).ok) return null;
         continue;
       }
       if (detail.state === 'selection-required') {
-        let gameId = await this.awa.steam.getSelectableGameId(listing.link);
-        if (!gameId && await this.awa.steam.syncGames(listing.link)) {
-          gameId = await this.awa.steam.getSelectableGameId(listing.link);
+        let gameLookup = await this.awa.steam.getSelectableGameId(listing.link);
+        if (!gameLookup.found && (await this.awa.steam.syncGames(listing.link)).ok) {
+          gameLookup = await this.awa.steam.getSelectableGameId(listing.link);
         }
-        if (!gameId || !await this.awa.steam.selectGame(listing.link, gameId)) return null;
+        if (!gameLookup.found || !(await this.awa.steam.selectGame(listing.link, gameLookup.value)).ok) return null;
         continue;
       }
       if (detail.state === 'not-started') {
-        if (!await this.awa.steam.startQuest(listing.link)) return null;
+        if (!(await this.awa.steam.startQuest(listing.link)).ok) return null;
       }
     }
     return null;

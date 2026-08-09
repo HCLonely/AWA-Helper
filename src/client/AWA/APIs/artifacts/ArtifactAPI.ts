@@ -4,6 +4,7 @@
  */
 import { AWAContext } from '../../AWAContext';
 import { parseEquippedArtifacts, type EquippedArtifact } from '../../parsers';
+import type { ActionResult } from '../../../shared';
 export type { EquippedArtifact } from '../../parsers';
 
 export class ArtifactAPI {
@@ -33,9 +34,9 @@ export class ArtifactAPI {
    * @param userProfilePath - 待读取或写入文件的路径，类型为 `string`。
    * @param artifactId - 目标资源的唯一标识，类型为 `number`。
    * @param position - 目标遗物所在的装备槽位，类型为 `number`。
-   * @returns `Promise<boolean>`，表示 equip 检查是否通过。
+   * @returns 装备成功时返回 `equipped`，远程拒绝时返回 `rejected`。
    */
-  async equip(userProfilePath: string, artifactId: number, position: number): Promise<boolean> {
+  async equip(userProfilePath: string, artifactId: number, position: number): Promise<ActionResult<'equipped', 'rejected'>> {
     const options: myAxiosConfig = {
       url: `${this.context.baseURL}/change-user-artifacts`, method: 'POST',
       headers: {
@@ -45,6 +46,8 @@ export class ArtifactAPI {
       data: JSON.stringify({ artifactId: String(artifactId), position: String(position) })
     };
     if (this.context.httpsAgent) options.httpsAgent = this.context.httpsAgent;
-    return (await this.context.request(options)).status === 200;
+    return (await this.context.request(options)).status === 200
+      ? { ok: true, state: 'equipped' }
+      : { ok: false, state: 'rejected' };
   }
 }

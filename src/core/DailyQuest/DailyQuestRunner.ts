@@ -284,7 +284,19 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     if (runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
       if (twitchCookie) {
         const twitch = new TwitchClient({ cookie: twitchCookie, proxy });
-        if (await twitch.init() === true) {
+        const twitchLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
+        let twitchReady = false;
+        try {
+          await twitch.session.verify();
+          twitchLogger.log(chalk.green('OK'));
+          const authorizationLogger = new Logger(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
+          twitchReady = (await twitch.extensions.checkLinked()).ok;
+          authorizationLogger.log(twitchReady ? chalk.green(__('authorized')) : chalk.red(__('notAuthorized')));
+        } catch (error) {
+          twitchLogger.log(chalk.red('Error'));
+          new Logger(error);
+        }
+        if (twitchReady) {
           const twitchTask = new TwitchQuestTask(runtime, awaAPIs, twitch);
           quests.push({ name: 'Twitch', promise: twitchTask.run(shutdownController.signal) });
           await sleep(10);
@@ -318,7 +330,16 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
           asfBotname: asfBotname as string,
           proxy
         });
-        if (await steamQuest.init()) {
+        const asfLogger = new Logger(`${time()}${__('initing', chalk.yellow('ASF'))}`, false);
+        let asfReady = false;
+        try {
+          asfReady = (await steamQuest.session.verify()).ok;
+          asfLogger.log(asfReady ? chalk.green('OK') : chalk.red('Error'));
+        } catch (error) {
+          asfLogger.log(chalk.red('Error'));
+          new Logger(error);
+        }
+        if (asfReady) {
           const steamTask = new SteamQuestTask(awaAPIs, steamQuest, runtime.state.communityEvent?.gameId);
           quests.push({ name: 'Steam ASF', promise: steamTask.run(shutdownController.signal) });
           await sleep(30);

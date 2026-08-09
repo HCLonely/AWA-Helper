@@ -138,8 +138,9 @@ export class AchievementService {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async init(): Promise<void> {
-    if (!await this.awa.init()) throw new Error('Achievement AWA initialization failed');
-    this.Achievements = await this.awa.getAchievements();
+    await this.awa.session.refresh();
+    await this.awa.session.verify();
+    this.Achievements = await this.awa.achievement.getAll();
     fs.mkdirSync('data/achievement', { recursive: true });
     if (!fs.existsSync(this.actionHistoryPath)) {
       atomicWriteFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
@@ -174,7 +175,8 @@ export class AchievementService {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async border25(): Promise<void> {
-    const { userAvatarInfo: UAI, ids: borders } = await this.awa.getAvatarItems('border') || {};
+    const borderLookup = await this.awa.personalization.getAvatarItems('border');
+    const { userAvatarInfo: UAI, ids: borders } = borderLookup.found ? borderLookup.value : {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!borders || !existingAvatarInfo) {
       return;
@@ -190,7 +192,7 @@ export class AchievementService {
 
     for (let i = 0; i < 25; i++) {
       userAvatarInfo.border = borderIds[i];
-      if (!await this.awa.saveAvatar(userAvatarInfo)) return;
+      if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) return;
       this.userAvatarInfo = userAvatarInfo;
       // new Logger(`${time()}${__('changeBorder', chalk.yellow(borderId))}`, false);
       await sleep(5);
@@ -220,7 +222,8 @@ export class AchievementService {
       return;
     }
 
-    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatarItems(type) || {};
+    const itemLookup = await this.awa.personalization.getAvatarItems(type);
+    const { userAvatarInfo: UAI, ids } = itemLookup.found ? itemLookup.value : {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
       return;
@@ -239,7 +242,7 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!await this.awa.saveAvatar(userAvatarInfo)) return;
+    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) return;
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
@@ -281,7 +284,8 @@ export class AchievementService {
       return;
     }
 
-    const { userAvatarInfo: UAI, ids } = await this.awa.getAvatarItems(type) || {};
+    const itemLookup = await this.awa.personalization.getAvatarItems(type);
+    const { userAvatarInfo: UAI, ids } = itemLookup.found ? itemLookup.value : {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
       return;
@@ -300,7 +304,7 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!await this.awa.saveAvatar(userAvatarInfo)) return;
+    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) return;
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
@@ -335,20 +339,21 @@ export class AchievementService {
     while (this.watchTwitchStatus.running && !signal?.aborted) {
       try {
         this.twitch = new TwitchClient({ cookie: this.twitchCookie });
-        if (!await this.twitch.init()) return;
-        const { Hive, Nexus } = await this.awa.getAvailableStreams();
+        await this.twitch.session.verify();
+        if (!(await this.twitch.extensions.checkLinked()).ok) return;
+        const { Hive, Nexus } = await this.awa.twitch.getAvailableStreams();
         new Logger(`${time()}${__('foundHiveLive', chalk.yellow(Hive.length))}`);
         new Logger(`${time()}${__('foundNexusLive', chalk.yellow(Nexus.length))}`);
         const candidates = [
           ...(this.watchTwitchStatus.type.has('hive') ? Hive : []),
           ...(this.watchTwitchStatus.type.has('nexus') ? Nexus : [])
         ];
-        const trackingInfo = await this.twitch.findTrackingChannel(candidates);
-        if (!trackingInfo) {
+        const trackingLookup = await this.twitch.channels.findTracking(candidates);
+        if (!trackingLookup.found) {
           if (!await sleep(5 * 60, signal)) return;
           continue;
         }
-        await this.trackTwitchChannel(trackingInfo, signal);
+        await this.trackTwitchChannel(trackingLookup.value, signal);
         return;
       } catch (error) {
         if (signal?.aborted || !this.watchTwitchStatus.running) return;
@@ -369,7 +374,7 @@ export class AchievementService {
    */
   private async trackTwitchChannel(info: TwitchChannelTrackingInfo, signal?: AbortSignal): Promise<void> {
     while (this.watchTwitchStatus.running && !signal?.aborted) {
-      const result = await this.awa.sendTwitchTrack(info);
+      const result = await this.awa.twitch.sendTrack(info);
       if (!result.success || result.state === 'streamer_offline' || result.state === 'no_channel_found') {
         throw new Error(`AWA Twitch tracking failed: ${result.state}`);
       }

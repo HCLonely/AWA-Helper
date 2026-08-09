@@ -4,12 +4,14 @@
  */
 import { ASFContext } from '../../ASFContext';
 import { executeCommand } from '../commands';
+import type { ActionResult } from '../../../shared';
 
 /**
  * 检查 verify Connection 相关数据。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `ASFContext`。
- * @returns `Promise<boolean>`，表示 verifyConnection 检查是否通过。
+ * @returns ASF 返回状态时为 `connected`，空响应时为 `empty-response`；连接异常直接抛出 `ASFError`。
  */
-export const verifyConnection = async (context: ASFContext): Promise<boolean> => {
-  try { return (await executeCommand(context, '!stats')).length > 0; } catch (_error) { return false; }
+export const verifyConnection = async (context: ASFContext): Promise<ActionResult<'connected', 'empty-response'>> => {
+  const output = await executeCommand(context, '!stats');
+  return output.length > 0 ? { ok: true, state: 'connected' } : { ok: false, state: 'empty-response' };
 };

@@ -6,6 +6,7 @@ import type { AxiosResponse } from 'axios';
 import { AWAContext } from '../../AWAContext';
 import { parseCommunityEvent, parseCommunityEventPath } from '../../parsers';
 import type { CommunityEventPage } from '../../types';
+import type { ActionResult, LookupResult } from '../../../shared';
 
 export class CommunityEventAPI {
   /**
@@ -25,12 +26,13 @@ export class CommunityEventAPI {
   }
   /**
    * 获取 find Path 相关数据。
-   * @returns `Promise<string | null>`，findPath 获取到的数据。
+   * @returns 找到活动时返回路径；活动已结束或页面无活动时返回对应原因。
    */
-  async findPath(): Promise<string | null> {
+  async findPath(): Promise<LookupResult<string, 'concluded' | 'not-found'>> {
     const response = await this.get<string>(`${this.context.baseURL}/steam/events`);
-    if (String(response.data).includes('concluded')) return null;
-    return parseCommunityEventPath(String(response.data));
+    if (String(response.data).includes('concluded')) return { found: false, reason: 'concluded' };
+    const path = parseCommunityEventPath(String(response.data));
+    return path ? { found: true, value: path } : { found: false, reason: 'not-found' };
   }
   /**
    * 获取 get Event 相关数据。
@@ -44,19 +46,19 @@ export class CommunityEventAPI {
   /**
    * 检查 check Owned 相关数据。
    * @param path - 待读取或写入文件的路径，类型为 `string`。
-   * @returns `Promise<boolean>`，表示 checkOwned 检查是否通过。
+   * @returns 已拥有活动游戏时返回 `owned`，否则返回 `not-owned`。
    */
-  async checkOwned(path: string): Promise<boolean> {
+  async checkOwned(path: string): Promise<ActionResult<'owned', 'not-owned'>> {
     const response = await this.get<{ installed?: boolean }>(`${this.context.baseURL}/ajax/user/steam/community-event/check-owned-games/${path}`);
-    return response.data?.installed === true;
+    return response.data?.installed === true ? { ok: true, state: 'owned' } : { ok: false, state: 'not-owned' };
   }
   /**
    * 处理 join 相关逻辑。
    * @param path - 待读取或写入文件的路径，类型为 `string`。
-   * @returns `Promise<boolean>`，表示 join 检查是否通过。
+   * @returns 加入成功时返回 `joined`，远程拒绝时返回 `rejected`。
    */
-  async join(path: string): Promise<boolean> {
+  async join(path: string): Promise<ActionResult<'joined', 'rejected'>> {
     const response = await this.get<{ success?: boolean }>(`${this.context.baseURL}/ajax/user/steam/community-event/start/${path}`);
-    return response.data?.success === true;
+    return response.data?.success === true ? { ok: true, state: 'joined' } : { ok: false, state: 'rejected' };
   }
 }

@@ -7,13 +7,14 @@ import { TwitchError } from '../../TwitchError';
 import { linkedExtensionsQuery } from '../../queries';
 import { parseLinkedArenaExtension, type LinkedExtensionsData } from '../../parsers';
 import type { TwitchGqlEnvelope } from '../../types';
+import type { ActionResult } from '../../../shared';
 
 /**
  * 检查 check Linked Extension 相关数据。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `TwitchContext`。
- * @returns `Promise<boolean>`，表示 checkLinkedExtension 检查是否通过。
+ * @returns 已关联时返回 `linked`，否则返回 `not-linked`。
  */
-export const checkLinkedExtension = async (context: TwitchContext): Promise<boolean> => {
+export const checkLinkedExtension = async (context: TwitchContext): Promise<ActionResult<'linked', 'not-linked'>> => {
   if (!context.clientId) throw new TwitchError('checkLinkedExtension', 'Twitch Client-Id is not initialized');
   const options: myAxiosConfig = {
     url: 'https://gql.twitch.tv/gql', method: 'POST',
@@ -22,7 +23,9 @@ export const checkLinkedExtension = async (context: TwitchContext): Promise<bool
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
   try {
     const response = await context.request<Array<TwitchGqlEnvelope<LinkedExtensionsData>>>(options);
-    return parseLinkedArenaExtension(response.data);
+    return parseLinkedArenaExtension(response.data)
+      ? { ok: true, state: 'linked' }
+      : { ok: false, state: 'not-linked' };
   } catch (error) {
     throw new TwitchError('checkLinkedExtension', 'Unable to query linked Twitch extensions', true, undefined, { cause: error });
   }

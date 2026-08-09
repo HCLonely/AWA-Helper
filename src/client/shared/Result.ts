@@ -4,6 +4,16 @@
  */
 export type Result<T, E = Error> = { ok: true; data: T } | { ok: false; error: E };
 
+/** 远程操作的判别联合结果；`ok` 同时约束成功和失败状态。 */
+export type ActionResult<SuccessState extends string, FailureState extends string = never> =
+  | { ok: true; state: SuccessState; message?: string }
+  | { ok: false; state: FailureState; message?: string };
+
+/** 远程查找的判别联合结果；未找到时通过 `reason` 说明原因。 */
+export type LookupResult<T, R extends string = 'not-found'> =
+  | { found: true; value: T }
+  | { found: false; reason: R };
+
 /**
  * 处理 success 相关逻辑。
  * @param data - 当前请求或操作使用的数据内容，类型为 `T`。

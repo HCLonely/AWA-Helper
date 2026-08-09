@@ -27,18 +27,22 @@ test('TwitchQuestTask reloads streams after an empty result instead of failing',
   let channelRequests = 0;
   const runtime = { state: { questInfo: {}, additionalTwitchARP: 0 } };
   const awa = {
-    async getAvailableStreams() {
-      streamRequests += 1;
-      return streamRequests === 1 ? { Hive: [], Nexus: [] } : { Hive: ['streamer'], Nexus: [] };
-    },
-    async sendTwitchTrack() {
-      return { success: true, state: 'daily_cap_reached' };
+    twitch: {
+      async getAvailableStreams() {
+        streamRequests += 1;
+        return streamRequests === 1 ? { Hive: [], Nexus: [] } : { Hive: ['streamer'], Nexus: [] };
+      },
+      async sendTrack() {
+        return { success: true, state: 'daily_cap_reached' };
+      }
     }
   };
   const twitch = {
-    async findTrackingChannel() {
-      channelRequests += 1;
-      return { channelId: '42', jwt: 'token', streamerName: 'streamer' };
+    channels: {
+      async findTracking() {
+        channelRequests += 1;
+        return { found: true, value: { channelId: '42', jwt: 'token', streamerName: 'streamer' } };
+      }
     }
   };
   const task = new TwitchQuestTask(runtime, awa, twitch, 0);
@@ -55,18 +59,24 @@ test('TwitchQuestTask treats channels without a tracking extension as retryable 
   let channelRequests = 0;
   const runtime = { state: { questInfo: {}, additionalTwitchARP: 0 } };
   const awa = {
-    async getAvailableStreams() {
-      streamRequests += 1;
-      return { Hive: ['streamer'], Nexus: [] };
-    },
-    async sendTwitchTrack() {
-      return { success: true, state: 'daily_cap_reached' };
+    twitch: {
+      async getAvailableStreams() {
+        streamRequests += 1;
+        return { Hive: ['streamer'], Nexus: [] };
+      },
+      async sendTrack() {
+        return { success: true, state: 'daily_cap_reached' };
+      }
     }
   };
   const twitch = {
-    async findTrackingChannel() {
-      channelRequests += 1;
-      return channelRequests === 1 ? null : { channelId: '42', jwt: 'token', streamerName: 'streamer' };
+    channels: {
+      async findTracking() {
+        channelRequests += 1;
+        return channelRequests === 1
+          ? { found: false, reason: 'no-trackable-channel' }
+          : { found: true, value: { channelId: '42', jwt: 'token', streamerName: 'streamer' } };
+      }
     }
   };
   const task = new TwitchQuestTask(runtime, awa, twitch, 0);

@@ -41,7 +41,7 @@ export class TwitchQuestTask {
     let retriedAuthorization = false;
     while (!signal?.aborted && !this.isComplete()) {
       const streamLogger = new Logger(`${time()}${__('gettingLiveInfo')}`, false);
-      const streams = await this.awa.getAvailableStreams().catch((error) => {
+      const streams = await this.awa.twitch.getAvailableStreams().catch((error: unknown) => {
         streamLogger.log(chalk.red('Error'));
         new Logger(error);
         return null;
@@ -57,16 +57,17 @@ export class TwitchQuestTask {
         continue;
       }
       const channelLogger = new Logger(`${time()}${__('gettingChannelInfo')}`, false);
-      const trackingInfo = await this.twitch.findTrackingChannel([...streams.Hive, ...streams.Nexus]);
-      if (!trackingInfo) {
+      const trackingLookup = await this.twitch.channels.findTracking([...streams.Hive, ...streams.Nexus]);
+      if (!trackingLookup.found) {
         channelLogger.log(chalk.blue(__('noLive')));
         if (!await this.waitForAvailableStreams(signal)) return true;
         continue;
       }
+      const trackingInfo = trackingLookup.value;
       channelLogger.log(chalk.green(`OK (${trackingInfo.streamerName || trackingInfo.channelId})`));
       const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
       try {
-        const result = await this.awa.sendTwitchTrack(trackingInfo);
+        const result = await this.awa.twitch.sendTrack(trackingInfo);
         logger.log(result.success ? chalk.green(`OK (${result.state})`) : chalk.red(`Error (${result.state})`));
         if (result.state === 'daily_cap_reached') {
           new Logger(`${time()}${chalk.green(result.message || __('obtainedArp'))}`);
@@ -87,7 +88,7 @@ export class TwitchQuestTask {
         if (status === 403 && !retriedAuthorization) {
           new Logger(`${time()}${chalk.yellow('Twitch authorization expired, retrying')}`);
           retriedAuthorization = true;
-          if (!await this.twitch.init()) return false;
+          if (!await this.initializeTwitch()) return false;
         } else {
           new Logger(`${time()}${chalk.red(error instanceof Error ? error.message : String(error))}`);
           return false;
@@ -106,5 +107,21 @@ export class TwitchQuestTask {
   private async waitForAvailableStreams(signal?: AbortSignal): Promise<boolean> {
     new Logger(`${time()}${chalk.blue(__('getLiveInfoAlert', String(this.retryDelaySeconds / 60)))}`);
     return sleep(this.retryDelaySeconds, signal);
+  }
+
+  private async initializeTwitch(): Promise<boolean> {
+    const sessionLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
+    try {
+      await this.twitch.session.verify();
+      sessionLogger.log(chalk.green('OK'));
+      const authorizationLogger = new Logger(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
+      const linked = await this.twitch.extensions.checkLinked();
+      authorizationLogger.log(linked.ok ? chalk.green(__('authorized')) : chalk.red(__('notAuthorized')));
+      return linked.ok;
+    } catch (error) {
+      sessionLogger.log(chalk.red('Error'));
+      new Logger(error);
+      return false;
+    }
   }
 }

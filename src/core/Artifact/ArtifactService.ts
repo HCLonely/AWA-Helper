@@ -105,7 +105,7 @@ class ArtifactService {
    */
   async changeArtifact(id: number, position: number): Promise<boolean> {
     if (!this.awa || !this.userProfileUrl || !id || !position) return false;
-    return this.awa.artifacts.equip(this.userProfileUrl, id, position);
+    return (await this.awa.artifacts.equip(this.userProfileUrl, id, position)).ok;
   }
 }
 

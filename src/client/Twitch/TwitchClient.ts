@@ -4,9 +4,6 @@
  */
 import { TwitchContext } from './TwitchContext';
 import { checkLinkedExtension, getChannelInfo, getChannelsInfo, getExtensionInfo, verifySession } from './APIs';
-import type { TwitchChannelTrackingInfo } from './types';
-import chalk from 'chalk';
-import { Logger, time } from '../../tools';
 
 export class TwitchClient {
   readonly context: TwitchContext;
@@ -15,25 +12,6 @@ export class TwitchClient {
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ cookie: string; proxy?: proxy; userAgent?: string; }`。
    */
   constructor(options: { cookie: string; proxy?: proxy; userAgent?: string }) { this.context = new TwitchContext(options); }
-  /**
-   * 初始化 init 相关数据。
-   * @returns `Promise<boolean>`，表示 init 检查是否通过。
-   */
-  async init(): Promise<boolean> {
-    const sessionLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
-    try {
-      await verifySession(this.context);
-      sessionLogger.log(chalk.green('OK'));
-      const authorizationLogger = new Logger(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
-      const linked = await checkLinkedExtension(this.context);
-      authorizationLogger.log(linked ? chalk.green(__('authorized')) : chalk.red(__('notAuthorized')));
-      return linked;
-    } catch (error) {
-      sessionLogger.log(chalk.red('Error'));
-      new Logger(error);
-      return false;
-    }
-  }
   /**
    * 获取 session。
    * @returns `{ verify: () => Promise<string>; }`，session 相关操作组成的 API 集合。
@@ -56,57 +34,34 @@ export class TwitchClient {
       /**
        * 获取 get 相关数据。
        * @param channelLogin - 用于定位目标对象的名称，类型为 `string`。
-       * @returns `Promise<string | null>`，get 获取到的数据。
+       * @returns 找到频道时携带频道 ID，否则携带 `not-found` 原因。
        */
       get: (channelLogin: string) => getChannelInfo(this.context, channelLogin),
       /**
        * 获取 find Tracking 相关数据。
        * @param channelLogins - 用于查询直播状态的 Twitch 频道登录名列表，类型为 `string[]`。
-       * @returns `Promise<TwitchChannelTrackingInfo | null>`，findTracking 获取到的数据。
+       * @returns 找到可跟踪频道时携带跟踪信息，否则携带 `no-trackable-channel` 原因。
        */
       findTracking: (channelLogins: string[]) => getChannelsInfo(this.context, channelLogins)
     };
   }
   /**
    * 获取 extensions。
-   * @returns `{ checkLinked: () => Promise<boolean>; get: (channelId: string) => Promise<TwitchExtensionInfo | null>; }`，extensions 相关操作组成的 API 集合。
+   * @returns Twitch 扩展关联检查和扩展信息查找 API 集合。
    */
   get extensions() {
     return {
       /**
        * 检查 check Linked 相关数据。
-       * @returns `Promise<boolean>`，表示 checkLinked 检查是否通过。
+       * @returns 包含 `linked` 或 `not-linked` 状态的结构化结果。
        */
       checkLinked: () => checkLinkedExtension(this.context),
       /**
        * 获取 get 相关数据。
        * @param channelId - 目标资源的唯一标识，类型为 `string`。
-       * @returns `Promise<TwitchExtensionInfo | null>`，get 获取到的数据。
+       * @returns 找到扩展时携带扩展信息，否则携带 `not-found` 原因。
        */
       get: (channelId: string) => getExtensionInfo(this.context, channelId)
     };
-  }
-  /**
-   * 获取 get Channel Id 相关数据。
-   * @param channelLogin - 用于定位目标对象的名称，类型为 `string`。
-   * @returns `Promise<string | null>`，getChannelId 获取到的数据。
-   */
-  getChannelId(channelLogin: string): Promise<string | null> { return getChannelInfo(this.context, channelLogin); }
-  /**
-   * 获取 find Tracking Channel 相关数据。
-   * @param channelLogins - 用于查询直播状态的 Twitch 频道登录名列表，类型为 `string[]`。
-   * @returns `Promise<TwitchChannelTrackingInfo | null>`，findTrackingChannel 获取到的数据。
-   */
-  findTrackingChannel(channelLogins: string[]): Promise<TwitchChannelTrackingInfo | null> { return getChannelsInfo(this.context, channelLogins); }
-  /**
-   * 获取 get Tracking Info 相关数据。
-   * @param channelLogin - 用于定位目标对象的名称，类型为 `string`。
-   * @returns `Promise<TwitchChannelTrackingInfo | null>`，getTrackingInfo 获取到的数据。
-   */
-  async getTrackingInfo(channelLogin: string): Promise<TwitchChannelTrackingInfo | null> {
-    const channelId = await getChannelInfo(this.context, channelLogin);
-    if (!channelId) return null;
-    const extension = await getExtensionInfo(this.context, channelId);
-    return extension ? { channelId, streamerName: channelLogin, ...extension } : null;
   }
 }

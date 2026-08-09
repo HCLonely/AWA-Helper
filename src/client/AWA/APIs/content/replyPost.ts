@@ -5,14 +5,15 @@
 import FormData from 'form-data';
 import { load } from 'cheerio';
 import { AWAContext } from '../../AWAContext';
+import type { ActionResult } from '../../../shared';
 
 /**
  * 处理 reply Post 相关逻辑。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
  * @param requestedPostId - 目标资源的唯一标识，类型为 `string | undefined`。
- * @returns `Promise<boolean>`，表示 replyPost 检查是否通过。
+ * @returns 回复成功时返回 `replied`；无可回复主题或请求被拒绝时返回对应失败状态。
  */
-export const replyPost = async (context: AWAContext, requestedPostId?: string): Promise<boolean> => {
+export const replyPost = async (context: AWAContext, requestedPostId?: string): Promise<ActionResult<'replied', 'no-topic' | 'rejected'>> => {
   let postId = requestedPostId;
   if (!postId) {
     const listOptions: myAxiosConfig = {
@@ -26,7 +27,7 @@ export const replyPost = async (context: AWAContext, requestedPostId?: string): 
       .filter((link) => /Daily\s*Quest/i.test($(link).text()) && $(link).prev().attr('title') !== 'Locked')
       .flatMap((link) => $(link).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1] || []);
   }
-  if (!postId) return false;
+  if (!postId) return { ok: false, state: 'no-topic' };
   const form = new FormData();
   form.append('topic_post[content]', '<p>Thanks!</p>');
   form.append('topic_post[quotedPostIds]', '');
@@ -36,5 +37,7 @@ export const replyPost = async (context: AWAContext, requestedPostId?: string): 
     headers: { ...context.headers, origin: context.baseURL, referer: `${context.baseURL}/ucf/show/${postId}`, ...form.getHeaders() }
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
-  return (await context.request<{ success?: boolean }>(options)).data.success === true;
+  return (await context.request<{ success?: boolean }>(options)).data.success === true
+    ? { ok: true, state: 'replied' }
+    : { ok: false, state: 'rejected' };
 };

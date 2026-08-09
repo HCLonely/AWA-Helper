@@ -107,7 +107,7 @@ export class DailyQuestRuntime {
           const itemLogger = new Logger(`${time()}${__('doingGetStartedQuest', chalk.yellow(item.name))}`, false);
           try {
             const completed = await completeGetStartedItem(this.awa.context, item.link);
-            itemLogger.log(completed ? chalk.green('OK') : chalk.red('Error'));
+            itemLogger.log(completed.ok ? chalk.green('OK') : chalk.red(`Error (${completed.state})`));
           } catch (error) {
             itemLogger.log(chalk.red('Error'));
             new Logger(error);
@@ -158,7 +158,7 @@ export class DailyQuestRuntime {
    */
   async refreshPersonalization(type: 'avatar' | 'border'): Promise<boolean> {
     const selection = await this.awa.personalization.getAvatarItems(type);
-    return selection ? this.awa.personalization.saveAvatar(selection.userAvatarInfo) : false;
+    return selection.found ? (await this.awa.personalization.saveAvatar(selection.value.userAvatarInfo)).ok : false;
   }
 
   /**
@@ -170,8 +170,8 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('doingTask', chalk.yellow(questId))}`, false);
     try {
       const claimed = await claimQuestAward(this.awa.context, questId);
-      logger.log(claimed ? chalk.green('OK') : chalk.red('Error'));
-      return claimed;
+      logger.log(claimed.ok ? chalk.green('OK') : chalk.red(`Error (${claimed.state})`));
+      return claimed.ok;
     } catch (error) {
       logger.log(chalk.red('Error'));
       new Logger(error);
@@ -203,9 +203,9 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('sendingViewRecord', chalk.yellow(postId))}`, false);
     try {
       const viewed = await recordPostView(this.awa.context, postId);
-      if (viewed) await sendTimeOnSiteTrack(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${postId}`);
-      logger.log(viewed ? chalk.green('OK') : chalk.red('Error'));
-      return viewed;
+      if (viewed.ok) await sendTimeOnSiteTrack(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${postId}`);
+      logger.log(viewed.ok ? chalk.green('OK') : chalk.red(`Error (${viewed.state})`));
+      return viewed.ok;
     } catch (error) {
       logger.log(chalk.red('Error'));
       new Logger(error);
@@ -231,7 +231,7 @@ export class DailyQuestRuntime {
       const logger = new Logger(`${time()}${__('sharingPost', chalk.yellow(postId))}`, false);
       try {
         const shared = await sharePost(this.awa.context, postId);
-        logger.log(shared ? chalk.green('OK') : chalk.red('Error'));
+        logger.log(shared.ok ? chalk.green('OK') : chalk.red(`Error (${shared.state})`));
       } catch (error) {
         logger.log(chalk.red('Error'));
         new Logger(error);
@@ -249,9 +249,9 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('replyingPost', chalk.yellow(postId || 'Daily Quest'))}`, false);
     try {
       const replied = await replyPost(this.awa.context, postId);
-      this.state.postReplied = replied;
-      logger.log(replied ? chalk.green('OK') : chalk.red('Error'));
-      return replied;
+      this.state.postReplied = replied.ok;
+      logger.log(replied.ok ? chalk.green('OK') : chalk.red(`Error (${replied.state})`));
+      return replied.ok;
     } catch (error) {
       this.state.postReplied = false;
       logger.log(chalk.red('Error'));
@@ -282,9 +282,9 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('AWA'))}`, false);
     try {
       const sent = await sendTimeOnSiteTrack(this.awa.context);
-      if (sent) { this.state.trackError = 0; this.state.trackTimes++; } else this.state.trackError++;
-      logger.log(sent ? chalk.green('OK') : chalk.red('Error'));
-      return sent;
+      if (sent.ok) { this.state.trackError = 0; this.state.trackTimes++; } else this.state.trackError++;
+      logger.log(sent.ok ? chalk.green('OK') : chalk.red(`Error (${sent.state})`));
+      return sent.ok;
     } catch (error) {
       this.state.trackError++;
       logger.log(chalk.red('Error'));
@@ -307,12 +307,13 @@ export class DailyQuestRuntime {
    */
   private async initializeCommunityEvent(): Promise<void> {
     const pathLogger = new Logger(`${time()}${__('gettingSteamCommunityEventPath')}`, false);
-    const path = await this.awa.communityEvent.findPath().catch((error) => {
+    const pathLookup = await this.awa.communityEvent.findPath().catch((error) => {
       pathLogger.log(chalk.red('Error'));
       new Logger(error);
       return null;
     });
-    if (!path) return;
+    if (!pathLookup?.found) return;
+    const path = pathLookup.value;
     pathLogger.log(chalk.green('OK'));
     const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);
     const page = await this.awa.communityEvent.getEvent(path).catch((error) => {
@@ -329,10 +330,10 @@ export class DailyQuestRuntime {
     if (!joined) {
       const ownedLogger = new Logger(`${time()}${__('checkingOwnedGames', `[${page.gameName}](${page.gameId})`)}`, false);
       const owned = await this.awa.communityEvent.checkOwned(path);
-      ownedLogger.log(owned ? chalk.green(__('owned')) : chalk.yellow(__('notOwned')));
-      if (owned) {
+      ownedLogger.log(owned.ok ? chalk.green(__('owned')) : chalk.yellow(__('notOwned')));
+      if (owned.ok) {
         const joinLogger = new Logger(`${time()}${__('enteringSteamCommunityEvent')}`, false);
-        joined = await this.awa.communityEvent.join(path);
+        joined = (await this.awa.communityEvent.join(path)).ok;
         joinLogger.log(joined ? chalk.green('OK') : chalk.red('Error'));
       }
     }
