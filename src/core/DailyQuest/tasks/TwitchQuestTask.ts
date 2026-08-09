@@ -12,7 +12,8 @@ export class TwitchQuestTask {
   constructor(
     private readonly runtime: DailyQuestRuntime,
     private readonly awa: AWAApiClient,
-    private readonly twitch: TwitchClient
+    private readonly twitch: TwitchClient,
+    private readonly retryDelaySeconds = 5 * 60
   ) {}
 
   private isComplete(): boolean {
@@ -30,20 +31,20 @@ export class TwitchQuestTask {
         return null;
       });
       if (!streams) {
-        if (!await sleep(5 * 60, signal)) return true;
+        if (!await this.waitForAvailableStreams(signal)) return true;
         continue;
       }
       const streamCount = streams.Hive.length + streams.Nexus.length;
       streamLogger.log(streamCount > 0 ? chalk.green(`OK (${streamCount})`) : chalk.blue(__('noLive')));
       if (streamCount === 0) {
-        if (!await sleep(5 * 60, signal)) return true;
+        if (!await this.waitForAvailableStreams(signal)) return true;
         continue;
       }
       const channelLogger = new Logger(`${time()}${__('gettingChannelInfo')}`, false);
       const trackingInfo = await this.twitch.findTrackingChannel([...streams.Hive, ...streams.Nexus]);
       if (!trackingInfo) {
-        channelLogger.log(chalk.red('Error'));
-        if (!await sleep(5 * 60, signal)) return true;
+        channelLogger.log(chalk.blue(__('noLive')));
+        if (!await this.waitForAvailableStreams(signal)) return true;
         continue;
       }
       channelLogger.log(chalk.green(`OK (${trackingInfo.streamerName || trackingInfo.channelId})`));
@@ -79,5 +80,11 @@ export class TwitchQuestTask {
       if (!await sleep(60, signal)) return true;
     }
     return true;
+  }
+
+  /** Waits before reloading the AWA stream list when no usable live channel exists. */
+  private async waitForAvailableStreams(signal?: AbortSignal): Promise<boolean> {
+    new Logger(`${time()}${chalk.blue(__('getLiveInfoAlert', String(this.retryDelaySeconds / 60)))}`);
+    return sleep(this.retryDelaySeconds, signal);
   }
 }
