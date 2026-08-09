@@ -59,9 +59,11 @@ const main = async (): Promise<number> => {
   if (command.kind === 'run' && command.deprecatedHelper) {
     console.warn('[deprecated] --helper is retained for compatibility; use --daily instead.');
   }
-  const lock = new ProcessLock(path.join('data', 'manager.lock'));
-  if (!await lock.acquire()) throw new Error('Manager is already running');
-  process.once('exit', () => lock.releaseSync());
+  const lock = process.env.AWA_HELPER_CONTAINER === 'true'
+    ? undefined
+    : new ProcessLock(path.join('data', 'manager.lock'));
+  if (lock && !await lock.acquire()) throw new Error('Manager is already running');
+  if (lock) process.once('exit', () => lock.releaseSync());
   const runtime = new ManagerRuntime(mode, version);
   /**
    * 停止 stop 相关数据。
@@ -76,7 +78,7 @@ const main = async (): Promise<number> => {
     process.removeListener('SIGINT', stop);
     process.removeListener('SIGTERM', stop);
     await runtime.stop();
-    await lock.release();
+    await lock?.release();
   }
 };
 
