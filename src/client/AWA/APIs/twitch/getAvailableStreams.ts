@@ -13,7 +13,9 @@ import { parseAvailableStreams } from '../../parsers';
  */
 export const getAvailableStreams = async (context: AWAContext): Promise<AvailableStreams> => {
   const options: myAxiosConfig = { url: `${context.baseURL}/control-center`, method: 'GET', headers: context.headers };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request<string>(options);
   return parseAvailableStreams(response.data);
 };

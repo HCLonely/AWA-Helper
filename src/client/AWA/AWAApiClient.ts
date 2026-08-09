@@ -31,7 +31,9 @@ export class AWAApiClient {
    * 获取 new Cookie。
    * @returns `string`，当前会话序列化后的 Cookie 字符串。
    */
-  get newCookie(): string { return this.context.cookie.stringify(); }
+  get newCookie(): string {
+    return this.context.cookie.stringify();
+  }
   /**
    * 获取 session。
    * @returns `{ refresh: () => Promise<string>; verify: () => Promise<{ userId: string; username: string; }>; }`，session 相关操作组成的 API 集合。

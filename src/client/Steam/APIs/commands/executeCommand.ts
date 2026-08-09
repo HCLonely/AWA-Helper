@@ -17,7 +17,9 @@ export const executeCommand = async (context: ASFContext, command: string): Prom
     url: context.commandURL, method: 'POST', headers: context.headers,
     data: JSON.stringify({ Command: command })
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   try {
     const response = await context.request<ASFCommandResponse>(options);
     const envelope = response.data as ASFCommandResponse;
@@ -26,7 +28,9 @@ export const executeCommand = async (context: ASFContext, command: string): Prom
     }
     return envelope.Result || '';
   } catch (error) {
-    if (error instanceof ASFError) throw error;
+    if (error instanceof ASFError) {
+      throw error;
+    }
     throw new ASFError('executeCommand', 'Unable to execute ASF command', true, undefined, { cause: error });
   }
 };

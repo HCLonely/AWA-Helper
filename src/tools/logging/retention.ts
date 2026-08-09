@@ -15,17 +15,25 @@ const logDatePattern = /^(?:Manager-|DailyQuest-|Achievement-|Artifact-|Archieve
  * @returns `number`，cleanupExpiredLogs 计算或读取到的数值。
  */
 const cleanupExpiredLogs = (directory: string, expireDays: number, now = new Date()): number => {
-  if (!Number.isFinite(expireDays) || expireDays <= 0 || !fs.existsSync(directory)) return 0;
+  if (!Number.isFinite(expireDays) || expireDays <= 0 || !fs.existsSync(directory)) {
+    return 0;
+  }
   const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
   let removed = 0;
   for (const filename of fs.readdirSync(directory)) {
     const match = filename.match(logDatePattern);
-    if (!match) continue;
+    if (!match) {
+      continue;
+    }
     const [, year, month, day] = match;
     const logDateUtc = Date.UTC(Number(year), Number(month) - 1, Number(day));
     const parsedDate = new Date(logDateUtc);
-    if (parsedDate.getUTCFullYear() !== Number(year) || parsedDate.getUTCMonth() !== Number(month) - 1 || parsedDate.getUTCDate() !== Number(day)) continue;
-    if ((todayUtc - logDateUtc) / 86_400_000 < expireDays) continue;
+    if (parsedDate.getUTCFullYear() !== Number(year) || parsedDate.getUTCMonth() !== Number(month) - 1 || parsedDate.getUTCDate() !== Number(day)) {
+      continue;
+    }
+    if ((todayUtc - logDateUtc) / 86_400_000 < expireDays) {
+      continue;
+    }
     try {
       fs.unlinkSync(path.join(directory, filename));
       removed++;

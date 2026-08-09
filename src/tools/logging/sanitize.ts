@@ -44,13 +44,17 @@ const collectLogSecrets = (value: unknown): Array<string> => {
           item.split(';').forEach((part) => {
             const separator = part.indexOf('=');
             const cookieValue = separator >= 0 ? part.slice(separator + 1).trim() : '';
-            if (cookieValue.length > 5) secrets.add(cookieValue);
+            if (cookieValue.length > 5) {
+              secrets.add(cookieValue);
+            }
           });
         }
       }
       return;
     }
-    if (!item || typeof item !== 'object' || visited.has(item)) return;
+    if (!item || typeof item !== 'object' || visited.has(item)) {
+      return;
+    }
     visited.add(item);
     Object.entries(item as Record<string, unknown>).forEach(([name, child]) => visit(child, name));
   };
@@ -89,10 +93,16 @@ const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknow
       url: error.config?.url
     };
   }
-  if (!value || typeof value !== 'object') return value;
-  if (visited.has(value)) return '[Circular]';
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  if (visited.has(value)) {
+    return '[Circular]';
+  }
   visited.add(value);
-  if (Array.isArray(value)) return value.map((item) => sanitizeObject(item, visited));
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeObject(item, visited));
+  }
   return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => [
     key,
     !visibleConfigKeyPattern.test(key) && sensitiveKeyPattern.test(key) ? '********' : sanitizeObject(item, visited)

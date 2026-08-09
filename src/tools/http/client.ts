@@ -8,14 +8,18 @@ export const http = axios.create({ maxRedirects: 5, timeout: 5 * 60 * 1000 });
 
 http.interceptors.response.use((response) => response, async (error) => {
   const { config, response } = error;
-  if (!config) return Promise.reject(error);
+  if (!config) {
+    return Promise.reject(error);
+  }
   const method = (config.method || 'get').toUpperCase();
   const status = response?.status as number | undefined;
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method) || (status && ![408, 429, 502, 503, 504].includes(status))) {
     return Promise.reject(error);
   }
   config.retryCount = config.retryCount || 0;
-  if (config.retryCount >= (config.retryTimes || 3)) return Promise.reject(error);
+  if (config.retryCount >= (config.retryTimes || 3)) {
+    return Promise.reject(error);
+  }
   config.retryCount++;
   if (config.Logger) {
     config.Logger.log(chalk.red(__('logStatusError')));

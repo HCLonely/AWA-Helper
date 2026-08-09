@@ -21,12 +21,20 @@ class ArtifactJob implements Job {
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
   async run(signal: AbortSignal, payload?: unknown): Promise<boolean> {
-    if (signal.aborted) return false;
+    if (signal.aborted) {
+      return false;
+    }
     const ids = Array.isArray(payload) ? payload.filter((id): id is number => Number.isInteger(id)) : [];
-    if (ids.length === 0) throw new Error('Artifact IDs are required');
+    if (ids.length === 0) {
+      throw new Error('Artifact IDs are required');
+    }
     const service = new ArtifactService(this.configPath);
-    if (!service.initted) return false;
-    if (!await service.init() || signal.aborted) return false;
+    if (!service.initted) {
+      return false;
+    }
+    if (!await service.init() || signal.aborted) {
+      return false;
+    }
     return service.start(ids);
   }
 }

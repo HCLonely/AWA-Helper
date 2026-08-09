@@ -29,7 +29,9 @@ export const parseEquippedArtifacts = (html: string): EquippedArtifact[] => {
 export const parseTwitchArtifactBonus = (html: string): number => {
   const $ = load(html);
   return $('.artifact-card-chaotic').toArray().reduce((total, card) => {
-    if (!$(card).find('button[onClick]').length) return total;
+    if (!$(card).find('button[onClick]').length) {
+      return total;
+    }
     return total + parseFloat($(card).find('a[data-description-perk]').attr('data-description-perk')
       ?.match(/Twitch quests by ([\d]+)/)?.[1] || '0');
   }, 0);

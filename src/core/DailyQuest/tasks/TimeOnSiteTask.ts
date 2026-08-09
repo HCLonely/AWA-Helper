@@ -31,7 +31,9 @@ class TimeOnSiteTask {
         return false;
       }
       await runtime.sendTimeOnSite();
-      if (!await sleep(60, signal)) return true;
+      if (!await sleep(60, signal)) {
+        return true;
+      }
     }
     return true;
   }

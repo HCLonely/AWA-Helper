@@ -62,7 +62,9 @@ export class AWAContext {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   updateCookies(setCookie?: string[]): void {
-    if (!setCookie?.length) return;
+    if (!setCookie?.length) {
+      return;
+    }
     this.headers.cookie = this.cookie.update(setCookie).stringify();
   }
 
@@ -76,7 +78,9 @@ export class AWAContext {
       ...options,
       headers: { ...this.headers, ...options.headers, cookie: this.cookie.stringify() }
     };
-    if (this.httpsAgent && !requestOptions.httpsAgent) requestOptions.httpsAgent = this.httpsAgent;
+    if (this.httpsAgent && !requestOptions.httpsAgent) {
+      requestOptions.httpsAgent = this.httpsAgent;
+    }
     try {
       const execute = () => this.transport.request<T>(requestOptions);
       const response = this.logRequests
@@ -85,7 +89,9 @@ export class AWAContext {
       this.updateCookies(response.headers?.['set-cookie']);
       return response;
     } catch (error) {
-      if (error instanceof AWAError) throw error;
+      if (error instanceof AWAError) {
+        throw error;
+      }
       const statusCode = error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { status?: number } }).response?.status
         : undefined;

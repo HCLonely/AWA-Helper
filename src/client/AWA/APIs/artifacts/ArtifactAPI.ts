@@ -24,7 +24,9 @@ export class ArtifactAPI {
       url: `${this.context.baseURL}${userProfilePath}/artifacts`, method: 'GET',
       headers: { ...this.context.headers, referer: this.context.baseURL }
     };
-    if (this.context.httpsAgent) options.httpsAgent = this.context.httpsAgent;
+    if (this.context.httpsAgent) {
+      options.httpsAgent = this.context.httpsAgent;
+    }
     const response = await this.context.request<string>(options);
     return parseEquippedArtifacts(response.data);
   }
@@ -45,7 +47,9 @@ export class ArtifactAPI {
       },
       data: JSON.stringify({ artifactId: String(artifactId), position: String(position) })
     };
-    if (this.context.httpsAgent) options.httpsAgent = this.context.httpsAgent;
+    if (this.context.httpsAgent) {
+      options.httpsAgent = this.context.httpsAgent;
+    }
     return (await this.context.request(options)).status === 200
       ? { ok: true, state: 'equipped' }
       : { ok: false, state: 'rejected' };

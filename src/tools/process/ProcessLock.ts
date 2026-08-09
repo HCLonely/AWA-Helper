@@ -64,7 +64,9 @@ class ProcessLock {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async release(): Promise<void> {
-    if (!this.acquired) return;
+    if (!this.acquired) {
+      return;
+    }
     this.acquired = false;
     await this.handle?.close().catch(() => undefined);
     this.handle = undefined;
@@ -76,7 +78,9 @@ class ProcessLock {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   releaseSync(): void {
-    if (!this.acquired) return;
+    if (!this.acquired) {
+      return;
+    }
     this.acquired = false;
     try {
       fs.rmSync(this.lockPath, { force: true });
@@ -118,7 +122,9 @@ class ProcessLock {
    * @returns `boolean`，表示 isProcessRunning 检查是否通过。
    */
   private isProcessRunning(pid: number): boolean {
-    if (!Number.isSafeInteger(pid) || pid <= 0) return false;
+    if (!Number.isSafeInteger(pid) || pid <= 0) {
+      return false;
+    }
     try {
       process.kill(pid, 0);
       return true;

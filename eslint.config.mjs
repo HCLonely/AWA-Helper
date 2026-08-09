@@ -120,6 +120,8 @@ export default [
       'radix': 'error',
       'id-length': 'off',
       'no-underscore-dangle': 'error',
+      'curly': 'error',
+      'brace-style': 'error'
     },
   },
 ];

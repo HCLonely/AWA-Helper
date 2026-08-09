@@ -20,7 +20,9 @@ export const parsePersonalization = (html: string, type: 'avatar' | 'border'): P
   $(`.account-personalization__personalization-item.account-personalization__${type}`).each((_, element) => {
     const id = $(element).attr('data-id');
     const name = $(element).find('.account-personalization__name').text();
-    if (id && name) ids.push({ id, name });
+    if (id && name) {
+      ids.push({ id, name });
+    }
   });
   const entries = $('div.user-avatar').first().find('img')
     .toArray()
@@ -28,10 +30,18 @@ export const parsePersonalization = (html: string, type: 'avatar' | 'border'): P
       const item = $(image);
       const source = item.attr('src')?.split('?')[0];
       const id = source ? $(`img[src^="${source}"]`).parents('.account-personalization__personalization-item').attr('data-id') : undefined;
-      if (!id) return [];
-      if (item.hasClass('user-avatar__background')) return [['background', id]];
-      if (item.hasClass('user-avatar__border')) return [['border', id]];
-      if (item.hasClass('user-avatar__avatar')) return [['avatar', id]];
+      if (!id) {
+        return [];
+      }
+      if (item.hasClass('user-avatar__background')) {
+        return [['background', id]];
+      }
+      if (item.hasClass('user-avatar__border')) {
+        return [['border', id]];
+      }
+      if (item.hasClass('user-avatar__avatar')) {
+        return [['avatar', id]];
+      }
       return [];
     });
   const userAvatarInfo = Object.fromEntries(entries) as userAvatarInfo;

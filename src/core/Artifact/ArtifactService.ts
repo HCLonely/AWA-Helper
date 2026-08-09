@@ -39,14 +39,18 @@ class ArtifactService {
    * 获取 new Cookie。
    * @returns `string`，当前会话序列化后的 Cookie 字符串。
    */
-  get newCookie(): string { return this.awa?.newCookie || ''; }
+  get newCookie(): string {
+    return this.awa?.newCookie || '';
+  }
 
   /**
    * 初始化 init 相关数据。
    * @returns `Promise<boolean>`，表示 init 检查是否通过。
    */
   async init(): Promise<boolean> {
-    if (!this.awa) return false;
+    if (!this.awa) {
+      return false;
+    }
     new Logger(`${time()}${__('artifactInitializing')}`);
     try {
       await refreshSession(this.awa.context);
@@ -72,7 +76,9 @@ class ArtifactService {
    */
   async start(newArtifacts: number[]): Promise<boolean> {
     new Logger(`${time()}${__('artifactRequestedSet', newArtifacts.join('|'))}`);
-    if (!await this.getArtifactsInfo()) return false;
+    if (!await this.getArtifactsInfo()) {
+      return false;
+    }
     const oldSet = new Set(this.oldArtifacts);
     const newSet = new Set(newArtifacts);
     const replacements = newArtifacts.filter((artifact) => !oldSet.has(artifact));
@@ -80,7 +86,9 @@ class ArtifactService {
     const positions = [0, 1, 2].filter((index) => !unchangedPositions.includes(index)).map((index) => index + 1);
     new Logger(`${time()}${__('artifactReplacementCount', String(replacements.length))}`);
     for (let index = 0; index < positions.length; index++) {
-      if (!await this.changeArtifact(replacements[index], positions[index])) return false;
+      if (!await this.changeArtifact(replacements[index], positions[index])) {
+        return false;
+      }
     }
     await this.getArtifactsInfo();
     const success = this.oldArtifacts.every((artifact) => newSet.has(artifact));

@@ -12,7 +12,9 @@ import type { ActionResult } from '../../../shared';
  * @returns 启动成功时返回 `started`；未提供游戏时返回 `no-games`。
  */
 export const playGames = async (context: ASFContext, appIds: string[]): Promise<ActionResult<'started', 'no-games'>> => {
-  if (!appIds.length) return { ok: false, state: 'no-games' };
+  if (!appIds.length) {
+    return { ok: false, state: 'no-games' };
+  }
   await executeCommand(context, `!play ${context.botName} ${appIds.join(',')}`);
   return { ok: true, state: 'started' };
 };

@@ -15,10 +15,14 @@ export const parseSteamQuestListings = (html: string, baseURL: string): AWASteam
   const $ = load(html);
   return $('div.container>div.row').toArray().flatMap((row) => {
     const questPath = $(row).find('a.btn-steam-quest[href]').attr('href');
-    if (!questPath) return [];
+    if (!questPath) {
+      return [];
+    }
     const link = new URL(questPath, `${baseURL}/`).href;
     const name = link.match(/steam\/quests\/([^/?#]+)/)?.[1];
-    if (!name) return [];
+    if (!name) {
+      return [];
+    }
     return [{
       name,
       link,
@@ -40,11 +44,21 @@ export const parseSteamQuestDetail = (html: string): AWASteamQuestDetail => {
   const appId = $('img[src*="steam/apps/"]').first().attr('src')
     ?.match(/steam\/apps\/([\d]+)/)?.[1] ||
     html.match(/steam\/apps\/([\d]+)/)?.[1] || '';
-  if (html.includes('You have completed this quest')) return { appId, state: 'completed' };
-  if (html.includes('This quest requires that you own')) return { appId, state: 'ownership-required' };
-  if (html.includes('Launch Game')) return { appId, state: 'ready' };
-  if (html.includes('Sync Games')) return { appId, state: 'selection-required' };
-  if (html.includes('Start Quest')) return { appId, state: 'not-started' };
+  if (html.includes('You have completed this quest')) {
+    return { appId, state: 'completed' };
+  }
+  if (html.includes('This quest requires that you own')) {
+    return { appId, state: 'ownership-required' };
+  }
+  if (html.includes('Launch Game')) {
+    return { appId, state: 'ready' };
+  }
+  if (html.includes('Sync Games')) {
+    return { appId, state: 'selection-required' };
+  }
+  if (html.includes('Start Quest')) {
+    return { appId, state: 'not-started' };
+  }
   return { appId, state: 'unknown' };
 };
 

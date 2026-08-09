@@ -47,20 +47,26 @@ export class TwitchQuestTask {
         return null;
       });
       if (!streams) {
-        if (!await this.waitForAvailableStreams(signal)) return true;
+        if (!await this.waitForAvailableStreams(signal)) {
+          return true;
+        }
         continue;
       }
       const streamCount = streams.Hive.length + streams.Nexus.length;
       streamLogger.log(streamCount > 0 ? chalk.green(`OK (${streamCount})`) : chalk.blue(__('noLive')));
       if (streamCount === 0) {
-        if (!await this.waitForAvailableStreams(signal)) return true;
+        if (!await this.waitForAvailableStreams(signal)) {
+          return true;
+        }
         continue;
       }
       const channelLogger = new Logger(`${time()}${__('gettingChannelInfo')}`, false);
       const trackingLookup = await this.twitch.channels.findTracking([...streams.Hive, ...streams.Nexus]);
       if (!trackingLookup.found) {
         channelLogger.log(chalk.blue(__('noLive')));
-        if (!await this.waitForAvailableStreams(signal)) return true;
+        if (!await this.waitForAvailableStreams(signal)) {
+          return true;
+        }
         continue;
       }
       const trackingInfo = trackingLookup.value;
@@ -75,10 +81,14 @@ export class TwitchQuestTask {
         }
         if (result.state === 'streamer_offline' || result.state === 'no_channel_found') {
           new Logger(`${time()}${chalk.blue(result.state === 'streamer_offline' ? __('liveOffline', chalk.yellow(trackingInfo.channelId)) : __('noChannelFound', chalk.yellow(trackingInfo.channelId)))}`);
-          if (!await sleep(60, signal)) return true;
+          if (!await sleep(60, signal)) {
+            return true;
+          }
           continue;
         }
-        if (!result.success) return false;
+        if (!result.success) {
+          return false;
+        }
         retriedAuthorization = false;
       } catch (error) {
         logger.log(chalk.red(__('logStatusError')));
@@ -88,13 +98,17 @@ export class TwitchQuestTask {
         if (status === 403 && !retriedAuthorization) {
           new Logger(`${time()}${chalk.yellow(__('twitchAuthorizationExpiredRetrying'))}`);
           retriedAuthorization = true;
-          if (!await this.initializeTwitch()) return false;
+          if (!await this.initializeTwitch()) {
+            return false;
+          }
         } else {
           new Logger(`${time()}${chalk.red(error instanceof Error ? error.message : String(error))}`);
           return false;
         }
       }
-      if (!await sleep(60, signal)) return true;
+      if (!await sleep(60, signal)) {
+        return true;
+      }
     }
     return true;
   }

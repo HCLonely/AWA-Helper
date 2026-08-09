@@ -29,17 +29,25 @@ export class SteamQuestTask {
       new Logger(error);
       return null;
     });
-    if (!listings) return false;
+    if (!listings) {
+      return false;
+    }
     const quests: PreparedSteamQuest[] = [];
     for (const listing of listings) {
       const prepared = await this.prepareQuest(listing, signal);
-      if (prepared) quests.push(prepared);
-      if (signal?.aborted) return true;
+      if (prepared) {
+        quests.push(prepared);
+      }
+      if (signal?.aborted) {
+        return true;
+      }
     }
     questLogger.log(chalk.green(`${__('logStatusOk')} (${quests.length})`));
     const { eventAppId } = this;
     const requestedIds = [...quests.map((quest) => quest.id), ...(eventAppId ? [eventAppId] : [])];
-    if (!requestedIds.length) return true;
+    if (!requestedIds.length) {
+      return true;
+    }
 
     const licenseLogger = new Logger(`${time()}${__('addingLicense')}`, false);
     const licenseResult = await this.asf.licenses.add(requestedIds).catch((error) => {
@@ -47,7 +55,9 @@ export class SteamQuestTask {
       new Logger(error);
       return null;
     });
-    if (!licenseResult?.ok) return false;
+    if (!licenseResult?.ok) {
+      return false;
+    }
     licenseLogger.log(chalk.green(__('logStatusOk')));
     const matchLogger = new Logger(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
     const ownedIds = await this.asf.bot.getOwnedGames(requestedIds).catch((error) => {
@@ -55,7 +65,9 @@ export class SteamQuestTask {
       new Logger(error);
       return null;
     });
-    if (!ownedIds) return false;
+    if (!ownedIds) {
+      return false;
+    }
     if (!ownedIds.length) {
       matchLogger.log(chalk.yellow(__('notOwned')));
       new Logger(`${time()}${chalk.yellow(__('noGamesAlert'))}`);
@@ -63,7 +75,9 @@ export class SteamQuestTask {
     }
     matchLogger.log(chalk.green(`${__('logStatusOk')} (${ownedIds.length})`));
     const trackedQuests = quests.filter((quest) => ownedIds.includes(quest.id));
-    if (!trackedQuests.length && !eventAppId) return false;
+    if (!trackedQuests.length && !eventAppId) {
+      return false;
+    }
     const playLogger = new Logger(`${time()}${__('usingASF', chalk.yellow('ASF'))}`, false);
     const playResult = await this.asf.bot.playGames(ownedIds).catch((error) => {
       new Logger(error);
@@ -76,17 +90,25 @@ export class SteamQuestTask {
     playLogger.log(chalk.green(__('logStatusOk')));
 
     try {
-      if (!await sleep(10 * 60, signal)) return true;
+      if (!await sleep(10 * 60, signal)) {
+        return true;
+      }
       while (!signal?.aborted) {
         let complete = true;
         for (const quest of trackedQuests) {
           const progressResult = await this.awa.steam.getQuestProgress(quest.link);
           const progress = progressResult.found ? progressResult.value : null;
-          if (progress === null || progress < 100) complete = false;
+          if (progress === null || progress < 100) {
+            complete = false;
+          }
           new Logger(`${time()}${__('checkingProgress', chalk.yellow(quest.link))}: ${progress ?? '-'}%`);
         }
-        if (complete && !eventAppId) return true;
-        if (!await sleep(10 * 60, signal)) return true;
+        if (complete && !eventAppId) {
+          return true;
+        }
+        if (!await sleep(10 * 60, signal)) {
+          return true;
+        }
       }
       return true;
     } finally {
@@ -108,10 +130,16 @@ export class SteamQuestTask {
   private async prepareQuest(listing: AWASteamQuestListing, signal?: AbortSignal): Promise<PreparedSteamQuest | null> {
     for (let attempt = 0; attempt < 5 && !signal?.aborted; attempt++) {
       const detail = await this.awa.steam.getQuestDetail(listing.link);
-      if (detail.state === 'ready' && detail.appId) return { ...listing, id: detail.appId };
-      if (detail.state === 'completed' || detail.state === 'unknown') return null;
+      if (detail.state === 'ready' && detail.appId) {
+        return { ...listing, id: detail.appId };
+      }
+      if (detail.state === 'completed' || detail.state === 'unknown') {
+        return null;
+      }
       if (detail.state === 'ownership-required') {
-        if (!(await this.awa.steam.checkOwnedGames(listing.name)).ok) return null;
+        if (!(await this.awa.steam.checkOwnedGames(listing.name)).ok) {
+          return null;
+        }
         continue;
       }
       if (detail.state === 'selection-required') {
@@ -119,11 +147,15 @@ export class SteamQuestTask {
         if (!gameLookup.found && (await this.awa.steam.syncGames(listing.link)).ok) {
           gameLookup = await this.awa.steam.getSelectableGameId(listing.link);
         }
-        if (!gameLookup.found || !(await this.awa.steam.selectGame(listing.link, gameLookup.value)).ok) return null;
+        if (!gameLookup.found || !(await this.awa.steam.selectGame(listing.link, gameLookup.value)).ok) {
+          return null;
+        }
         continue;
       }
       if (detail.state === 'not-started') {
-        if (!(await this.awa.steam.startQuest(listing.link)).ok) return null;
+        if (!(await this.awa.steam.startQuest(listing.link)).ok) {
+          return null;
+        }
       }
     }
     return null;

@@ -24,16 +24,26 @@ const createRuntimeFiles = (): void => {
   fs.mkdirSync('logs', { recursive: true });
   fs.mkdirSync('data', { recursive: true });
   fs.mkdirSync('config', { recursive: true });
-  if (!fs.existsSync('config/config.example.yml')) fs.writeFileSync('config/config.example.yml', exampleConfig);
+  if (!fs.existsSync('config/config.example.yml')) {
+    fs.writeFileSync('config/config.example.yml', exampleConfig);
+  }
   const isMainJs = /main\.js$|index\.js$/.test(process.argv[1]);
   if (os.type() === 'Windows_NT') {
-    if (!fs.existsSync('AWA-Manager.bat')) fs.writeFileSync('AWA-Manager.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node index.js --manager"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --manager"');
-    if (!fs.existsSync('AWA-DailyQuest.bat')) fs.writeFileSync('AWA-DailyQuest.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node index.js --daily"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --daily"');
+    if (!fs.existsSync('AWA-Manager.bat')) {
+      fs.writeFileSync('AWA-Manager.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node index.js --manager"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --manager"');
+    }
+    if (!fs.existsSync('AWA-DailyQuest.bat')) {
+      fs.writeFileSync('AWA-DailyQuest.bat', isMainJs ? 'cd "%~dp0" && start cmd /k "node index.js --daily"' : 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --daily"');
+    }
   } else {
     const manager = isMainJs ? '#!/bin/sh\ncd "$(dirname "$0")"\nnode index.js --manager\n' : '#!/bin/sh\ncd "$(dirname "$0")"\n./AWA-Helper --manager\n';
     const daily = isMainJs ? '#!/bin/sh\ncd "$(dirname "$0")"\nnode index.js --daily\n' : '#!/bin/sh\ncd "$(dirname "$0")"\n./AWA-Helper --daily\n';
-    if (!fs.existsSync('AWA-Manager.sh')) fs.writeFileSync('AWA-Manager.sh', manager, { mode: 0o755 });
-    if (!fs.existsSync('AWA-DailyQuest.sh')) fs.writeFileSync('AWA-DailyQuest.sh', daily, { mode: 0o755 });
+    if (!fs.existsSync('AWA-Manager.sh')) {
+      fs.writeFileSync('AWA-Manager.sh', manager, { mode: 0o755 });
+    }
+    if (!fs.existsSync('AWA-DailyQuest.sh')) {
+      fs.writeFileSync('AWA-DailyQuest.sh', daily, { mode: 0o755 });
+    }
   }
 };
 
@@ -52,8 +62,12 @@ const main = async (): Promise<number> => {
     return 0;
   }
   createRuntimeFiles();
-  if (command.kind === 'init') return 0;
-  if (command.kind === 'healthcheck') return await runHealthcheck() ? 0 : 1;
+  if (command.kind === 'init') {
+    return 0;
+  }
+  if (command.kind === 'healthcheck') {
+    return await runHealthcheck() ? 0 : 1;
+  }
 
   const mode = command.kind === 'run' ? command.mode : 'once';
   if (command.kind === 'run' && command.deprecatedHelper) {
@@ -62,8 +76,12 @@ const main = async (): Promise<number> => {
   const lock = process.env.AWA_HELPER_CONTAINER === 'true'
     ? undefined
     : new ProcessLock(path.join('data', 'manager.lock'));
-  if (lock && !await lock.acquire()) throw new Error('Manager is already running');
-  if (lock) process.once('exit', () => lock.releaseSync());
+  if (lock && !await lock.acquire()) {
+    throw new Error('Manager is already running');
+  }
+  if (lock) {
+    process.once('exit', () => lock.releaseSync());
+  }
   const runtime = new ManagerRuntime(mode, version);
   /**
    * 停止 stop 相关数据。
@@ -83,7 +101,9 @@ const main = async (): Promise<number> => {
 };
 
 void main()
-  .then((exitCode) => { process.exitCode = exitCode; })
+  .then((exitCode) => {
+    process.exitCode = exitCode;
+  })
   .catch((error) => {
     console.error(error);
     process.exitCode = 1;

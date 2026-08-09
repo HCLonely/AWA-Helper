@@ -10,7 +10,9 @@ export class Cookie {
         return separator <= 0 ? [] : [[cookie.slice(0, separator).trim(), cookie.slice(separator + 1).trim()]];
       }));
     }
-    if (Array.isArray(data)) return Object.fromEntries(data.flatMap((value) => Object.entries(this.ToJson(value.split(';')[0]))));
+    if (Array.isArray(data)) {
+      return Object.fromEntries(data.flatMap((value) => Object.entries(this.ToJson(value.split(';')[0]))));
+    }
     return {};
   }
 
@@ -23,8 +25,12 @@ export class Cookie {
     this.cookie = typeof data === 'string' || Array.isArray(data) ? Cookie.ToJson(data) : data || {};
   }
 
-  parse(): cookies { return this.cookie; }
-  stringify(): string { return Cookie.ToString(this.cookie); }
+  parse(): cookies {
+    return this.cookie;
+  }
+  stringify(): string {
+    return Cookie.ToString(this.cookie);
+  }
   browserify() {
     return Object.entries(this.cookie).map(([name, value]) => ({ name, value, domain: '.alienwarearena.com', path: '/' }));
   }
@@ -32,6 +38,10 @@ export class Cookie {
     this.cookie = { ...this.cookie, ...(typeof data === 'string' || Array.isArray(data) ? Cookie.ToJson(data) : data) };
     return this;
   }
-  remove(name: string): this { delete this.cookie[name]; return this; }
-  get(name: string): string | null { return Object.hasOwn(this.cookie, name) ? this.cookie[name] : null; }
+  remove(name: string): this {
+    delete this.cookie[name]; return this;
+  }
+  get(name: string): string | null {
+    return Object.hasOwn(this.cookie, name) ? this.cookie[name] : null;
+  }
 }

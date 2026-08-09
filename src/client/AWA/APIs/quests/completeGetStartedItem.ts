@@ -15,6 +15,8 @@ export const completeGetStartedItem = async (context: AWAContext, link: string):
     url: new URL(link, `${context.baseURL}/`).href, method: 'GET',
     headers: { ...context.headers, origin: context.baseURL, referer: `${context.baseURL}/control-center` }
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   return (await context.request(options)).status === 200 ? { ok: true, state: 'completed' } : { ok: false, state: 'rejected' };
 };

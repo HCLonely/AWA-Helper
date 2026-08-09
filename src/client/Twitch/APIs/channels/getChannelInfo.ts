@@ -16,12 +16,16 @@ import type { LookupResult } from '../../../shared';
  * @returns 找到频道时返回频道 ID，否则返回 `not-found`。
  */
 export const getChannelInfo = async (context: TwitchContext, channelLogin: string): Promise<LookupResult<string>> => {
-  if (!context.clientId) throw new TwitchError('getChannelInfo', 'Twitch Client-Id is not initialized');
+  if (!context.clientId) {
+    throw new TwitchError('getChannelInfo', 'Twitch Client-Id is not initialized');
+  }
   const options: myAxiosConfig = {
     url: 'https://gql.twitch.tv/gql', method: 'POST',
     headers: { ...context.headers, 'Client-Id': context.clientId }, data: channelInfoQuery(channelLogin)
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   try {
     const response = await context.request<Array<TwitchGqlEnvelope<TwitchChannelQueryData>>>(options);
     const channelId = parseTwitchChannelId(response.data);

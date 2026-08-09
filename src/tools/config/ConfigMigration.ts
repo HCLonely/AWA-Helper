@@ -17,7 +17,9 @@ const normalizeManagerConfig = (value: config): Omit<NormalizedManagerConfig, 's
   const configuredArtifacts = current?.artifacts || legacy?.artifacts || [];
   const artifacts = configuredArtifacts.flatMap((item) => {
     const cron = item.cron || ('corn' in item ? item.corn : undefined);
-    if (!cron) return [];
+    if (!cron) {
+      return [];
+    }
     const rawIds: string | number[] = item.ids;
     return [{
       cron,

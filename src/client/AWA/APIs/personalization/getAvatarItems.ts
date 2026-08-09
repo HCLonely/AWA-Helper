@@ -15,9 +15,13 @@ import type { LookupResult } from '../../../shared';
  */
 export const getAvatarItems = async (context: AWAContext, type: 'avatar' | 'border'): Promise<LookupResult<avatarIds>> => {
   const options: myAxiosConfig = { url: `${context.baseURL}/account/personalization`, method: 'GET', headers: context.headers };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request<string>(options);
   const { userId, selection } = parsePersonalization(response.data, type);
-  if (userId) context.userId = userId;
+  if (userId) {
+    context.userId = userId;
+  }
   return selection ? { found: true, value: selection } : { found: false, reason: 'not-found' };
 };

@@ -21,7 +21,9 @@ export class CommunityEventAPI {
    */
   private async get<T = unknown>(url: string): Promise<AxiosResponse<T>> {
     const options: myAxiosConfig = { url, method: 'GET', headers: { ...this.context.headers, referer: this.context.baseURL } };
-    if (this.context.httpsAgent) options.httpsAgent = this.context.httpsAgent;
+    if (this.context.httpsAgent) {
+      options.httpsAgent = this.context.httpsAgent;
+    }
     return this.context.request<T>(options);
   }
   /**
@@ -30,7 +32,9 @@ export class CommunityEventAPI {
    */
   async findPath(): Promise<LookupResult<string, 'concluded' | 'not-found'>> {
     const response = await this.get<string>(`${this.context.baseURL}/steam/events`);
-    if (String(response.data).includes('concluded')) return { found: false, reason: 'concluded' };
+    if (String(response.data).includes('concluded')) {
+      return { found: false, reason: 'concluded' };
+    }
     const path = parseCommunityEventPath(String(response.data));
     return path ? { found: true, value: path } : { found: false, reason: 'not-found' };
   }

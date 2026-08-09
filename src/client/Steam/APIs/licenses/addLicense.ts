@@ -12,7 +12,9 @@ import type { ActionResult } from '../../../shared';
  * @returns 添加成功时返回 `added`；没有应用需要处理时返回 `not-required`。
  */
 export const addLicense = async (context: ASFContext, appIds: string[]): Promise<ActionResult<'added' | 'not-required'>> => {
-  if (!appIds.length) return { ok: true, state: 'not-required' };
+  if (!appIds.length) {
+    return { ok: true, state: 'not-required' };
+  }
   await executeCommand(context, `!addlicense ${context.botName} ${appIds.map((id) => `app/${id}`).join(',')}`);
   return { ok: true, state: 'added' };
 };

@@ -9,7 +9,9 @@
  * @returns `string`，getManagerListenHost 获取或生成的文本内容。
  */
 const getManagerListenHost = (local: boolean | undefined, containerRuntime: boolean): string => {
-  if (local && !containerRuntime) return '127.0.0.1';
+  if (local && !containerRuntime) {
+    return '127.0.0.1';
+  }
   return '0.0.0.0';
 };
 

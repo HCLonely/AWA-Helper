@@ -21,7 +21,9 @@ export const parseControlCenter = (html: string, baseURL: string): ControlCenter
     try {
       const data = JSON.parse(consecutive);
       const reward = $(`#streak-days .calendar-rewards__day[data-day="${data.count}"] .calendar-rewards__reward span`).text().trim();
-      if (reward) signArp.daily = `${reward} + ${rewardBonusArp} ARP`;
+      if (reward) {
+        signArp.daily = `${reward} + ${rewardBonusArp} ARP`;
+      }
     } catch (_error) { /* malformed optional page data */ }
   }
   const monthly = html.match(/monthly_logins.*?=.*?({.+?})/)?.[1];
@@ -33,9 +35,15 @@ export const parseControlCenter = (html: string, baseURL: string): ControlCenter
         const day = $(`#monthly-days-${week} .calendar-rewards__day[data-day="${data.count}"]`);
         const reward = day.find('.calendar-rewards__reward span').text().trim();
         const item = day.find('.calendar-rewards__reward img[data-bs-title]').attr('data-bs-title')?.trim();
-        if (reward) signArp.monthly = `${reward} + ${rewardBonusArp} ARP`;
-        if (item) signArp.monthly = item;
-      } else signArp.monthly = `${data.extra_arp} + ${rewardBonusArp} ARP`;
+        if (reward) {
+          signArp.monthly = `${reward} + ${rewardBonusArp} ARP`;
+        }
+        if (item) {
+          signArp.monthly = item;
+        }
+      } else {
+        signArp.monthly = `${data.extra_arp} + ${rewardBonusArp} ARP`;
+      }
     } catch (_error) { /* malformed optional page data */ }
   }
 
@@ -95,15 +103,18 @@ export const parseControlCenter = (html: string, baseURL: string): ControlCenter
   const promoDays = $('div.promotional-calendar__day');
   let promotionalCalendarInfo: PromotionalCalendarEntry[] | undefined;
   const claimable = promoDays.filter((_, day) => $(day).text().includes('GET ITEM'));
-  if (claimable.length) promotionalCalendarInfo = claimable.toArray().map((day) => ({
-    name: $(day).find('.promotional-calendar__day-info h1').text()
-      .trim(), day: `Day ${$(day).attr('data-day')}`, finished: false
-  }));
-  else promotionalCalendarInfo = promoDays.filter((_, day) => $(day).text().includes('My Rewards')).last().toArray()
-    .map((day) => ({
+  if (claimable.length) {
+    promotionalCalendarInfo = claimable.toArray().map((day) => ({
       name: $(day).find('.promotional-calendar__day-info h1').text()
-        .trim(), day: `Day ${$(day).attr('data-day')}`, finished: true
+        .trim(), day: `Day ${$(day).attr('data-day')}`, finished: false
     }));
+  } else {
+    promotionalCalendarInfo = promoDays.filter((_, day) => $(day).text().includes('My Rewards')).last().toArray()
+      .map((day) => ({
+        name: $(day).find('.promotional-calendar__day-info h1').text()
+          .trim(), day: `Day ${$(day).attr('data-day')}`, finished: true
+      }));
+  }
 
   return {
     questInfo, dailyArp, signArp, promotionalCalendarInfo,

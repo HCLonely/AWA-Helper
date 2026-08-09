@@ -167,7 +167,9 @@ export class AchievementService {
       if (achievement) {
         this.incompletedAchievements.push(availableAchievement);
         new Logger(`${time()}${__('doingAchievement', chalk.yellow(availableAchievement))}`);
-        if (signal?.aborted) return;
+        if (signal?.aborted) {
+          return;
+        }
         await this.achievement2action[availableAchievement]();
         new Logger(`${time()}${__('doneAchievement', chalk.yellow(availableAchievement))}`);
       }
@@ -199,7 +201,9 @@ export class AchievementService {
 
     for (let i = 0; i < 25; i++) {
       userAvatarInfo.border = borderIds[i];
-      if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) return;
+      if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
+        return;
+      }
       this.userAvatarInfo = userAvatarInfo;
       // new Logger(`${time()}${__('changeBorder', chalk.yellow(borderId))}`, false);
       await sleep(5);
@@ -249,7 +253,9 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) return;
+    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
+      return;
+    }
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
@@ -311,7 +317,9 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) return;
+    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
+      return;
+    }
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
 
@@ -359,7 +367,9 @@ export class AchievementService {
       try {
         this.twitch = new TwitchClient({ cookie: this.twitchCookie, logRequests: this.awa.context.logRequests });
         await this.twitch.session.verify();
-        if (!(await this.twitch.extensions.checkLinked()).ok) return;
+        if (!(await this.twitch.extensions.checkLinked()).ok) {
+          return;
+        }
         const { Hive, Nexus } = await this.awa.twitch.getAvailableStreams();
         new Logger(`${time()}${__('foundHiveLive', chalk.yellow(Hive.length))}`);
         new Logger(`${time()}${__('foundNexusLive', chalk.yellow(Nexus.length))}`);
@@ -369,21 +379,29 @@ export class AchievementService {
         ];
         const trackingLookup = await this.twitch.channels.findTracking(candidates);
         if (!trackingLookup.found) {
-          if (!await sleep(5 * 60, signal)) return;
+          if (!await sleep(5 * 60, signal)) {
+            return;
+          }
           continue;
         }
         const trackingResult = await this.trackTwitchChannel(trackingLookup.value, signal);
         if (trackingResult === 'retry') {
           new Logger(`${time()}${__('watchTwitchAfter5min')}`);
-          if (!await sleep(5 * 60, signal)) return;
+          if (!await sleep(5 * 60, signal)) {
+            return;
+          }
           continue;
         }
         return;
       } catch (error) {
-        if (signal?.aborted || !this.watchTwitchStatus.running) return;
+        if (signal?.aborted || !this.watchTwitchStatus.running) {
+          return;
+        }
         new Logger(`${time()}${__('watchTwitchFailed', (error as Error).toString())}`);
         new Logger(`${time()}${__('watchTwitchAfter5min')}`);
-        if (!await sleep(5 * 60, signal)) return;
+        if (!await sleep(5 * 60, signal)) {
+          return;
+        }
       } finally {
         this.twitch = null;
       }
@@ -416,7 +434,9 @@ export class AchievementService {
         throw new Error(`AWA Twitch tracking failed: ${result.state}`);
       }
       // Achievement watch-time must keep accumulating after the daily ARP cap is reached.
-      if (!await sleep(heartbeatIntervalSeconds, signal)) return 'stopped';
+      if (!await sleep(heartbeatIntervalSeconds, signal)) {
+        return 'stopped';
+      }
     }
     return 'stopped';
   }
@@ -426,7 +446,9 @@ export class AchievementService {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   stop(): void {
-    if (this.watchTwitchStatus.running) new Logger(`${time()}${__('achievementTwitchStopRequested')}`);
+    if (this.watchTwitchStatus.running) {
+      new Logger(`${time()}${__('achievementTwitchStopRequested')}`);
+    }
     this.watchTwitchStatus.running = false;
   }
 

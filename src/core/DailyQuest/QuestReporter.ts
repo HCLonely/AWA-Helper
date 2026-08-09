@@ -50,9 +50,11 @@ export const formatQuestReport = (state: DailyQuestState): QuestReport => {
       [__('extraARP')]: '0', [__('maxAvailableARP')]: '0'
     };
   });
-  if (state.communityEvent) report[__('steamCommunityEvent')] = {
-    [__('status')]: state.communityEvent.status, [__('obtainedARP')]: state.communityEvent.playedTime,
-    [__('extraARP')]: '0', [__('maxAvailableARP')]: state.communityEvent.totalTime
-  };
+  if (state.communityEvent) {
+    report[__('steamCommunityEvent')] = {
+      [__('status')]: state.communityEvent.status, [__('obtainedARP')]: state.communityEvent.playedTime,
+      [__('extraARP')]: '0', [__('maxAvailableARP')]: state.communityEvent.totalTime
+    };
+  }
   return report;
 };

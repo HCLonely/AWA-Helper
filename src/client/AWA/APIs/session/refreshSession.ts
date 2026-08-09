@@ -21,7 +21,9 @@ export const refreshSession = async (context: AWAContext): Promise<string> => {
      */
     validateStatus: (status) => status === 200 || status === 302
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   try {
     const response = await context.request(options);
     if (typeof response.data === 'string' && response.data.toLowerCase().includes('we have detected an issue with your network')) {
@@ -38,7 +40,9 @@ export const refreshSession = async (context: AWAContext): Promise<string> => {
     }
     return context.cookie.stringify();
   } catch (error) {
-    if (error instanceof AWAError) throw error;
+    if (error instanceof AWAError) {
+      throw error;
+    }
     throw new AWAError('refreshSession', 'Unable to refresh AWA session', true, undefined, { cause: error });
   }
 };

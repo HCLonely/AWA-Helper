@@ -21,7 +21,9 @@ class AchievementJob implements Job {
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
   async run(signal: AbortSignal): Promise<boolean> {
-    if (!this.appConfig.awaCookie) throw new Error('awaCookie is not configured');
+    if (!this.appConfig.awaCookie) {
+      throw new Error('awaCookie is not configured');
+    }
     this.service = new AchievementService({
       awaCookie: this.appConfig.awaCookie,
       awaHost: this.appConfig.awaHost,
@@ -38,7 +40,9 @@ class AchievementJob implements Job {
     signal.addEventListener('abort', abort, { once: true });
     try {
       await this.service.init();
-      if (signal.aborted) return false;
+      if (signal.aborted) {
+        return false;
+      }
       await this.service.run(signal);
       return true;
     } finally {

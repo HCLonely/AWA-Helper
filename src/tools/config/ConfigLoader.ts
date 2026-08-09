@@ -33,7 +33,9 @@ const locateConfig = (): string => {
     candidates.push(join('..', 'config.yml'), join('..', 'config', 'config.yml'));
   }
   const found = candidates.find((candidate) => fs.existsSync(candidate));
-  if (!found) throw new Error(`Configuration file not found: ${resolve(candidates[1])}`);
+  if (!found) {
+    throw new Error(`Configuration file not found: ${resolve(candidates[1])}`);
+  }
   return found;
 };
 
@@ -67,7 +69,9 @@ const loadConfig = (): LoadedConfig => {
   validateYaml(source);
   const raw = deepMerge(defaultConfig, parse(source));
   const errors = validateHelperConfig(raw);
-  if (errors.length > 0) throw createConfigValidationError(source, errors);
+  if (errors.length > 0) {
+    throw createConfigValidationError(source, errors);
+  }
   return { path, raw, manager: normalizeManager(raw, path) };
 };
 

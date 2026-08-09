@@ -20,7 +20,9 @@ export const parseAchievements = (html: string): Achievement[] => {
         .each((index, card) => {
           const description = $(card).find('.achievement-description-text').text()
             .trim();
-          if (description === 'Not Earned Yet') return;
+          if (description === 'Not Earned Yet') {
+            return;
+          }
           achievements.push({
             id: `${category}-${index}`,
             name: `${category} ${index + 1}`,

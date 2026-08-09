@@ -13,9 +13,13 @@ import { parseAchievements } from '../../parsers';
  * @returns `Promise<Achievement[]>`，getAchievements 收集或筛选得到的数据列表。
  */
 export const getAchievements = async (context: AWAContext): Promise<Achievement[]> => {
-  if (!context.username) throw new AWAError('getAchievements', 'AWA username is not initialized');
+  if (!context.username) {
+    throw new AWAError('getAchievements', 'AWA username is not initialized');
+  }
   const options: myAxiosConfig = { url: `${context.baseURL}/member/${context.username}/achievements`, method: 'GET', headers: context.headers };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request<string>(options);
   return parseAchievements(response.data);
 };

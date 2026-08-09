@@ -23,7 +23,9 @@ export const sendTwitchTrack = async (
       'user-agent': context.headers['user-agent'], 'x-extension-channel': channelId, 'x-extension-jwt': jwt
     }
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request<{ state?: string; success?: boolean; message?: string }>(options);
   const known = ['daily_cap_reached', 'streamer_online', 'streamer_offline', 'no_channel_found'];
   const rawState = response.data.state;

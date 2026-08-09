@@ -3,9 +3,15 @@ import type { AxiosError } from 'axios';
 import chalk from 'chalk';
 
 export const netError = (error: AxiosError): string => {
-  if (error.message.includes('ETIMEDOUT')) return `: ${chalk.yellow(__('timeout'))}`;
-  if (error.message.includes('ECONNREFUSED')) return `: ${chalk.yellow(__('connRefused'))}`;
-  if (error.message.includes('hang up') || error.message.includes('ECONNRESET')) return `: ${chalk.yellow(__('connReset'))}`;
+  if (error.message.includes('ETIMEDOUT')) {
+    return `: ${chalk.yellow(__('timeout'))}`;
+  }
+  if (error.message.includes('ECONNREFUSED')) {
+    return `: ${chalk.yellow(__('connRefused'))}`;
+  }
+  if (error.message.includes('hang up') || error.message.includes('ECONNRESET')) {
+    return `: ${chalk.yellow(__('connReset'))}`;
+  }
   if (error.message.includes('certificate') || error.message.includes('TLS') || error.message.includes('SSL')) {
     return `: ${chalk.yellow(__('certificateError'))}`;
   }

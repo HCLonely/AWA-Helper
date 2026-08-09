@@ -49,8 +49,11 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   const abortFromManager = (): void => shutdownController.abort(signal?.reason);
-  if (signal?.aborted) abortFromManager();
-  else signal?.addEventListener('abort', abortFromManager, { once: true });
+  if (signal?.aborted) {
+    abortFromManager();
+  } else {
+    signal?.addEventListener('abort', abortFromManager, { once: true });
+  }
   let activeTaskCompletion: Promise<Array<PromiseSettledResult<unknown>>> = Promise.resolve([]);
   const runtimeHolder: { current?: DailyQuestRuntime } = {};
   /**

@@ -15,6 +15,8 @@ export const claimQuestAward = async (context: AWAContext, questId: string): Pro
     url: `${context.baseURL}/ajax/user/quest-award/${questId}`, method: 'GET',
     headers: { ...context.headers, referer: `${context.baseURL}/` }
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   return (await context.request(options)).status === 200 ? { ok: true, state: 'claimed' } : { ok: false, state: 'rejected' };
 };

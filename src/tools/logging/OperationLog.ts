@@ -20,7 +20,9 @@ const safeRequestTarget = (value: unknown): string => {
 };
 
 const requestFailureDetails = (error: unknown): string => {
-  if (!error || typeof error !== 'object') return __('unknownError');
+  if (!error || typeof error !== 'object') {
+    return __('unknownError');
+  }
   const candidate = error as { code?: unknown; name?: unknown; response?: { status?: unknown } };
   const status = typeof candidate.response?.status === 'number' ? `HTTP ${candidate.response.status}` : undefined;
   const code = typeof candidate.code === 'string' ? candidate.code : undefined;

@@ -16,6 +16,8 @@ export const recordPostView = async (context: AWAContext, postId: string): Promi
     url: `${context.baseURL}/ucf/increment-views/${postId}`, method: 'POST',
     headers: { ...context.headers, origin: context.baseURL, referer: link }
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   return (await context.request(options)).data === 'success' ? { ok: true, state: 'recorded' } : { ok: false, state: 'rejected' };
 };

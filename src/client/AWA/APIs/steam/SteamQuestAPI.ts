@@ -22,7 +22,9 @@ export class SteamQuestAPI {
    */
   private async request<T = unknown>(options: myAxiosConfig): Promise<AxiosResponse<T>> {
     options.headers = { ...this.context.headers, ...options.headers, cookie: this.context.cookie.stringify() };
-    if (this.context.httpsAgent) options.httpsAgent = this.context.httpsAgent;
+    if (this.context.httpsAgent) {
+      options.httpsAgent = this.context.httpsAgent;
+    }
     const response = await this.context.request<T>(options);
     this.context.updateCookies(response.headers?.['set-cookie']);
     return response;
@@ -64,7 +66,9 @@ export class SteamQuestAPI {
    * @returns 返回 `owned`、`not-required` 或 `not-owned` 所有权状态。
    */
   async checkOwnedGames(name: string): Promise<ActionResult<'owned' | 'not-required', 'not-owned'>> {
-    if (name === 'choose-your-own-game') return { ok: true, state: 'not-required' };
+    if (name === 'choose-your-own-game') {
+      return { ok: true, state: 'not-required' };
+    }
     const response = await this.request<{ installed?: boolean }>({
       url: `${this.context.baseURL}/ajax/user/steam/quests/check-owned-games/${name}`,
       method: 'GET', headers: { referer: `${this.context.baseURL}/steam/quests/${name}` }

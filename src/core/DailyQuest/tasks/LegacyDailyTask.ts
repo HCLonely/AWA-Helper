@@ -68,8 +68,12 @@ class LegacyDailyTask {
       }
     }
 
-    if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) await this.runtime.viewNews();
-    if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePost')) await this.runtime.sharePosts();
+    if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) {
+      await this.runtime.viewNews();
+    }
+    if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePost')) {
+      await this.runtime.sharePosts();
+    }
 
     await this.runtime.updateDailyQuests();
     if (this.checkDailyQuestCompleted()) {

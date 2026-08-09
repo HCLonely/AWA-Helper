@@ -13,7 +13,9 @@ class JobStateStore {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   register(name: JobName): void {
-    if (!this.states.has(name)) this.states.set(name, { name, status: 'idle' });
+    if (!this.states.has(name)) {
+      this.states.set(name, { name, status: 'idle' });
+    }
   }
 
   /**

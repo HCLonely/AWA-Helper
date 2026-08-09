@@ -17,7 +17,9 @@ export const sendTimeOnSiteTrack = async (context: AWAContext, link?: string): P
     headers: { ...context.headers, 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8', origin: context.baseURL, referer: target },
     data: JSON.stringify({ url: target })
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request<{ success?: boolean }>(options);
   context.updateCookies(response.headers?.['set-cookie']);
   return link || response.data?.success === true ? { ok: true, state: 'tracked' } : { ok: false, state: 'rejected' };

@@ -12,7 +12,9 @@ import { executeCommand } from '../commands';
  * @returns `Promise<string[]>`，getOwnedGames 收集或筛选得到的数据列表。
  */
 export const getOwnedGames = async (context: ASFContext, appIds: string[]): Promise<string[]> => {
-  if (!appIds.length) return [];
+  if (!appIds.length) {
+    return [];
+  }
   const result = await executeCommand(context, `!owns ${context.botName} ${appIds.join(',')}`);
   return [...new Set(result.split('\n').flatMap((line) => line.match(/app\/([\d]+)/)?.[1] || []))];
 };

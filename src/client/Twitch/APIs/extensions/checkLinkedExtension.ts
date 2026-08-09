@@ -15,12 +15,16 @@ import type { ActionResult } from '../../../shared';
  * @returns 已关联时返回 `linked`，否则返回 `not-linked`。
  */
 export const checkLinkedExtension = async (context: TwitchContext): Promise<ActionResult<'linked', 'not-linked'>> => {
-  if (!context.clientId) throw new TwitchError('checkLinkedExtension', 'Twitch Client-Id is not initialized');
+  if (!context.clientId) {
+    throw new TwitchError('checkLinkedExtension', 'Twitch Client-Id is not initialized');
+  }
   const options: myAxiosConfig = {
     url: 'https://gql.twitch.tv/gql', method: 'POST',
     headers: { ...context.headers, 'Client-Id': context.clientId }, data: linkedExtensionsQuery
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   try {
     const response = await context.request<Array<TwitchGqlEnvelope<LinkedExtensionsData>>>(options);
     return parseLinkedArenaExtension(response.data)

@@ -17,12 +17,16 @@ export type { TwitchExtensionInfo } from '../../types';
  * @returns 找到 Arena Rewards Tracker 时返回扩展信息，否则返回 `not-found`。
  */
 export const getExtensionInfo = async (context: TwitchContext, channelId: string): Promise<LookupResult<TwitchExtensionInfo>> => {
-  if (!context.clientId) throw new TwitchError('getExtensionInfo', 'Twitch Client-Id is not initialized');
+  if (!context.clientId) {
+    throw new TwitchError('getExtensionInfo', 'Twitch Client-Id is not initialized');
+  }
   const options: myAxiosConfig = {
     url: 'https://gql.twitch.tv/gql', method: 'POST',
     headers: { ...context.headers, 'Client-Id': context.clientId }, data: extensionInfoQuery(channelId)
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   try {
     const response = await context.request<Array<TwitchGqlEnvelope<ChannelExtensionsData>>>(options);
     const extension = parseArenaExtensionInfo(response.data);

@@ -10,7 +10,9 @@ import { AWAContext } from '../../AWAContext';
  */
 export const getControlCenter = async (context: AWAContext): Promise<string> => {
   const options: myAxiosConfig = { url: `${context.baseURL}/control-center`, method: 'GET', headers: context.headers };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request(options);
   context.updateCookies(response.headers?.['set-cookie']);
   return String(response.data);

@@ -39,7 +39,9 @@ class Scheduler {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   stop(): void {
-    if (this.tasks.length > 0) new Logger(`${time()}${__('schedulerStopping', String(this.tasks.length))}`);
+    if (this.tasks.length > 0) {
+      new Logger(`${time()}${__('schedulerStopping', String(this.tasks.length))}`);
+    }
     this.tasks.forEach((task) => task.stop());
     this.tasks.length = 0;
   }

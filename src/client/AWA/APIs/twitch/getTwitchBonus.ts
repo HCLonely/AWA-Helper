@@ -16,7 +16,9 @@ export const getTwitchBonus = async (context: AWAContext, userProfilePath: strin
     url: `${context.baseURL}${userProfilePath}/artifacts`, method: 'GET',
     headers: { ...context.headers, referer: context.baseURL }
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request<string>(options);
   return parseTwitchArtifactBonus(response.data);
 };

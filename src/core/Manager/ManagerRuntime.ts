@@ -31,7 +31,9 @@ class ManagerRuntime {
   private stopping = false;
   private shutdownSignalled = false;
   private resolveShutdown!: () => void;
-  private readonly shutdownRequested = new Promise<void>((resolve) => { this.resolveShutdown = resolve; });
+  private readonly shutdownRequested = new Promise<void>((resolve) => {
+    this.resolveShutdown = resolve;
+  });
 
   /**
    * 初始化 Manager Runtime 实例。
@@ -77,11 +79,15 @@ class ManagerRuntime {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   requestShutdown(): void {
-    if (this.shutdownSignalled) return;
+    if (this.shutdownSignalled) {
+      return;
+    }
     this.shutdownSignalled = true;
     new Logger(`${time()}${__('managerShutdownRequested')}`);
     this.resolveShutdown();
-    if (this.mode === 'once') void this.coordinator.stopAll();
+    if (this.mode === 'once') {
+      void this.coordinator.stopAll();
+    }
   }
 
   /**
@@ -89,7 +95,9 @@ class ManagerRuntime {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async stop(): Promise<void> {
-    if (this.stopping) return;
+    if (this.stopping) {
+      return;
+    }
     this.stopping = true;
     new Logger(`${time()}${__('managerShutdownStarted')}`);
     this.scheduler.stop();
@@ -116,8 +124,12 @@ class ManagerRuntime {
     if (this.loaded.raw.pusher?.enable && this.loaded.raw.proxy?.enable?.includes('pusher')) {
       globalThis.pusherProxy = this.loaded.raw.proxy;
     }
-    if (this.loaded.raw.TLSRejectUnauthorized === false) process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    if (this.loaded.raw.logsExpire) cleanupExpiredLogs('logs', this.loaded.raw.logsExpire);
+    if (this.loaded.raw.TLSRejectUnauthorized === false) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+    if (this.loaded.raw.logsExpire) {
+      cleanupExpiredLogs('logs', this.loaded.raw.logsExpire);
+    }
   }
 
   /**
@@ -135,11 +147,15 @@ class ManagerRuntime {
       new Logger(chalk.green(__('updateContent')));
       console.table(CHANGELOG.trim().split('\n').map((entry: string) => entry.trim().replace('- ', '')));
       if (os.type() === 'Windows_NT') {
-        try { execSync('attrib -h .version'); } catch (_error) { /* File may not exist yet. */ }
+        try {
+          execSync('attrib -h .version');
+        } catch (_error) { /* File may not exist yet. */ }
       }
       fs.writeFileSync('.version', displayVersion);
       if (os.type() === 'Windows_NT') {
-        try { execSync('attrib +h .version'); } catch (_error) { /* Hidden attribute is optional. */ }
+        try {
+          execSync('attrib +h .version');
+        } catch (_error) { /* Hidden attribute is optional. */ }
       }
     }
   }

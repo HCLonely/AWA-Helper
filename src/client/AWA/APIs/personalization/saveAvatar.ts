@@ -14,13 +14,17 @@ import type { ActionResult } from '../../../shared';
  * @returns 保存成功时返回 `saved`，远程拒绝时返回 `rejected`。
  */
 export const saveAvatar = async (context: AWAContext, avatar: userAvatarInfo): Promise<ActionResult<'saved', 'rejected'>> => {
-  if (!context.userId) throw new AWAError('saveAvatar', 'AWA user id is not initialized');
+  if (!context.userId) {
+    throw new AWAError('saveAvatar', 'AWA user id is not initialized');
+  }
   const options: myAxiosConfig = {
     url: `${context.baseURL}/ajax/user/avatar/save/${context.userId}`, method: 'POST',
     headers: { ...context.headers, 'content-type': 'application/json', origin: context.baseURL, referer: `${context.baseURL}/account/personalization` },
     data: avatar
   };
-  if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
+  if (context.httpsAgent) {
+    options.httpsAgent = context.httpsAgent;
+  }
   const response = await context.request<{ success?: boolean }>(options);
   return response.data?.success === true ? { ok: true, state: 'saved' } : { ok: false, state: 'rejected' };
 };

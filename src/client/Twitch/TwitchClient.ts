@@ -11,7 +11,9 @@ export class TwitchClient {
    * 初始化 Twitch Client 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `TwitchContextOptions`。
    */
-  constructor(options: TwitchContextOptions) { this.context = new TwitchContext(options); }
+  constructor(options: TwitchContextOptions) {
+    this.context = new TwitchContext(options);
+  }
   /**
    * 获取 session。
    * @returns `{ verify: () => Promise<string>; }`，session 相关操作组成的 API 集合。

@@ -23,7 +23,11 @@ const broadcastWebUi = (data: WebLogEntry): void => {
       globalThis.wsClients.delete(client);
       return;
     }
-    try { client.send(message); } catch (_error) { globalThis.wsClients.delete(client); }
+    try {
+      client.send(message);
+    } catch (_error) {
+      globalThis.wsClients.delete(client);
+    }
   });
 };
 
@@ -60,8 +64,11 @@ export class Logger {
   private data = '';
 
   constructor(text: unknown, newLine = true) {
-    if (globalThis.webUI) this.log(text, newLine);
-    else Logger.consoleLog(text, newLine, this.scope);
+    if (globalThis.webUI) {
+      this.log(text, newLine);
+    } else {
+      Logger.consoleLog(text, newLine, this.scope);
+    }
   }
 
   log(value: unknown, newLine = true): void {
@@ -78,22 +85,34 @@ export class Logger {
     }
     writeFileLog(this.scope, value, newLine);
     if (globalThis.log) {
-      if (newLine) console.log(formatLogValue(value));
-      else process.stdout.write(formatLogValue(value));
+      if (newLine) {
+        console.log(formatLogValue(value));
+      } else {
+        process.stdout.write(formatLogValue(value));
+      }
     }
     this.data += typeof value === 'string' ? value : formatLogValue(value);
     const entry: WebLogEntry = { id: this.id, data: toHtml(this.data), type: 'log', scope: this.scope };
     globalThis.logs[`${this.scope}:${this.id}`] = entry;
     const ids = Object.keys(globalThis.logs).filter((id) => id.startsWith(`${this.scope}:`) && /\d+$/.test(id));
-    if (ids.length > 1000) ids.slice(0, ids.length - 1000).forEach((id) => delete globalThis.logs[id]);
+    if (ids.length > 1000) {
+      ids.slice(0, ids.length - 1000).forEach((id) => delete globalThis.logs[id]);
+    }
     broadcastWebUi(entry);
   }
 
   static consoleLog(text: unknown, newLine = true, scope = getLogScope()): void {
-    if (text && typeof text === 'object' && 'type' in text && text.type === 'questInfo') return;
+    if (text && typeof text === 'object' && 'type' in text && text.type === 'questInfo') {
+      return;
+    }
     writeFileLog(scope, text, newLine);
-    if (!globalThis.log) return;
-    if (newLine) console.log(formatLogValue(text));
-    else process.stdout.write(formatLogValue(text));
+    if (!globalThis.log) {
+      return;
+    }
+    if (newLine) {
+      console.log(formatLogValue(text));
+    } else {
+      process.stdout.write(formatLogValue(text));
+    }
   }
 }

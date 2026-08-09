@@ -103,7 +103,9 @@ class UnifiedServer {
      * @returns `boolean`，表示 isValidSecret 检查是否通过。
      */
     const isValidSecret = (candidate: unknown): boolean => {
-      if (typeof candidate !== 'string') return false;
+      if (typeof candidate !== 'string') {
+        return false;
+      }
       const expected = Buffer.from(this.loaded.manager.secret);
       const actual = Buffer.from(candidate);
       return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
@@ -122,7 +124,9 @@ class UnifiedServer {
      * @returns `boolean`，表示 authenticate 检查是否通过。
      */
     const authenticate = (req: express.Request, res: express.Response): boolean => {
-      if (isValidSecret(requestSecret(req))) return true;
+      if (isValidSecret(requestSecret(req))) {
+        return true;
+      }
       new Logger(`${time()}${__('serverAuthenticationRejected', req.method, req.path)}`);
       res.status(401).json({ error: 'Authentication required' });
       return false;
@@ -137,19 +141,27 @@ class UnifiedServer {
     app.get('/api/health/ready', (_, res) => res.json({ status: 'ready', jobs: this.coordinator.states.list() }));
     app.get('/run-status', (req, res) => {
       const remote = req.socket.remoteAddress || '';
-      if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remote)) return res.status(404).end();
+      if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remote)) {
+        return res.status(404).end();
+      }
       return res.send(String(process.pid));
     });
 
     app.get('/api/jobs', (req, res) => authenticate(req, res) && res.json(this.coordinator.states.list()));
     app.get('/api/jobs/:name', (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       const state = this.coordinator.states.get(req.params.name as JobName);
-      if (!state) return res.status(404).json({ error: 'Unknown job' });
+      if (!state) {
+        return res.status(404).json({ error: 'Unknown job' });
+      }
       return res.json(state);
     });
     app.post('/api/jobs/:name/start', (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       try {
         const name = req.params.name as JobName;
         new Logger(`${time()}${__('serverJobStartRequested', name)}`);
@@ -161,7 +173,9 @@ class UnifiedServer {
       }
     });
     app.post('/api/jobs/:name/stop', async (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       new Logger(`${time()}${__('serverJobStopRequested', req.params.name)}`);
       await this.coordinator.stop(req.params.name as JobName);
       res.json({ status: 'success' });
@@ -169,14 +183,20 @@ class UnifiedServer {
 
     app.get('/api/config', (req, res) => authenticate(req, res) && res.type('text/yaml').send(fs.readFileSync(configPath, 'utf8')));
     app.put('/api/config', (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       const source = typeof req.body === 'string' ? req.body : req.body?.config;
-      if (typeof source !== 'string' || !source.trim()) return res.status(400).json({ error: 'config is required' });
+      if (typeof source !== 'string' || !source.trim()) {
+        return res.status(400).json({ error: 'config is required' });
+      }
       try {
         validateYaml(source);
         const parsed = deepMerge(this.loaded.raw, parseYaml(source));
         const errors = validateHelperConfig(parsed);
-        if (errors.length > 0) return res.status(422).json({ errors });
+        if (errors.length > 0) {
+          return res.status(422).json({ errors });
+        }
         atomicWriteFileSync(configPath, source);
         new Logger(`${time()}${__('serverConfigUpdated')}`);
         return res.json({ status: 'success', restartRequired: true });
@@ -186,14 +206,20 @@ class UnifiedServer {
       }
     });
     app.post(['/api/cookies/awa', '/updateCookie'], (req, res) => {
-      if (!authenticate(req, res)) return;
-      if (typeof req.body?.cookie !== 'string' || !req.body.cookie.trim()) return res.status(400).json({ error: 'cookie is required' });
+      if (!authenticate(req, res)) {
+        return;
+      }
+      if (typeof req.body?.cookie !== 'string' || !req.body.cookie.trim()) {
+        return res.status(400).json({ error: 'cookie is required' });
+      }
       updateYamlFieldsSync(configPath, { awaCookie: req.body.cookie, ...(req.body.userAgent ? { UA: req.body.userAgent } : {}) });
       new Logger(`${time()}${__('serverAwaCredentialsUpdated')}`);
       return res.json({ status: 'success' });
     });
     app.post(['/api/cookies/twitch', '/updateTwitchCookie'], (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       if (typeof req.body?.cookie !== 'string' || !req.body.cookie.includes('auth-token=') || !req.body.cookie.includes('unique_id=')) {
         return res.status(422).json({ error: 'invalid Twitch cookie' });
       }
@@ -209,9 +235,13 @@ class UnifiedServer {
      * @returns `void | express.Response<any, Record<string, any>>`，sendLogs 请求返回的响应结果。
      */
     const sendLogs = (req: express.Request, res: express.Response, requestedJob?: string): express.Response | void => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       const candidate = requestedJob || req.params.job || 'manager';
-      if (!isLogScope(candidate)) return res.status(404).json({ error: 'Unknown log scope' });
+      if (!isLogScope(candidate)) {
+        return res.status(404).json({ error: 'Unknown log scope' });
+      }
       const filename = getLogFilePath(candidate);
       return res.type('text/plain').send(fs.existsSync(filename) ? fs.readFileSync(filename, 'utf8') : '');
     };
@@ -224,7 +254,9 @@ class UnifiedServer {
       sendLogs(req, res, 'achievement');
     });
     app.post('/api/manager/shutdown', (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       new Logger(`${time()}${__('serverManagerShutdownRequested')}`);
       res.json({ status: 'success' });
       setImmediate(this.requestShutdown);
@@ -232,19 +264,25 @@ class UnifiedServer {
 
     // Legacy API aliases retained for one compatibility cycle.
     app.post('/start', async (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       new Logger(`${time()}${__('serverLegacyDailyQuestStart')}`);
       void this.coordinator.start('dailyQuest');
       res.send('success');
     });
     app.post('/stop', async (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       new Logger(`${time()}${__('serverLegacyDailyQuestStop')}`);
       await this.coordinator.stop('dailyQuest');
       res.send('success');
     });
     app.post('/startArchievement', async (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       new Logger(`${time()}${__('serverLegacyAchievementStart')}`);
       fs.mkdirSync(path.join('data', 'achievement'), { recursive: true });
       fs.writeFileSync(path.join('data', 'achievement', 'enabled'), '');
@@ -252,14 +290,18 @@ class UnifiedServer {
       res.send('success');
     });
     app.post('/stopArchievement', async (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       new Logger(`${time()}${__('serverLegacyAchievementStop')}`);
       await this.coordinator.stop('achievement');
       fs.rmSync(path.join('data', 'achievement', 'enabled'), { force: true });
       res.send('success');
     });
     app.post('/runStatus', (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       const state = this.coordinator.states.get('dailyQuest');
       return res.json({
         runStatus: ['running', 'stopping'].includes(state?.status || '') ? 'Running' : 'Stop',
@@ -269,7 +311,9 @@ class UnifiedServer {
     });
     app.post('/getConfig', (req, res) => authenticate(req, res) && res.type('text/yaml').send(fs.readFileSync(configPath, 'utf8')));
     app.post('/setConfig', (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       try {
         validateYaml(req.body?.config);
         atomicWriteFileSync(configPath, req.body.config);
@@ -282,7 +326,9 @@ class UnifiedServer {
     });
     app.post('/update', (req, res) => authenticate(req, res) && res.status(501).send('Automatic installation is disabled; install a signed release manually.'));
     app.post('/stopManager', (req, res) => {
-      if (!authenticate(req, res)) return;
+      if (!authenticate(req, res)) {
+        return;
+      }
       new Logger(`${time()}${__('serverLegacyManagerShutdown')}`);
       res.send('success');
       setImmediate(this.requestShutdown);
@@ -291,7 +337,9 @@ class UnifiedServer {
     // @ts-ignore express-ws 会在运行时扩展 Express。
     app.ws('/ws', (ws: WebSocket, req) => {
       const candidate = decodeManagerWebSocketSecret(req.headers['sec-websocket-protocol']);
-      if (raw.webUI?.local === false && !isValidSecret(candidate)) return ws.close(1008, 'Authentication required');
+      if (raw.webUI?.local === false && !isValidSecret(candidate)) {
+        return ws.close(1008, 'Authentication required');
+      }
       globalThis.wsClients.add(ws);
       ws.send(JSON.stringify(globalThis.logs));
       ws.on('close', () => globalThis.wsClients.delete(ws));

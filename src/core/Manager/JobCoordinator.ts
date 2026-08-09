@@ -23,7 +23,9 @@ class JobCoordinator {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   register(job: Job): void {
-    if (this.jobs.has(job.name)) throw new Error(`Job already registered: ${job.name}`);
+    if (this.jobs.has(job.name)) {
+      throw new Error(`Job already registered: ${job.name}`);
+    }
     this.jobs.set(job.name, job);
     this.states.register(job.name);
   }
@@ -41,7 +43,9 @@ class JobCoordinator {
       return running.completion;
     }
     const job = this.jobs.get(name);
-    if (!job) throw new Error(`Unknown job: ${name}`);
+    if (!job) {
+      throw new Error(`Unknown job: ${name}`);
+    }
     const controller = new AbortController();
     const startedAt = new Date().toISOString();
     new Logger(`${time()}${__('jobDispatching', name)}`);
@@ -58,7 +62,9 @@ class JobCoordinator {
           finishedAt: new Date().toISOString()
         };
         let status: 'cancelled' | 'completed' | 'failed' = result.success ? 'completed' : 'failed';
-        if (controller.signal.aborted) status = 'cancelled';
+        if (controller.signal.aborted) {
+          status = 'cancelled';
+        }
         this.states.update(name, status, result);
         const localizedStatus = __(`jobStatus_${status}`);
         runWithLogScope(name, () => new Logger(`${time()}${__('jobFinished', name, localizedStatus)}`));

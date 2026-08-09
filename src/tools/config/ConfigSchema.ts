@@ -36,13 +36,25 @@ const deepMerge = <T>(defaults: T, input: unknown): T => {
  * @returns `string[]`，validateHelperConfig 收集或筛选得到的数据列表。
  */
 const validateHelperConfig = (value: unknown): Array<string> => {
-  if (!isRecord(value)) return ['config must be an object'];
+  if (!isRecord(value)) {
+    return ['config must be an object'];
+  }
   const errors: Array<string> = [];
-  if (!['zh', 'en'].includes(value.language as string)) errors.push('language must be zh or en');
-  if (typeof value.awaHost !== 'string' || !value.awaHost.trim()) errors.push('awaHost must be a non-empty string');
-  if (typeof value.awaHost === 'string' && !/^[a-z\d.-]+(?::\d+)?$/i.test(value.awaHost)) errors.push('awaHost must be a hostname with an optional port');
-  if (value.awaQuests !== undefined && (!Array.isArray(value.awaQuests) || value.awaQuests.some((item) => typeof item !== 'string'))) errors.push('awaQuests must be an array of strings');
-  if (value.awaDailyQuestType !== undefined && (!Array.isArray(value.awaDailyQuestType) || value.awaDailyQuestType.some((item) => typeof item !== 'string'))) errors.push('awaDailyQuestType must be an array of strings');
+  if (!['zh', 'en'].includes(value.language as string)) {
+    errors.push('language must be zh or en');
+  }
+  if (typeof value.awaHost !== 'string' || !value.awaHost.trim()) {
+    errors.push('awaHost must be a non-empty string');
+  }
+  if (typeof value.awaHost === 'string' && !/^[a-z\d.-]+(?::\d+)?$/i.test(value.awaHost)) {
+    errors.push('awaHost must be a hostname with an optional port');
+  }
+  if (value.awaQuests !== undefined && (!Array.isArray(value.awaQuests) || value.awaQuests.some((item) => typeof item !== 'string'))) {
+    errors.push('awaQuests must be an array of strings');
+  }
+  if (value.awaDailyQuestType !== undefined && (!Array.isArray(value.awaDailyQuestType) || value.awaDailyQuestType.some((item) => typeof item !== 'string'))) {
+    errors.push('awaDailyQuestType must be an array of strings');
+  }
 
   /**
    * 检查 validate Boolean 相关数据。
@@ -51,14 +63,19 @@ const validateHelperConfig = (value: unknown): Array<string> => {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   const validateBoolean = (name: string, field: unknown): void => {
-    if (field !== undefined && typeof field !== 'boolean') errors.push(`${name} must be a boolean`);
+    if (field !== undefined && typeof field !== 'boolean') {
+      errors.push(`${name} must be a boolean`);
+    }
   };
   validateBoolean('TLSRejectUnauthorized', value.TLSRejectUnauthorized);
   validateBoolean('autoUpdate', value.autoUpdate);
   validateBoolean('joinSteamCommunityEvent', value.joinSteamCommunityEvent);
   if (value.debug !== undefined) {
-    if (!isRecord(value.debug)) errors.push('debug must be an object');
-    else validateBoolean('debug.http', value.debug.http);
+    if (!isRecord(value.debug)) {
+      errors.push('debug must be an object');
+    } else {
+      validateBoolean('debug.http', value.debug.http);
+    }
   }
 
   /**
@@ -109,7 +126,9 @@ const validateHelperConfig = (value: unknown): Array<string> => {
         if (typeof value.managerServer.secret !== 'string' || value.managerServer.secret.length < 16) {
           errors.push('managerServer.secret must contain at least 16 characters when enabled');
         }
-        if (value.managerServer.corn !== undefined && value.managerServer.corn !== null && value.managerServer.corn !== '' && typeof value.managerServer.corn !== 'string') errors.push('managerServer.corn must be a string');
+        if (value.managerServer.corn !== undefined && value.managerServer.corn !== null && value.managerServer.corn !== '' && typeof value.managerServer.corn !== 'string') {
+          errors.push('managerServer.corn must be a string');
+        }
         if (value.managerServer.artifacts !== undefined && value.managerServer.artifacts !== null && (!Array.isArray(value.managerServer.artifacts) || value.managerServer.artifacts.some((item) => !isRecord(item) || typeof item.corn !== 'string' || typeof item.ids !== 'string'))) {
           errors.push('managerServer.artifacts must contain corn and ids strings');
         }
@@ -120,15 +139,20 @@ const validateHelperConfig = (value: unknown): Array<string> => {
     if (!isRecord(value.manager)) {
       errors.push('manager must be an object');
     } else {
-      if (value.manager.secret !== undefined && typeof value.manager.secret !== 'string') errors.push('manager.secret must be a string');
+      if (value.manager.secret !== undefined && typeof value.manager.secret !== 'string') {
+        errors.push('manager.secret must be a string');
+      }
       if (value.manager.dailyQuest !== undefined && (!isRecord(value.manager.dailyQuest) || (value.manager.dailyQuest.cron !== undefined && typeof value.manager.dailyQuest.cron !== 'string'))) {
         errors.push('manager.dailyQuest.cron must be a string');
       }
       if (value.manager.achievement !== undefined) {
-        if (!isRecord(value.manager.achievement)) errors.push('manager.achievement must be an object');
-        else {
+        if (!isRecord(value.manager.achievement)) {
+          errors.push('manager.achievement must be an object');
+        } else {
           validateBoolean('manager.achievement.enable', value.manager.achievement.enable);
-          if (value.manager.achievement.cron !== undefined && typeof value.manager.achievement.cron !== 'string') errors.push('manager.achievement.cron must be a string');
+          if (value.manager.achievement.cron !== undefined && typeof value.manager.achievement.cron !== 'string') {
+            errors.push('manager.achievement.cron must be a string');
+          }
         }
       }
       if (value.manager.artifacts !== undefined && (!Array.isArray(value.manager.artifacts) || value.manager.artifacts.some((item) => !isRecord(item) || typeof item.cron !== 'string' || !(typeof item.ids === 'string' || (Array.isArray(item.ids) && item.ids.every((id) => Number.isInteger(id))))))) {
@@ -141,22 +165,36 @@ const validateHelperConfig = (value: unknown): Array<string> => {
       errors.push('proxy must be an object');
     } else {
       const proxyEnabled = Array.isArray(value.proxy.enable) && value.proxy.enable.length > 0;
-      if (value.proxy.enable !== undefined && value.proxy.enable !== null && !Array.isArray(value.proxy.enable)) errors.push('proxy.enable must be an array of strings');
-      if (Array.isArray(value.proxy.enable) && value.proxy.enable.some((item) => typeof item !== 'string')) errors.push('proxy.enable must be an array of strings');
+      if (value.proxy.enable !== undefined && value.proxy.enable !== null && !Array.isArray(value.proxy.enable)) {
+        errors.push('proxy.enable must be an array of strings');
+      }
+      if (Array.isArray(value.proxy.enable) && value.proxy.enable.some((item) => typeof item !== 'string')) {
+        errors.push('proxy.enable must be an array of strings');
+      }
       if (proxyEnabled) {
-        if (!['http', 'https', 'socks4', 'socks5'].includes(value.proxy.protocol as string)) errors.push('proxy.protocol is invalid');
-        if (typeof value.proxy.host !== 'string' || !value.proxy.host.trim()) errors.push('proxy.host must be a non-empty string');
+        if (!['http', 'https', 'socks4', 'socks5'].includes(value.proxy.protocol as string)) {
+          errors.push('proxy.protocol is invalid');
+        }
+        if (typeof value.proxy.host !== 'string' || !value.proxy.host.trim()) {
+          errors.push('proxy.host must be a non-empty string');
+        }
         validatePort('proxy.port', value.proxy.port);
       }
     }
   }
   const steamQuestEnabled = Array.isArray(value.awaQuests) && value.awaQuests.includes('steamQuest');
   if (steamQuestEnabled) {
-    if (value.asfProtocol !== undefined && !['http', 'https'].includes(value.asfProtocol as string)) errors.push('asfProtocol must be http or https');
+    if (value.asfProtocol !== undefined && !['http', 'https'].includes(value.asfProtocol as string)) {
+      errors.push('asfProtocol must be http or https');
+    }
     validatePort('asfPort', value.asfPort);
   }
-  if (value.steamUse !== undefined && value.steamUse !== 'ASF') errors.push('steamUse must be ASF');
-  if (value.UA !== undefined && typeof value.UA !== 'string') errors.push('UA must be a string');
+  if (value.steamUse !== undefined && value.steamUse !== 'ASF') {
+    errors.push('steamUse must be ASF');
+  }
+  if (value.UA !== undefined && typeof value.UA !== 'string') {
+    errors.push('UA must be a string');
+  }
   return errors;
 };
 

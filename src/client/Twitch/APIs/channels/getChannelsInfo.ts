@@ -17,7 +17,9 @@ import { getChannelInfo } from './getChannelInfo';
 export const getChannelsInfo = async (context: TwitchContext, channelLogins: string[]): Promise<LookupResult<TwitchChannelTrackingInfo, 'no-trackable-channel'>> => {
   for (const streamerName of channelLogins) {
     const channel = await getChannelInfo(context, streamerName).catch(() => ({ found: false as const, reason: 'not-found' as const }));
-    if (!channel.found) continue;
+    if (!channel.found) {
+      continue;
+    }
     const extension = await getExtensionInfo(context, channel.value).catch(() => ({ found: false as const, reason: 'not-found' as const }));
     if (extension.found && extension.value.jwt) {
       return { found: true, value: { channelId: channel.value, streamerName, ...extension.value } };

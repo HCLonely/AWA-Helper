@@ -19,13 +19,21 @@ export const parseAvailableStreams = (html: string): AvailableStreams => {
     .find('.user-profile__card-body .row')
     .each((_, row) => {
       const heading = $(row).find('.card-table-heading').text();
-      if (heading.includes('Hive')) category = 'Hive';
-      else if (heading.includes('Nexus')) category = 'Nexus';
-      else if (heading) category = null;
-      if (!category) return;
+      if (heading.includes('Hive')) {
+        category = 'Hive';
+      } else if (heading.includes('Nexus')) {
+        category = 'Nexus';
+      } else if (heading) {
+        category = null;
+      }
+      if (!category) {
+        return;
+      }
       $(row).find('.quest-list__stream-thumbnail a[href]').each((__, link) => {
         const name = $(link).attr('href')?.match(/www\.twitch\.tv\/([^/?]+)/)?.[1];
-        if (name && !result[category!].includes(name)) result[category!].push(name);
+        if (name && !result[category!].includes(name)) {
+          result[category!].push(name);
+        }
       });
     });
   return result;

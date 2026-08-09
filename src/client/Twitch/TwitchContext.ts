@@ -54,7 +54,9 @@ export class TwitchContext {
    */
   request<T = unknown>(options: myAxiosConfig) {
     const requestOptions: myAxiosConfig = { ...options, headers: { ...this.headers, ...options.headers } };
-    if (this.httpsAgent && !requestOptions.httpsAgent) requestOptions.httpsAgent = this.httpsAgent;
+    if (this.httpsAgent && !requestOptions.httpsAgent) {
+      requestOptions.httpsAgent = this.httpsAgent;
+    }
     const execute = () => this.transport.request<T>(requestOptions);
     return this.logRequests ? observeExternalRequest('Twitch', requestOptions, execute) : execute();
   }

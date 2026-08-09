@@ -53,7 +53,9 @@ export class DailyQuestRuntime {
    * 获取 new Cookie。
    * @returns `string`，当前会话序列化后的 Cookie 字符串。
    */
-  get newCookie(): string { return this.awa.newCookie; }
+  get newCookie(): string {
+    return this.awa.newCookie;
+  }
 
   /**
    * 初始化 init 相关数据。
@@ -68,8 +70,12 @@ export class DailyQuestRuntime {
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
-      if (error instanceof AWAError && error.statusCode === 610) return { ok: false, reason: 'network-rejected', error };
-      if (error instanceof AWAError && error.statusCode === 602) return { ok: false, reason: 'session-expired', error };
+      if (error instanceof AWAError && error.statusCode === 610) {
+        return { ok: false, reason: 'network-rejected', error };
+      }
+      if (error instanceof AWAError && error.statusCode === 602) {
+        return { ok: false, reason: 'session-expired', error };
+      }
       return { ok: false, reason: 'request-failed', error };
     }
   }
@@ -102,8 +108,12 @@ export class DailyQuestRuntime {
       this.state.posts = snapshot.posts;
       logger.log(chalk.green(__('logStatusOk')));
 
-      if (verify && snapshot.signArp.daily) new Logger(`${time()}${__('dailySign', chalk.green(snapshot.signArp.daily))}`);
-      if (verify && snapshot.signArp.monthly) new Logger(`${time()}${__('monthlySign', chalk.green(snapshot.signArp.monthly))}`);
+      if (verify && snapshot.signArp.daily) {
+        new Logger(`${time()}${__('dailySign', chalk.green(snapshot.signArp.daily))}`);
+      }
+      if (verify && snapshot.signArp.monthly) {
+        new Logger(`${time()}${__('monthlySign', chalk.green(snapshot.signArp.monthly))}`);
+      }
       if (verify && snapshot.promotionalCalendarInfo?.some(({ finished }) => !finished)) {
         new Logger(`${time()}${chalk.green(__('promotionalAlert'))}`);
       }
@@ -120,8 +130,11 @@ export class DailyQuestRuntime {
           }
         }
       }
-      if (verify && this.joinSteamCommunityEvent) await this.initializeCommunityEvent();
-      else if (this.state.communityEvent?.path) await this.refreshCommunityEvent();
+      if (verify && this.joinSteamCommunityEvent) {
+        await this.initializeCommunityEvent();
+      } else if (this.state.communityEvent?.path) {
+        await this.refreshCommunityEvent();
+      }
 
       const report = formatQuestReport(this.state);
       fs.mkdirSync('logs', { recursive: true });
@@ -144,7 +157,9 @@ export class DailyQuestRuntime {
    * @returns `Promise<boolean>`，表示 loadTwitchBonus 检查是否通过。
    */
   async loadTwitchBonus(): Promise<boolean> {
-    if (!this.state.userProfileUrl) return false;
+    if (!this.state.userProfileUrl) {
+      return false;
+    }
     const logger = new Logger(`${time()}${__('gettingTwitchTech')}`, false);
     try {
       this.state.additionalTwitchARP = await getTwitchBonus(this.awa.context, this.state.userProfileUrl);
@@ -212,7 +227,9 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('sendingViewRecord', chalk.yellow(postId))}`, false);
     try {
       const viewed = await recordPostView(this.awa.context, postId);
-      if (viewed.ok) await sendTimeOnSiteTrack(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${postId}`);
+      if (viewed.ok) {
+        await sendTimeOnSiteTrack(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${postId}`);
+      }
       logger.log(viewed.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${viewed.state})`));
       return viewed.ok;
     } catch (error) {
@@ -228,7 +245,9 @@ export class DailyQuestRuntime {
    */
   async viewPosts(postIds = this.state.posts): Promise<boolean> {
     new Logger(`${time()}${__('dailyQuestViewingPosts', String(postIds.length))}`);
-    for (const postId of postIds.slice(0, 3)) { await this.viewPost(postId); await sleep(random(1, 5)); }
+    for (const postId of postIds.slice(0, 3)) {
+      await this.viewPost(postId); await sleep(random(1, 5));
+    }
     return postIds.length > 0;
   }
   /**
@@ -282,7 +301,9 @@ export class DailyQuestRuntime {
     for (const script of $('script').toArray().flatMap((element) => ($(element).html()?.includes('/ajax/promo/view/') ? [$(element).html() || ''] : []))) {
       const id = script.match(/"\/ajax\/promo\/view\/([\d]+?)"/)?.[1];
       const token = script.match(/token:\s*?'(.+?)'/)?.[1];
-      if (id && token) await recordPromotionView(this.awa.context, id, token);
+      if (id && token) {
+        await recordPromotionView(this.awa.context, id, token);
+      }
     }
     await this.viewPost(newsId);
     new Logger(`${time()}${__('dailyQuestNewsCompleted')}`);
@@ -295,7 +316,11 @@ export class DailyQuestRuntime {
     const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('AWA'))}`, false);
     try {
       const sent = await sendTimeOnSiteTrack(this.awa.context);
-      if (sent.ok) { this.state.trackError = 0; this.state.trackTimes++; } else this.state.trackError++;
+      if (sent.ok) {
+        this.state.trackError = 0; this.state.trackTimes++;
+      } else {
+        this.state.trackError++;
+      }
       logger.log(sent.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${sent.state})`));
       return sent.ok;
     } catch (error) {
@@ -314,7 +339,9 @@ export class DailyQuestRuntime {
     new Logger(`${time()}${__('dailyQuestMonitorStarted', '5')}`);
     while (!signal?.aborted) {
       await this.updateDailyQuests();
-      if (!await sleep(5 * 60, signal)) break;
+      if (!await sleep(5 * 60, signal)) {
+        break;
+      }
     }
     new Logger(`${time()}${__('dailyQuestMonitorStopped')}`);
   }
@@ -330,7 +357,9 @@ export class DailyQuestRuntime {
       new Logger(error);
       return null;
     });
-    if (!pathLookup?.found) return;
+    if (!pathLookup?.found) {
+      return;
+    }
     const path = pathLookup.value;
     pathLogger.log(chalk.green(__('logStatusOk')));
     const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);
@@ -339,7 +368,9 @@ export class DailyQuestRuntime {
       new Logger(error);
       return null;
     });
-    if (!page) return;
+    if (!page) {
+      return;
+    }
     if (page.closed || page.concluded || !page.gameId) {
       logger.log(chalk.yellow(page.closed ? __('logStatusClosed') : __('logStatusFinished')));
       return;
@@ -367,14 +398,18 @@ export class DailyQuestRuntime {
    */
   private async refreshCommunityEvent(): Promise<void> {
     const event = this.state.communityEvent;
-    if (!event?.path) return;
+    if (!event?.path) {
+      return;
+    }
     const logger = new Logger(`${time()}${__('checkingSteamCommunityEventStatus')}`, false);
     const page = await this.awa.communityEvent.getEvent(event.path).catch((error) => {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       return null;
     });
-    if (!page) return;
+    if (!page) {
+      return;
+    }
     event.playedTime = `${page.playedMinutes}`;
     event.totalTime = `${page.totalMinutes}min`;
     if (page.concluded || page.playedMinutes >= page.totalMinutes) {

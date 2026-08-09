@@ -5,14 +5,20 @@ import { Logger } from '../logging';
 import { time } from '../common';
 
 export const push = async (message: string): Promise<void> => {
-  if (!globalThis.pusher?.enable) return;
+  if (!globalThis.pusher?.enable) {
+    return;
+  }
   const logger = new Logger(`${time()}${__('pushing')}`, false);
   const options: pushOptions = {
     name: globalThis.pusher.platform,
     config: { key: globalThis.pusher.key }
   };
-  if (globalThis.pusher.options) options.config.options = globalThis.pusher.options;
-  if (globalThis.pusherProxy) options.config.proxy = globalThis.pusherProxy;
+  if (globalThis.pusher.options) {
+    options.config.options = globalThis.pusher.options;
+  }
+  if (globalThis.pusherProxy) {
+    options.config.proxy = globalThis.pusherProxy;
+  }
   const [result] = await new PushApi([options]).send({ message, title: __('pushTitle'), type: 'text' });
   if ((result.result?.status || 0) >= 200 && result.result.status < 300) {
     logger.log(chalk.green(__('pushSuccess')));
@@ -30,18 +36,27 @@ interface PushQuestInfo {
 }
 
 export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
-  if (!quest) return '';
+  if (!quest) {
+    return '';
+  }
   const other: Array<[string, ReportValue] | undefined> = new Array(1);
   const daily: Array<[string, ReportValue]> = [];
   const online: Array<[string, ReportValue] | undefined> = new Array(2);
   const steam: Array<[string, ReportValue]> = [];
   Object.entries(quest.report).forEach(([name, value]) => {
-    if (name === __('timeOnSite')) online[0] = [name, value];
-    else if (name === __('watchTwitch')) online[1] = [name, value];
-    else if (name.includes(__('steamQuest'))) steam.push([name, value]);
-    else if (name.includes(__('promotionalCalendar'))) other.push([name, value]);
-    else if (name === __('steamCommunityEvent')) other[0] = [name, value];
-    else daily.push([name, value]);
+    if (name === __('timeOnSite')) {
+      online[0] = [name, value];
+    } else if (name === __('watchTwitch')) {
+      online[1] = [name, value];
+    } else if (name.includes(__('steamQuest'))) {
+      steam.push([name, value]);
+    } else if (name.includes(__('promotionalCalendar'))) {
+      other.push([name, value]);
+    } else if (name === __('steamCommunityEvent')) {
+      other[0] = [name, value];
+    } else {
+      daily.push([name, value]);
+    }
   });
   const rows = [...daily, ...online, ...steam, ...other].filter((row): row is [string, ReportValue] => !!row);
   const body = rows.map(([name, value]) => {

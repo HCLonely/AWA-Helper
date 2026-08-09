@@ -2,10 +2,14 @@
 import type { Interface } from 'readline';
 
 export const sleep = (seconds: number, signal?: AbortSignal): Promise<boolean> => new Promise((resolve) => {
-  if (signal?.aborted) return resolve(false);
+  if (signal?.aborted) {
+    return resolve(false);
+  }
   let settled = false;
   const finish = (result: boolean): void => {
-    if (settled) return;
+    if (settled) {
+      return;
+    }
     settled = true;
     clearTimeout(timeout);
     signal?.removeEventListener('abort', onAbort);

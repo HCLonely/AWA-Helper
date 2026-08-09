@@ -10,7 +10,9 @@ export const isNewVersion = (currentVersion: string, latestVersion: string): boo
   const current = currentVersion.replace(/^V/i, '').split('.').map((value) => parseInt(value, 10));
   const latest = latestVersion.replace(/^V/i, '').split('.').map((value) => parseInt(value, 10));
   for (let index = 0; index < Math.max(current.length, latest.length); index++) {
-    if ((latest[index] || 0) !== (current[index] || 0)) return (latest[index] || 0) > (current[index] || 0);
+    if ((latest[index] || 0) !== (current[index] || 0)) {
+      return (latest[index] || 0) > (current[index] || 0);
+    }
   }
   return false;
 };
@@ -24,12 +26,16 @@ export const checkUpdate = async (
 ): Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   const options: myAxiosConfig = { validateStatus: (status) => status === 302, maxRedirects: 0, Logger: logger };
-  if (proxy?.enable?.includes('github') && proxy.host && proxy.port) options.httpsAgent = formatProxy(proxy);
+  if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
+    options.httpsAgent = formatProxy(proxy);
+  }
   try {
     const response = await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options);
     globalThis.secrets = [...new Set([...globalThis.secrets, ...Object.values(Cookie.ToJson(response.headers?.['set-cookie']))])];
     const latest = response.headers.location?.match(/tag\/v?([\d.]+)/)?.[1];
-    if (!latest) return logger.log(chalk.red(__('logStatusFailed')));
+    if (!latest) {
+      return logger.log(chalk.red(__('logStatusFailed')));
+    }
     if (isNewVersion(version, latest)) {
       logger.log(chalk.green(__('newVersion', chalk.yellow(`V${latest}`))));
       if (autoUpdate && !process.argv.includes('--no-update')) {

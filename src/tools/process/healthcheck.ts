@@ -51,10 +51,14 @@ const requestHealthEndpoint = (port: number, useTls: boolean): Promise<boolean> 
  */
 const runHealthcheck = async (): Promise<boolean> => {
   const configPath = findConfigPath();
-  if (!configPath) return false;
+  if (!configPath) {
+    return false;
+  }
   try {
     const config = parse(await fs.promises.readFile(configPath, 'utf8')) as HealthConfig;
-    if (config.webUI?.enable === false) return false;
+    if (config.webUI?.enable === false) {
+      return false;
+    }
     return await requestHealthEndpoint(config.webUI?.port || 3456, !!config.webUI?.ssl?.cert);
   } catch (_error) {
     return false;

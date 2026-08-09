@@ -12,8 +12,14 @@ export const formatProxy = (configuration: proxy): myAxiosConfig['httpsAgent'] =
     }
     return new SocksProxyAgent(options);
   }
-  if (configuration.username && configuration.password) options.proxyAuth = `${configuration.username}:${configuration.password}`;
-  if (configuration.protocol === 'http') return tunnel.httpsOverHttp({ proxy: options });
-  if (configuration.protocol === 'https') return tunnel.httpsOverHttps({ proxy: options });
+  if (configuration.username && configuration.password) {
+    options.proxyAuth = `${configuration.username}:${configuration.password}`;
+  }
+  if (configuration.protocol === 'http') {
+    return tunnel.httpsOverHttp({ proxy: options });
+  }
+  if (configuration.protocol === 'https') {
+    return tunnel.httpsOverHttps({ proxy: options });
+  }
   return undefined;
 };
