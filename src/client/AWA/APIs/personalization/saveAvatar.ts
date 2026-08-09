@@ -1,5 +1,4 @@
 /** Saves a complete AWA avatar configuration. */
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
 import { AWAError } from '../../AWAError';
 import type { userAvatarInfo } from '../../../../types/achievement';
@@ -12,6 +11,6 @@ export const saveAvatar = async (context: AWAContext, avatar: userAvatarInfo): P
     data: avatar
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
-  const response = await http(options);
+  const response = await context.request<{ success?: boolean }>(options);
   return response.data?.success === true;
 };

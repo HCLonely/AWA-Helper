@@ -23,6 +23,19 @@ export class TwitchClient {
       return false;
     }
   }
+  get session() { return { verify: () => verifySession(this.context) }; }
+  get channels() {
+    return {
+      get: (channelLogin: string) => getChannelInfo(this.context, channelLogin),
+      findTracking: (channelLogins: string[]) => getChannelsInfo(this.context, channelLogins)
+    };
+  }
+  get extensions() {
+    return {
+      checkLinked: () => checkLinkedExtension(this.context),
+      get: (channelId: string) => getExtensionInfo(this.context, channelId)
+    };
+  }
   getChannelId(channelLogin: string): Promise<string | null> { return getChannelInfo(this.context, channelLogin); }
   findTrackingChannel(channelLogins: string[]): Promise<TwitchChannelTrackingInfo | null> { return getChannelsInfo(this.context, channelLogins); }
   async getTrackingInfo(channelLogin: string): Promise<TwitchChannelTrackingInfo | null> {

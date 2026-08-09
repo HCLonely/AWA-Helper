@@ -1,8 +1,7 @@
 /** Remote AWA operations for reading and equipping account artifacts. */
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
-
-export interface EquippedArtifact { id: number; perkTextShort: string }
+import { parseEquippedArtifacts, type EquippedArtifact } from '../../parsers';
+export type { EquippedArtifact } from '../../parsers';
 
 export class ArtifactAPI {
   constructor(private readonly context: AWAContext) {}
@@ -13,10 +12,8 @@ export class ArtifactAPI {
       headers: { ...this.context.headers, referer: this.context.baseURL }
     };
     if (this.context.httpsAgent) options.httpsAgent = this.context.httpsAgent;
-    const response = await http(options);
-    const json = `{${String(response.data).match(/artifactsData.*?=.*?{(.+?)};/m)?.[1] || ''}}`;
-    const active = JSON.parse(json)?.userActiveArtifacts as Record<string, EquippedArtifact> | undefined;
-    return active ? Object.values(active) : [];
+    const response = await this.context.request<string>(options);
+    return parseEquippedArtifacts(response.data);
   }
 
   async equip(userProfilePath: string, artifactId: number, position: number): Promise<boolean> {
@@ -29,6 +26,6 @@ export class ArtifactAPI {
       data: JSON.stringify({ artifactId: String(artifactId), position: String(position) })
     };
     if (this.context.httpsAgent) options.httpsAgent = this.context.httpsAgent;
-    return (await http(options)).status === 200;
+    return (await this.context.request(options)).status === 200;
   }
 }

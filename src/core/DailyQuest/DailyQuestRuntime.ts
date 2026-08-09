@@ -16,11 +16,16 @@ import { parseControlCenter } from '../../client/AWA/parsers';
 import { Logger, random, sleep, time } from '../../tools';
 import { DailyQuestState } from './DailyQuestState';
 import { formatQuestReport } from './QuestReporter';
+import { AWAError } from '../../client/AWA/AWAError';
 
 export interface DailyQuestRuntimeOptions {
   awaCookie: string; host: string; proxy?: proxy; userAgent?: string;
   getStarted?: boolean; joinSteamCommunityEvent?: boolean;
 }
+
+export type DailyQuestRefreshResult =
+  | { ok: true }
+  | { ok: false; reason: 'network-rejected' | 'session-expired' | 'request-failed'; error?: unknown };
 
 export class DailyQuestRuntime {
   readonly awa: AWAApiClient;
@@ -36,30 +41,32 @@ export class DailyQuestRuntime {
 
   get newCookie(): string { return this.awa.newCookie; }
 
-  async init(): Promise<number> {
+  async init(): Promise<DailyQuestRefreshResult> {
     const logger = new Logger(`${time()}${__('updatingCookie', chalk.yellow('AWA Cookie'))}...`, false);
     try {
       await refreshSession(this.awa.context);
       logger.log(chalk.green('OK'));
       return this.updateDailyQuests(true);
-    } catch (error: any) {
+    } catch (error) {
       logger.log(chalk.red('Error'));
       new Logger(error);
-      return error?.statusCode || 0;
+      if (error instanceof AWAError && error.statusCode === 610) return { ok: false, reason: 'network-rejected', error };
+      if (error instanceof AWAError && error.statusCode === 602) return { ok: false, reason: 'session-expired', error };
+      return { ok: false, reason: 'request-failed', error };
     }
   }
 
-  async updateDailyQuests(verify = false): Promise<number> {
+  async updateDailyQuests(verify = false): Promise<DailyQuestRefreshResult> {
     const logger = new Logger(time() + (verify ? __('verifyingToken', chalk.yellow('AWA Token')) : __('gettingTaskInfo')), false);
     try {
       const html = await getControlCenter(this.awa.context);
       if (html.toLowerCase().includes('we have detected an issue with your network')) {
         logger.log(chalk.red(__('ipBanned')));
-        return 610;
+        return { ok: false, reason: 'network-rejected' };
       }
       if (load(html)('a.nav-link-login').length) {
         logger.log(chalk.red(__('tokenExpired')));
-        return 602;
+        return { ok: false, reason: 'session-expired' };
       }
       const snapshot = parseControlCenter(html, this.awa.context.baseURL);
       this.state.questInfo = snapshot.questInfo;
@@ -101,11 +108,11 @@ export class DailyQuestRuntime {
         console.table(report);
       }
       new Logger({ type: 'questInfo', data: report });
-      return 200;
+      return { ok: true };
     } catch (error) {
       logger.log(chalk.red('Error'));
       new Logger(error);
-      return 0;
+      return { ok: false, reason: 'request-failed', error };
     }
   }
 
@@ -121,6 +128,11 @@ export class DailyQuestRuntime {
       new Logger(error);
       return false;
     }
+  }
+
+  async refreshPersonalization(type: 'avatar' | 'border'): Promise<boolean> {
+    const selection = await this.awa.personalization.getAvatarItems(type);
+    return selection ? this.awa.personalization.saveAvatar(selection.userAvatarInfo) : false;
   }
 
   async claimQuest(questId: string): Promise<boolean> {

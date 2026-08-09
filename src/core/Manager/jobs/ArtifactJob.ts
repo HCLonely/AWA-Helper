@@ -16,7 +16,7 @@ class ArtifactJob implements Job {
     if (ids.length === 0) throw new Error('Artifact IDs are required');
     const service = new ArtifactService(this.configPath);
     if (!service.initted) return false;
-    if (await service.init() !== 200 || signal.aborted) return false;
+    if (!await service.init() || signal.aborted) return false;
     return service.start(ids);
   }
 }

@@ -1,7 +1,6 @@
 /** Finds a suitable Daily Quest topic and posts one safe acknowledgement. */
 import FormData from 'form-data';
 import { load } from 'cheerio';
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
 
 export const replyPost = async (context: AWAContext, requestedPostId?: string): Promise<boolean> => {
@@ -12,7 +11,7 @@ export const replyPost = async (context: AWAContext, requestedPostId?: string): 
       headers: { ...context.headers, referer: `${context.baseURL}/` }
     };
     if (context.httpsAgent) listOptions.httpsAgent = context.httpsAgent;
-    const page = await http(listOptions);
+    const page = await context.request<string>(listOptions);
     const $ = load(page.data);
     [postId] = $('.card-title a.forums__topic-link').toArray()
       .filter((link) => /Daily\s*Quest/i.test($(link).text()) && $(link).prev().attr('title') !== 'Locked')
@@ -28,5 +27,5 @@ export const replyPost = async (context: AWAContext, requestedPostId?: string): 
     headers: { ...context.headers, origin: context.baseURL, referer: `${context.baseURL}/ucf/show/${postId}`, ...form.getHeaders() }
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
-  return (await http(options)).data?.success === true;
+  return (await context.request<{ success?: boolean }>(options)).data.success === true;
 };

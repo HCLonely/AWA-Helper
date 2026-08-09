@@ -74,8 +74,6 @@ class ManagerRuntime {
     initializeI18n(this.loaded.raw.language, { zh, en });
     globalThis.language = this.loaded.raw.language;
     globalThis.version = this.version;
-    globalThis.userAgent = this.loaded.raw.UA || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
-    globalThis.awaHost = this.loaded.raw.awaHost;
     globalThis.webUI = this.loaded.raw.webUI?.enable !== false;
     globalThis.pusher = this.loaded.raw.pusher;
     globalThis.log = true;

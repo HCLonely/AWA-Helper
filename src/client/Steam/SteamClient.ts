@@ -1,12 +1,13 @@
 /** ASF-only facade. AWA Steam quest requests and polling are coordinated in Core. */
 import { ASFContext } from './ASFContext';
-import { addLicense, getOwnedGames, playGames, resumeBot, verifyConnection } from './APIs';
+import { addLicense, getOwnedGames, getStatus, playGames, stopGames, verifyConnection } from './APIs';
 import chalk from 'chalk';
 import { Logger, time } from '../../tools';
+import type { ASFBotTaskState } from './types';
 
 export class SteamClient {
   readonly context: ASFContext;
-  status: 'none' | 'running' | 'stopped' = 'none';
+  status: ASFBotTaskState = 'none';
 
   constructor({ asfProtocol, asfHost, asfPort, asfPassword = '', asfBotname, proxy }: {
     asfProtocol: string; asfHost: string; asfPort: number; asfPassword?: string; asfBotname: string; proxy?: proxy
@@ -28,6 +29,15 @@ export class SteamClient {
       return false;
     }
   }
+  get session() { return { verify: () => verifyConnection(this.context), getStatus: () => getStatus(this.context) }; }
+  get bot() {
+    return {
+      getOwnedGames: (appIds: string[]) => getOwnedGames(this.context, appIds),
+      playGames: (appIds: string[]) => this.playGames(appIds),
+      stopGames: () => this.resume()
+    };
+  }
+  get licenses() { return { add: (appIds: string[]) => addLicense(this.context, appIds) }; }
   getOwnedGames(appIds: string[]): Promise<string[]> { return getOwnedGames(this.context, appIds); }
   addLicense(appIds: string[]): Promise<boolean> { return addLicense(this.context, appIds); }
   async playGames(appIds: string[]): Promise<boolean> {
@@ -39,7 +49,7 @@ export class SteamClient {
     if (this.status === 'stopped') return true;
     const logger = new Logger(`${time()}${__('stoppingPlayingGames')}`, false);
     try {
-      const resumed = await resumeBot(this.context);
+      const resumed = await stopGames(this.context);
       if (resumed) this.status = 'stopped';
       logger.log(resumed ? chalk.green('OK') : chalk.red('Error'));
       return resumed;

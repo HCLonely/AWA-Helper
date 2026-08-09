@@ -42,3 +42,30 @@ test('legacy AWAClient and global quest singleton were removed', () => {
   assert.doesNotMatch(source, /globalThis\.quest/);
   assert.doesNotMatch(fs.readFileSync(path.join(root, 'src/global.d.ts'), 'utf8'), /var quest:/);
 });
+
+test('platform clients use injected context and do not read mutable application globals', () => {
+  const source = [
+    combinedSource('src/client/AWA'),
+    combinedSource('src/client/Twitch'),
+    combinedSource('src/client/Steam'),
+    combinedSource('src/client/shared')
+  ].join('\n');
+  assert.doesNotMatch(source, /globalThis\.(quest|awaHost|userAgent)/);
+  assert.doesNotMatch(source, /tools-path/);
+  assert.match(source, /interface HttpTransport/);
+  assert.doesNotMatch(source, /from ['"][^'"]*(?:core|server)\//);
+});
+
+test('Steam quest preparation belongs to Core and not AWA API modules', () => {
+  const awaSource = combinedSource('src/client/AWA/APIs');
+  const coreSource = combinedSource('src/core/DailyQuest');
+  assert.doesNotMatch(awaSource, /prepareQuest\s*\(/);
+  assert.match(coreSource, /prepareQuest\s*\(/);
+});
+
+test('Achievement tracking remains awaited and abort-aware under Manager', () => {
+  const source = fs.readFileSync(path.join(root, 'src/core/Achievement/AchievementService.ts'), 'utf8');
+  assert.match(source, /await this\.watchTwitch\(signal\)/);
+  assert.match(source, /sleep\(60, signal\)/);
+  assert.doesNotMatch(source, /return this\.watchTwitch\(/);
+});

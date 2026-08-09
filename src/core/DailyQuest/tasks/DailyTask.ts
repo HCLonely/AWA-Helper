@@ -9,7 +9,7 @@ import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 class DailyTask {
   constructor(private readonly runtime: DailyQuestRuntime) {}
-  async do(): Promise<any> {
+  async do(): Promise<boolean> {
     if (!this.runtime.state.questInfo.dailyQuest?.[0]) {
       new Logger(time() + chalk.yellow(__('noDailyQuest')));
       return true;

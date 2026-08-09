@@ -95,7 +95,7 @@ export class AchievementService {
       atomicWriteFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
     }
   }
-  async run(): Promise<void> {
+  async run(signal?: AbortSignal): Promise<void> {
     new Logger(`${time()}${__('matching', chalk.yellow('Achievements'))}`);
     // addLog('开始匹配可操作的成就', TaskStatus.RUNNING);
 
@@ -105,11 +105,12 @@ export class AchievementService {
       if (achievement) {
         this.incompletedAchievements.push(availableAchievement);
         new Logger(`${time()}${__('doingAchievement', chalk.yellow(availableAchievement))}`);
+        if (signal?.aborted) return;
         await this.achievement2action[availableAchievement]();
         new Logger(`${time()}${__('doneAchievement', chalk.yellow(availableAchievement))}`);
       }
     }
-    this.watchTwitch();
+    await this.watchTwitch(signal);
     new Logger(`${time()}${__('doneMatch', chalk.yellow('Achievements'))}`);
   }
 
@@ -251,75 +252,57 @@ export class AchievementService {
     }
   }
 
-  async watchTwitch(): Promise<void> {
-    try {
-      if (!this.twitchCookie) {
-        return;
-      }
-
-      this.twitch = new TwitchClient({ cookie: this.twitchCookie });
-      // await twitch.start(type);
-
-      const initStatus = await this.twitch.init();
-      if (!initStatus) {
-        return;
-      }
-      this.watchTwitchStatus.running = true;
-
-      const { Hive, Nexus } = await this.awa.getAvailableStreams();
-      new Logger(`${time()}${__('foundHiveLive', chalk.yellow(Hive.length))}`);
-      new Logger(`${time()}${__('foundNexusLive', chalk.yellow(Nexus.length))}`);
-
-      if (Hive.length > 0 && this.watchTwitchStatus.type.has('hive')) {
-        const trackingInfo = await this.twitch.findTrackingChannel(Hive);
+  async watchTwitch(signal?: AbortSignal): Promise<void> {
+    if (!this.twitchCookie || this.watchTwitchStatus.type.size === 0 || signal?.aborted) return;
+    this.watchTwitchStatus.running = true;
+    while (this.watchTwitchStatus.running && !signal?.aborted) {
+      try {
+        this.twitch = new TwitchClient({ cookie: this.twitchCookie });
+        if (!await this.twitch.init()) return;
+        const { Hive, Nexus } = await this.awa.getAvailableStreams();
+        new Logger(`${time()}${__('foundHiveLive', chalk.yellow(Hive.length))}`);
+        new Logger(`${time()}${__('foundNexusLive', chalk.yellow(Nexus.length))}`);
+        const candidates = [
+          ...(this.watchTwitchStatus.type.has('hive') ? Hive : []),
+          ...(this.watchTwitchStatus.type.has('nexus') ? Nexus : [])
+        ];
+        const trackingInfo = await this.twitch.findTrackingChannel(candidates);
         if (!trackingInfo) {
-          this.twitch = null;
-          return this.watchTwitch();
+          if (!await sleep(5 * 60, signal)) return;
+          continue;
         }
-        await this.trackTwitchChannel(trackingInfo).catch(async () => {
-          await sleep(5 * 60);
-          this.twitch = null;
-          return this.watchTwitch();
-        });
+        await this.trackTwitchChannel(trackingInfo, signal);
+        return;
+      } catch (error) {
+        if (signal?.aborted || !this.watchTwitchStatus.running) return;
+        new Logger(`${time()}${__('watchTwitchFailed', (error as Error).toString())}`);
+        new Logger(`${time()}${__('watchTwitchAfter5min')}`);
+        if (!await sleep(5 * 60, signal)) return;
+      } finally {
+        this.twitch = null;
       }
-
-      if (Nexus.length > 0 && this.watchTwitchStatus.type.has('nexus')) {
-        const trackingInfo = await this.twitch.findTrackingChannel(Nexus);
-        if (!trackingInfo) {
-          this.twitch = null;
-          return this.watchTwitch();
-        }
-        await this.trackTwitchChannel(trackingInfo).catch(async () => {
-          new Logger(`${time()}${__('watchTwitchAfter5min')}`);
-          await sleep(5 * 60);
-          this.twitch = null;
-          return this.watchTwitch();
-        });
-      }
-    } catch (error) {
-      new Logger(`${time()}${__('watchTwitchFailed', (error as Error).toString())}`);
     }
   }
 
   /** Manager-owned Achievement orchestration for repeated AWA heartbeats. */
-  private async trackTwitchChannel(info: TwitchChannelTrackingInfo): Promise<void> {
-    while (this.watchTwitchStatus.running) {
+  private async trackTwitchChannel(info: TwitchChannelTrackingInfo, signal?: AbortSignal): Promise<void> {
+    while (this.watchTwitchStatus.running && !signal?.aborted) {
       const result = await this.awa.sendTwitchTrack(info);
       if (!result.success || result.state === 'streamer_offline' || result.state === 'no_channel_found') {
         throw new Error(`AWA Twitch tracking failed: ${result.state}`);
       }
       if (result.state === 'daily_cap_reached') return;
-      await sleep(60);
+      if (!await sleep(60, signal)) return;
     }
   }
 
+  /** Requests cooperative shutdown; the owning Manager job performs final cleanup. */
+  stop(): void {
+    this.watchTwitchStatus.running = false;
+  }
+
   destroy(): void {
-    // Destroy AWA instance
-    this.awa = null as any;
-    // Destroy Twitch instance
-    if (this.twitch) {
-      this.twitch = null as any;
-    }
+    this.twitch = null;
     this.watchTwitchStatus = {
       running: false,
       type: new Set()
@@ -334,11 +317,6 @@ export class AchievementService {
     }
     if (this.incompletedAchievements) {
       this.incompletedAchievements.length = 0;
-    }
-
-    // Clear achievement2action object
-    if (this.achievement2action) {
-      this.achievement2action = {} as any;
     }
   }
 }

@@ -1,5 +1,4 @@
 /** Records one forum post view. */
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
 export const recordPostView = async (context: AWAContext, postId: string): Promise<boolean> => {
   const link = `${context.baseURL}/ucf/show/${postId}`;
@@ -8,5 +7,5 @@ export const recordPostView = async (context: AWAContext, postId: string): Promi
     headers: { ...context.headers, origin: context.baseURL, referer: link }
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
-  return (await http(options)).data === 'success';
+  return (await context.request(options)).data === 'success';
 };

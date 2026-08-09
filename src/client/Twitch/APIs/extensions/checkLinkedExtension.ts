@@ -1,8 +1,9 @@
 /** Checks whether Arena Rewards Tracker is linked to the Twitch account. */
-import { http } from '../tools-path';
 import { TwitchContext } from '../../TwitchContext';
 import { TwitchError } from '../../TwitchError';
 import { linkedExtensionsQuery } from '../../queries';
+import { parseLinkedArenaExtension, type LinkedExtensionsData } from '../../parsers';
+import type { TwitchGqlEnvelope } from '../../types';
 
 export const checkLinkedExtension = async (context: TwitchContext): Promise<boolean> => {
   if (!context.clientId) throw new TwitchError('checkLinkedExtension', 'Twitch Client-Id is not initialized');
@@ -12,9 +13,8 @@ export const checkLinkedExtension = async (context: TwitchContext): Promise<bool
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
   try {
-    const response = await http(options);
-    return !!response.data?.[0]?.data?.currentUser?.linkedExtensions
-      ?.find((extension: { name?: string }) => extension.name === 'Arena Rewards Tracker');
+    const response = await context.request<Array<TwitchGqlEnvelope<LinkedExtensionsData>>>(options);
+    return parseLinkedArenaExtension(response.data);
   } catch (error) {
     throw new TwitchError('checkLinkedExtension', 'Unable to query linked Twitch extensions', true, undefined, { cause: error });
   }

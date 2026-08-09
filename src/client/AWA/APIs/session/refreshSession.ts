@@ -1,5 +1,4 @@
 /** Refreshes the AWA session cookie and follows the configured home-site redirect. */
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
 import { AWAError } from '../../AWAError';
 
@@ -10,7 +9,7 @@ export const refreshSession = async (context: AWAContext): Promise<string> => {
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
   try {
-    const response = await http(options);
+    const response = await context.request(options);
     if (typeof response.data === 'string' && response.data.toLowerCase().includes('we have detected an issue with your network')) {
       throw new AWAError('refreshSession', 'AWA rejected the current network address', false, 610);
     }

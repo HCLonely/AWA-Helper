@@ -1,5 +1,4 @@
 /** Sends one AWA time-on-site or page-view tracking request. */
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
 export const sendTimeOnSiteTrack = async (context: AWAContext, link?: string): Promise<boolean> => {
   const target = link || `${context.baseURL}/account/personalization`;
@@ -9,7 +8,7 @@ export const sendTimeOnSiteTrack = async (context: AWAContext, link?: string): P
     data: JSON.stringify({ url: target })
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
-  const response = await http(options);
+  const response = await context.request<{ success?: boolean }>(options);
   context.updateCookies(response.headers?.['set-cookie']);
   return link ? true : response.data?.success === true;
 };

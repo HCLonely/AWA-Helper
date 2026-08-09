@@ -1,6 +1,5 @@
 /** Verifies the AWA account session and captures user identity. */
 import { load } from 'cheerio';
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
 import { AWAError } from '../../AWAError';
 
@@ -8,7 +7,7 @@ export const verifySession = async (context: AWAContext): Promise<{ userId: stri
   const options: myAxiosConfig = { url: `${context.baseURL}/account`, method: 'GET', headers: context.headers };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
   try {
-    const response = await http(options);
+    const response = await context.request<string>(options);
     const $ = load(response.data);
     if ($('a.nav-link-login').length) throw new AWAError('verifySession', 'AWA cookie has expired', false, 602);
     const userId = String(response.data).match(/(?:var|let)\s+user_id\s*=\s*([\d]+);/)?.[1];

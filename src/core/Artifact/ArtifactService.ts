@@ -17,28 +17,29 @@ class ArtifactService {
   initted = true;
 
   constructor(configPath: string) {
-    const { awaCookie, awaHost, proxy }: { awaCookie?: string; awaHost?: string; proxy?: proxy } = parse(fs.readFileSync(configPath, 'utf8'));
+    const { awaCookie, awaHost, proxy, UA }: { awaCookie?: string; awaHost?: string; proxy?: proxy; UA?: string } = parse(fs.readFileSync(configPath, 'utf8'));
     if (!awaCookie) {
       new Logger(time() + chalk.yellow(__('missingAwaCookie')));
       this.initted = false;
       return;
     }
-    this.awa = new AWAApiClient({ cookie: awaCookie, host: awaHost, proxy, userAgent: globalThis.userAgent });
+    this.awa = new AWAApiClient({ cookie: awaCookie, host: awaHost, proxy, userAgent: UA });
   }
 
   get newCookie(): string { return this.awa?.newCookie || ''; }
 
-  async init(): Promise<number> {
-    if (!this.awa) return 0;
+  async init(): Promise<boolean> {
+    if (!this.awa) return false;
     try {
       await refreshSession(this.awa.context);
       const html = await getControlCenter(this.awa.context);
       const $ = load(html);
-      if ($('a.nav-link-login').length) return 602;
+      if ($('a.nav-link-login').length) return false;
       this.userProfileUrl = html.match(/user_profile_url.*?=.*?"(.+?)"/)?.[1];
-      return this.userProfileUrl ? 200 : 0;
+      return !!this.userProfileUrl;
     } catch (error) {
-      return error instanceof AWAError ? error.statusCode || 0 : 0;
+      new Logger(error instanceof AWAError ? error : String(error));
+      return false;
     }
   }
 

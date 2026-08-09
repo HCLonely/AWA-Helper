@@ -2,6 +2,7 @@
 import chalk from 'chalk';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
 import { SteamClient } from '../../../client/Steam/SteamClient';
+import type { AWASteamQuestListing, PreparedSteamQuest } from '../../../client/AWA/types';
 import { Logger, sleep, time } from '../../../tools';
 
 export class SteamQuestTask {
@@ -9,12 +10,18 @@ export class SteamQuestTask {
 
   async run(signal?: AbortSignal): Promise<boolean> {
     const questLogger = new Logger(`${time()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`, false);
-    const quests = await this.awa.steam.getSteamQuests().catch((error) => {
+    const listings = await this.awa.steam.getSteamQuests().catch((error) => {
       questLogger.log(chalk.red('Error'));
       new Logger(error);
       return null;
     });
-    if (!quests) return false;
+    if (!listings) return false;
+    const quests: PreparedSteamQuest[] = [];
+    for (const listing of listings) {
+      const prepared = await this.prepareQuest(listing, signal);
+      if (prepared) quests.push(prepared);
+      if (signal?.aborted) return true;
+    }
     questLogger.log(chalk.green(`OK (${quests.length})`));
     const { eventAppId } = this;
     const requestedIds = [...quests.map((quest) => quest.id), ...(eventAppId ? [eventAppId] : [])];
@@ -70,5 +77,30 @@ export class SteamQuestTask {
     } finally {
       await this.asf.resume().catch(() => false);
     }
+  }
+
+  /** Coordinates the multi-request AWA preparation flow without leaking it into the API layer. */
+  private async prepareQuest(listing: AWASteamQuestListing, signal?: AbortSignal): Promise<PreparedSteamQuest | null> {
+    for (let attempt = 0; attempt < 5 && !signal?.aborted; attempt++) {
+      const detail = await this.awa.steam.getQuestDetail(listing.link);
+      if (detail.state === 'ready' && detail.appId) return { ...listing, id: detail.appId };
+      if (detail.state === 'completed' || detail.state === 'unknown') return null;
+      if (detail.state === 'ownership-required') {
+        if (!await this.awa.steam.checkOwnedGames(listing.name)) return null;
+        continue;
+      }
+      if (detail.state === 'selection-required') {
+        let gameId = await this.awa.steam.getSelectableGameId(listing.link);
+        if (!gameId && await this.awa.steam.syncGames(listing.link)) {
+          gameId = await this.awa.steam.getSelectableGameId(listing.link);
+        }
+        if (!gameId || !await this.awa.steam.selectGame(listing.link, gameId)) return null;
+        continue;
+      }
+      if (detail.state === 'not-started') {
+        if (!await this.awa.steam.startQuest(listing.link)) return null;
+      }
+    }
+    return null;
   }
 }

@@ -1,9 +1,7 @@
 /** Sends one Twitch extension heartbeat to AWA; retry policy belongs to Core. */
-import { http } from '../tools-path';
 import { AWAContext } from '../../AWAContext';
-
-export type TwitchTrackState = 'daily_cap_reached' | 'streamer_online' | 'streamer_offline' | 'no_channel_found' | 'unknown';
-export interface TwitchTrackResult { success: boolean; state: TwitchTrackState; message?: string }
+import type { TwitchTrackResult, TwitchTrackState } from '../../types';
+export type { TwitchTrackResult, TwitchTrackState } from '../../types';
 
 export const sendTwitchTrack = async (
   context: AWAContext,
@@ -17,8 +15,9 @@ export const sendTwitchTrack = async (
     }
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
-  const response = await http(options);
+  const response = await context.request<{ state?: string; success?: boolean; message?: string }>(options);
   const known = ['daily_cap_reached', 'streamer_online', 'streamer_offline', 'no_channel_found'];
-  const state = known.includes(response.data?.state) ? response.data.state as TwitchTrackState : 'unknown';
+  const rawState = response.data.state;
+  const state = typeof rawState === 'string' && known.includes(rawState) ? rawState as TwitchTrackState : 'unknown';
   return { success: response.data?.success === true, state, message: response.data?.message };
 };

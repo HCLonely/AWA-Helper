@@ -1,8 +1,7 @@
 /** Validates Twitch credentials and discovers the current public Client-Id. */
-import { load } from 'cheerio';
-import { http } from '../tools-path';
 import { TwitchContext } from '../../TwitchContext';
 import { TwitchError } from '../../TwitchError';
+import { parseTwitchClientId } from '../../parsers';
 
 export const verifySession = async (context: TwitchContext): Promise<string> => {
   if (!context.cookie.get('unique_id')) throw new TwitchError('verifySession', 'Missing unique_id in Twitch cookie');
@@ -13,11 +12,8 @@ export const verifySession = async (context: TwitchContext): Promise<string> => 
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
   try {
-    const response = await http(options);
-    const $ = load(response.data);
-    const script = $('script').filter((_, element) => !!$(element).html()?.includes('clientId')).first()
-      .html();
-    const clientId = script?.match(/clientId="(.+?)"/)?.[1];
+    const response = await context.request<string>(options);
+    const clientId = parseTwitchClientId(response.data);
     if (!clientId) throw new TwitchError('verifySession', 'Twitch Client-Id was not found in the page');
     context.clientId = clientId;
     return clientId;

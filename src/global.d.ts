@@ -116,14 +116,6 @@ declare global {
       maxAvailableARP: string
     }>
   }
-  interface steamGameInfo {
-    id: string
-    time: number
-    arp: number
-    link: string
-    progress?: string
-  }
-
   interface questStatus {
     dailyQuest?: 'complete' | 'incomplete' | 'skip'
     timeOnSite?: 'complete' | 'incomplete'
@@ -186,7 +178,6 @@ declare global {
     rewardedTime: string
   }
   var secrets: Array<string>;
-  var userAgent: string;
   var wsClients: Set<WebSocket>;
   var webUI: boolean;
   var logs: logs;
@@ -194,7 +185,6 @@ declare global {
   var pusher: pusher | undefined;
   var pusherProxy: proxy;
   var initError: string;
-  var awaHost: string;
   var __: I18n['__'];
   var newVersionNotice: string;
   var log: boolean;

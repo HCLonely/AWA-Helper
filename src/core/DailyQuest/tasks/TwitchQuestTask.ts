@@ -35,7 +35,11 @@ export class TwitchQuestTask {
       }
       const streamCount = streams.Hive.length + streams.Nexus.length;
       streamLogger.log(streamCount > 0 ? chalk.green(`OK (${streamCount})`) : chalk.blue(__('noLive')));
-      const channelLogger = new Logger(`${time()}${__('gettingChannelInfo', chalk.yellow('Twitch'))}`, false);
+      if (streamCount === 0) {
+        if (!await sleep(5 * 60, signal)) return true;
+        continue;
+      }
+      const channelLogger = new Logger(`${time()}${__('gettingChannelInfo')}`, false);
       const trackingInfo = await this.twitch.findTrackingChannel([...streams.Hive, ...streams.Nexus]);
       if (!trackingInfo) {
         channelLogger.log(chalk.red('Error'));
@@ -58,9 +62,12 @@ export class TwitchQuestTask {
         }
         if (!result.success) return false;
         retriedAuthorization = false;
-      } catch (error: any) {
+      } catch (error) {
         logger.log(chalk.red('Error'));
-        if (error?.response?.status === 403 && !retriedAuthorization) {
+        const status = error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { status?: number } }).response?.status
+          : undefined;
+        if (status === 403 && !retriedAuthorization) {
           new Logger(`${time()}${chalk.yellow('Twitch authorization expired, retrying')}`);
           retriedAuthorization = true;
           if (!await this.twitch.init()) return false;

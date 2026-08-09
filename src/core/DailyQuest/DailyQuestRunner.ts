@@ -25,6 +25,7 @@ import { createConfigValidationError, updateYamlFieldsSync } from '../../tools/c
 import { deepMerge, validateHelperConfig } from '../../tools/config/ConfigSchema';
 import { setLogSecrets } from '../../tools/logging/sanitize';
 import { cleanupExpiredLogs } from '../../tools/logging/retention';
+import { DEFAULT_AWA_HOST, DEFAULT_USER_AGENT } from '../../client/shared';
 
 // @ts-ignore
 import * as zh from '../../locales/zh.json';
@@ -86,8 +87,6 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     new Logger(chalk.red(`${__('configFileNotFound')}[${chalk.yellow(resolve(configPath))}]!`));
     return;
   }
-
-  globalThis.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36 Edg/103.0.1264.77';
 
   // 默认配置
   const defaultConfig: config = {
@@ -156,7 +155,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     pusher,
     joinSteamCommunityEvent,
     TLSRejectUnauthorized,
-    managerServer
+    managerServer,
+    UA
   }: config = config;
   if (TLSRejectUnauthorized === false) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -164,7 +164,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   globalThis.webUI = !!webUI?.enable;
   globalThis.language = language || 'zh';
   globalThis.pusher = pusher;
-  globalThis.awaHost = awaHost || 'www.alienwarearena.com';
+  const resolvedAwaHost = awaHost || DEFAULT_AWA_HOST;
+  const userAgent = UA || DEFAULT_USER_AGENT;
   i18n.setLocale(language);
 
   // 清理日志
@@ -211,25 +212,22 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   // 初始化AWA
   const runtime = new DailyQuestRuntime({
     awaCookie: awaCookie as string,
-    host: globalThis.awaHost,
+    host: resolvedAwaHost,
     proxy,
     joinSteamCommunityEvent,
     getStarted: awaQuests.includes('getStarted'),
-    userAgent: globalThis.userAgent
+    userAgent
   });
   runtimeHolder.current = runtime;
 
   const initResult = await runtime.init();
-  if (initResult !== 200) {
+  if (!initResult.ok) {
     const errorMap = {
-      0: __('netError'),
-      602: __('tokenExpired'),
-      603: __('noBorderAndBadges'),
-      604: __('noBorder'),
-      605: __('noBadges'),
-      610: __('ipBanned')
+      'request-failed': __('netError'),
+      'session-expired': __('tokenExpired'),
+      'network-rejected': __('ipBanned')
     };
-    const initError = errorMap[initResult as keyof typeof errorMap] || __('unknownError');
+    const initError = errorMap[initResult.reason];
     try {
       await push(`${__('pushTitle')}:\n${__('processInitError')}\n\n${initError}, ${__('checkLog')}${globalThis.newVersionNotice}`);
     } catch (_e) {

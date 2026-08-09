@@ -20,15 +20,17 @@ class AchievementJob implements Job {
       proxy: this.appConfig.proxy,
       userAgent: this.appConfig.UA
     });
-    const abort = (): void => this.service?.destroy();
+    const abort = (): void => this.service?.stop();
     signal.addEventListener('abort', abort, { once: true });
     try {
       await this.service.init();
       if (signal.aborted) return false;
-      await this.service.run();
+      await this.service.run(signal);
       return true;
     } finally {
       signal.removeEventListener('abort', abort);
+      this.service?.destroy();
+      this.service = undefined;
     }
   }
 

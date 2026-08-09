@@ -29,9 +29,10 @@ class LegacyDailyTask {
     }
   }
 
-  async do(): Promise<any> {
+  async do(): Promise<void> {
     if (!this.runtime.state.questInfo.dailyQuest?.[0]) {
-      return new Logger(time() + chalk.yellow(__('noDailyQuest')));
+      new Logger(time() + chalk.yellow(__('noDailyQuest')));
+      return;
     }
 
     if (this.checkDailyQuestCompleted()) {
@@ -42,10 +43,9 @@ class LegacyDailyTask {
       const matchedQuest = this.matchQuest(name);
       if (matchedQuest.length > 0) {
         for (const quest of matchedQuest) {
-          // @ts-ignore
-          if (this[quest] && this.awaDailyQuestType.includes(quest)) {
-            // @ts-ignore
-            await this[quest]();
+          const action = this.getAction(quest);
+          if (action && this.awaDailyQuestType.includes(quest)) {
+            await action();
           } else if (/^\//.test(quest)) {
             await this.runtime.visit(new URL(quest, `${this.runtime.awa.context.baseURL}/`).href);
           }
@@ -87,7 +87,18 @@ class LegacyDailyTask {
         return;
       }
     }
-    return new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
+    new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
+  }
+
+  private getAction(name: string): (() => Promise<unknown>) | undefined {
+    const actions: Record<string, () => Promise<unknown>> = {
+      changeBorder: () => this.runtime.refreshPersonalization('border'),
+      changeAvatar: () => this.runtime.refreshPersonalization('avatar'),
+      viewNews: () => this.runtime.viewNews(),
+      sharePosts: () => this.runtime.sharePosts(),
+      replyPost: () => this.runtime.replyPost()
+    };
+    return actions[name];
   }
   private checkDailyQuestCompleted(): boolean {
     if ((this.runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (this.runtime.state.questInfo.dailyQuest || []).length) {

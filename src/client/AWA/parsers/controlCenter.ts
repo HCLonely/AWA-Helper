@@ -1,18 +1,7 @@
 /** Pure parser for AWA control-center HTML. It performs no requests or logging. */
 import { load } from 'cheerio';
-import type { GetStartedItem, PromotionalCalendarEntry } from '../../../core/DailyQuest/DailyQuestState';
-
-export interface ControlCenterSnapshot {
-  questInfo: questInfo;
-  userProfileUrl?: string;
-  dailyQuestLink?: string;
-  dailyArp: string;
-  taskType: 'US' | 'New';
-  signArp: { daily?: string; monthly?: string };
-  promotionalCalendarInfo?: PromotionalCalendarEntry[];
-  posts: string[];
-  getStartedItems: GetStartedItem[];
-}
+import type { ControlCenterSnapshot, PromotionalCalendarEntry } from '../types';
+export type { ControlCenterSnapshot } from '../types';
 
 export const parseControlCenter = (html: string, baseURL: string): ControlCenterSnapshot => {
   const $ = load(html);

@@ -1,8 +1,9 @@
 /** Resolves a Twitch login to its channel id. */
-import { http } from '../tools-path';
 import { TwitchContext } from '../../TwitchContext';
 import { TwitchError } from '../../TwitchError';
 import { channelInfoQuery } from '../../queries';
+import { parseTwitchChannelId, type TwitchChannelQueryData } from '../../parsers';
+import type { TwitchGqlEnvelope } from '../../types';
 
 export const getChannelInfo = async (context: TwitchContext, channelLogin: string): Promise<string | null> => {
   if (!context.clientId) throw new TwitchError('getChannelInfo', 'Twitch Client-Id is not initialized');
@@ -12,8 +13,8 @@ export const getChannelInfo = async (context: TwitchContext, channelLogin: strin
   };
   if (context.httpsAgent) options.httpsAgent = context.httpsAgent;
   try {
-    const response = await http(options);
-    return response.data?.[0]?.data?.user?.id || null;
+    const response = await context.request<Array<TwitchGqlEnvelope<TwitchChannelQueryData>>>(options);
+    return parseTwitchChannelId(response.data);
   } catch (error) {
     throw new TwitchError('getChannelInfo', `Unable to resolve Twitch channel ${channelLogin}`, true, undefined, { cause: error });
   }
