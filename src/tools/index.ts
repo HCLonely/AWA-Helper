@@ -143,7 +143,7 @@ class Logger {
         process.stdout.write(formatLogValue(data));
       }
     }
-    this.data += data;
+    this.data += typeof data === 'string' ? data : formatLogValue(data);
     logs[this.id.toString()] = {
       id: this.id,
       data: toHtmlJSON(this.data),

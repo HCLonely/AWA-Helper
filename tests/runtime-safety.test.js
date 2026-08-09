@@ -8,7 +8,7 @@ const test = require('node:test');
 const { cleanupExpiredLogs } = require('../dist/tools/logging/retention');
 const { formatLogValue, setLogSecrets } = require('../dist/tools/logging/sanitize');
 const { requestHealthEndpoint } = require('../dist/tools/process/healthcheck');
-const { sleep } = require('../dist/tools');
+const { Logger, sleep } = require('../dist/tools');
 const { decodeManagerWebSocketSecret } = require('../dist/server/websocket/authenticate');
 
 test('log formatting removes configured secrets and Axios request headers', () => {
@@ -21,6 +21,38 @@ test('log formatting removes configured secrets and Axios request headers', () =
   assert.equal(output.includes(secret), false);
   assert.equal(output.includes('headers'), false);
   assert.match(output, /401/);
+});
+
+test('WebUI logs preserve object details instead of coercing them to object Object', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-webui-log-'));
+  const originalDirectory = process.cwd();
+  const originalWebUI = globalThis.webUI;
+  const originalLog = globalThis.log;
+  const messages = [];
+  t.after(() => {
+    process.chdir(originalDirectory);
+    globalThis.webUI = originalWebUI;
+    globalThis.log = originalLog;
+    globalThis.wsClients.clear();
+    fs.rmSync(directory, { recursive: true, force: true });
+  });
+  process.chdir(directory);
+  fs.mkdirSync('logs');
+  globalThis.webUI = true;
+  globalThis.log = false;
+  globalThis.wsClients.add({
+    readyState: 1,
+    send(message) {
+      messages.push(JSON.parse(message));
+    }
+  });
+
+  new Logger({ status: 500, data: { message: 'push denied' } });
+
+  assert.equal(messages.length, 1);
+  assert.doesNotMatch(messages[0].data, /\[object Object\]/);
+  assert.match(messages[0].data, /500/);
+  assert.match(messages[0].data, /push denied/);
 });
 
 test('sleep removes its abort listener after normal completion', async () => {
