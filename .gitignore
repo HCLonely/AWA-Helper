@@ -1,5 +1,7 @@
 .history/
 node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
 config.yml
 config1.yml
 config2.yml

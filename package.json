@@ -7,6 +7,9 @@
     "node": "^22.13.0 || >=24.0.0"
   },
   "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\" \"src/webUI/static/js/pages/*.js\"",
     "typecheck": "tsc --noEmit",
     "test:unit": "npm run tsc --silent && node --test tests/*.test.js",
@@ -82,6 +85,7 @@
     "rollup": "^4.60.4",
     "rollup-plugin-string-import": "^1.2.6",
     "typescript": "^6.0.3",
-    "uglify-js": "^3.19.3"
+    "uglify-js": "^3.19.3",
+    "vitepress": "^1.6.4"
   }
 }
