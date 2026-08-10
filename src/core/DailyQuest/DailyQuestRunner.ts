@@ -36,6 +36,8 @@ interface DailyQuestRunnerOptions {
   signal?: AbortSignal
 }
 
+type TerminalOutcome = 'timeout' | 'failed' | 'completed';
+
 /**
  * 执行 run Daily Quest 相关数据。
  * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRunnerOptions`。
@@ -56,6 +58,14 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   }
   let activeTaskCompletion: Promise<Array<PromiseSettledResult<unknown>>> = Promise.resolve([]);
   let timeoutHandle: NodeJS.Timeout | undefined;
+  let terminalOutcome: TerminalOutcome | undefined;
+  const claimTerminalOutcome = (outcome: TerminalOutcome): boolean => {
+    if (terminalOutcome) {
+      return false;
+    }
+    terminalOutcome = outcome;
+    return true;
+  };
   const runtimeHolder: { current?: DailyQuestRuntime } = {};
   /**
    * 处理 current Push Info 相关逻辑。
@@ -208,6 +218,9 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     // 设置超时
     if (timeout && typeof timeout === 'number' && timeout > 0) {
       timeoutHandle = setTimeout(async () => {
+        if (!claimTerminalOutcome('timeout')) {
+          return;
+        }
         shutdownController.abort(new Error('Process timeout'));
         new Logger(chalk.yellow(__('processTimeout')));
         await push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
@@ -247,6 +260,9 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
 
     const initResult = await runtime.init();
     if (!initResult.ok) {
+      if (!claimTerminalOutcome('failed')) {
+        return false;
+      }
       const errorMap = {
         'request-failed': __('netError'),
         'session-expired': __('tokenExpired'),
@@ -362,6 +378,9 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     });
     activeTaskCompletion = Promise.allSettled(quests.map(({ promise }) => promise));
     const questResults = await activeTaskCompletion;
+    if (shutdownController.signal.aborted) {
+      return false;
+    }
     const failedQuests = questResults.flatMap((result, index) => {
       if (result.status === 'rejected' || result.value === false) {
         return [quests[index]?.name || `Task ${index + 1}`];
@@ -369,10 +388,16 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       return [];
     });
     if (failedQuests.length > 0) {
+      if (!claimTerminalOutcome('failed')) {
+        return false;
+      }
       const errorMessage = `${__('processError')}: ${failedQuests.join(', ')}`;
       new Logger(time() + chalk.red(errorMessage));
       await push(`${__('pushTitle')}:\n${errorMessage}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
       shutdownController.abort(new Error('DailyQuest failed'));
+      return false;
+    }
+    if (!claimTerminalOutcome('completed')) {
       return false;
     }
     new Logger(time() + chalk.green(__('allTaskCompleted')));

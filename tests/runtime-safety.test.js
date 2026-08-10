@@ -126,6 +126,14 @@ test('DailyQuest always clears its process timeout', () => {
   assert.match(source, /finally \{[\s\S]*clearTimeout\(timeoutHandle\)/);
 });
 
+test('DailyQuest terminal notifications are mutually exclusive', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/core/DailyQuest/DailyQuestRunner.ts'), 'utf8');
+  assert.match(source, /claimTerminalOutcome\('timeout'\)/);
+  assert.match(source, /claimTerminalOutcome\('failed'\)/);
+  assert.match(source, /claimTerminalOutcome\('completed'\)/);
+  assert.match(source, /if \(shutdownController\.signal\.aborted\) \{\s*return false;/);
+});
+
 test('settings use the validated config API and legacy config routes are removed', () => {
   const settings = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/settings.source.js'), 'utf8');
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
