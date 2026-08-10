@@ -155,8 +155,8 @@ const validateHelperConfig = (value: unknown): Array<string> => {
           }
         }
       }
-      if (value.manager.artifacts !== undefined && (!Array.isArray(value.manager.artifacts) || value.manager.artifacts.some((item) => !isRecord(item) || typeof item.cron !== 'string' || !(typeof item.ids === 'string' || (Array.isArray(item.ids) && item.ids.every((id) => Number.isInteger(id))))))) {
-        errors.push('manager.artifacts must contain cron strings and integer ids arrays');
+      if (value.manager.artifacts !== undefined && (!Array.isArray(value.manager.artifacts) || value.manager.artifacts.some((item) => !isRecord(item) || typeof item.cron !== 'string' || !Array.isArray(item.ids) || item.ids.length !== 3 || new Set(item.ids).size !== 3 || item.ids.some((id) => !Number.isSafeInteger(id) || (id as number) <= 0)))) {
+        errors.push('manager.artifacts must contain cron strings and exactly three distinct positive integer ids');
       }
     }
   }

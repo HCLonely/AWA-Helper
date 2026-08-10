@@ -16,7 +16,7 @@ const defaultConfig: config = {
   timeout: 86400,
   logsExpire: 30,
   debug: { http: false },
-  webUI: { enable: true, port: 3456, local: true },
+  webUI: { enable: true, port: 2345, local: true },
   awaHost: 'www.alienwarearena.com',
   awaQuests: ['getStarted', 'dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
   awaDailyQuestType: ['click', 'visitLink', 'openLink', 'changeBorder', 'changeAvatar', 'viewNews'],

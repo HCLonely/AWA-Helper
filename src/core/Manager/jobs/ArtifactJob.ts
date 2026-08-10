@@ -24,9 +24,9 @@ class ArtifactJob implements Job {
     if (signal.aborted) {
       return false;
     }
-    const ids = Array.isArray(payload) ? payload.filter((id): id is number => Number.isInteger(id)) : [];
-    if (ids.length === 0) {
-      throw new Error('Artifact IDs are required');
+    const ids = Array.isArray(payload) ? payload.filter((id): id is number => Number.isSafeInteger(id) && id > 0) : [];
+    if (ids.length !== 3 || new Set(ids).size !== 3 || ids.length !== (Array.isArray(payload) ? payload.length : 0)) {
+      throw new Error('Exactly three distinct positive artifact IDs are required');
     }
     const service = new ArtifactService(this.configPath);
     if (!service.initted) {

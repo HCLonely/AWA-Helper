@@ -7,8 +7,12 @@ const { normalizeManagerConfig } = require('../dist/tools/config/ConfigMigration
 const { defaultConfig } = require('../dist/tools/config/ConfigLoader');
 
 test('deepMerge preserves nested defaults', () => {
-  const merged = deepMerge({ webUI: { enable: true, port: 3456, local: true } }, { webUI: { port: 8080 } });
+  const merged = deepMerge({ webUI: { enable: true, port: 2345, local: true } }, { webUI: { port: 8080 } });
   assert.deepEqual(merged, { webUI: { enable: true, port: 8080, local: true } });
+});
+
+test('WebUI defaults to port 2345', () => {
+  assert.equal(defaultConfig.webUI.port, 2345);
 });
 
 test('HTTP debug logging defaults to disabled and validates as a boolean', () => {
@@ -54,13 +58,28 @@ test('validateHelperConfig rejects malformed nested and security-sensitive field
     awaHost: 'www.alienwarearena.com',
     awaQuests: [],
     awaDailyQuestType: [],
-    webUI: { enable: true, port: 3456 },
+    webUI: { enable: true, port: 2345 },
     managerServer: { enable: false, secret: '', port: 2345 }
   };
   assert.equal(validateHelperConfig(deepMerge(defaults, { webUI: null })).includes('webUI must be an object'), true);
   assert.equal(validateHelperConfig(deepMerge(defaults, { managerServer: { enable: true, secret: 'short' } })).includes('managerServer.secret must contain at least 16 characters when enabled'), true);
   assert.equal(validateHelperConfig(deepMerge(defaults, { proxy: { enable: ['awa'], protocol: 'http', host: '', port: 99999 } })).includes('proxy.port must be an integer between 1 and 65535'), true);
   assert.equal(validateHelperConfig(deepMerge(defaults, { TLSRejectUnauthorized: 'false' })).includes('TLSRejectUnauthorized must be a boolean'), true);
+});
+
+test('manager artifact schedules require exactly three distinct positive IDs', () => {
+  const base = {
+    language: 'zh', awaHost: 'www.alienwarearena.com', awaQuests: [], awaDailyQuestType: [],
+    webUI: { enable: false }
+  };
+  assert.deepEqual(validateHelperConfig({
+    ...base, manager: { artifacts: [{ cron: '0 0 * * *', ids: [1, 2, 3] }] }
+  }), []);
+  for (const ids of [[1, 2], [1, 1, 2], [1, 2, -3], [1, 2, 3, 4]]) {
+    assert.equal(validateHelperConfig({
+      ...base, manager: { artifacts: [{ cron: '0 0 * * *', ids }] }
+    }).includes('manager.artifacts must contain cron strings and exactly three distinct positive integer ids'), true);
+  }
 });
 
 test('disabled features allow empty child settings', () => {

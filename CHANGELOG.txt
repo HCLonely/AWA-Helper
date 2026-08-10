@@ -1,5 +1,7 @@
 ### Features
 
+- feat: 将 Manager WebUI 默认端口调整为 2345，并同步健康检查、Docker、配置模板和文档
+- feat: Manager 密钥少于 16 个字符时输出安全警告，但不阻止程序启动
 - feat: 优化 Manager WebUI，集中管理每日任务、成就任务和遗物任务
 - feat: 优化任务调度器、作业协调器和状态存储，支持按 Cron 表达式运行各类任务
 - feat: 统一 HTTP/WebSocket 服务及任务状态、控制、日志和配置接口
@@ -7,13 +9,29 @@
 - feat: 优化 AWA、Steam ASF 和 Twitch 的独立 API、会话及上下文客户端
 - feat: 优化 Manager、DailyQuest 和 Achievement 分类日志查看功能
 
+### Breaking Changes
+
+- breaking: 移除仅校验 YAML 语法的旧 `/getConfig` 和 `/setConfig` 接口，设置页改用经过完整结构校验的 `/api/config`
+- breaking: 移除所有 Achievement 错误拼写对应的页面、接口、标识符、数据目录和日志前缀兼容逻辑
+- breaking: WebSocket 在本地和远程模式下均要求提供有效的 Manager 密钥
+
 ### Bug Fixes
 
+- fix: 修复 Docker 容器内受 `webUI.local` 限制而无法通过端口映射访问 WebUI 的问题
+- fix: 修复每日任务结束后超时定时器未清理，可能延迟发送错误超时通知的问题
+- fix: 修复旧配置写入接口可绕过完整配置校验并写入无效配置的问题
+- fix: 修复遗物任务接受数量错误、重复或非正整数 ID，并可能错误报告成功的问题
+- fix: 统一修正代码、WebUI、API、国际化资源和兼容逻辑中的 Achievement 拼写
 - fix: 修复无可用 Twitch 直播或追踪频道时任务意外退出的问题，改为定时重试
 - fix: 修复对象类型日志显示为错误字符串的问题
 - fix: 修复 WebUI 日志内容及任务日志分类不同步的问题
 - fix: 修复 WebUI 日志按钮未正确校验 Manager 密钥的问题
 - fix: Docker 容器环境不再创建进程锁，避免容器重启后出现锁冲突
+
+### Security
+
+- security: WebSocket 连接统一校验 Manager 密钥，避免本地日志被跨站连接读取
+- security: 对弱 Manager 密钥增加启动警告，并补充中英文提示和配置文档
 
 ### Refactoring
 
@@ -30,6 +48,7 @@
 
 ### Documentation
 
+- docs: 更新默认端口、Docker 监听行为和弱 Manager 密钥警告说明
 - docs: 新增基于 VitePress 的使用文档站点
 - docs: 新增快速开始、运行方式和完整配置参考文档
 - docs: 新增项目架构及数据目录说明
@@ -42,6 +61,8 @@
 
 ### Tests
 
+- test: 新增默认端口、容器监听、WebSocket 鉴权、超时清理、配置接口和遗物 ID 校验回归测试
+- test: 新增 Achievement 拼写回归测试，防止错误标识符再次进入源码
 - test: 新增 CLI、客户端 API、AWA 解析器及模块边界测试
 - test: 新增任务协调器、控制中心解析和 Twitch 任务重试测试
 - test: 新增日志作用域、工具目录结构、配置及运行时安全测试

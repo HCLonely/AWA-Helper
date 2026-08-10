@@ -197,7 +197,7 @@ downloading: 正在下载安装包...
 decompressing: 正在解压安装包...
 updateSuccess: 更新成功，下次启动时生效！
 nextRunTime: 下次启动DailyQuest时间：%s
-nextArchievementRestart: 下次重启AWA-Achievement时间：%s
+nextAchievementRestart: 下次重启AWA-Achievement时间：%s
 downloadingMainJs: 正在下载 index.js ...
 autoUpdated: 已自动更新至 %s
 updateLog: 更新内容：
@@ -254,12 +254,12 @@ userJsInstalled: Cookie 同步脚本已安装(v%s)
 updating: 正在更新...
 updateFailed: 更新失败
 updateSuccessManager: 更新成功！
-startingArchievement: 正在启动AWA-Achievement...
-archievementStarted: AWA-Achievement启动成功！
-archievementStartFailed: AWA-Achievement启动失败！
-stoppingArchievement: 正在终止AWA-Achievement...
-archievementStopped: AWA-Achievement终止成功！
-archievementStopFailed: AWA-Achievement终止失败！
+startingAchievement: 正在启动AWA-Achievement...
+achievementStarted: AWA-Achievement启动成功！
+achievementStartFailed: AWA-Achievement启动失败！
+stoppingAchievement: 正在终止AWA-Achievement...
+achievementStopped: AWA-Achievement终止成功！
+achievementStopFailed: AWA-Achievement终止失败！
 
 ### Artifacts.ts ###
 gettingArtifactsInfo: 正在获取遗物信息...
@@ -281,7 +281,7 @@ s% additional ARP for each daily calendar claim.: '每日登录额外增加 %s A
 Changes your username color in the forums.: 在论坛中更改您的用户名颜色
 Adds an additional s% ARP to Steam quest completions.: 'Steam任务完成时额外增加 %s ARP'
 
-### Archievement.ts ###
+### Achievement.ts ###
 matching: 正在匹配 %s...
 doingAchievement: 正在操作成就[%s]...
 doneAchievement: 完成操作成就[%s]！
@@ -434,6 +434,7 @@ dailyQuestMonitorStopped: '[DailyQuest] 任务状态监控已停止'
 awaListenerFailed: 'AWA 监听失败：%s'
 twitchAuthorizationExpiredRetrying: Twitch 授权已过期，正在重试
 automaticInstallDisabled: 自动安装已禁用，请等待提供带签名的更新包。
+managerWeakSecretWarning: '警告：manager.secret 当前长度为 %s，建议至少使用 16 个字符。'
 logStatusOk: 成功
 logStatusError: 错误
 logStatusFailed: 失败

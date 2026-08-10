@@ -24,3 +24,15 @@ test('tools subdirectories own the former monolithic implementations', () => {
     .join('\n');
   assert.doesNotMatch(bridgeFiles, /from ['"]\.\.\/index['"]/);
 });
+
+test('source tree contains only correctly spelled Achievement identifiers', () => {
+  const sourceRoot = path.join(root, 'src');
+  const misspelling = new RegExp(['arch', 'ievement'].join(''), 'i');
+  const files = fs.readdirSync(sourceRoot, { recursive: true })
+    .map(String)
+    .filter((file) => /\.(?:ts|js|html|yml|md)$/.test(file));
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(sourceRoot, file), 'utf8');
+    assert.doesNotMatch(source, misspelling, file);
+  }
+});

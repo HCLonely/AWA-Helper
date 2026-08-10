@@ -76,6 +76,9 @@ class ArtifactService {
    */
   async start(newArtifacts: number[]): Promise<boolean> {
     new Logger(`${time()}${__('artifactRequestedSet', newArtifacts.join('|'))}`);
+    if (newArtifacts.length !== 3 || new Set(newArtifacts).size !== 3 || newArtifacts.some((id) => !Number.isSafeInteger(id) || id <= 0)) {
+      return false;
+    }
     if (!await this.getArtifactsInfo()) {
       return false;
     }
@@ -91,7 +94,8 @@ class ArtifactService {
       }
     }
     await this.getArtifactsInfo();
-    const success = this.oldArtifacts.every((artifact) => newSet.has(artifact));
+    const success = this.oldArtifacts.length === newArtifacts.length &&
+      this.oldArtifacts.every((artifact) => newSet.has(artifact));
     new Logger(`${time()}${success ? chalk.green(__('changeArtifactsSuccess')) : chalk.red(__('changeArtifactsFailed'))}`);
     await push(`${success ? __('artifactsStatus') : __('artifactsStatusError')}\n[${this.oldArtifacts.join('|')}]\n\n${__('activePerks')}\n${this.activePerks}`).catch(() => undefined);
     return success;

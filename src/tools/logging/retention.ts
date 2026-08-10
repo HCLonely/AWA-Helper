@@ -5,7 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const logDatePattern = /^(?:Manager-|DailyQuest-|Achievement-|Artifact-|Archievement-)?(\d{4})-(\d{2})-(\d{2})\.txt$/;
+const logDatePattern = /^(?:Manager-|DailyQuest-|Achievement-|Artifact-)?(\d{4})-(\d{2})-(\d{2})\.txt$/;
 
 /**
  * 删除 cleanup Expired Logs 相关数据。

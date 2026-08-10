@@ -101,3 +101,35 @@ test('Manager WebSocket protocol carries an authenticated secret', () => {
   assert.equal(decodeManagerWebSocketSecret(`other, ${encoded}`), '');
   assert.equal(decodeManagerWebSocketSecret(`awa-manager, ${'a'.repeat(8193)}`), '');
 });
+
+test('Unified WebSocket always requires the Manager secret', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
+  assert.match(source, /if \(!isValidSecret\(candidate\)\)/);
+  assert.doesNotMatch(source, /raw\.webUI\?\.local === false && !isValidSecret\(candidate\)/);
+});
+
+test('Unified server ignores local binding inside the container runtime', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
+  assert.match(source, /getManagerListenHost\(raw\.webUI\?\.local, process\.env\.AWA_HELPER_CONTAINER === 'true'\)/);
+});
+
+test('short Manager secrets warn without failing configuration validation', () => {
+  const schema = fs.readFileSync(path.resolve(__dirname, '../src/tools/config/ConfigSchema.ts'), 'utf8');
+  const runtime = fs.readFileSync(path.resolve(__dirname, '../src/core/Manager/ManagerRuntime.ts'), 'utf8');
+  assert.doesNotMatch(schema, /manager\.secret must contain at least 16 characters/);
+  assert.match(runtime, /this\.loaded\.manager\.secret\.length < 16/);
+  assert.match(runtime, /managerWeakSecretWarning/);
+});
+
+test('DailyQuest always clears its process timeout', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/core/DailyQuest/DailyQuestRunner.ts'), 'utf8');
+  assert.match(source, /finally \{[\s\S]*clearTimeout\(timeoutHandle\)/);
+});
+
+test('settings use the validated config API and legacy config routes are removed', () => {
+  const settings = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/settings.source.js'), 'utf8');
+  const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
+  assert.match(settings, /axios\.get\('\/api\/config'/);
+  assert.match(settings, /axios\.put\('\/api\/config'/);
+  assert.doesNotMatch(server, /app\.post\('\/(?:get|set)Config'/);
+});

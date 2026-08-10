@@ -14,7 +14,7 @@ YAML 对缩进敏感，请使用空格，不要使用 Tab。完整且持续更�
 language: zh
 webUI:
   enable: true
-  port: 3456
+  port: 2345
   local: true
 timeout: 86400
 logsExpire: 30
@@ -46,7 +46,7 @@ manager:
       ids: [636, 17056, 30235]
 ```
 
-- `secret` 是 Manager API 密钥；留空时首次启动会自动生成。
+- `secret` 是 Manager API 密钥；留空时首次启动会自动生成。少于 16 个字符时程序会记录安全警告，但不会拒绝启动。
 - `dailyQuest.cron` 使用包含秒字段的 Cron 表达式。
 - `achievement.enable` 控制定时成就任务。
 - `artifacts` 可配置多组遗物 ID 与切换时间；两次更换应至少间隔 24 小时。

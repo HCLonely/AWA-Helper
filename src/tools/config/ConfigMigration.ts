@@ -32,7 +32,7 @@ const normalizeManagerConfig = (value: config): Omit<NormalizedManagerConfig, 's
     dailyQuestCron: current?.dailyQuest?.cron || legacy?.cron || legacy?.corn,
     achievement: {
       enable: current?.achievement?.enable ?? (
-        fs.existsSync(join('data', 'achievement', 'enabled')) || fs.existsSync(join('data', 'Archievement'))
+        fs.existsSync(join('data', 'achievement', 'enabled'))
       ),
       cron: current?.achievement?.cron || '0 14 * * *'
     },

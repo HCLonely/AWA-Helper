@@ -22,7 +22,7 @@
           name: WebUI port
           type: text
           inputType: number
-          defaultValue: 3456
+          defaultValue: 2345
         local:
           name: Whether only the local network is accessible
           type: boolean

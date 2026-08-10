@@ -18,6 +18,7 @@ import type { LoadedConfig } from '../tools/config/types';
 import type { JobName } from '../core/Manager/Job';
 import type { JobCoordinator } from '../core/Manager/JobCoordinator';
 import { decodeManagerWebSocketSecret } from './websocket/authenticate';
+import { getManagerListenHost } from './network';
 import { getLogFilePath, isLogScope, Logger } from '../tools/logging';
 import { time } from '../tools/common';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -134,7 +135,7 @@ class UnifiedServer {
 
     app.get('/', (_, res) => res.send(render(managerHtml)));
     app.get(['/daily-quest', '/dailyQuest', '/awa-helper'], (_, res) => res.send(render(dailyQuestHtml)));
-    app.get(['/achievement', '/archievement'], (_, res) => res.send(render(achievementHtml)));
+    app.get('/achievement', (_, res) => res.send(render(achievementHtml)));
     app.get(['/settings', '/configer'], (_, res) => res.send(settingsHtml));
     app.get('/js/template.yml', (_, res) => res.type('text/yaml').send(raw.language === 'en' ? templateYmlEN : templateYml));
     app.get(['/health/live', '/api/health/live'], (_, res) => res.json({ status: 'live', version: this.version }));
@@ -250,7 +251,7 @@ class UnifiedServer {
     app.post('/runLogs', (req, res) => {
       sendLogs(req, res, 'dailyQuest');
     });
-    app.post('/awaArchievementLogs', (req, res) => {
+    app.post('/awaAchievementLogs', (req, res) => {
       sendLogs(req, res, 'achievement');
     });
     app.post('/api/manager/shutdown', (req, res) => {
@@ -279,7 +280,7 @@ class UnifiedServer {
       await this.coordinator.stop('dailyQuest');
       res.send('success');
     });
-    app.post('/startArchievement', async (req, res) => {
+    app.post('/startAchievement', async (req, res) => {
       if (!authenticate(req, res)) {
         return;
       }
@@ -289,7 +290,7 @@ class UnifiedServer {
       void this.coordinator.start('achievement');
       res.send('success');
     });
-    app.post('/stopArchievement', async (req, res) => {
+    app.post('/stopAchievement', async (req, res) => {
       if (!authenticate(req, res)) {
         return;
       }
@@ -306,23 +307,8 @@ class UnifiedServer {
       return res.json({
         runStatus: ['running', 'stopping'].includes(state?.status || '') ? 'Running' : 'Stop',
         lastRunTime: state?.startedAt || '',
-        webui: { port: raw.webUI?.port || 3456, ssl: !!raw.webUI?.ssl?.cert }
+        webui: { port: raw.webUI?.port || 2345, ssl: !!raw.webUI?.ssl?.cert }
       });
-    });
-    app.post('/getConfig', (req, res) => authenticate(req, res) && res.type('text/yaml').send(fs.readFileSync(configPath, 'utf8')));
-    app.post('/setConfig', (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      try {
-        validateYaml(req.body?.config);
-        atomicWriteFileSync(configPath, req.body.config);
-        new Logger(`${time()}${__('serverLegacyConfigUpdated')}`);
-        res.send('success');
-      } catch (error) {
-        new Logger(`${time()}${__('serverLegacyConfigRejected', error instanceof Error ? error.name : __('unknownError'))}`);
-        res.status(422).json({ error: error instanceof Error ? error.message : String(error) });
-      }
     });
     app.post('/update', (req, res) => authenticate(req, res) && res.status(501).send('Automatic installation is disabled; install a signed release manually.'));
     app.post('/stopManager', (req, res) => {
@@ -337,7 +323,7 @@ class UnifiedServer {
     // @ts-ignore express-ws 会在运行时扩展 Express。
     app.ws('/ws', (ws: WebSocket, req) => {
       const candidate = decodeManagerWebSocketSecret(req.headers['sec-websocket-protocol']);
-      if (raw.webUI?.local === false && !isValidSecret(candidate)) {
+      if (!isValidSecret(candidate)) {
         return ws.close(1008, 'Authentication required');
       }
       globalThis.wsClients.add(ws);
@@ -347,8 +333,8 @@ class UnifiedServer {
     });
 
     this.server = server;
-    const port = raw.webUI?.port || 3456;
-    const host = raw.webUI?.local === false ? '0.0.0.0' : '127.0.0.1';
+    const port = raw.webUI?.port || 2345;
+    const host = getManagerListenHost(raw.webUI?.local, process.env.AWA_HELPER_CONTAINER === 'true');
     await new Promise<void>((resolve, reject) => {
       server.once('listening', resolve);
       server.once('error', reject);

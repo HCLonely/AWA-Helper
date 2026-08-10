@@ -59,7 +59,7 @@ const runHealthcheck = async (): Promise<boolean> => {
     if (config.webUI?.enable === false) {
       return false;
     }
-    return await requestHealthEndpoint(config.webUI?.port || 3456, !!config.webUI?.ssl?.cert);
+    return await requestHealthEndpoint(config.webUI?.port || 2345, !!config.webUI?.ssl?.cert);
   } catch (_error) {
     return false;
   }

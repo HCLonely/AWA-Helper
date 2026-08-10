@@ -522,7 +522,9 @@
     if (!sessionStorage?.managerServerSecret) {
       return false;
     }
-    return axios.post('/getConfig', { secret: sessionStorage.managerServerSecret }).then(async (response) => {
+    return axios.get('/api/config', {
+      headers: { Authorization: `Bearer ${sessionStorage.managerServerSecret}` }
+    }).then(async (response) => {
       console.log(response);
       if (response.status === 200) {
         try {
@@ -541,7 +543,9 @@
     if (!sessionStorage?.managerServerSecret) {
       return false;
     }
-    return axios.post('/setConfig', { secret: sessionStorage.managerServerSecret, config: data }).then(async (response) => {
+    return axios.put('/api/config', { config: data }, {
+      headers: { Authorization: `Bearer ${sessionStorage.managerServerSecret}` }
+    }).then(async (response) => {
       console.log(response);
       if (response.status === 200) {
         showMsg('Success');

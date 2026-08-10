@@ -31,7 +31,7 @@ chmod +x AWA-Manager.sh AWA-DailyQuest.sh
 docker run -d \
   --name awa-helper \
   --restart unless-stopped \
-  -p 3456:3456 \
+  -p 2345:2345 \
   -v /data/awa-helper/config:/usr/src/app/output/config \
   -v /data/awa-helper/logs:/usr/src/app/output/logs \
   -v /data/awa-helper/data:/usr/src/app/output/data \

@@ -135,18 +135,18 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 #### Run
 
-> Docker exposes only the unified `webUI.port`, which defaults to 3456.
+> Docker exposes only the unified `webUI.port`, which defaults to 2345. Inside Docker, `webUI.local` is ignored and the server listens on all interfaces so port publishing works.
 
 - AWA-Manager (recommended)
 
 ```shell
-docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
 ```
 
 - or AWA-Helper
 
 ```shell
-docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
 ```
 
 > ps: There are three mount points in the container:
@@ -175,7 +175,7 @@ docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src
 language: zh # 程序显示语言，目前支持中文 (zh) 和 English (en)
 webUI:
   enable: true # 是否启用WebUI
-  port: 3456 # WebUI端口
+  port: 2345 # WebUI端口
   local: true # 仅内网访问，false为开启外网访问
   ssl: # WebUI启用SSL
     key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！

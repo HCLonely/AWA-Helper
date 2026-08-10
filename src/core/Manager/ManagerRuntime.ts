@@ -15,6 +15,7 @@ import { Logger, time } from '../../tools';
 import { initializeI18n } from '../../tools/i18n';
 import { JobCoordinator } from './JobCoordinator';
 import { Scheduler } from './Scheduler';
+import { getManagerListenHost } from '../../server/network';
 import { AchievementJob, ArtifactJob, DailyQuestJob } from './jobs';
 // @ts-ignore 由构建流程以文本形式导入。
 import CHANGELOG from '../../CHANGELOG.txt';
@@ -54,13 +55,16 @@ class ManagerRuntime {
   async run(): Promise<number> {
     this.initializeEnvironment();
     new Logger(`${time()}${__('managerEnvironmentInitialized', __(`managerMode_${this.mode}`), this.version)}`);
+    if (this.loaded.manager.secret.length < 16) {
+      new Logger(`${time()}${__('managerWeakSecretWarning', String(this.loaded.manager.secret.length))}`);
+    }
     this.printStartupInformation();
     const { webUI } = this.loaded.raw;
     new Logger(`${time()}${webUI?.enable === false
       ? __('managerWebUiDisabled')
-      : __('managerWebUiStarting', webUI?.local === false ? '0.0.0.0' : '127.0.0.1', String(webUI?.port || 3456))}`);
+      : __('managerWebUiStarting', getManagerListenHost(webUI?.local, process.env.AWA_HELPER_CONTAINER === 'true'), String(webUI?.port || 2345))}`);
     await this.server.start();
-    new Logger(`${time()}${__('managerStarted', __(`managerMode_${this.mode}`), String(this.loaded.raw.webUI?.port || 3456))}`);
+    new Logger(`${time()}${__('managerStarted', __(`managerMode_${this.mode}`), String(this.loaded.raw.webUI?.port || 2345))}`);
     if (this.mode === 'once') {
       new Logger(`${time()}${__('managerOneShotSelected')}`);
       const result = await this.coordinator.start('dailyQuest');

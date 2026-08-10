@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { parse } = require('yaml');
 const { JobCoordinator } = require('../dist/core/Manager/JobCoordinator');
+const { ArtifactJob } = require('../dist/core/Manager/jobs/ArtifactJob');
 const { initializeI18n } = require('../dist/tools/i18n');
 
 initializeI18n('en', {
@@ -43,4 +44,11 @@ test('JobCoordinator aborts jobs through Manager', async () => {
   const result = await completion;
   assert.equal(result.success, false);
   assert.equal(coordinator.states.get('dailyQuest').status, 'cancelled');
+});
+
+test('ArtifactJob rejects malformed artifact sets before accessing configuration', async () => {
+  const job = new ArtifactJob('not-used-for-invalid-payload.yml');
+  for (const payload of [[1, 2], [1, 1, 2], [1, 2, -3], [1, 2, 3, 4], ['1', 2, 3]]) {
+    await assert.rejects(job.run(new AbortController().signal, payload), /Exactly three distinct positive artifact IDs/);
+  }
 });

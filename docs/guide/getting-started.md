@@ -53,7 +53,7 @@ node index.js --manager
 node index.js
 ```
 
-默认 WebUI 地址为 `http://127.0.0.1:3456`。如果修改了 `webUI.port`，请使用对应端口访问。
+默认 WebUI 地址为 `http://127.0.0.1:2345`。如果修改了 `webUI.port`，请使用对应端口访问。
 
 ## 同步 Cookie
 
@@ -63,7 +63,7 @@ node index.js
 4. 打开 AWA Control Center，在用户脚本设置中填写 Manager 地址和密钥。
 5. 刷新 AWA 页面，用户脚本会将 Cookie 同步到 Manager。
 
-Manager 首次启动时，如果 `manager.secret` 为空，会自动生成密钥并写入配置文件。
+Manager 首次启动时，如果 `manager.secret` 为空，会自动生成密钥并写入配置文件；手动设置为少于 16 个字符时会显示安全警告，但不会阻止启动。
 
 ## 下一步
 

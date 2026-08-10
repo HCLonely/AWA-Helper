@@ -206,49 +206,49 @@ function stopAWAManager(secret) {
   });
 }
 
-function startArchievement(secret) {
-  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingArchievement')}</li>`);
-  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('startingArchievement')}`);
-  axios.post('/startArchievement', { secret }).then(async (response) => {
+function startAchievement(secret) {
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingAchievement')}</li>`);
+  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('startingAchievement')}`);
+  axios.post('/startAchievement', { secret }).then(async (response) => {
     if (response.data === 'success') {
-      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStarted')}</li>`);
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStarted')}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
-      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStarted')}`);
-      $('.awa-archievement-stop').removeClass('disabled');
-      $('.awa-archievement-start').addClass('disabled');
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStarted')}`);
+      $('.awa-achievement-stop').removeClass('disabled');
+      $('.awa-achievement-start').addClass('disabled');
     } else {
-      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStartFailed')}(${response.data})!</li>`);
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStartFailed')}(${response.data})!</li>`);
       $('#log-area li:last')[0].scrollIntoView();
-      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStartFailed')}(${response.data})!`);
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStartFailed')}(${response.data})!`);
     }
     console.log(response);
   }).catch(async (error) => {
-    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStartFailed')}(${error.message})!</li>`);
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStartFailed')}(${error.message})!</li>`);
     $('#log-area li:last')[0].scrollIntoView();
-    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStartFailed')}(${error.message})!`);
+    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStartFailed')}(${error.message})!`);
     console.error(error);
   });
 }
-function stopArchievement(secret) {
-  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingArchievement')}</li>`);
-  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingArchievement')}`);
-  axios.post('/stopArchievement', { secret }).then(async (response) => {
+function stopAchievement(secret) {
+  $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingAchievement')}</li>`);
+  $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingAchievement')}`);
+  axios.post('/stopAchievement', { secret }).then(async (response) => {
     if (response.data === 'success') {
-      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStopped')}</li>`);
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStopped')}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
-      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStopped')}`);
-      $('.awa-archievement-stop').addClass('disabled');
-      $('.awa-archievement-start').removeClass('disabled');
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStopped')}`);
+      $('.awa-achievement-stop').addClass('disabled');
+      $('.awa-achievement-start').removeClass('disabled');
     } else {
-      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStopFailed')}(${response.data})!</li>`);
+      $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStopFailed')}(${response.data})!</li>`);
       $('#log-area li:last')[0].scrollIntoView();
-      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStopFailed')}(${response.data})!`);
+      $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStopFailed')}(${response.data})!`);
     }
     console.log(response);
   }).catch(async (error) => {
-    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('archievementStopFailed')}(${error.message})!</li>`);
+    $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStopFailed')}(${error.message})!</li>`);
     $('#log-area li:last')[0].scrollIntoView();
-    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('archievementStopFailed')}(${error.message})!`);
+    $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStopFailed')}(${error.message})!`);
     console.error(error);
   });
 }
@@ -328,23 +328,23 @@ $('button.awa-helper-update').click(() => {
   updateHelper(managerServerSecret);
 });
 
-$('button.awa-archievement-start').click(() => {
+$('button.awa-achievement-start').click(() => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     return;
   }
-  startArchievement(managerServerSecret);
+  startAchievement(managerServerSecret);
 });
-$('button.awa-archievement-stop').click(() => {
+$('button.awa-achievement-stop').click(() => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();
     return;
   }
-  stopArchievement(managerServerSecret);
+  stopAchievement(managerServerSecret);
 });
-$('button.awa-archievement-logs').click(async () => {
+$('button.awa-achievement-logs').click(async () => {
   if (!managerServerSecret) {
     $('#log-area').append(`<li>${time()}${__('setManagerSecretNotice')}</li>`);
     $('#log-area li:last')[0].scrollIntoView();

@@ -133,18 +133,18 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 
 #### 运行
 
-> Docker 只暴露统一的 `webUI.port`，默认端口为 3456。
+> Docker 只暴露统一的 `webUI.port`，默认端口为 2345。容器内会忽略 `webUI.local` 并监听所有网络接口，以便端口映射生效。
 
 - AWA-Manager(建议)
 
 ```shell
-docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
 ```
 
 - 单次 DailyQuest 可在容器命令后追加 `--daily`；默认无参数启动常驻 Manager。
 
 ```shell
-docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
 ```
 
 > ps:容器内有三个挂载点：
@@ -173,7 +173,7 @@ docker run -d --name awa-helper -p 3456:3456 -v /data/awa-helper/config:/usr/src
 language: zh # 程序显示语言，目前支持中文 (zh) 和 English (en)
 webUI:
   enable: true # 是否启用WebUI
-  port: 3456 # WebUI端口
+  port: 2345 # WebUI端口
   local: true # 仅内网访问，false为开启外网访问
   ssl: # WebUI启用SSL
     key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
