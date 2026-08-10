@@ -27,26 +27,33 @@ export const formatQuestReport = (state: DailyQuestState): QuestReport => {
   };
   info.steamQuest?.forEach((quest) => {
     report[`${__('steamQuest')}([${quest.name}])`] = {
-      [__('status')]: quest.status === 'complete' ? __('done') : __('undone'), [__('obtainedARP')]: quest.status === 'complete' ? quest.maxAvailableARP : '0',
-      [__('extraARP')]: '0', [__('maxAvailableARP')]: quest.maxAvailableARP
+      [__('status')]: quest.status === 'complete' ? __('done') : __('undone'),
+      [__('obtainedARP')]: quest.status === 'complete' ? quest.maxAvailableARP : '0',
+      [__('extraARP')]: '0',
+      [__('maxAvailableARP')]: quest.maxAvailableARP
     };
   });
   info.dailyQuest?.forEach((quest) => {
     const arp = quest.arp?.split('+').map((value) => value.trim()) || [];
     report[`${__('dailyTask', '')}[${quest.name}]`] = {
-      [__('status')]: quest.status === 'complete' ? __('done') : __('undone'), [__('obtainedARP')]: arp[0] || '0',
-      [__('extraARP')]: arp[1] || '0', [__('maxAvailableARP')]: arp.reduce((sum, value) => sum + parseInt(value, 10), 0)
+      [__('status')]: quest.status === 'complete' ? __('done') : __('undone'),
+      [__('obtainedARP')]: arp[0] || '0',
+      [__('extraARP')]: arp[1] || '0',
+      [__('maxAvailableARP')]: arp.reduce((sum, value) => sum + parseInt(value, 10), 0)
     };
   });
   info.dailyQuestUS?.forEach((quest) => {
     report[`${__('dailyTask', '')}[${quest.title}]`] = {
-      [__('status')]: __('undone'), [__('obtainedARP')]: quest.arp, [__('extraARP')]: quest.extraArp || '0',
+      [__('status')]: parseInt(quest.arp, 10) > 0 ? __('done') : __('undone'),
+      [__('obtainedARP')]: quest.arp,
+      [__('extraARP')]: quest.extraArp || '0',
       [__('maxAvailableARP')]: parseInt(quest.arp, 10) + parseInt(quest.extraArp || '0', 10)
     };
   });
   state.promotionalCalendarInfo?.forEach((promo) => {
     report[`${__('promotionalCalendar')}[${promo.day}]`] = {
-      [__('status')]: promo.finished ? __('done') : __('undone'), [__('obtainedARP')]: promo.name,
+      [__('status')]: promo.finished ? __('done') : __('undone'),
+      [__('obtainedARP')]: promo.name,
       [__('extraARP')]: '0', [__('maxAvailableARP')]: '0'
     };
   });
