@@ -15,7 +15,7 @@ import { SteamClient } from '../../client/Steam/SteamClient';
 import * as fs from 'fs';
 import { join, resolve } from 'path';
 import { parse } from 'yaml';
-import { sleep, Logger, time, checkUpdate, push, pushQuestInfoFormat } from '../../tools';
+import { sleep, configureWebUiColors, Logger, time, checkUpdate, push, pushQuestInfoFormat } from '../../tools';
 import chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
@@ -196,6 +196,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     }
     globalThis.webUI = !!webUI?.enable;
+    configureWebUiColors(globalThis.webUI);
     globalThis.language = language || 'zh';
     globalThis.pusher = pusher;
     const resolvedAwaHost = awaHost || DEFAULT_AWA_HOST;

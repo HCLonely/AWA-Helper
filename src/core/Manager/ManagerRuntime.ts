@@ -11,7 +11,7 @@ import { UnifiedServer } from '../../server';
 import { loadConfig } from '../../tools/config';
 import { setLogSecrets } from '../../tools/logging/sanitize';
 import { cleanupExpiredLogs } from '../../tools/logging/retention';
-import { Logger, time } from '../../tools';
+import { configureWebUiColors, Logger, time } from '../../tools';
 import { initializeI18n } from '../../tools/i18n';
 import { JobCoordinator } from './JobCoordinator';
 import { Scheduler } from './Scheduler';
@@ -121,6 +121,7 @@ class ManagerRuntime {
     globalThis.language = this.loaded.raw.language;
     globalThis.version = this.version;
     globalThis.webUI = this.loaded.raw.webUI?.enable !== false;
+    configureWebUiColors(globalThis.webUI);
     globalThis.pusher = this.loaded.raw.pusher;
     globalThis.log = true;
     globalThis.newVersionNotice = '';

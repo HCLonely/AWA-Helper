@@ -1,5 +1,6 @@
 /** Scoped file, console, and WebSocket logger shared by Manager-owned jobs. */
 import * as fs from 'fs-extra';
+import chalk from 'chalk';
 import { formatLogValue } from './sanitize';
 import { getLogFilePath, getLogScope, type LogScope } from './LogContext';
 
@@ -15,6 +16,15 @@ globalThis.wsClients = new Set();
 globalThis.secrets = [];
 
 let nextLogId = Date.now();
+const terminalColorLevel = chalk.level;
+
+/**
+ * WebUI 日志以 Chalk 的 ANSI 标记作为颜色语义的中间格式。即使 stdout
+ * 不是 TTY（例如 Docker），启用 WebUI 时也必须让 Chalk 生成这些标记。
+ */
+const configureWebUiColors = (enabled: boolean): void => {
+  chalk.level = enabled ? 1 : terminalColorLevel;
+};
 
 const broadcastWebUi = (data: WebLogEntry): void => {
   const message = JSON.stringify(data);
@@ -85,10 +95,11 @@ export class Logger {
     }
     writeFileLog(this.scope, value, newLine);
     if (globalThis.log) {
+      const consoleValue = formatLogValue(value, !process.stdout.isTTY || Object.hasOwn(process.env, 'NO_COLOR'));
       if (newLine) {
-        console.log(formatLogValue(value));
+        console.log(consoleValue);
       } else {
-        process.stdout.write(formatLogValue(value));
+        process.stdout.write(consoleValue);
       }
     }
     this.data += typeof value === 'string' ? value : formatLogValue(value);
@@ -116,3 +127,5 @@ export class Logger {
     }
   }
 }
+
+export { configureWebUiColors };

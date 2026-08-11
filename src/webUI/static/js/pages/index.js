@@ -206,6 +206,26 @@ function stopAWAManager(secret) {
   });
 }
 
+function updateAchievementControls(status) {
+  const running = status === 'running';
+  const stopping = status === 'stopping';
+  $('.awa-achievement-start')
+    .prop('disabled', running || stopping)
+    .toggleClass('disabled', running || stopping);
+  $('.awa-achievement-stop')
+    .prop('disabled', !running)
+    .toggleClass('disabled', !running);
+}
+async function refreshAchievementStatus(secret) {
+  try {
+    const response = await axios.get('/api/jobs/achievement', {
+      headers: { Authorization: `Bearer ${secret}` }
+    });
+    updateAchievementControls(response.data?.status);
+  } catch (error) {
+    console.error(error);
+  }
+}
 function startAchievement(secret) {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingAchievement')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('startingAchievement')}`);
@@ -214,8 +234,7 @@ function startAchievement(secret) {
       $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStarted')}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
       $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStarted')}`);
-      $('.awa-achievement-stop').removeClass('disabled');
-      $('.awa-achievement-start').addClass('disabled');
+      updateAchievementControls('running');
     } else {
       $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStartFailed')}(${response.data})!</li>`);
       $('#log-area li:last')[0].scrollIntoView();
@@ -237,8 +256,7 @@ function stopAchievement(secret) {
       $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStopped')}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
       $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStopped')}`);
-      $('.awa-achievement-stop').addClass('disabled');
-      $('.awa-achievement-start').removeClass('disabled');
+      updateAchievementControls('idle');
     } else {
       $('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStopFailed')}(${response.data})!</li>`);
       $('#log-area li:last')[0].scrollIntoView();
@@ -400,4 +418,5 @@ $('#log-area li:last')[0].scrollIntoView();
 
 if (managerServerSecret) {
   getStatus(managerServerSecret);
+  refreshAchievementStatus(managerServerSecret);
 }

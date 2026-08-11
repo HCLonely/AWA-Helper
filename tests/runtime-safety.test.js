@@ -8,7 +8,8 @@ const test = require('node:test');
 const { cleanupExpiredLogs } = require('../dist/tools/logging/retention');
 const { formatLogValue, setLogSecrets } = require('../dist/tools/logging/sanitize');
 const { requestHealthEndpoint } = require('../dist/tools/process/healthcheck');
-const { Logger, sleep } = require('../dist/tools');
+const chalk = require('chalk');
+const { configureWebUiColors, Logger, sleep } = require('../dist/tools');
 const { decodeManagerWebSocketSecret } = require('../dist/server/websocket/authenticate');
 
 test('log formatting removes configured secrets and Axios request headers', () => {
@@ -62,6 +63,41 @@ test('WebUI logs preserve object details instead of coercing them to object Obje
   assert.doesNotMatch(messages[0].data, /\[object Object\]/);
   assert.match(messages[0].data, /500/);
   assert.match(messages[0].data, /push denied/);
+});
+
+test('WebUI logs preserve Chalk colors when stdout has no color support', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-webui-color-'));
+  const originalDirectory = process.cwd();
+  const originalWebUI = globalThis.webUI;
+  const originalLog = globalThis.log;
+  const originalColorLevel = chalk.level;
+  const messages = [];
+  t.after(() => {
+    process.chdir(originalDirectory);
+    globalThis.webUI = originalWebUI;
+    globalThis.log = originalLog;
+    globalThis.wsClients.clear();
+    chalk.level = originalColorLevel;
+    fs.rmSync(directory, { recursive: true, force: true });
+  });
+  process.chdir(directory);
+  fs.mkdirSync('logs');
+  globalThis.webUI = true;
+  globalThis.log = false;
+  chalk.level = 0;
+  configureWebUiColors(true);
+  globalThis.wsClients.add({
+    readyState: 1,
+    send(message) {
+      messages.push(JSON.parse(message));
+    }
+  });
+
+  new Logger(`${chalk.gray('[time] ')}status: ${chalk.green('success')}`);
+
+  assert.equal(messages.length, 1);
+  assert.match(messages[0].data, /<font class="gray">\[time\] <\/font>/);
+  assert.match(messages[0].data, /<font class="green">success<\/font>/);
 });
 
 test('sleep removes its abort listener after normal completion', async () => {

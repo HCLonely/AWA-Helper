@@ -47,6 +47,14 @@ test('WebUI buttons request their matching scoped log endpoints', () => {
   assert.match(server, /sendLogs\(req, res, 'achievement'\)/);
 });
 
+test('Manager WebUI synchronizes Achievement buttons with the running job state', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.js'), 'utf8');
+  assert.match(source, /axios\.get\('\/api\/jobs\/achievement'/);
+  assert.match(source, /\.prop\('disabled', running \|\| stopping\)/);
+  assert.match(source, /\.prop\('disabled', !running\)/);
+  assert.match(source, /refreshAchievementStatus\(managerServerSecret\)/);
+});
+
 test('log retention recognizes every scoped filename', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../src/tools/logging/retention.ts'), 'utf8');
   ['Manager-', 'DailyQuest-', 'Achievement-', 'Artifact-'].forEach((prefix) => assert.match(source, new RegExp(prefix)));
