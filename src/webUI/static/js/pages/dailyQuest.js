@@ -102,7 +102,27 @@ function generateTaskInfo(data) {
 function time() {
   return `<font class="gray">[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] </font>`;
 }
-function connectWebUIServer(retry = 0) {
+const webUIReconnectInitialDelay = 1000;
+const webUIReconnectMaxDelay = 30000;
+let webUISocket;
+let webUIReconnectTimer;
+let webUIReconnectAttempts = 0;
+
+function scheduleWebUIReconnect(ws) {
+  if (ws !== webUISocket || webUIReconnectTimer) return;
+  const delay = Math.min(
+    webUIReconnectInitialDelay * (2 ** Math.min(webUIReconnectAttempts, 5)),
+    webUIReconnectMaxDelay
+  );
+  webUIReconnectAttempts += 1;
+  $('#log-area').append(`<li>${time()}<font class="blue">${__('reconnectingWebUI')}</font></li>`);
+  webUIReconnectTimer = window.setTimeout(() => {
+    webUIReconnectTimer = undefined;
+    connectWebUIServer();
+  }, delay);
+}
+
+function connectWebUIServer() {
   $('#log-area').append(`<li>${time()}${__('connectingWebUI')}</li>`);
   const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
   let wsPort = '';
@@ -121,22 +141,21 @@ function connectWebUIServer(retry = 0) {
   }
   const wsUrl = `${wsProtocol}://${window.location.host}${wsPort}/ws`;
   const ws = protocols ? new WebSocket(wsUrl, protocols) : new WebSocket(wsUrl);
+  webUISocket = ws;
   ws.onopen = function () {
+    if (ws !== webUISocket) return;
     console.log(__('connectWebUISuccess'));
     $('#log-area').html('');
-    retry = 0;
+    webUIReconnectAttempts = 0;
   };
   ws.onclose = function () {
+    if (ws !== webUISocket) return;
     console.log(__('WebUIClosed'));
     $('#log-area').append(`<li>${time()}<font class="yellow">${__('WebUIClosed')}</li>`);
+    scheduleWebUIReconnect(ws);
   };
   ws.onerror = function () {
-    if (retry > 5) {
-      $('#log-area').append(`<li>${time()}<font class="red">${__('giveUpReconnectWebUI')}</font></li>`);
-      return;
-    }
-    $('#log-area').append(`<li>${time()}<font class="blue">${__('reconnectingWebUI')}</font></li>`);
-    connectWebUIServer(++retry);
+    scheduleWebUIReconnect(ws);
   };
   ws.onmessage = function (e) {
     console.log(`message:${e.data}`);
