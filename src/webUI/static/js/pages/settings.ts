@@ -13,34 +13,36 @@
     author?: string;
   }
   type ConfigData = Record<string, any>;
+  const setModalOpen = (selector: string, open: boolean): void => {
+    document.querySelector(selector)?.classList.toggle('open', open);
+  };
 
-  $(document).ready(() => {
-    $(window).scroll(function () {
-      if (Number($(this).scrollTop()) > 50) {
-        $('#back2top').fadeIn();
+  dom(document).ready(() => {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        dom('#back2top').fadeIn();
       } else {
-        $('#back2top').fadeOut();
+        dom('#back2top').fadeOut();
       }
     });
-    $('#back2top').click(() => {
+    dom('#back2top').click(() => {
       document.body.scrollIntoView();
       return false;
     });
-    new bootstrap.Tooltip($('#back2top')[0]!);
   });
   const fileLink = '/js/template.yml';
   if (fileLink) {
     loadRemoteTemplate(decodeURIComponent(fileLink));
   }
-  const [dropArea] = $('#file-selector');
-  dropArea.addEventListener('dragover', (event) => {
+  const dropArea = dom('#file-selector')[0] as HTMLElement;
+  dropArea.addEventListener('dragover', (event: DragEvent) => {
     event.stopPropagation();
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'copy';
     }
   });
-  dropArea.addEventListener('drop', async (event) => {
+  dropArea.addEventListener('drop', async (event: DragEvent) => {
     event.stopPropagation();
     event.preventDefault();
     const fileList = event.dataTransfer?.files;
@@ -60,7 +62,7 @@
       loadTemplate(template);
     }
   });
-  $('#readTemplateFile')[0].addEventListener('change', async (event) => {
+  dom('#readTemplateFile')[0].addEventListener('change', async (event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
       return;
@@ -76,15 +78,15 @@
     }
     loadTemplate(template);
   });
-  $('#loadRemoteFile').click(async (event) => {
-    const remoteUrl = $('#remote-url').val();
+  dom('#loadRemoteFile').click(async (event) => {
+    const remoteUrl = dom('#remote-url').val();
     if (!remoteUrl) {
       return;
     }
-    $(event.target).attr('disabled', 'disabled')
+    dom(event.target).attr('disabled', 'disabled')
       .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...');
     await loadRemoteTemplate(String(remoteUrl));
-    $(event.target).text('Save').removeAttr('disabled');
+    dom(event.target).text('Save').removeAttr('disabled');
   });
   async function loadRemoteTemplate(fileLink: string): Promise<void> {
     const fileUrl = new URL(fileLink, location.href);
@@ -93,19 +95,14 @@
     } else {
       fileUrl.search += `?time=${Date.now()}`;
     }
-    const loadingModal = new bootstrap.Modal('#modal-loading');
-    loadingModal.show();
+    setModalOpen('#modal-loading', true);
     const [status, template] = await axios.get(fileUrl.href, {
       validateStatus: (status) => status >= 200 && status < 400
     }).then((response) => [true, response.data]).catch((error) => {
       console.error(error);
       return [false, error];
     });
-    const [loadingModalEl] = $('#modal-loading');
-    loadingModalEl.addEventListener('shown.bs.modal', () => {
-      loadingModal.hide();
-    });
-    loadingModal.hide();
+    setModalOpen('#modal-loading', false);
     if (!status) {
       showError(template.message, 'Get template file failed!');
       return;
@@ -120,14 +117,14 @@
 
     const oldConfig = await getConfig();
 
-    $('#file-selector,#loadRemoteFileLabel,#loadRemoteFileInput').hide();
+    dom('#file-selector,#loadRemoteFileLabel,#loadRemoteFileInput').hide();
     templateJson.forEach((singleConfig, index) => {
       if (oldConfig) {
         singleConfig.body = setDefaultConfig(singleConfig.body, oldConfig);
       }
       // 多配置文件处理
-      $('div.container').append(`<form id="config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, '')}" style="display:none;" data-type="${singleConfig.type || singleConfig.filename?.split('.').slice(0, -1).join('.') || ''
-      }" data-filename="${singleConfig.filename || `${singleConfig.name}.${singleConfig.type}`}">
+      dom('div.container').append(`<form id="config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, '')}" style="display:none;" data-type="${singleConfig.type || singleConfig.filename?.split('.').slice(0, -1).join('.') || ''
+        }" data-filename="${singleConfig.filename || `${singleConfig.name}.${singleConfig.type}`}">
         ${singleConfig.quote ? `<figure class="text-center" style="border: 1px dashed #00c9ff;border-radius: 5px;">
           <blockquote class="blockquote">
             <p>${singleConfig.quote}</p>
@@ -136,59 +133,59 @@
         </figure>` : ''}
       </form>`);
       if (index === 0) {
-        $('#single-config-name>button').attr('data-name', htmlDecode(singleConfig.name));
-        $('#single-config-name>button').text(htmlDecode(singleConfig.name));
-        $(`#config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/gi, '')}`).show();
+        dom('#single-config-name>button').attr('data-name', htmlDecode(singleConfig.name));
+        dom('#single-config-name>button').text(htmlDecode(singleConfig.name));
+        dom(`#config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/gi, '')}`).show();
       }
-      const singleConfigList = $(`<li><a class="dropdown-item${index === 0 ? ' active' : ''}" href="javascript:void(0);">${singleConfig.name}</a></li>`);
+      const singleConfigList = dom(`<li><a class="dropdown-item${index === 0 ? ' active' : ''}" href="javascript:void(0);">${singleConfig.name}</a></li>`);
       singleConfigList.click(function () {
-        const name = $(this).text().trim();
-        $('#single-config-name>button').attr('data-name', name);
-        $('#single-config-name>button').text(name);
-        $('#single-config-name li>a').removeClass('active');
-        $(this).children('a').addClass('active');
+        const name = dom(this).text().trim();
+        dom('#single-config-name>button').attr('data-name', name);
+        dom('#single-config-name>button').text(name);
+        dom('#single-config-name li>a').removeClass('active');
+        dom(this).children('a').addClass('active');
         // show
-        $('form').hide();
-        $(`#config-${name.replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/gi, '')}`).show();
+        dom('form').hide();
+        dom(`#config-${name.replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/gi, '')}`).show();
       });
-      $('#single-config-name>ul').append(singleConfigList);
+      dom('#single-config-name>ul').append(singleConfigList);
       // 配置项处理
       Object.entries(singleConfig.body).forEach(([name, options]) => {
         generateBody(htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, ''), name, options);
       });
     });
-    $('button.repeat').on('click', repeatButton);
-    $('button.delete-repeat').on('click', (event) => {
-      if ($(event.target).parent().parent()
+    dom('button.repeat').on('click', repeatButton);
+    dom('button.delete-repeat').on('click', (event) => {
+      if (dom(event.target).parent().parent()
         .parent()
         .children().length > 1) {
-        $(event.target).parent().parent()
+        dom(event.target).parent().parent()
           .remove();
       } else {
-        $(event.target).parent().parent()
+        dom(event.target).parent().parent()
           .find('input')
           .val('');
       }
     });
-    const generatorButton = $('<button class="btn btn-primary" type="submit" style="margin-bottom: 1rem;">Save</button>');
-    $('form').append(generatorButton).submit(async function (event) {
-      $(this).children('button[type="submit"]').attr('disabled', 'disabled')
+    const generatorButton = dom('<button class="btn btn-primary" type="submit" style="margin-bottom: 1rem;">Save</button>');
+    dom('form').append(generatorButton).submit(async function (event) {
+      dom(this).children('button[type="submit"]').attr('disabled', 'disabled')
         .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...');
       if (!(event.target as HTMLFormElement).checkValidity()) {
-        $(this).children('button[type="submit"]').text('Save')
+        dom(this).children('button[type="submit"]').text('Save')
           .removeAttr('disabled');
         event.stopPropagation();
       }
       event.preventDefault();
-      const form = $(this);
-      for (const element of $.makeArray(form.find('[data-validation]'))) {
-        $(element).removeClass('is-invalid').removeClass('is-valid');
-        if (!new RegExp($(element).attr('data-validation') ?? '').test(String($(element).val()))) {
-          $(element).addClass('is-invalid');
+      const form = dom(this);
+      for (const element of form.find('[data-validation]').elements) {
+        dom(element).removeClass('is-invalid').removeClass('is-valid');
+        if (!new RegExp(dom(element).attr('data-validation') ?? '').test(String(dom(element).val()))) {
+          dom(element).addClass('is-invalid');
         }
       }
       if (form.find('.is-invalid[data-validation]').length > 0) {
-        $(this).children('button[type="submit"]').text('Save')
+        dom(this).children('button[type="submit"]').text('Save')
           .removeAttr('disabled');
         form.find('.is-invalid[data-validation]')[0].scrollIntoView({ behavior: 'smooth' });
         return;
@@ -208,148 +205,148 @@
       await setConfig(result);
       /*
       if (form.attr('data-filename') === 'copy') {
-        $('#modalLabel').html('<span class="badge rounded-pill text-bg-success">Success</span>');
-        $('#modalBody>textarea').val(result);
-        new bootstrap.Modal('#modal').show();
+        dom('#modalLabel').html('<span class="badge rounded-pill text-bg-success">Success</span>');
+        dom('#modalBody>textarea').val(result);
+        setModalOpen('#modal', true);
       } else {
         download(result, form.attr('data-filename'), form.attr('data-type'));
       }
       */
-      $(this).children('button[type="submit"]').text('Save')
+      dom(this).children('button[type="submit"]').text('Save')
         .removeAttr('disabled');
     });
   }
-  function repeatButton(event: JQuery.ClickEvent): void {
-    const parent = $(event.target).parent().parent();
+  function repeatButton(event: Event): void {
+    const parent = dom(event.target).parent().parent();
     const oldNameId = parent.children('div.collapse').attr('name');
     const newNameId = parent.parent().children().length;
     const replaceRule: [RegExp, string] = [new RegExp(`${oldNameId}$`), String(newNameId)];
-    const copyElement = $(parent.prop('outerHTML'));
+    const copyElement = dom(String(parent.prop('outerHTML') ?? ''));
     copyElement.children().map((index, element) => {
-      const id = $(element).attr('id');
+      const id = dom(element).attr('id');
       if (id) {
-        $(element).attr('id', id.replace(...replaceRule));
+        dom(element).attr('id', id.replace(...replaceRule));
       }
-      const name = $(element).attr('name');
+      const name = dom(element).attr('name');
       if (name) {
-        $(element).attr('name', newNameId);
+        dom(element).attr('name', newNameId);
       }
       return element;
     });
     copyElement.children('p').children('a').map((index, element) => {
-      const href = $(element).attr('href');
+      const href = dom(element).attr('href');
       if (href) {
-        $(element).attr('href', href.replace(...replaceRule));
+        dom(element).attr('href', href.replace(...replaceRule));
       }
-      const ariaControls = $(element).attr('aria-controls');
+      const ariaControls = dom(element).attr('aria-controls');
       if (ariaControls) {
-        $(element).attr('aria-controls', ariaControls.replace(...replaceRule));
+        dom(element).attr('aria-controls', ariaControls.replace(...replaceRule));
       }
       return element;
     });
     copyElement.children('p').children('button').map((index, element) => {
-      const dataId = $(element).attr('data-id');
+      const dataId = dom(element).attr('data-id');
       if (dataId) {
-        $(element).attr('data-id', dataId.replace(...replaceRule));
+        dom(element).attr('data-id', dataId.replace(...replaceRule));
       }
-      const dataName = $(element).attr('data-name');
+      const dataName = dom(element).attr('data-name');
       if (dataName) {
-        $(element).attr('data-name', newNameId);
+        dom(element).attr('data-name', newNameId);
       }
       return element;
     });
     copyElement.children('div.collapse').children().map((index, element) => {
-      const name = $(element).children('[name]').attr('name');
+      const name = dom(element).children('[name]').attr('name');
       const childrenReplaceRule: [RegExp, string] = [new RegExp(`${oldNameId}-${name}$`), `${newNameId}-${name}`];
-      $(element).children().map((childrenIndex, childrenElement) => {
-        const id = $(childrenElement).attr('id');
+      dom(element).children().map((childrenIndex, childrenElement) => {
+        const id = dom(childrenElement).attr('id');
         if (id) {
-          $(childrenElement).attr('id', id.replace(...childrenReplaceRule));
+          dom(childrenElement).attr('id', id.replace(...childrenReplaceRule));
         }
-        const dataParent = $(childrenElement).attr('data-parent');
+        const dataParent = dom(childrenElement).attr('data-parent');
         if (dataParent) {
-          $(childrenElement).attr('data-parent', dataParent.replace(...replaceRule));
+          dom(childrenElement).attr('data-parent', dataParent.replace(...replaceRule));
         }
-        const forId = $(childrenElement).attr('for');
+        const forId = dom(childrenElement).attr('for');
         if (forId) {
-          $(childrenElement).attr('data-parent', forId.replace(...childrenReplaceRule));
+          dom(childrenElement).attr('data-parent', forId.replace(...childrenReplaceRule));
         }
-        const ariaDescribedby = $(childrenElement).attr('aria-describedby');
+        const ariaDescribedby = dom(childrenElement).attr('aria-describedby');
         if (ariaDescribedby) {
-          $(childrenElement).attr('aria-describedby', ariaDescribedby.replace(...childrenReplaceRule));
+          dom(childrenElement).attr('aria-describedby', ariaDescribedby.replace(...childrenReplaceRule));
         }
         return childrenElement;
       });
       return element;
     });
     copyElement.children().children('button.repeat').map((index, element) => {
-      const deleteRepeatButton = $(element).clone();
+      const deleteRepeatButton = dom(element).clone();
       deleteRepeatButton.removeClass('repeat').addClass('delete-repeat').text('-')
         .attr('style', '--bs-btn-padding-y: .02rem; --bs-btn-padding-x: .39rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;width: 37px;');
-      if ($(element).prev().hasClass('delete-repeat')) {
-        $(element).prev().remove();
+      if (dom(element).prev().hasClass('delete-repeat')) {
+        dom(element).prev().remove();
       }
-      $(element).before(deleteRepeatButton);
+      dom(element).before(deleteRepeatButton);
       return element;
     });
     copyElement.children().children().children('input')
       .attr('value', '');
-    parent.after(copyElement.prop('outerHTML'));
-    $('button.delete-repeat').off('click').on('click', (event) => {
-      if ($(event.target).parent().parent()
+    parent.after(String(copyElement.prop('outerHTML') ?? ''));
+    dom('button.delete-repeat').off('click').on('click', (event) => {
+      if (dom(event.target).parent().parent()
         .parent()
         .children().length > 1) {
-        $(event.target).parent().parent()
+        dom(event.target).parent().parent()
           .remove();
       } else {
-        $(event.target).parent().parent()
+        dom(event.target).parent().parent()
           .find('input')
           .val('');
       }
     });
-    $('button.repeat').off('click', repeatButton).on('click', repeatButton);
+    dom('button.repeat').off('click', repeatButton).on('click', repeatButton);
   }
-  function generateData(parent: JQuery, isArray = false): ConfigData | any[] {
+  function generateData(parent: NativeDom, isArray = false): ConfigData | any[] {
     const config: any = isArray ? [] : {};
     parent.find(`[data-parent="${(parent.attr('id') ?? '').replace('config-', '')}"]:visible`).map((index, element) => {
-      if ($(element).attr('type') === 'object') {
+      if (dom(element).attr('type') === 'object') {
         if (isArray) {
-          config.push(generateData($(element)));
+          config.push(generateData(dom(element)));
           return element;
         }
-        config[String($(element).attr('name') ?? '')] = generateData($(element));
+        config[String(dom(element).attr('name') ?? '')] = generateData(dom(element));
         return element;
       }
-      if ($(element).attr('type') === 'array') {
-        const arrayConfig = generateData($(element), true);
+      if (dom(element).attr('type') === 'array') {
+        const arrayConfig = generateData(dom(element), true);
         if (isArray) {
           config.push(arrayConfig);
           return element;
         }
-        config[String($(element).attr('name') ?? '')] = arrayConfig;
+        config[String(dom(element).attr('name') ?? '')] = arrayConfig;
         return element;
       }
-      if ($(element).attr('type') === 'checkbox') {
+      if (dom(element).attr('type') === 'checkbox') {
         if (isArray) {
-          config.push($(element).prop('checked'));
+          config.push(dom(element).prop('checked'));
           return element;
         }
-        config[String($(element).attr('name') ?? '')] = $(element).prop('checked');
+        config[String(dom(element).attr('name') ?? '')] = dom(element).prop('checked');
         return element;
       }
-      if ($(element).attr('type') === 'number') {
+      if (dom(element).attr('type') === 'number') {
         if (isArray) {
-          config.push(parseFloat(String($(element).val())));
+          config.push(parseFloat(String(dom(element).val())));
           return element;
         }
-        config[String($(element).attr('name') ?? '')] = parseFloat(String($(element).val()));
+        config[String(dom(element).attr('name') ?? '')] = parseFloat(String(dom(element).val()));
         return element;
       }
       if (isArray) {
-        config.push($(element).val());
+        config.push(dom(element).val());
         return element;
       }
-      config[String($(element).attr('name') ?? '')] = $(element).val();
+      config[String(dom(element).attr('name') ?? '')] = dom(element).val();
       return element;
     });
     return config;
@@ -359,7 +356,7 @@
     // text
     if (options.type === 'text') {
       if (options.inputType === 'textarea') {
-        $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
+        dom(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
           <label for="${id}" class="form-label">
             ${options.name || name}${options.required ? '<font style="color:red;" title="Required">*</font>' : ''}
             ${`${options.validation}` ? '<font style="color:blue;" title="RegExp Validation">!</font>' : ''}
@@ -379,7 +376,7 @@
         </div>`);
         return;
       }
-      $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
+      dom(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
         <label for="${id}" class="form-label">${options.name || name}${options.required ? '<font style="color:red;" title="Required">*</font>' : ''}
             ${options.validation ? '<font style="color:blue;" title="RegExp Validation">!</font>' : ''}
             ${(parentType === 'array' && options.repeat === true) ? `<button type="button"
@@ -400,7 +397,7 @@
     }
     // boolean
     if (options.type === 'boolean') {
-      $(`#config-${preId}`).append(`<div class="form-check form-switch mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
+      dom(`#config-${preId}`).append(`<div class="form-check form-switch mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
         <input class="form-check-input" type="checkbox" role="switch" id="${id}" name="${name}" data-parent="${preId}"
           ${options.desp ? ` aria-describedby="help-${id}"` : ''}
           ${options.defaultValue ? ' checked="checked"' : ''}
@@ -415,7 +412,7 @@
     }
     // single-select
     if (options.type === 'single-select') {
-      $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
+      dom(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
         <label class="form-select-label" for="${id}">${options.name || name}${(parentType === 'array' && options.repeat === true) ? `<button type="button"
           class="btn btn-outline-primary repeat" data-id="${id}" data-name="${name}"
           style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
@@ -429,15 +426,15 @@
       </div>`);
       if (options.bindValue) {
         if (options.bindValue.isChildren) {
-          $(`#${id}`).data('bindData', options.bindValue.body);
-          $(`#${id}`).change(function () {
-            $(`#config-${preId} [bind-value="${name}"]`).remove();
-            const data = $(this).data('bindData')[String($(this).val())];
+          dom(`#${id}`).data('bindData', options.bindValue.body);
+          dom(`#${id}`).change(function () {
+            dom(`#config-${preId} [bind-value="${name}"]`).remove();
+            const data = (dom(this).data('bindData') as Record<string, Record<string, TemplateOption>>)[String(dom(this).val())];
             if (data) {
               Object.entries(data as Record<string, TemplateOption>).forEach(([subName, subOptions]) => {
                 generateBody(preId, subName, subOptions, options.type, '', String(name));
               });
-              $(`#config-${preId} [bind-value="${name}"]`).show();
+              dom(`#config-${preId} [bind-value="${name}"]`).show();
             }
           });
           const data = options.bindValue.body[options.defaultValue];
@@ -445,14 +442,14 @@
             Object.entries(data as Record<string, TemplateOption>).forEach(([subName, subOptions]) => {
               generateBody(preId, subName, subOptions, options.type, '', String(name));
             });
-            $(`#config-${preId} [bind-value="${name}"]`).show();
+            dom(`#config-${preId} [bind-value="${name}"]`).show();
           }
           return;
         }
-        $(`#${id}`).data('bindData', options.bindValue.body);
-        $(`#${id}`).change(function () {
-          $(`#config-${preId} [bind-name="${name}"]`).hide();
-          $(`#config-${preId} [bind-value="${$(this).val()}"]`).show();
+        dom(`#${id}`).data('bindData', options.bindValue.body);
+        dom(`#${id}`).change(function () {
+          dom(`#config-${preId} [bind-name="${name}"]`).hide();
+          dom(`#config-${preId} [bind-value="${dom(this).val()}"]`).show();
         });
         Object.entries(options.bindValue.body).forEach(([bindValue, data]) => {
           Object.entries(data as Record<string, TemplateOption>).forEach(([subName, subOptions]) => {
@@ -461,14 +458,14 @@
         });
         const data = options.bindValue.body[options.defaultValue];
         if (data) {
-          $(`#config-${preId} [bind-value="${options.defaultValue}"]`).show();
+          dom(`#config-${preId} [bind-value="${options.defaultValue}"]`).show();
         }
       }
       return;
     }
     // multi-select
     if (options.type === 'multi-select') {
-      $(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
+      dom(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
         <label class="form-select-label" for="${id}">${options.name || name}${(parentType === 'array' && options.repeat === true) ? `<button type="button"
           class="btn btn-outline-primary repeat" data-id="${id}" data-name="${name}"
           style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
@@ -485,12 +482,11 @@
     }
     // object
     if (options.type === 'object') {
-      $(`#config-${preId}`).append(`<div class="card card-body" style="padding-bottom:0;margin-bottom:1rem;${parentType === 'single-select' ? 'display: none;' : ''}"
+      dom(`#config-${preId}`).append(`<div class="card card-body" style="padding-bottom:0;margin-bottom:1rem;${parentType === 'single-select' ? 'display: none;' : ''}"
       ${parentType === 'single-select' ? ` bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
         <p style="text-align:center;margin-bottom:0;"">
-          <a class="btn btn-primary" data-bs-toggle="collapse" href="#config-${preId}-${name}" role="button" aria-expanded="true"
-            aria-controls="config-${preId}-${name}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
-            data-bs-title="Click to hide/show the options about ${options.name || name}.">
+          <a class="btn btn-primary" data-ui-toggle="collapse" href="#config-${preId}-${name}" role="button" aria-expanded="true"
+            aria-controls="config-${preId}-${name}" title="Click to hide/show the options about ${options.name || name}.">
             ${options.name || name}
           </a>
           ${(parentType === 'array' && options.repeat === true) ? `<button type="button" class="btn btn-outline-primary delete-repeat"
@@ -508,12 +504,11 @@
     }
     // array
     if (options.type === 'array') {
-      $(`#config-${preId}`).append(`<div class="card card-body" style="padding-bottom:0;margin-bottom:1rem;${parentType === 'single-select' ? 'display: none;' : ''}"
+      dom(`#config-${preId}`).append(`<div class="card card-body" style="padding-bottom:0;margin-bottom:1rem;${parentType === 'single-select' ? 'display: none;' : ''}"
       ${parentType === 'single-select' ? ` bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
         <p style="text-align:center;margin-bottom:0;">
-          <a class="btn btn-primary" data-bs-toggle="collapse" href="#config-${preId}-${name}" role="button" aria-expanded="true"
-            aria-controls="config-${preId}-${name}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
-            data-bs-title="Click to hide/show the options about ${options.name || name}.">
+          <a class="btn btn-primary" data-ui-toggle="collapse" href="#config-${preId}-${name}" role="button" aria-expanded="true"
+            aria-controls="config-${preId}-${name}" title="Click to hide/show the options about ${options.name || name}.">
             ${options.name || name}
           </a>
           ${(parentType === 'array' && options.repeat === true) ? `<button type="button" class="btn btn-outline-primary delete-repeat"
@@ -681,14 +676,14 @@
     }));
   }
   function showError(message: unknown, title = ''): void {
-    $('#modalLabel').html(`<span class="badge rounded-pill text-bg-danger">Error</span>${title || ''}`);
-    $('#modalBody>textarea').val(String(message));
-    new bootstrap.Modal('#modal').show();
+    dom('#modalLabel').html(`<span class="badge rounded-pill text-bg-danger">Error</span>${title || ''}`);
+    dom('#modalBody>textarea').val(String(message));
+    setModalOpen('#modal', true);
   }
   function showMsg(message: unknown, title = ''): void {
-    $('#modalLabel').html(`<span class="badge rounded-pill text-bg-danger">Info</span>${title || 'Info'}`);
-    $('#modalBody>textarea').val(String(message));
-    new bootstrap.Modal('#modal').show();
+    dom('#modalLabel').html(`<span class="badge rounded-pill text-bg-danger">Info</span>${title || 'Info'}`);
+    dom('#modalBody>textarea').val(String(message));
+    setModalOpen('#modal', true);
   }
   function object2ini(data: ConfigData | any[], parentKey = ''): string {
     return Object.entries(data).map(([key, value]) => {

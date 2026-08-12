@@ -64,7 +64,6 @@
     "@types/express-ws": "^3.0.6",
     "@types/fs-extra": "^11.0.4",
     "@types/i18n": "^0.13.12",
-    "@types/jquery": "^4.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.24",
     "@types/node": "^22.13.1",

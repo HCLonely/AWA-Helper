@@ -50,6 +50,7 @@ const createHarness = () => {
   };
   const context = {
     $: () => element,
+    dom: () => element,
     I18n: {},
     WebSocket: FakeWebSocket,
     btoa: (value) => Buffer.from(value, 'binary').toString('base64'),
