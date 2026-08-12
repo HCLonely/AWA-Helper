@@ -1,9 +1,22 @@
 /** @description Source module for the browser YAML configuration editor. */
-/* global $, bootstrap, axios, jsyaml */
 (async () => {
+  interface TemplateOption {
+    type: string;
+    [key: string]: any;
+  }
+  interface ConfigTemplate {
+    name: string;
+    body: Record<string, TemplateOption>;
+    type?: string;
+    filename?: string;
+    quote?: string;
+    author?: string;
+  }
+  type ConfigData = Record<string, any>;
+
   $(document).ready(() => {
     $(window).scroll(function () {
-      if ($(this).scrollTop() > 50) {
+      if (Number($(this).scrollTop()) > 50) {
         $('#back2top').fadeIn();
       } else {
         $('#back2top').fadeOut();
@@ -13,7 +26,7 @@
       document.body.scrollIntoView();
       return false;
     });
-    new bootstrap.Tooltip($('#back2top')[0]);
+    new bootstrap.Tooltip($('#back2top')[0]!);
   });
   const fileLink = '/js/template.yml';
   if (fileLink) {
@@ -23,17 +36,22 @@
   dropArea.addEventListener('dragover', (event) => {
     event.stopPropagation();
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy';
+    }
   });
   dropArea.addEventListener('drop', async (event) => {
     event.stopPropagation();
     event.preventDefault();
-    const fileList = event.dataTransfer.files;
+    const fileList = event.dataTransfer?.files;
+    if (!fileList) {
+      return;
+    }
     if (fileList.length > 0) {
       const template = await readFile(fileList[0]).then((data) => data).catch((error) => {
         console.log(error);
         showError(error);
-        return false;
+        return '';
       });
       if (!template) {
         showError('The file content is empty!');
@@ -43,13 +61,14 @@
     }
   });
   $('#readTemplateFile')[0].addEventListener('change', async (event) => {
-    if (event.target.files.length === 0) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
       return;
     }
-    const template = await readFile(event.target.files[0]).then((data) => data).catch((error) => {
+    const template = await readFile(input.files[0]).then((data) => data).catch((error) => {
       console.error(error);
       showError(error);
-      return false;
+      return '';
     });
     if (!template) {
       showError('The file content is empty!');
@@ -64,10 +83,10 @@
     }
     $(event.target).attr('disabled', 'disabled')
       .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...');
-    await loadRemoteTemplate(remoteUrl);
+    await loadRemoteTemplate(String(remoteUrl));
     $(event.target).text('Save').removeAttr('disabled');
   });
-  async function loadRemoteTemplate(fileLink) {
+  async function loadRemoteTemplate(fileLink: string): Promise<void> {
     const fileUrl = new URL(fileLink, location.href);
     if (fileUrl.search) {
       fileUrl.search += `&time=${Date.now()}`;
@@ -93,7 +112,7 @@
     }
     loadTemplate(template);
   }
-  async function loadTemplate(template) {
+  async function loadTemplate(template: string): Promise<void> {
     const templateJson = formatChecker(template);
     if (!templateJson) {
       return;
@@ -107,7 +126,7 @@
         singleConfig.body = setDefaultConfig(singleConfig.body, oldConfig);
       }
       // 多配置文件处理
-      $('div.container').append(`<form id="config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, '')}" style="display:none;" data-type="${singleConfig.type || singleConfig.filename.split('.').slice(0, -1).join('.')
+      $('div.container').append(`<form id="config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, '')}" style="display:none;" data-type="${singleConfig.type || singleConfig.filename?.split('.').slice(0, -1).join('.') || ''
       }" data-filename="${singleConfig.filename || `${singleConfig.name}.${singleConfig.type}`}">
         ${singleConfig.quote ? `<figure class="text-center" style="border: 1px dashed #00c9ff;border-radius: 5px;">
           <blockquote class="blockquote">
@@ -155,7 +174,7 @@
     $('form').append(generatorButton).submit(async function (event) {
       $(this).children('button[type="submit"]').attr('disabled', 'disabled')
         .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...');
-      if (!event.target.checkValidity()) {
+      if (!(event.target as HTMLFormElement).checkValidity()) {
         $(this).children('button[type="submit"]').text('Save')
           .removeAttr('disabled');
         event.stopPropagation();
@@ -164,7 +183,7 @@
       const form = $(this);
       for (const element of $.makeArray(form.find('[data-validation]'))) {
         $(element).removeClass('is-invalid').removeClass('is-valid');
-        if (!new RegExp($(element).attr('data-validation')).test($(element).val())) {
+        if (!new RegExp($(element).attr('data-validation') ?? '').test(String($(element).val()))) {
           $(element).addClass('is-invalid');
         }
       }
@@ -180,10 +199,10 @@
       if (form.attr('data-type') === 'json') {
         result = JSON.stringify(config, null, 2);
       }
-      if (['yml', 'yaml'].includes(form.attr('data-type'))) {
+      if (['yml', 'yaml'].includes(form.attr('data-type') ?? '')) {
         result = jsyaml.dump(config, { lineWidth: -1, forceQuotes: true });
       }
-      if (['ini'].includes(form.attr('data-type'))) {
+      if (['ini'].includes(form.attr('data-type') ?? '')) {
         result = object2ini(config);
       }
       await setConfig(result);
@@ -200,11 +219,11 @@
         .removeAttr('disabled');
     });
   }
-  function repeatButton(event) {
+  function repeatButton(event: JQuery.ClickEvent): void {
     const parent = $(event.target).parent().parent();
     const oldNameId = parent.children('div.collapse').attr('name');
     const newNameId = parent.parent().children().length;
-    const replaceRule = [new RegExp(`${oldNameId}$`), newNameId];
+    const replaceRule: [RegExp, string] = [new RegExp(`${oldNameId}$`), String(newNameId)];
     const copyElement = $(parent.prop('outerHTML'));
     copyElement.children().map((index, element) => {
       const id = $(element).attr('id');
@@ -241,7 +260,7 @@
     });
     copyElement.children('div.collapse').children().map((index, element) => {
       const name = $(element).children('[name]').attr('name');
-      const childrenReplaceRule = [new RegExp(`${oldNameId}-${name}$`), `${newNameId}-${name}`];
+      const childrenReplaceRule: [RegExp, string] = [new RegExp(`${oldNameId}-${name}$`), `${newNameId}-${name}`];
       $(element).children().map((childrenIndex, childrenElement) => {
         const id = $(childrenElement).attr('id');
         if (id) {
@@ -257,7 +276,7 @@
         }
         const ariaDescribedby = $(childrenElement).attr('aria-describedby');
         if (ariaDescribedby) {
-          $(childrenElement).attr('aria-describedby', id.replace(...childrenReplaceRule));
+          $(childrenElement).attr('aria-describedby', ariaDescribedby.replace(...childrenReplaceRule));
         }
         return childrenElement;
       });
@@ -290,15 +309,15 @@
     });
     $('button.repeat').off('click', repeatButton).on('click', repeatButton);
   }
-  function generateData(parent, isArray) {
-    const config = isArray ? [] : {};
-    parent.find(`[data-parent="${parent.attr('id').replace('config-', '')}"]:visible`).map((index, element) => {
+  function generateData(parent: JQuery, isArray = false): ConfigData | any[] {
+    const config: any = isArray ? [] : {};
+    parent.find(`[data-parent="${(parent.attr('id') ?? '').replace('config-', '')}"]:visible`).map((index, element) => {
       if ($(element).attr('type') === 'object') {
         if (isArray) {
           config.push(generateData($(element)));
           return element;
         }
-        config[$(element).attr('name')] = generateData($(element));
+        config[String($(element).attr('name') ?? '')] = generateData($(element));
         return element;
       }
       if ($(element).attr('type') === 'array') {
@@ -307,7 +326,7 @@
           config.push(arrayConfig);
           return element;
         }
-        config[$(element).attr('name')] = arrayConfig;
+        config[String($(element).attr('name') ?? '')] = arrayConfig;
         return element;
       }
       if ($(element).attr('type') === 'checkbox') {
@@ -315,27 +334,27 @@
           config.push($(element).prop('checked'));
           return element;
         }
-        config[$(element).attr('name')] = $(element).prop('checked');
+        config[String($(element).attr('name') ?? '')] = $(element).prop('checked');
         return element;
       }
       if ($(element).attr('type') === 'number') {
         if (isArray) {
-          config.push(parseFloat($(element).val(), 10));
+          config.push(parseFloat(String($(element).val())));
           return element;
         }
-        config[$(element).attr('name')] = parseFloat($(element).val(), 10);
+        config[String($(element).attr('name') ?? '')] = parseFloat(String($(element).val()));
         return element;
       }
       if (isArray) {
         config.push($(element).val());
         return element;
       }
-      config[$(element).attr('name')] = $(element).val();
+      config[String($(element).attr('name') ?? '')] = $(element).val();
       return element;
     });
     return config;
   }
-  function generateBody(preId, name, options, parentType, bindName, bindValue) {
+  function generateBody(preId: string, name: string | number, options: TemplateOption, parentType = '', bindName = '', bindValue = ''): void {
     const id = `${preId}-${name}`;
     // text
     if (options.type === 'text') {
@@ -403,7 +422,7 @@
         </label>
         <select class="form-select" id="${id}" name="${name}" data-parent="${preId}"
         ${options.desp ? ` aria-describedby="help-${id}"` : ''}>
-          ${options.options.map((option, index) => `<option value="${option}" ${option === options.defaultValue ? ' selected' : ''}>
+          ${options.options.map((option: string, index: number) => `<option value="${option}" ${option === options.defaultValue ? ' selected' : ''}>
           ${options.optionsName?.[index] ? options.optionsName[index] : option}</option>`).join('')}
         </select>
         ${options.desp ? `<div id="help-${id}" class="form-text">${options.desp}</div>` : ''}
@@ -413,18 +432,18 @@
           $(`#${id}`).data('bindData', options.bindValue.body);
           $(`#${id}`).change(function () {
             $(`#config-${preId} [bind-value="${name}"]`).remove();
-            const data = $(this).data('bindData')[$(this).val()];
+            const data = $(this).data('bindData')[String($(this).val())];
             if (data) {
-              Object.entries(data).forEach(([subName, subOptions]) => {
-                generateBody(preId, subName, subOptions, options.type, '', name);
+              Object.entries(data as Record<string, TemplateOption>).forEach(([subName, subOptions]) => {
+                generateBody(preId, subName, subOptions, options.type, '', String(name));
               });
               $(`#config-${preId} [bind-value="${name}"]`).show();
             }
           });
           const data = options.bindValue.body[options.defaultValue];
           if (data) {
-            Object.entries(data).forEach(([subName, subOptions]) => {
-              generateBody(preId, subName, subOptions, options.type, '', name);
+            Object.entries(data as Record<string, TemplateOption>).forEach(([subName, subOptions]) => {
+              generateBody(preId, subName, subOptions, options.type, '', String(name));
             });
             $(`#config-${preId} [bind-value="${name}"]`).show();
           }
@@ -436,8 +455,8 @@
           $(`#config-${preId} [bind-value="${$(this).val()}"]`).show();
         });
         Object.entries(options.bindValue.body).forEach(([bindValue, data]) => {
-          Object.entries(data).forEach(([subName, subOptions]) => {
-            generateBody(preId, subName, subOptions, options.type, name, bindValue);
+          Object.entries(data as Record<string, TemplateOption>).forEach(([subName, subOptions]) => {
+            generateBody(preId, subName, subOptions, options.type, String(name), bindValue);
           });
         });
         const data = options.bindValue.body[options.defaultValue];
@@ -456,7 +475,7 @@
         </label>
         <select class="form-select" id="${id}" name="${name}" multiple data-parent="${preId}"
         ${options.desp ? ` aria-describedby="help-${id}"` : ''}>
-          ${options.options.map((option, index) => `<option value="${option}"
+          ${options.options.map((option: string, index: number) => `<option value="${option}"
           ${(options.defaultValue || []).includes(option) ? ' selected' : ''}>
           ${options.optionsName?.[index] ? options.optionsName[index] : option}</option>`).join('')}
         </select>
@@ -483,7 +502,7 @@
         </p><div id="config-${preId}-${name}" class="collapse show" name="${name}" type="object" data-parent="${preId}"></div>
 
       </div>`);
-      Object.entries(options.body).forEach(([subName, subOptions]) => {
+      Object.entries(options.body as Record<string, TemplateOption>).forEach(([subName, subOptions]) => {
         generateBody(`${preId}-${name}`, subName, subOptions, options.type);
       });
     }
@@ -505,8 +524,8 @@
           ${options.desp ? `<div id="configHelp-${preId}-${name}" class="form-text">${options.desp}</div>` : ''}
         </p><div id="config-${preId}-${name}" class="collapse show" name="${name}" type="array" data-parent="${preId}"></div>
       </div>`);
-      const arrayBody = [];
-      options.body.forEach((subOptions) => {
+      const arrayBody: TemplateOption[] = [];
+      options.body.forEach((subOptions: TemplateOption) => {
         if (typeof subOptions.repeat === 'number' && subOptions.repeat > 0) {
           arrayBody.push(...(new Array(subOptions.repeat).fill(subOptions)));
           return;
@@ -518,7 +537,7 @@
       });
     }
   }
-  async function getConfig() {
+  async function getConfig(): Promise<ConfigData | false> {
     if (!sessionStorage?.managerServerSecret) {
       return false;
     }
@@ -528,7 +547,7 @@
       console.log(response);
       if (response.status === 200) {
         try {
-          return jsyaml.load(response.data);
+          return jsyaml.load(response.data) as ConfigData;
         } catch (_e) {
           return false;
         }
@@ -539,7 +558,7 @@
       return false;
     });
   }
-  async function setConfig(data) {
+  async function setConfig(data: string): Promise<boolean> {
     if (!sessionStorage?.managerServerSecret) {
       return false;
     }
@@ -554,12 +573,12 @@
       showError(response.status);
       return false;
     }).catch((error) => {
-      showError(error.message);
+      showError(error instanceof Error ? error.message : String(error));
       console.error(error);
       return false;
     });
   }
-  function setDefaultConfig(data, config) {
+  function setDefaultConfig(data: Record<string, TemplateOption>, config: ConfigData): Record<string, TemplateOption> {
     return Object.fromEntries(Object.entries(data).map(([name, value]) => {
       if (config[name] || !(config[name] ?? true)) {
         if (typeof config[name] === 'object' && !Array.isArray(config[name])) {
@@ -608,9 +627,9 @@
     }
   }
   */
-  function formatChecker(template) {
+  function formatChecker(template: string): ConfigTemplate[] | false {
     try {
-      const templateJson = jsyaml.load(template);
+      const templateJson = jsyaml.load(template) as unknown;
       console.log(templateJson);
       if (!Array.isArray(templateJson)) {
         showError('The root template must be an array!');
@@ -632,14 +651,14 @@
         }
       }
       console.log(templateJsonSafety(templateJson));
-      return templateJsonSafety(templateJson);
+      return templateJsonSafety(templateJson) as ConfigTemplate[];
     } catch (error) {
       console.error(error);
-      showError(error.message);
+      showError(error instanceof Error ? error.message : String(error));
       return false;
     }
   }
-  function templateJsonSafety(templateJson) {
+  function templateJsonSafety(templateJson: any): any {
     if (Array.isArray(templateJson)) {
       return templateJson.map((value) => {
         if (typeof value === 'string') {
@@ -661,17 +680,17 @@
       return [htmlEncode(name), value];
     }));
   }
-  function showError(message, title = '') {
+  function showError(message: unknown, title = ''): void {
     $('#modalLabel').html(`<span class="badge rounded-pill text-bg-danger">Error</span>${title || ''}`);
-    $('#modalBody>textarea').val(message);
+    $('#modalBody>textarea').val(String(message));
     new bootstrap.Modal('#modal').show();
   }
-  function showMsg(message, title = '') {
+  function showMsg(message: unknown, title = ''): void {
     $('#modalLabel').html(`<span class="badge rounded-pill text-bg-danger">Info</span>${title || 'Info'}`);
-    $('#modalBody>textarea').val(message);
+    $('#modalBody>textarea').val(String(message));
     new bootstrap.Modal('#modal').show();
   }
-  function object2ini(data, parentKey = '') {
+  function object2ini(data: ConfigData | any[], parentKey = ''): string {
     return Object.entries(data).map(([key, value]) => {
       if (typeof value === 'object') {
         return object2ini(value, `${parentKey}${key}.`);
@@ -679,7 +698,7 @@
       return `${parentKey}${key}=${value}`;
     }).join('\n');
   }
-  function readFile(file) {
+  function readFile(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.addEventListener('error', () => {
@@ -687,12 +706,12 @@
         reject(`Error occurred reading file: ${file.name}`);
       });
       reader.addEventListener('load', (event) => {
-        resolve(event.target.result);
+        resolve(String(event.target?.result ?? ''));
       });
       reader.readAsText(file);
     });
   }
-  function htmlEncode(str) {
+  function htmlEncode(str: string): string {
     if (str.length === 0) {
       return '';
     }
@@ -702,7 +721,7 @@
       .replace(/'/g, '&apos;')
       .replace(/"/g, '&quot;');
   }
-  function htmlDecode(str) {
+  function htmlDecode(str: string): string {
     if (str.length === 0) {
       return '';
     }

@@ -42,6 +42,7 @@ babel.index.js
 src/package.json
 node_linux/*
 src/webUI/dist
+src/webUI/static/js/pages/*.js
 src/manager/dist
 node_binaries/node-*
 node-*/

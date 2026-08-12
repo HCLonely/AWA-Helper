@@ -1,6 +1,21 @@
 /** @description Renders DailyQuest state and real-time logs. */
-/* global $, I18n, lang, dayjs */
-function __(text, ...argv) {
+(() => {
+type QuestField = string | number;
+interface QuestInfo {
+  link?: string;
+  [key: string]: QuestField | undefined;
+}
+type QuestData = Record<string, QuestInfo>;
+interface WebUIMessage {
+  type?: string;
+  scope?: string;
+  id?: string | number;
+  data?: QuestData | string;
+  [key: string]: unknown;
+}
+const display = (value: QuestField | undefined): QuestField => value ?? '';
+
+function __(text: string, ...argv: string[]): string {
   let result = text;
   if (I18n[lang]?.[text]) {
     result = I18n[lang][text];
@@ -12,19 +27,23 @@ function __(text, ...argv) {
   }
   return result;
 }
-function generateTaskInfo(data) {
+function generateTaskInfo(data?: QuestData): void {
   if (data) {
     Object.entries(data).filter(([name]) => name.includes(__('dailyTask', ''))).forEach(([name, value], index) => {
       if (value.link) {
         try {
           const link = new URL(value.link, window.location.href);
-          if (!['http:', 'https:'].includes(link.protocol)) throw new Error('Unsupported protocol');
+          if (!['http:', 'https:'].includes(link.protocol)) {
+            throw new Error('Unsupported protocol');
+          }
           const anchor = $('<a>').attr({
             href: link.href,
             target: '_blank',
             rel: 'noopener noreferrer'
-          }).css('border', 'none').text(name);
-          $(`#daily-quest-${index}`).find('th').empty().append(anchor);
+          }).css('border', 'none')
+            .text(name);
+          $(`#daily-quest-${index}`).find('th').empty()
+            .append(anchor);
         } catch (_error) {
           $(`#daily-quest-${index}`).find('th').text(name);
         }
@@ -32,25 +51,25 @@ function generateTaskInfo(data) {
         $(`#daily-quest-${index}`).find('th').text(name);
       }
       $(`#daily-quest-${index}`).find('td').eq(0)
-        .text(value[__('status')]);
+        .text(display(value[__('status')]));
       $(`#daily-quest-${index}`).find('td').eq(1)
-        .text(value[__('obtainedARP')]);
+        .text(display(value[__('obtainedARP')]));
       $(`#daily-quest-${index}`).find('td').eq(2)
-        .text(value[__('maxAvailableARP')]);
+        .text(display(value[__('maxAvailableARP')]));
       $(`#daily-quest-${index}`).show();
 
-      if (value[__('obtainedARP')] > 0) {
+      if (Number(value[__('obtainedARP')]) > 0) {
         $(`#daily-quest-${index}`).attr('class', 'table-success');
       }
     });
     Object.entries(data).filter(([name]) => name.includes(__('steamQuest'))).forEach(([name, value], index) => {
       $(`#steam-quest-${index}`).find('th').text(name);
       $(`#steam-quest-${index}`).find('td').eq(0)
-        .text(value[__('status')]);
+        .text(display(value[__('status')]));
       $(`#steam-quest-${index}`).find('td').eq(1)
-        .text(value[__('obtainedARP')]);
+        .text(display(value[__('obtainedARP')]));
       $(`#steam-quest-${index}`).find('td').eq(2)
-        .text(value[__('maxAvailableARP')]);
+        .text(display(value[__('maxAvailableARP')]));
       $(`#steam-quest-${index}`).show();
 
       if (value[__('status')] === __('done')) {
@@ -59,30 +78,30 @@ function generateTaskInfo(data) {
     });
 
     $('#time-on-site').find('td').eq(0)
-      .text(data[__('timeOnSite')][__('status')]);
+      .text(display(data[__('timeOnSite')][__('status')]));
     $('#time-on-site').find('td').eq(1)
-      .text(data[__('timeOnSite')][__('obtainedARP')]);
+      .text(display(data[__('timeOnSite')][__('obtainedARP')]));
     $('#time-on-site').find('td').eq(2)
-      .text(data[__('timeOnSite')][__('maxAvailableARP')]);
+      .text(display(data[__('timeOnSite')][__('maxAvailableARP')]));
     $('#watch-twitch').find('td').eq(0)
-      .text(data[__('watchTwitch')][__('status')]);
+      .text(display(data[__('watchTwitch')][__('status')]));
     $('#watch-twitch').find('td').eq(1)
-      .text(parseInt(data[__('watchTwitch')][__('obtainedARP')], 10) + parseInt(data[__('watchTwitch')][__('extraARP')], 10));
+      .text(parseInt(String(data[__('watchTwitch')][__('obtainedARP')]), 10) + parseInt(String(data[__('watchTwitch')][__('extraARP')]), 10));
     $('#watch-twitch').find('td').eq(2)
-      .text(data[__('watchTwitch')][__('maxAvailableARP')]);
+      .text(display(data[__('watchTwitch')][__('maxAvailableARP')]));
     if (data[__('timeOnSite')][__('obtainedARP')] === data[__('timeOnSite')][__('maxAvailableARP')]) {
       $('#time-on-site').attr('class', 'table-success');
     }
-    if ((parseInt(data[__('watchTwitch')][__('obtainedARP')], 10) + parseInt(data[__('watchTwitch')][__('extraARP')], 10)) === data[__('watchTwitch')][__('maxAvailableARP')]) {
+    if ((parseInt(String(data[__('watchTwitch')][__('obtainedARP')]), 10) + parseInt(String(data[__('watchTwitch')][__('extraARP')]), 10)) === data[__('watchTwitch')][__('maxAvailableARP')]) {
       $('#watch-twitch').attr('class', 'table-success');
     }
     if (data[__('steamCommunityEvent')]) {
       $('#steam-event').find('td').eq(0)
-        .text(data[__('steamCommunityEvent')][__('status')]);
+        .text(display(data[__('steamCommunityEvent')][__('status')]));
       $('#steam-event').find('td').eq(1)
         .text(`${data[__('steamCommunityEvent')][__('obtainedARP')]}min`);
       $('#steam-event').find('td').eq(2)
-        .text(data[__('steamCommunityEvent')][__('maxAvailableARP')]);
+        .text(display(data[__('steamCommunityEvent')][__('maxAvailableARP')]));
       $('#steam-event').show();
     }
     return;
@@ -104,12 +123,14 @@ function time() {
 }
 const webUIReconnectInitialDelay = 1000;
 const webUIReconnectMaxDelay = 30000;
-let webUISocket;
-let webUIReconnectTimer;
+let webUISocket: WebSocket | undefined;
+let webUIReconnectTimer: number | undefined;
 let webUIReconnectAttempts = 0;
 
-function scheduleWebUIReconnect(ws) {
-  if (ws !== webUISocket || webUIReconnectTimer) return;
+function scheduleWebUIReconnect(ws: WebSocket): void {
+  if (ws !== webUISocket || webUIReconnectTimer) {
+    return;
+  }
   const delay = Math.min(
     webUIReconnectInitialDelay * (2 ** Math.min(webUIReconnectAttempts, 5)),
     webUIReconnectMaxDelay
@@ -122,7 +143,7 @@ function scheduleWebUIReconnect(ws) {
   }, delay);
 }
 
-function connectWebUIServer() {
+function connectWebUIServer(): void {
   $('#log-area').append(`<li>${time()}${__('connectingWebUI')}</li>`);
   const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
   let wsPort = '';
@@ -135,21 +156,28 @@ function connectWebUIServer() {
   if (managerSecret) {
     const bytes = new TextEncoder().encode(managerSecret);
     let binary = '';
-    bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
-    const encodedSecret = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    const encodedSecret = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_')
+      .replace(/=+$/, '');
     protocols = ['awa-manager', encodedSecret];
   }
   const wsUrl = `${wsProtocol}://${window.location.host}${wsPort}/ws`;
   const ws = protocols ? new WebSocket(wsUrl, protocols) : new WebSocket(wsUrl);
   webUISocket = ws;
   ws.onopen = function () {
-    if (ws !== webUISocket) return;
+    if (ws !== webUISocket) {
+      return;
+    }
     console.log(__('connectWebUISuccess'));
     $('#log-area').html('');
     webUIReconnectAttempts = 0;
   };
   ws.onclose = function () {
-    if (ws !== webUISocket) return;
+    if (ws !== webUISocket) {
+      return;
+    }
     console.log(__('WebUIClosed'));
     $('#log-area').append(`<li>${time()}<font class="yellow">${__('WebUIClosed')}</li>`);
     scheduleWebUIReconnect(ws);
@@ -158,18 +186,19 @@ function connectWebUIServer() {
     scheduleWebUIReconnect(ws);
   };
   ws.onmessage = function (e) {
-    console.log(`message:${e.data}`);
-    const data = JSON.parse(e.data);
+    const data = JSON.parse(String(e.data)) as WebUIMessage;
     if (data.type === 'logs') {
-      for (const value of Object.values(data)) {
-        if (!value || typeof value !== 'object' || value.scope !== 'dailyQuest') continue;
+      for (const value of Object.values(data) as WebUIMessage[]) {
+        if (!value || typeof value !== 'object' || value.scope !== 'dailyQuest') {
+          continue;
+        }
         if (value.type === 'questInfo') {
-          generateTaskInfo(value.data);
+          generateTaskInfo(value.data as QuestData);
           continue;
         }
         const logEle = $(`#log-${value.id}`);
         if (logEle.length > 0) {
-          logEle.html(value.data);
+          logEle.html(value.data as string);
           logEle[0].scrollIntoView();
           continue;
         }
@@ -179,16 +208,17 @@ function connectWebUIServer() {
     } else if (data.type === 'log' && data.scope === 'dailyQuest') {
       const logEle = $(`#log-${data.id}`);
       if (logEle.length > 0) {
-        logEle.html(data.data);
+        logEle.html(data.data as string);
         logEle[0].scrollIntoView();
       } else {
         $('#log-area').append(`<li id="log-${data.id}">${data.data}</li>`);
         $(`#log-${data.id}`)[0].scrollIntoView();
       }
     } else if (data.type === 'questInfo' && data.scope === 'dailyQuest') {
-      generateTaskInfo(data.data);
+      generateTaskInfo(data.data as QuestData);
     }
   };
 }
 connectWebUIServer();
 generateTaskInfo();
+})();

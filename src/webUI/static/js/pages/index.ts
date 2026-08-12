@@ -1,5 +1,5 @@
 /** @description Controls Manager jobs and renders unified runtime status. */
-/* global $, __, dayjs, axios */
+(() => {
 // function __(text, ...argv) {
 //   let result = text;
 //   if (I18n[lang]?.[text]) {
@@ -12,8 +12,11 @@
 //   }
 //   return result;
 // }
-const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
-async function openLog(scope, secret) {
+  const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
+type JobStatus = 'idle' | 'running' | 'stopping' | string;
+type CheckStatus = 'start' | 'stop';
+
+async function openLog(scope: string, secret: string): Promise<void> {
   const response = await axios.get(`/api/logs/${scope}`, {
     headers: { Authorization: `Bearer ${secret}` },
     responseType: 'blob'
@@ -24,7 +27,7 @@ async function openLog(scope, secret) {
   window.open(objectUrl, '_blank', 'noopener,noreferrer');
   setTimeout(() => URL.revokeObjectURL(objectUrl), 60 * 1000);
 }
-function getStatus(secret) {
+function getStatus(secret: string): Promise<string | false | undefined> {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingDailyQuestStatus')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
   return axios.post('/runStatus', { secret }).then((response) => {
@@ -54,7 +57,7 @@ function getStatus(secret) {
     return false;
   });
 }
-function startDailyQuest(secret) {
+function startDailyQuest(secret: string): void {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingDailyQuest')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
   axios.post('/start', { secret }).then(async (response) => {
@@ -82,7 +85,7 @@ function startDailyQuest(secret) {
     console.error(error);
   });
 }
-function stopDailyQuest(secret, stopManager = false) {
+function stopDailyQuest(secret: string, stopManager = false): void {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingDailyQuest')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingDailyQuest')}`);
   axios.post('/stop', { secret }).then(async (response) => {
@@ -113,7 +116,7 @@ function stopDailyQuest(secret, stopManager = false) {
     console.error(error);
   });
 }
-function updateHelper(secret) {
+function updateHelper(secret: string): void {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('updating')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updating')}`);
   axios.post('/update', { secret }).then(async (response) => {
@@ -150,7 +153,7 @@ function updateHelper(secret) {
     }
   });
 }
-async function managerStatusChecker(status, times = 1) {
+async function managerStatusChecker(status: CheckStatus, times = 1): Promise<'success' | 'error'> {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingManagerStatus')}</li>`);
   $('#log-area li:last')[0].scrollIntoView();
   const runStatus = await axios.get('/').then(() => true).catch(() => false);
@@ -176,7 +179,7 @@ async function managerStatusChecker(status, times = 1) {
   }
   return 'error';
 }
-function stopAWAManager(secret) {
+function stopAWAManager(secret: string): void {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingManager')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingManager')}`);
   axios.post('/stopManager', { secret }).then(async (response) => {
@@ -206,7 +209,7 @@ function stopAWAManager(secret) {
   });
 }
 
-function updateAchievementControls(status) {
+function updateAchievementControls(status: JobStatus): void {
   const running = status === 'running';
   const stopping = status === 'stopping';
   $('.awa-achievement-start')
@@ -216,7 +219,7 @@ function updateAchievementControls(status) {
     .prop('disabled', !running)
     .toggleClass('disabled', !running);
 }
-async function refreshAchievementStatus(secret) {
+async function refreshAchievementStatus(secret: string): Promise<void> {
   try {
     const response = await axios.get('/api/jobs/achievement', {
       headers: { Authorization: `Bearer ${secret}` }
@@ -226,7 +229,7 @@ async function refreshAchievementStatus(secret) {
     console.error(error);
   }
 }
-function startAchievement(secret) {
+function startAchievement(secret: string): void {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingAchievement')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('startingAchievement')}`);
   axios.post('/startAchievement', { secret }).then(async (response) => {
@@ -248,7 +251,7 @@ function startAchievement(secret) {
     console.error(error);
   });
 }
-function stopAchievement(secret) {
+function stopAchievement(secret: string): void {
   $('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingAchievement')}</li>`);
   $('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingAchievement')}`);
   axios.post('/stopAchievement', { secret }).then(async (response) => {
@@ -271,13 +274,13 @@ function stopAchievement(secret) {
   });
 }
 
-const sleep = (time) => new Promise((resolve) => {
+const sleep = (seconds: number): Promise<boolean> => new Promise((resolve) => {
   const timeout = setTimeout(() => {
     clearTimeout(timeout);
     resolve(true);
-  }, time * 1000);
+  }, seconds * 1000);
 });
-async function statusChecker(secret, status, times = 1) {
+async function statusChecker(secret: string, status: CheckStatus, times = 1): Promise<'success' | 'timeout' | 'error'> {
   const runStatus = await getStatus(secret);
   if (status === 'start') {
     if (runStatus === 'Running') {
@@ -380,7 +383,7 @@ $('button.awa-manager-stop').click(() => {
   stopDailyQuest(managerServerSecret, true);
 });
 $('button.save-secret').click(() => {
-  managerServerSecret = $('#secret').val();
+  managerServerSecret = String($('#secret').val() ?? '');
   sessionStorage.setItem('managerServerSecret', managerServerSecret);
   if ($('#remember-secret').prop('checked')) {
     localStorage.setItem('managerServerSecret', managerServerSecret);
@@ -420,3 +423,4 @@ if (managerServerSecret) {
   getStatus(managerServerSecret);
   refreshAchievementStatus(managerServerSecret);
 }
+})();

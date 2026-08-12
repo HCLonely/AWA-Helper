@@ -21,6 +21,7 @@
   ],
   "exclude": [
     "src/DailyQuestUS.ts",
-    "src/SteamQuestSU.ts"
+    "src/SteamQuestSU.ts",
+    "src/webUI/static/js/pages/**/*.ts"
   ]
 }

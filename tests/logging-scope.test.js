@@ -37,7 +37,7 @@ test('Logger separates Manager, DailyQuest, Achievement, and Artifact files', as
 });
 
 test('WebUI buttons request their matching scoped log endpoints', () => {
-  const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.js'), 'utf8');
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
   assert.match(source, /openLog\('manager'/);
   assert.match(source, /openLog\('dailyQuest'/);
   assert.match(source, /openLog\('achievement'/);
@@ -48,7 +48,7 @@ test('WebUI buttons request their matching scoped log endpoints', () => {
 });
 
 test('Manager WebUI synchronizes Achievement buttons with the running job state', () => {
-  const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.js'), 'utf8');
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
   assert.match(source, /axios\.get\('\/api\/jobs\/achievement'/);
   assert.match(source, /\.prop\('disabled', running \|\| stopping\)/);
   assert.match(source, /\.prop\('disabled', !running\)/);

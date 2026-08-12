@@ -124,4 +124,13 @@ export default [
       'brace-style': 'error'
     },
   },
+  {
+    files: ['src/webUI/static/js/pages/*.ts'],
+    languageOptions: {
+      globals: globals.browser,
+    },
+    rules: {
+      'no-underscore-dangle': 'off',
+    },
+  },
 ];

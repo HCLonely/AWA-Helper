@@ -171,7 +171,7 @@ test('DailyQuest terminal notifications are mutually exclusive', () => {
 });
 
 test('settings use the validated config API and legacy config routes are removed', () => {
-  const settings = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/settings.source.js'), 'utf8');
+  const settings = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/settings.ts'), 'utf8');
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
   assert.match(settings, /axios\.get\('\/api\/config'/);
   assert.match(settings, /axios\.put\('\/api\/config'/);

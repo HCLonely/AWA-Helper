@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Node10",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "types": [
+      "jquery"
+    ],
+    "strict": true,
+    "noEmitOnError": true,
+    "rootDir": "src/webUI/static/js/pages",
+    "outDir": "src/webUI/static/js/pages",
+    "removeComments": false,
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0"
+  },
+  "files": [
+    "src/webUI/static/js/pages/browser-globals.d.ts",
+    "src/webUI/static/js/pages/achievement.ts",
+    "src/webUI/static/js/pages/dailyQuest.ts",
+    "src/webUI/static/js/pages/index.ts",
+    "src/webUI/static/js/pages/settings.ts"
+  ]
+}
