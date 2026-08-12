@@ -1,6 +1,0 @@
-[2026-08-10 18:47:14] [Manager] Dispatching job: dailyQuest
-[2026-08-10 18:47:14] [Manager] Ignored duplicate start request for dailyQuest; the job is already running
-[2026-08-10 18:47:14] [Manager] Job dailyQuest status: completed
-[2026-08-10 18:47:14] [Manager] Dispatching job: dailyQuest
-[2026-08-10 18:47:14] [Manager] Requesting job stop: dailyQuest
-[2026-08-10 18:47:14] [Manager] Job dailyQuest status: cancelled
