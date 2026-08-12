@@ -13,9 +13,15 @@ export class SteamQuestTask {
    * 初始化 Steam Quest Task 实例。
    * @param awa - 用于调用 Alienware Arena 接口的客户端，类型为 `AWAApiClient`。
    * @param asf - 用于控制 ArchiSteamFarm 的客户端，类型为 `SteamClient`。
-   * @param eventAppId - 需要处理的 Steam 应用标识列表，类型为 `string | undefined`。
+   * @param getEventAppId - 动态读取尚未完成的社区活动 Steam 应用标识。
+   * @param pollDelaySeconds - 首次检查及后续轮询的等待秒数。
    */
-  constructor(private readonly awa: AWAApiClient, private readonly asf: SteamClient, private readonly eventAppId?: string) {}
+  constructor(
+    private readonly awa: AWAApiClient,
+    private readonly asf: SteamClient,
+    private readonly getEventAppId: () => string | undefined = () => undefined,
+    private readonly pollDelaySeconds = 10 * 60
+  ) {}
 
   /**
    * 执行 run 相关数据。
@@ -43,7 +49,7 @@ export class SteamQuestTask {
       }
     }
     questLogger.log(chalk.green(`${__('logStatusOk')} (${quests.length})`));
-    const { eventAppId } = this;
+    const eventAppId = this.getEventAppId();
     const requestedIds = [...quests.map((quest) => quest.id), ...(eventAppId ? [eventAppId] : [])];
     if (!requestedIds.length) {
       return true;
@@ -90,7 +96,7 @@ export class SteamQuestTask {
     playLogger.log(chalk.green(__('logStatusOk')));
 
     try {
-      if (!await sleep(10 * 60, signal)) {
+      if (!await sleep(this.pollDelaySeconds, signal)) {
         return true;
       }
       while (!signal?.aborted) {
@@ -103,10 +109,10 @@ export class SteamQuestTask {
           }
           new Logger(`${time()}${__('checkingProgress', chalk.yellow(quest.link))}: ${progress ?? '-'}%`);
         }
-        if (complete && !eventAppId) {
+        if (complete && !this.getEventAppId()) {
           return true;
         }
-        if (!await sleep(10 * 60, signal)) {
+        if (!await sleep(this.pollDelaySeconds, signal)) {
           return true;
         }
       }

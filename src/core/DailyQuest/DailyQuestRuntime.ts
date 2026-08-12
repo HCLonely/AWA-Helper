@@ -371,7 +371,15 @@ export class DailyQuestRuntime {
     if (!page) {
       return;
     }
-    if (page.closed || page.concluded || !page.gameId) {
+    const completed = page.concluded || page.playedMinutes >= page.totalMinutes;
+    if (completed) {
+      this.state.communityEvent = {
+        path, status: __('done'), playedTime: `${page.playedMinutes}`, totalTime: `${page.totalMinutes}min`
+      };
+      logger.log(chalk.yellow(__('logStatusFinished')));
+      return;
+    }
+    if (page.closed || !page.gameId) {
       logger.log(chalk.yellow(page.closed ? __('logStatusClosed') : __('logStatusFinished')));
       return;
     }

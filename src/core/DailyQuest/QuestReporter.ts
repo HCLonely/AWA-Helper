@@ -16,12 +16,14 @@ export const formatQuestReport = (state: DailyQuestState): QuestReport => {
   const report: QuestReport = {
     [__('timeOnSite')]: {
       [__('status')]: info.timeOnSite?.addedArp === info.timeOnSite?.maxArp ? __('done') : __('undone'),
-      [__('obtainedARP')]: info.timeOnSite?.addedArp || '0', [__('extraARP')]: info.timeOnSite?.addedArpExtra || '0',
+      [__('obtainedARP')]: info.timeOnSite?.addedArp || '0',
+      [__('extraARP')]: info.timeOnSite?.addedArpExtra || '0',
       [__('maxAvailableARP')]: info.timeOnSite?.maxArp || '0'
     },
     [__('watchTwitch')]: {
       [__('status')]: parseInt(info.watchTwitch?.[0] || '0', 10) + parseFloat(info.watchTwitch?.[1] || '0') >= 15 + state.additionalTwitchARP ? __('done') : __('undone'),
-      [__('obtainedARP')]: info.watchTwitch?.[0] || '0', [__('extraARP')]: info.watchTwitch?.[1] || '0',
+      [__('obtainedARP')]: info.watchTwitch?.[0] || '0',
+      [__('extraARP')]: info.watchTwitch?.[1] || '0',
       [__('maxAvailableARP')]: 15 + state.additionalTwitchARP
     }
   };

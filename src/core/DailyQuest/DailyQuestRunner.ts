@@ -366,7 +366,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
             new Logger(error);
           }
           if (asfReady) {
-            const steamTask = new SteamQuestTask(awaAPIs, steamQuest, runtime.state.communityEvent?.gameId);
+            const steamTask = new SteamQuestTask(awaAPIs, steamQuest, () => runtime.state.communityEvent?.gameId);
             quests.push({ name: 'Steam ASF', promise: steamTask.run(shutdownController.signal) });
             await sleep(30);
           }

@@ -71,7 +71,9 @@ export const parseControlCenter = (html: string, baseURL: string): ControlCenter
       return {
         link: new URL($(row).find('a[href^="/quests/"]').attr('href') || '/', `${baseURL}/`).href,
         title: $(row).find('.quest-title').text()
-          .trim(), arp: progress[0]?.trim() || '0', extraArp: progress[1]?.trim() || '0'
+          .trim(),
+          arp: progress[0]?.trim() || '0',
+          extraArp: progress[1]?.trim() || '0'
       };
     });
   questInfo.dailyQuest = bodies.eq(0).find('.card-table-row').filter((_, row) => $(row).find('a[href^="/quests/"]').length === 0)
@@ -81,7 +83,9 @@ export const parseControlCenter = (html: string, baseURL: string): ControlCenter
         .map((item) => $(item).text().trim()
           .toLowerCase());
       return {
-        status: progress[0] || '', arp: progress[1] || '0 ARP', name: $(row).find('.quest-title').first()
+        status: progress[0] || '',
+        arp: progress[1] || '0 ARP',
+        name: $(row).find('.quest-title').first()
           .text()
           .trim(),
         id: $(row).find('a.quest-title[data-award-on-click="true"][href]').filter((_, link) => !/^\/quests\//.test($(link).attr('href') || ''))
