@@ -319,7 +319,7 @@ systemConfig: 系统配置
 configManagerServer: 配置ManagerServer
 configAWAHelper: 配置AWA-Helper
 refreshStatus: 刷新运行状态
-syncCookie: 同步Cookie
+syncCookie: 同步AWA Cookie
 syncTwitchCookie: 同步Twitch Cookie
 dailyQuestControl: DailyQuest 控制
 updateAWAHelper: 更新AWA-Helper

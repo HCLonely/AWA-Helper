@@ -312,7 +312,7 @@ systemConfig: System Configuration
 configManagerServer: Configure ManagerServer
 configAWAHelper: Configure AWA-Helper
 refreshStatus: Refresh Status
-syncCookie: Sync Cookie
+syncCookie: Sync AWA Cookie
 syncTwitchCookie: Sync Twitch Cookie
 dailyQuestControl: DailyQuest Control
 updateAWAHelper: Update AWA-Helper
