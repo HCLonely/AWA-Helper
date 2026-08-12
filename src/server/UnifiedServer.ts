@@ -21,6 +21,7 @@ import { decodeManagerWebSocketSecret } from './websocket/authenticate';
 import { getManagerListenHost } from './network';
 import { getLogFilePath, isLogScope, Logger } from '../tools/logging';
 import { time } from '../tools/common';
+import { getLatestVersion, isNewVersion } from '../tools/update';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import managerHtml from '../webUI/dist/index.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -139,6 +140,22 @@ class UnifiedServer {
     app.get(['/settings', '/configer'], (_, res) => res.send(settingsHtml));
     app.get('/js/template.yml', (_, res) => res.type('text/yaml').send(raw.language === 'en' ? templateYmlEN : templateYml));
     app.get(['/health/live', '/api/health/live'], (_, res) => res.json({ status: 'live', version: this.version }));
+    app.get('/api/version/latest', async (_, res) => {
+      try {
+        const latestVersion = await getLatestVersion(raw.proxy);
+        if (!latestVersion) {
+          return res.status(502).json({ error: 'Unable to determine the latest version' });
+        }
+        return res.json({
+          currentVersion: this.version,
+          latestVersion,
+          updateAvailable: isNewVersion(this.version, latestVersion)
+        });
+      } catch (error) {
+        new Logger(`${time()}Failed to check the latest version: ${error instanceof Error ? error.message : String(error)}`);
+        return res.status(502).json({ error: 'Unable to check the latest version' });
+      }
+    });
     app.get('/api/health/ready', (_, res) => res.json({ status: 'ready', jobs: this.coordinator.states.list() }));
     app.get('/run-status', (req, res) => {
       const remote = req.socket.remoteAddress || '';

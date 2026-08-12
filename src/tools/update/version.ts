@@ -17,6 +17,15 @@ export const isNewVersion = (currentVersion: string, latestVersion: string): boo
   return false;
 };
 
+export const getLatestVersion = async (proxy?: proxy): Promise<string | undefined> => {
+  const options: myAxiosConfig = { validateStatus: (status) => status === 302, maxRedirects: 0 };
+  if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
+    options.httpsAgent = formatProxy(proxy);
+  }
+  const response = await http.head('https://github.com/HCLonely/AWA-Helper/releases/latest', options);
+  return response.headers.location?.match(/tag\/v?([\d.]+)/)?.[1];
+};
+
 export const checkUpdate = async (
   version: string,
   _managerServer: managerServer | undefined,

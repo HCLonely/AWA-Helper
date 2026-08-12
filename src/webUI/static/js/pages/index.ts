@@ -153,6 +153,19 @@
       }
     });
   }
+  async function refreshUpdateButton(): Promise<void> {
+    try {
+      const response = await axios.get('/api/version/latest');
+      if (response.data?.updateAvailable === true) {
+        dom('button.awa-helper-update').show();
+      } else {
+        dom('button.awa-helper-update').hide();
+      }
+    } catch (error) {
+      dom('button.awa-helper-update').hide();
+      console.error(error);
+    }
+  }
   async function managerStatusChecker(status: CheckStatus, times = 1): Promise<'success' | 'error'> {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingManagerStatus')}</li>`);
     dom('#log-area li:last-child')[0].scrollIntoView();
@@ -348,6 +361,7 @@
     }
     updateHelper(managerServerSecret);
   });
+  void refreshUpdateButton();
 
   dom('button.awa-achievement-start').click(() => {
     if (!managerServerSecret) {
