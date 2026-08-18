@@ -124,7 +124,7 @@
       }
       // 多配置文件处理
       dom('div.container').append(`<form id="config-${htmlDecode(singleConfig.name).replace(/[,./;'[\]\\<>?:"{}|`~!@#$%^&*()+=\s]/ig, '')}" style="display:none;" data-type="${singleConfig.type || singleConfig.filename?.split('.').slice(0, -1).join('.') || ''
-        }" data-filename="${singleConfig.filename || `${singleConfig.name}.${singleConfig.type}`}">
+      }" data-filename="${singleConfig.filename || `${singleConfig.name}.${singleConfig.type}`}">
         ${singleConfig.quote ? `<figure class="text-center" style="border: 1px dashed #00c9ff;border-radius: 5px;">
           <blockquote class="blockquote">
             <p>${singleConfig.quote}</p>

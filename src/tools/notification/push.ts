@@ -35,6 +35,10 @@ interface PushQuestInfo {
   signArp: { daily?: string; monthly?: string };
 }
 
+const normalizeArpValue = (value: string | number | undefined): string => String(value ?? '')
+  .replace(/\s*ARP\s*$/i, '')
+  .trim();
+
 export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
   if (!quest) {
     return '';
@@ -72,7 +76,9 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
     }
     const separator = name === __('timeOnSite') ? '---\n' : '';
     const suffix = name === __('watchTwitch') ? '\n---' : '';
-    return `${separator}${status === __('done') ? '✔️' : '❌'}${name}:  ${obtained}${extra && extra !== '0' ? ` + ${extra}` : ''} ARP${suffix}`;
+    const obtainedArp = normalizeArpValue(obtained);
+    const extraArp = normalizeArpValue(extra);
+    return `${separator}${status === __('done') ? '✔️' : '❌'}${name}:  ${obtainedArp}${extraArp && extraArp !== '0' ? ` + ${extraArp}` : ''} ARP${suffix}`;
   }).join('\n');
   return `👉${__('dailyArp', quest.dailyArp)}\n\n${quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`}${quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`}---\n${body}`;
 };

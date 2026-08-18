@@ -138,19 +138,13 @@
         dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateFailed')}(${response.status})!`);
       }
       console.log(response);
-    }).catch(async (error) => {
-      await sleep(10);
-      const result = await managerStatusChecker('start');
-      if (result === 'success') {
-        dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateSuccessManager')}</li>`);
-        dom('#log-area li:last-child')[0].scrollIntoView();
-        dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateSuccessManager')}`);
-      } else {
-        dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateFailed')}(${error.message})!</li>`);
-        dom('#log-area li:last-child')[0].scrollIntoView();
-        dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateFailed')}(${error.message})!`);
-        console.error(error);
-      }
+    }).catch((error) => {
+      const status = error?.response?.status;
+      const reason = status || error.message;
+      dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateFailed')}(${reason})!</li>`);
+      dom('#log-area li:last-child')[0].scrollIntoView();
+      dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateFailed')}(${reason})!`);
+      console.error(error);
     });
   }
   async function refreshUpdateButton(): Promise<void> {

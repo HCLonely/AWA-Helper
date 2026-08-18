@@ -175,12 +175,16 @@ export class DailyQuestRuntime {
   /**
    * 更新 refresh Personalization 相关数据。
    * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 refreshPersonalization 检查是否通过。
    */
-  async refreshPersonalization(type: 'avatar' | 'border'): Promise<boolean> {
+  async refreshPersonalization(type: 'avatar' | 'border', signal?: AbortSignal): Promise<boolean> {
+    if (signal?.aborted) {
+      return false;
+    }
     const logger = new Logger(`${time()}${__('dailyQuestRefreshingPersonalization', __(`personalizationType_${type}`))}`, false);
     const selection = await this.awa.personalization.getAvatarItems(type);
-    const success = selection.found ? (await this.awa.personalization.saveAvatar(selection.value.userAvatarInfo)).ok : false;
+    const success = selection.found && !signal?.aborted ? (await this.awa.personalization.saveAvatar(selection.value.userAvatarInfo)).ok : false;
     logger.log(success ? chalk.green(__('logStatusOk')) : chalk.red(__('logStatusError')));
     return success;
   }
@@ -205,9 +209,13 @@ export class DailyQuestRuntime {
   /**
    * 处理 visit 相关逻辑。
    * @param link - 需要访问或提交的目标页面链接，类型为 `string`。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  async visit(link: string): Promise<void> {
+  async visit(link: string, signal?: AbortSignal): Promise<void> {
+    if (signal?.aborted) {
+      return;
+    }
     const logger = new Logger(`${time()}${__('visitingPage', chalk.yellow(link))}`, false);
     try {
       await openPage(this.awa.context, link);
@@ -220,14 +228,18 @@ export class DailyQuestRuntime {
   /**
    * 处理 view Post 相关逻辑。
    * @param postId - 目标资源的唯一标识，类型为 `string`。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 viewPost 检查是否通过。
    */
-  async viewPost(postId: string): Promise<boolean> {
-    await this.visit(`${this.awa.context.baseURL}/ucf/show/${postId}`);
+  async viewPost(postId: string, signal?: AbortSignal): Promise<boolean> {
+    await this.visit(`${this.awa.context.baseURL}/ucf/show/${postId}`, signal);
+    if (signal?.aborted) {
+      return false;
+    }
     const logger = new Logger(`${time()}${__('sendingViewRecord', chalk.yellow(postId))}`, false);
     try {
       const viewed = await recordPostView(this.awa.context, postId);
-      if (viewed.ok) {
+      if (viewed.ok && !signal?.aborted) {
         await sendTimeOnSiteTrack(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${postId}`);
       }
       logger.log(viewed.ok ? chalk.green(__('logStatusOk')) : chalk.red(`${__('logStatusError')} (${viewed.state})`));
@@ -241,23 +253,34 @@ export class DailyQuestRuntime {
   /**
    * 处理 view Posts 相关逻辑。
    * @param postIds - 需要查看或分享的论坛帖子标识列表，类型为 `string[]`。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 viewPosts 检查是否通过。
    */
-  async viewPosts(postIds = this.state.posts): Promise<boolean> {
+  async viewPosts(postIds = this.state.posts, signal?: AbortSignal): Promise<boolean> {
     new Logger(`${time()}${__('dailyQuestViewingPosts', String(postIds.length))}`);
     for (const postId of postIds.slice(0, 3)) {
-      await this.viewPost(postId); await sleep(random(1, 5));
+      if (signal?.aborted) {
+        return false;
+      }
+      await this.viewPost(postId, signal);
+      if (!await sleep(random(1, 5), signal)) {
+        return false;
+      }
     }
     return postIds.length > 0;
   }
   /**
    * 处理 share Posts 相关逻辑。
    * @param postIds - 需要查看或分享的论坛帖子标识列表，类型为 `string[]`。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 sharePosts 检查是否通过。
    */
-  async sharePosts(postIds = this.state.posts): Promise<boolean> {
+  async sharePosts(postIds = this.state.posts, signal?: AbortSignal): Promise<boolean> {
     new Logger(`${time()}${__('dailyQuestSharingPosts', String(postIds.length))}`);
     for (const postId of postIds.slice(0, 2)) {
+      if (signal?.aborted) {
+        return false;
+      }
       const logger = new Logger(`${time()}${__('sharingPost', chalk.yellow(postId))}`, false);
       try {
         const shared = await sharePost(this.awa.context, postId);
@@ -266,16 +289,22 @@ export class DailyQuestRuntime {
         logger.log(chalk.red(__('logStatusError')));
         new Logger(error);
       }
-      await sleep(random(1, 5));
+      if (!await sleep(random(1, 5), signal)) {
+        return false;
+      }
     }
     return postIds.length > 0;
   }
   /**
    * 处理 reply Post 相关逻辑。
    * @param postId - 目标资源的唯一标识，类型为 `string | undefined`。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 replyPost 检查是否通过。
    */
-  async replyPost(postId?: string): Promise<boolean> {
+  async replyPost(postId?: string, signal?: AbortSignal): Promise<boolean> {
+    if (signal?.aborted) {
+      return false;
+    }
     const logger = new Logger(`${time()}${__('replyingPost', chalk.yellow(postId || 'Daily Quest'))}`, false);
     try {
       const replied = await replyPost(this.awa.context, postId);
@@ -291,21 +320,34 @@ export class DailyQuestRuntime {
   }
   /**
    * 处理 view News 相关逻辑。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  async viewNews(): Promise<void> {
+  async viewNews(signal?: AbortSignal): Promise<void> {
+    if (signal?.aborted) {
+      return;
+    }
     const newsId = '2162951';
     new Logger(`${time()}${__('dailyQuestProcessingNews', newsId)}`);
     const html = await openPage(this.awa.context, `${this.awa.context.baseURL}/ucf/show/${newsId}/boards/awa-information/News/arp-6-0`);
+    if (signal?.aborted) {
+      return;
+    }
     const $ = load(html);
     for (const script of $('script').toArray().flatMap((element) => ($(element).html()?.includes('/ajax/promo/view/') ? [$(element).html() || ''] : []))) {
+      if (signal?.aborted) {
+        return;
+      }
       const id = script.match(/"\/ajax\/promo\/view\/([\d]+?)"/)?.[1];
       const token = script.match(/token:\s*?'(.+?)'/)?.[1];
       if (id && token) {
         await recordPromotionView(this.awa.context, id, token);
       }
     }
-    await this.viewPost(newsId);
+    await this.viewPost(newsId, signal);
+    if (signal?.aborted) {
+      return;
+    }
     new Logger(`${time()}${__('dailyQuestNewsCompleted')}`);
   }
   /**

@@ -1,10 +1,11 @@
 const fs = require('fs');
 const { execSync } = require('child_process');
 
-const dailyQuestDbChanged = execSync('git status -s').toString().includes('src/dailyQuestDb.json');
+const dailyQuestDbPath = 'src/data/dailyQuestDb.json';
+const dailyQuestDbChanged = execSync(`git status --short -- ${dailyQuestDbPath}`).toString().trim().length > 0;
 if (dailyQuestDbChanged) {
-  const dailyQuestDb = JSON.parse(fs.readFileSync('dailyQuestDb.json').toString());
+  const dailyQuestDb = JSON.parse(fs.readFileSync(dailyQuestDbPath).toString());
   dailyQuestDb.version = Date.now();
-  fs.writeFileSync('dailyQuestDb.json', JSON.stringify(dailyQuestDb, null, 2));
-  execSync('git add src/dailyQuestDb.json');
+  fs.writeFileSync(dailyQuestDbPath, JSON.stringify(dailyQuestDb, null, 2));
+  execSync(`git add ${dailyQuestDbPath}`);
 }

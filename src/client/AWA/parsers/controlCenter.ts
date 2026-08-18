@@ -72,8 +72,8 @@ export const parseControlCenter = (html: string, baseURL: string): ControlCenter
         link: new URL($(row).find('a[href^="/quests/"]').attr('href') || '/', `${baseURL}/`).href,
         title: $(row).find('.quest-title').text()
           .trim(),
-          arp: progress[0]?.trim() || '0',
-          extraArp: progress[1]?.trim() || '0'
+        arp: progress[0]?.trim() || '0',
+        extraArp: progress[1]?.trim() || '0'
       };
     });
   questInfo.dailyQuest = bodies.eq(0).find('.card-table-row').filter((_, row) => $(row).find('a[href^="/quests/"]').length === 0)

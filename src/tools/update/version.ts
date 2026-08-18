@@ -4,7 +4,6 @@ import { Cookie, http, netError } from '../http';
 import { formatProxy } from '../proxy';
 import { Logger } from '../logging';
 import { time } from '../common';
-import { push } from '../notification';
 
 export const isNewVersion = (currentVersion: string, latestVersion: string): boolean => {
   const current = currentVersion.replace(/^V/i, '').split('.').map((value) => parseInt(value, 10));
@@ -30,7 +29,6 @@ export const checkUpdate = async (
   version: string,
   _managerServer: managerServer | undefined,
   autoUpdate: boolean,
-  changelog: string,
   proxy?: proxy
 ): Promise<void> => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
@@ -53,9 +51,6 @@ export const checkUpdate = async (
       new Logger(`${time()}${__('downloadLink', chalk.yellow(response.headers.location))}`);
       globalThis.newVersionNotice = `\n\n${__('newVersion', `V${latest}`)}\n${__('downloadLink', response.headers.location)}`;
       return;
-    }
-    if (process.argv.includes('--no-update')) {
-      await push(`${__('pushTitle')}:\n\n${__('autoUpdated', version)}\n\n${__('updateLog')}\n${changelog}`);
     }
     logger.log(chalk.green(__('noUpdate')));
   } catch (error) {

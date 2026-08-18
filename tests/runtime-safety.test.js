@@ -170,6 +170,47 @@ test('DailyQuest terminal notifications are mutually exclusive', () => {
   assert.match(source, /if \(shutdownController\.signal\.aborted\) \{\s*return false;/);
 });
 
+test('DailyQuest sequential work and setup delays receive the shutdown signal', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/core/DailyQuest/DailyQuestRunner.ts'), 'utf8');
+  assert.match(source, /dailyQuest\.do\(shutdownController\.signal\)/);
+  assert.match(source, /dailyQuestOld\.do\(shutdownController\.signal\)/);
+  assert.match(source, /sleep\(10, shutdownController\.signal\)/);
+  assert.match(source, /sleep\(30, shutdownController\.signal\)/);
+  assert.doesNotMatch(source, /setTimeout\(async \(\) =>/);
+});
+
+test('disabled automatic updates remain failures in the WebUI', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
+  const updateHandler = source.slice(source.indexOf('function updateHelper'), source.indexOf('async function refreshUpdateButton'));
+  const failureHandler = updateHandler.slice(updateHandler.indexOf('}).catch'));
+  assert.match(failureHandler, /updateFailed/);
+  assert.doesNotMatch(failureHandler, /managerStatusChecker\('start'\)/);
+  assert.doesNotMatch(failureHandler, /updateSuccessManager/);
+});
+
+test('release metadata comes from package.json and cross-platform SEA code cache is disabled', () => {
+  const sea = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../AWA-Helper-config.json'), 'utf8'));
+  const release = fs.readFileSync(path.resolve(__dirname, '../.github/workflows/Release.yml'), 'utf8');
+  const docker = fs.readFileSync(path.resolve(__dirname, '../.github/workflows/Docker.yml'), 'utf8');
+  assert.equal(sea.useCodeCache, false);
+  assert.match(release, /require\('\.\/package\.json'\)\.version/);
+  assert.match(docker, /require\('\.\/package\.json'\)\.version/);
+  assert.doesNotMatch(release, /^\s+version:\s+\d/m);
+  assert.doesNotMatch(docker, /^\s+version:\s+\d/m);
+});
+
+test('DailyQuest database updater targets the tracked database path', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../scripts/updateDailyQuestDb.js'), 'utf8');
+  assert.match(source, /src\/data\/dailyQuestDb\.json/);
+  assert.doesNotMatch(source, /['"]src\/dailyQuestDb\.json['"]/);
+  assert.doesNotMatch(source, /readFileSync\(['"]dailyQuestDb\.json['"]\)/);
+});
+
+test('--no-update does not emit a false automatic-update notification', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/tools/update/version.ts'), 'utf8');
+  assert.doesNotMatch(source, /process\.argv\.includes\('--no-update'\)[\s\S]*autoUpdated/);
+});
+
 test('settings use the validated config API and legacy config routes are removed', () => {
   const settings = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/settings.ts'), 'utf8');
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');

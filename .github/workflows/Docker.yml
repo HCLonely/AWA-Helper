@@ -5,9 +5,6 @@ on:
     types: [created]
   workflow_dispatch:
 
-env:
-  version: 3.4.8
-
 jobs:
   docker:
     permissions:
@@ -17,6 +14,12 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v7
+      -
+        name: Read package version
+        id: package_version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -39,4 +42,4 @@ jobs:
           push: true
           tags: |
             hclonely/awa-helper:latest
-            hclonely/awa-helper:${{ env.version }}
+            hclonely/awa-helper:${{ steps.package_version.outputs.version }}

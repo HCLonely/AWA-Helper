@@ -2,10 +2,11 @@ name: Release
 on:
   workflow_dispatch:
 env:
-  version: 3.4.8
   node_version: 22.13.1
 jobs:
   release:
+    outputs:
+      release_version: ${{ steps.package_version.outputs.version }}
     permissions:
       contents: write
     runs-on: windows-latest
@@ -17,6 +18,12 @@ jobs:
         with:
           node-version: ${{ env.node_version }}
           cache: npm
+      - name: Read package version
+        id: package_version
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          "version=$version" >> $env:GITHUB_OUTPUT
       - run: npm ci
       - name: Install UPX
         uses: crazy-max/ghaction-upx@v3
@@ -28,8 +35,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           prerelease: false
-          tag_name: v${{ env.version }}
-          name: ${{ env.version }}
+          tag_name: v${{ steps.package_version.outputs.version }}
+          name: ${{ steps.package_version.outputs.version }}
           body_path: CHANGELOG.txt
           files: |
             AWA-Helper-Win.tar.gz
@@ -87,8 +94,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           prerelease: false
-          tag_name: v${{ env.version }}
-          name: ${{ env.version }}
+          tag_name: v${{ needs.release.outputs.release_version }}
+          name: ${{ needs.release.outputs.release_version }}
           body_path: CHANGELOG.txt
           files: |
             AWA-Helper-Linux-x64.tar.gz

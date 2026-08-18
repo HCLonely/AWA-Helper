@@ -15,9 +15,13 @@ class DailyTask {
   constructor(private readonly runtime: DailyQuestRuntime) {}
   /**
    * 处理 do 相关逻辑。
+   * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 do 检查是否通过。
    */
-  async do(): Promise<boolean> {
+  async do(signal?: AbortSignal): Promise<boolean> {
+    if (signal?.aborted) {
+      return false;
+    }
     if (!this.runtime.state.questInfo.dailyQuest?.[0]) {
       new Logger(time() + chalk.yellow(__('noDailyQuest')));
       return true;
@@ -27,8 +31,14 @@ class DailyTask {
       return true;
     }
     for (const questInfo of this.runtime.state.questInfo.dailyQuest) {
+      if (signal?.aborted) {
+        return false;
+      }
       if (questInfo.id) {
         await this.runtime.claimQuest(questInfo.id);
+        if (signal?.aborted) {
+          return false;
+        }
         await this.runtime.updateDailyQuests();
         if (this.checkDailyQuestCompleted()) {
           return true;
@@ -36,10 +46,16 @@ class DailyTask {
       }
     }
     if (this.runtime.state.dailyQuestLink) {
-      await this.runtime.visit(this.runtime.state.dailyQuestLink);
+      await this.runtime.visit(this.runtime.state.dailyQuestLink, signal);
+      if (signal?.aborted) {
+        return false;
+      }
       const postId = this.runtime.state.dailyQuestLink.match(/ucf\/show\/([\d]+)/)?.[1];
       if (postId) {
-        await this.runtime.viewPost(postId);
+        await this.runtime.viewPost(postId, signal);
+        if (signal?.aborted) {
+          return false;
+        }
       }
       await this.runtime.updateDailyQuests();
       if (this.checkDailyQuestCompleted()) {

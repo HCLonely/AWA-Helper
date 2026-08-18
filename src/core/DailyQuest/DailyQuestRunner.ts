@@ -20,7 +20,6 @@ import chalk from 'chalk';
 import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
 // @ts-ignore 由构建流程以文本形式导入。
-import CHANGELOG from '../../CHANGELOG.txt';
 import { createConfigValidationError, updateYamlFieldsSync } from '../../tools/config/YamlConfig';
 import { deepMerge, validateHelperConfig } from '../../tools/config/ConfigSchema';
 import { setLogSecrets } from '../../tools/logging/sanitize';
@@ -218,16 +217,21 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
 
     // 设置超时
     if (timeout && typeof timeout === 'number' && timeout > 0) {
-      timeoutHandle = setTimeout(async () => {
+      timeoutHandle = setTimeout(() => {
         if (!claimTerminalOutcome('timeout')) {
           return;
         }
         shutdownController.abort(new Error('Process timeout'));
         new Logger(chalk.yellow(__('processTimeout')));
-        await push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
-        await waitForTaskCleanup();
+        void push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`)
+          .catch((error) => new Logger(error))
+          .then(waitForTaskCleanup);
       }, timeout * 1000);
       timeoutHandle.unref();
+    }
+
+    if (shutdownController.signal.aborted) {
+      return false;
     }
 
     // 检查AWA参数
@@ -242,7 +246,10 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
 
     // 检查更新
     globalThis.newVersionNotice = '';
-    await checkUpdate(version, managerServer, !!autoUpdate || process.argv.includes('--update'), CHANGELOG, proxy);
+    await checkUpdate(version, managerServer, !!autoUpdate || process.argv.includes('--update'), proxy);
+    if (shutdownController.signal.aborted) {
+      return false;
+    }
     if (process.argv.includes('--update')) {
       return true;
     }
@@ -260,6 +267,9 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     runtimeHolder.current = runtime;
 
     const initResult = await runtime.init();
+    if (shutdownController.signal.aborted) {
+      return false;
+    }
     if (!initResult.ok) {
       if (!claimTerminalOutcome('failed')) {
         return false;
@@ -284,14 +294,20 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     // 每日任务
     if (awaQuests.includes('dailyQuest') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
       const dailyQuest = new DailyTask(runtime);
-      await dailyQuest.do();
+      await dailyQuest.do(shutdownController.signal);
+      if (shutdownController.signal.aborted) {
+        return false;
+      }
     }
     // 每日任务(旧版)
     if (awaQuests.includes('dailyQuestOld') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
       const dailyQuestOld = new LegacyDailyTask(runtime, {
         awaDailyQuestType
       });
-      await dailyQuestOld.do();
+      await dailyQuestOld.do(shutdownController.signal);
+      if (shutdownController.signal.aborted) {
+        return false;
+      }
     }
 
     const quests: Array<{ name: string, promise: Promise<unknown> }> = [];
@@ -300,12 +316,17 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     if (awaQuests.includes('timeOnSite') && runtime.state.questInfo.timeOnSite?.addedArp !== runtime.state.questInfo.timeOnSite?.maxArp) {
       quests.push({ name: 'AWA TimeOnSite', promise: TimeOnSiteTask.do(runtime, shutdownController.signal) });
     }
-    await sleep(10);
+    if (!await sleep(10, shutdownController.signal)) {
+      return false;
+    }
 
     // Twitch直播心跳
     // let twitch: TwitchTrack | null = null;
     if (awaQuests.includes('watchTwitch')) {
       await runtime.loadTwitchBonus();
+      if (shutdownController.signal.aborted) {
+        return false;
+      }
       if (runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
         if (twitchCookie) {
           const twitch = new TwitchClient({ cookie: twitchCookie, proxy, logRequests: debug?.http === true });
@@ -321,10 +342,15 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
             twitchLogger.log(chalk.red(__('logStatusError')));
             new Logger(error);
           }
+          if (shutdownController.signal.aborted) {
+            return false;
+          }
           if (twitchReady) {
             const twitchTask = new TwitchQuestTask(runtime, awaAPIs, twitch);
             quests.push({ name: 'Twitch', promise: twitchTask.run(shutdownController.signal) });
-            await sleep(10);
+            if (!await sleep(10, shutdownController.signal)) {
+              return false;
+            }
           }
         } else {
           new Logger(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
@@ -365,15 +391,23 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
             asfLogger.log(chalk.red(__('logStatusError')));
             new Logger(error);
           }
+          if (shutdownController.signal.aborted) {
+            return false;
+          }
           if (asfReady) {
             const steamTask = new SteamQuestTask(awaAPIs, steamQuest, () => runtime.state.communityEvent?.gameId);
             quests.push({ name: 'Steam ASF', promise: steamTask.run(shutdownController.signal) });
-            await sleep(30);
+            if (!await sleep(30, shutdownController.signal)) {
+              return false;
+            }
           }
         }
       }
     }
 
+    if (shutdownController.signal.aborted) {
+      return false;
+    }
     void runtime.monitor(shutdownController.signal).catch((error) => {
       new Logger(`${time()}${__('awaListenerFailed', error instanceof Error ? error.message : String(error))}`);
     });
