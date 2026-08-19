@@ -20,7 +20,8 @@ export class TwitchQuestTask {
     private readonly runtime: DailyQuestRuntime,
     private readonly awa: AWAApiClient,
     private readonly twitch: TwitchClient,
-    private readonly retryDelaySeconds = 5 * 60
+    private readonly retryDelaySeconds = 5 * 60,
+    private readonly controlCenterPollSeconds = 60
   ) {}
 
   /**
@@ -29,7 +30,8 @@ export class TwitchQuestTask {
    */
   private isComplete(): boolean {
     const progress = this.runtime.state.questInfo.watchTwitch;
-    return progress?.[0] === '15' && parseFloat(progress?.[1] || '0') >= this.runtime.state.additionalTwitchARP;
+    const earnedArp = parseFloat(progress?.[0] || '0') + parseFloat(progress?.[1] || '0');
+    return earnedArp >= 15 + this.runtime.state.additionalTwitchARP;
   }
 
   /**
@@ -39,7 +41,14 @@ export class TwitchQuestTask {
    */
   async run(signal?: AbortSignal): Promise<boolean> {
     let retriedAuthorization = false;
+    let dailyCapReached = false;
     while (!signal?.aborted && !this.isComplete()) {
+      if (dailyCapReached) {
+        if (!await sleep(this.controlCenterPollSeconds, signal)) {
+          return true;
+        }
+        continue;
+      }
       const streamLogger = new Logger(`${time()}${__('gettingLiveInfo')}`, false);
       const streams = await this.awa.twitch.getAvailableStreams().catch((error: unknown) => {
         streamLogger.log(chalk.red(__('logStatusError')));
@@ -77,7 +86,8 @@ export class TwitchQuestTask {
         logger.log(result.success ? chalk.green(`${__('logStatusOk')} (${result.state})`) : chalk.red(`${__('logStatusError')} (${result.state})`));
         if (result.state === 'daily_cap_reached') {
           new Logger(`${time()}${chalk.green(result.message || __('obtainedArp'))}`);
-          return true;
+          dailyCapReached = true;
+          continue;
         }
         if (result.state === 'streamer_offline' || result.state === 'no_channel_found') {
           new Logger(`${time()}${chalk.blue(result.state === 'streamer_offline' ? __('liveOffline', chalk.yellow(trackingInfo.channelId)) : __('noChannelFound', chalk.yellow(trackingInfo.channelId)))}`);
