@@ -11,3 +11,4 @@ export * from './twitch';
 export * from './steam';
 export * from './achievement';
 export * from './artifacts';
+export * from './battlePass';

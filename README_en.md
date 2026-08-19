@@ -214,6 +214,7 @@ awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 常用的有`www.alienw
 awaQuests:
   - getStarted # 自动做左下角的GET STARTED任务，不需要做此任务删除或注释掉此行
   - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
+  # - battlePass # Automatically claim available Battle Pass rewards (disabled by default)
   # 每日任务(旧版)类型，不需要注释掉即可，如果不需要做此任务请注释上面的`dailyQuestOld`
   - timeOnSite # 自动做AWA在线任务，不需要做此任务删除或注释掉此行
   - watchTwitch # 自动做Twitch直播间在线任务，不需要做此任务删除或注释掉此行

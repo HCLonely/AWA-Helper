@@ -8,6 +8,7 @@ const { getChannelInfo } = require('../dist/client/Twitch/APIs/channels');
 const { ASFContext } = require('../dist/client/Steam/ASFContext');
 const { executeCommand } = require('../dist/client/Steam/APIs/commands');
 const { playGames } = require('../dist/client/Steam/APIs/bot');
+const { BattlePassAPI } = require('../dist/client/AWA/APIs/battlePass');
 
 const response = (data, headers = {}) => ({ data, headers, status: 200, statusText: 'OK', config: {} });
 
@@ -68,4 +69,43 @@ test('remote operations return discriminated business results', async () => {
   const context = new ASFContext({ protocol: 'http', host: '127.0.0.1', port: 1242, botName: 'bot', transport });
   assert.deepEqual(await playGames(context, []), { ok: false, state: 'no-games' });
   assert.equal(requested, false);
+});
+
+test('Battle Pass claim uses multipart form data and validates milestone response', async () => {
+  let request;
+  const transport = { request: async (config) => {
+    request = config;
+    return response({ success: true, milestoneId: 3, userMilestoneId: 99 });
+  } };
+  const context = new AWAContext({ cookie: 'session=value', host: 'arena.example', transport });
+  const api = new BattlePassAPI(context);
+  const result = await api.claim('https://arena.example/control-center/battle-pass/1', {
+    index: 0,
+    milestoneId: 3,
+    name: 'Reward',
+    state: 'unlockable',
+    claim: { path: '/battle-pass/claim/99', csrfToken: 'token-value' }
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(request.url, 'https://arena.example/battle-pass/claim/99');
+  assert.match(request.headers['content-type'], /^multipart\/form-data; boundary=/);
+  assert.match(request.data.getBuffer().toString(), /name="_csrf_token"[\s\S]*token-value/);
+});
+
+test('Battle Pass claim rejects cross-origin paths and mismatched milestones', async () => {
+  let requests = 0;
+  const transport = { request: async () => {
+    requests += 1;
+    return response({ success: true, milestoneId: 4, userMilestoneId: 99 });
+  } };
+  const api = new BattlePassAPI(new AWAContext({ cookie: '', host: 'arena.example', transport }));
+  const reward = {
+    index: 0, milestoneId: 3, name: 'Reward', state: 'unlockable',
+    claim: { path: 'https://evil.example/claim', csrfToken: 'token' }
+  };
+  assert.deepEqual(await api.claim('https://arena.example/control-center/battle-pass/1', reward), { ok: false, reason: 'invalid-request' });
+  assert.equal(requests, 0);
+  reward.claim.path = '/battle-pass/claim/99';
+  assert.deepEqual(await api.claim('https://arena.example/control-center/battle-pass/1', reward), { ok: false, reason: 'milestone-mismatch' });
 });

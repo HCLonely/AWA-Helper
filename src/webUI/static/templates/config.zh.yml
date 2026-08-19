@@ -140,6 +140,7 @@
         - GET STARTED任务
         - 每日任务
         - 每日任务(旧版)
+        - Battle Pass奖励
         - AWA在线任务
         - Twitch直播间在线任务
         - Steam游戏时长任务
@@ -147,6 +148,7 @@
         - getStarted
         - dailyQuest
         - dailyQuestOld
+        - battlePass
         - timeOnSite
         - watchTwitch
         - steamQuest

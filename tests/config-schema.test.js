@@ -67,6 +67,13 @@ test('validateHelperConfig rejects malformed nested and security-sensitive field
   assert.equal(validateHelperConfig(deepMerge(defaults, { TLSRejectUnauthorized: 'false' })).includes('TLSRejectUnauthorized must be a boolean'), true);
 });
 
+test('Battle Pass is accepted as an optional awaQuests entry', () => {
+  assert.deepEqual(validateHelperConfig({
+    language: 'zh', awaHost: 'www.alienwarearena.com', awaQuests: ['dailyQuest', 'battlePass'],
+    awaDailyQuestType: [], webUI: { enable: false }
+  }), []);
+});
+
 test('manager artifact schedules require exactly three distinct positive IDs', () => {
   const base = {
     language: 'zh', awaHost: 'www.alienwarearena.com', awaQuests: [], awaDailyQuestType: [],

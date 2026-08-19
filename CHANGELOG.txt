@@ -1,5 +1,6 @@
 ### Features
 
+- feat: 新增支持 Battle Pass 自动领取功能
 - feat: 将 Manager WebUI 默认端口调整为 2345，并同步健康检查、Docker、配置模板和文档
 - feat: Manager 密钥少于 16 个字符时输出安全警告，但不阻止程序启动
 - feat: 优化 Manager WebUI，集中管理每日任务、成就任务和遗物任务
@@ -30,6 +31,7 @@
 
 ### Security
 
+- security: Battle Pass 领取请求限制为 AWA 同源地址，并校验 CSRF Token、响应状态及里程碑 ID
 - security: WebSocket 连接统一校验 Manager 密钥，避免本地日志被跨站连接读取
 - security: 对弱 Manager 密钥增加启动警告，并补充中英文提示和配置文档
 
@@ -48,6 +50,7 @@
 
 ### Documentation
 
+- docs: 更新中英文 README、配置示例、WebUI 配置模板和配置参考，说明 `battlePass` 可选任务开关
 - docs: 更新默认端口、Docker 监听行为和弱 Manager 密钥警告说明
 - docs: 新增基于 VitePress 的使用文档站点
 - docs: 新增快速开始、运行方式和完整配置参考文档
@@ -58,14 +61,6 @@
 ### Styling
 
 - style: 优化 Manager WebUI 的按钮布局、状态区域和日志区域样式
-
-### Tests
-
-- test: 新增默认端口、容器监听、WebSocket 鉴权、超时清理、配置接口和遗物 ID 校验回归测试
-- test: 新增 Achievement 拼写回归测试，防止错误标识符再次进入源码
-- test: 新增 CLI、客户端 API、AWA 解析器及模块边界测试
-- test: 新增任务协调器、控制中心解析和 Twitch 任务重试测试
-- test: 新增日志作用域、工具目录结构、配置及运行时安全测试
 
 ### Build
 

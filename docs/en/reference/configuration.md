@@ -61,13 +61,14 @@ awaHost: 'www.alienwarearena.com'
 awaQuests:
   - getStarted
   - dailyQuest
+  # - battlePass
   - timeOnSite
   - watchTwitch
   - steamQuest
 joinSteamCommunityEvent: true
 ```
 
-Remove or comment out tasks in `awaQuests` that you do not need. You can enter `awaCookie` manually or synchronize it using the browser userscript.
+Remove or comment out tasks in `awaQuests` that you do not need. Add `battlePass` to claim currently available Battle Pass rewards automatically; it is disabled by default. You can enter `awaCookie` manually or synchronize it using the browser userscript.
 
 ## Twitch and Steam
 

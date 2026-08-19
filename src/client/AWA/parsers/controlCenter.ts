@@ -131,6 +131,9 @@ export const parseControlCenter = (html: string, baseURL: string): ControlCenter
         name: $(item).find('a.onboarding-link').text()
           .trim(), link: $(item).find('a.onboarding-link').attr('href') || ''
       }))
-      .filter(({ link }) => !!link)
+      .filter(({ link }) => !!link),
+    battlePassUrl: $('a.um-nav-link[href*="/control-center/battle-pass/"]').first().attr('href')
+      ? new URL($('a.um-nav-link[href*="/control-center/battle-pass/"]').first().attr('href')!, `${baseURL}/`).href
+      : undefined
   };
 };

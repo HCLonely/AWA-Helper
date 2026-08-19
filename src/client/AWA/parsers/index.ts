@@ -9,3 +9,4 @@ export * from './personalization';
 export * from './achievements';
 export * from './communityEvent';
 export * from './artifacts';
+export * from './battlePass';

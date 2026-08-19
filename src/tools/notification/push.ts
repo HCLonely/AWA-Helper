@@ -33,6 +33,11 @@ interface PushQuestInfo {
   report: Record<string, ReportValue>;
   dailyArp: string;
   signArp: { daily?: string; monthly?: string };
+  battlePass?: {
+    status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
+    claimed: Array<{ name: string; index: number; total: number; milestoneId: number }>;
+    failed: Array<{ name: string; milestoneId: number; reason: string }>;
+  };
 }
 
 const normalizeArpValue = (value: string | number | undefined): string => String(value ?? '')
@@ -80,5 +85,18 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
     const extraArp = normalizeArpValue(extra);
     return `${separator}${status === __('done') ? '✔️' : '❌'}${name}:  ${obtainedArp}${extraArp && extraArp !== '0' ? ` + ${extraArp}` : ''} ARP${suffix}`;
   }).join('\n');
-  return `👉${__('dailyArp', quest.dailyArp)}\n\n${quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`}${quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`}---\n${body}`;
+  const battlePassRows: string[] = [];
+  if (quest.battlePass && quest.battlePass.status !== 'unknown') {
+    if (quest.battlePass.status !== 'active' && quest.battlePass.claimed.length === 0 && quest.battlePass.failed.length === 0) {
+      battlePassRows.push(`${__('battlePass')}: ${__(`battlePassStatus_${quest.battlePass.status}`)}`);
+    }
+    quest.battlePass.claimed.forEach((reward) => {
+      battlePassRows.push(`${__('battlePass')}: ${__('battlePassClaimed', reward.name, String(reward.index), String(reward.total))}`);
+    });
+    quest.battlePass.failed.forEach((reward) => {
+      battlePassRows.push(`${__('battlePass')}: ${__('battlePassClaimFailed', reward.name)}`);
+    });
+  }
+  const battlePass = battlePassRows.length > 0 ? `\n---\n${battlePassRows.join('\n')}` : '';
+  return `👉${__('dailyArp', quest.dailyArp)}\n\n${quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`}${quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`}---\n${body}${battlePass}`;
 };

@@ -61,13 +61,14 @@ awaHost: 'www.alienwarearena.com'
 awaQuests:
   - getStarted
   - dailyQuest
+  # - battlePass
   - timeOnSite
   - watchTwitch
   - steamQuest
 joinSteamCommunityEvent: true
 ```
 
-从 `awaQuests` 中删除或注释不需要的任务。`awaCookie` 可以手动填写，也可以通过浏览器用户脚本同步。
+从 `awaQuests` 中删除或注释不需要的任务。添加 `battlePass` 可自动领取当前 Battle Pass 中可领取的奖励；该功能默认关闭。`awaCookie` 可以手动填写，也可以通过浏览器用户脚本同步。
 
 ## Twitch 与 Steam
 

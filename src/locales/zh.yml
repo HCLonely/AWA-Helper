@@ -113,6 +113,15 @@ gettingPromotionalCalendarItemError: "获取推广奖励失败！"
 promotionalCalendar: "推广奖励"
 dailyArp: "今日共获得 %s ARP"
 doingGetStartedQuest: "正在做GET START任务[%s]..."
+battlePass: BattlePass
+battlePassChecking: 正在检查 Battle Pass...
+battlePassUnknown: Battle Pass 页面状态暂时无法识别
+battlePassPartial: 部分 Battle Pass 奖励领取失败
+battlePassStatus_not-started: 未开始
+battlePassStatus_completed: 已完成
+battlePassStatus_ended: 已结束
+battlePassClaimed: "成功领取 %s (%s/%s)"
+battlePassClaimFailed: "领取 %s 失败"
 
 ### DailyQuestUS.ts ###
 doingTaskUS: 正在做美区任务[%s]...

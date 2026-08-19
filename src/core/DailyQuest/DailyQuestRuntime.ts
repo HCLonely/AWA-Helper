@@ -101,6 +101,7 @@ export class DailyQuestRuntime {
       this.state.questInfo = snapshot.questInfo;
       this.state.userProfileUrl = snapshot.userProfileUrl || this.state.userProfileUrl;
       this.state.dailyQuestLink = snapshot.dailyQuestLink;
+      this.state.battlePassUrl = snapshot.battlePassUrl;
       this.state.dailyArp = snapshot.dailyArp;
       this.state.taskType = snapshot.taskType;
       this.state.signArp = snapshot.signArp;

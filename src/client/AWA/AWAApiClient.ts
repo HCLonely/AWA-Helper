@@ -11,12 +11,14 @@ import {
 } from './APIs';
 import { CommunityEventAPI, SteamQuestAPI } from './APIs/steam';
 import { ArtifactAPI } from './APIs/artifacts';
+import { BattlePassAPI } from './APIs/battlePass';
 
 export class AWAApiClient {
   readonly context: AWAContext;
   readonly steam: SteamQuestAPI;
   readonly artifacts: ArtifactAPI;
   readonly communityEvent: CommunityEventAPI;
+  readonly battlePass: BattlePassAPI;
   /**
    * 初始化 AWAApi Client 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `AWAContextOptions`。
@@ -26,6 +28,7 @@ export class AWAApiClient {
     this.steam = new SteamQuestAPI(this.context);
     this.artifacts = new ArtifactAPI(this.context);
     this.communityEvent = new CommunityEventAPI(this.context);
+    this.battlePass = new BattlePassAPI(this.context);
   }
   /**
    * 获取 new Cookie。

@@ -6,6 +6,7 @@ const path = require('node:path');
 const test = require('node:test');
 const { DailyTask } = require('../dist/core/DailyQuest/tasks/DailyTask');
 const { LegacyDailyTask } = require('../dist/core/DailyQuest/tasks/LegacyDailyTask');
+const { BattlePassTask } = require('../dist/core/DailyQuest/tasks/BattlePassTask');
 
 const originalDirectory = process.cwd();
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-daily-cancellation-'));
@@ -69,4 +70,62 @@ test('LegacyDailyTask stops before recording or refreshing the next action', asy
   assert.equal(visits, 1);
   assert.equal(refreshes, 0);
   assert.deepEqual(task.done, []);
+});
+
+test('BattlePassTask stops claiming and does not refresh after cancellation', async () => {
+  const controller = new AbortController();
+  let claims = 0;
+  let pageLoads = 0;
+  const rewards = [1, 2].map((milestoneId, index) => ({
+    index, milestoneId, name: `Reward ${milestoneId}`, state: 'unlockable',
+    claim: { path: `/claim/${milestoneId}`, csrfToken: 'token' }
+  }));
+  const runtime = {
+    state: { battlePassUrl: 'https://example.test/battle-pass' },
+    awa: { battlePass: {
+      async getPage() {
+        pageLoads += 1;
+        return { status: 'active', tokenCount: 0, tokenTotal: 10, rewards };
+      },
+      async claim() {
+        claims += 1;
+        controller.abort();
+        return { ok: true, data: { success: true, milestoneId: 1, userMilestoneId: 1 } };
+      }
+    } }
+  };
+
+  assert.equal(await BattlePassTask.run(runtime, controller.signal), false);
+  assert.equal(claims, 1);
+  assert.equal(pageLoads, 1);
+});
+
+test('BattlePassTask reports a claim only after the refreshed page marks it claimed', async () => {
+  let pageLoads = 0;
+  const reward = {
+    index: 2, milestoneId: 12, name: 'ARP Boost', state: 'unlockable',
+    claim: { path: '/claim/12', csrfToken: 'token' }
+  };
+  const otherRewards = [0, 1].map((index) => ({ index, milestoneId: index + 1, name: `Earlier ${index}`, state: 'claimed' }));
+  const runtime = {
+    state: { battlePassUrl: 'https://example.test/battle-pass' },
+    awa: { battlePass: {
+      async getPage() {
+        pageLoads += 1;
+        return {
+          status: pageLoads === 1 ? 'active' : 'completed', tokenCount: 10, tokenTotal: 10,
+          rewards: pageLoads === 1
+            ? [...otherRewards, reward]
+            : [...otherRewards, { ...reward, state: 'claimed', claim: undefined }]
+        };
+      },
+      async claim() {
+        return { ok: true, data: { success: true, milestoneId: 12, userMilestoneId: 42 } };
+      }
+    } }
+  };
+
+  assert.equal(await BattlePassTask.run(runtime), true);
+  assert.deepEqual(runtime.state.battlePass.claimed, [{ name: 'ARP Boost', index: 3, total: 3, milestoneId: 12 }]);
+  assert.equal(runtime.state.battlePass.status, 'completed');
 });

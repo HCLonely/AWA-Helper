@@ -18,7 +18,8 @@ test('control-center parser returns structured quest state without a client sing
       <div class="card-table-row"><a href="/quests/special" class="quest-title">Special</a><span class="quest-item-progress">10 + 2 ARP</span></div>
     </div>
     <div class="user-profile__card-body"></div>
-    <div class="featured-row-News"><a href="/ucf/show/123"></a></div>`;
+    <div class="featured-row-News"><a href="/ucf/show/123"></a></div>
+    <a class="um-nav-link" href="/control-center/battle-pass/7">Battle Pass</a>`;
   const result = parseControlCenter(html, 'https://www.alienwarearena.com');
   assert.equal(result.userProfileUrl, '/member/test');
   assert.equal(result.dailyArp, '7');
@@ -26,4 +27,9 @@ test('control-center parser returns structured quest state without a client sing
   assert.equal(result.questInfo.dailyQuest[0].id, '42');
   assert.equal(result.questInfo.dailyQuestUS[0].link, 'https://www.alienwarearena.com/quests/special');
   assert.deepEqual(result.posts, ['123']);
+  assert.equal(result.battlePassUrl, 'https://www.alienwarearena.com/control-center/battle-pass/7');
+});
+
+test('control-center parser leaves Battle Pass URL undefined when the navigation entry is absent', () => {
+  assert.equal(parseControlCenter('<main></main>', 'https://arena.example').battlePassUrl, undefined);
 });

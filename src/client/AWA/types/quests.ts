@@ -14,4 +14,5 @@ export interface ControlCenterSnapshot {
   promotionalCalendarInfo?: PromotionalCalendarEntry[];
   posts: string[];
   getStartedItems: GetStartedItem[];
+  battlePassUrl?: string;
 }

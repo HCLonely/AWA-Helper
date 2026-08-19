@@ -10,6 +10,7 @@ import { TimeOnSiteTask } from './tasks/TimeOnSiteTask';
 import { TwitchClient } from '../../client/Twitch/TwitchClient';
 import { TwitchQuestTask } from './tasks/TwitchQuestTask';
 import { SteamQuestTask } from './tasks/SteamQuestTask';
+import { BattlePassTask } from './tasks/BattlePassTask';
 import { formatQuestReport } from './QuestReporter';
 import { SteamClient } from '../../client/Steam/SteamClient';
 import * as fs from 'fs';
@@ -72,7 +73,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
    */
   const currentPushInfo = () => (runtimeHolder.current ? {
     report: formatQuestReport(runtimeHolder.current.state), dailyArp: runtimeHolder.current.state.dailyArp,
-    signArp: runtimeHolder.current.state.signArp
+    signArp: runtimeHolder.current.state.signArp, battlePass: runtimeHolder.current.state.battlePass
   } : undefined);
     /**
      * 等待 wait For Task Cleanup 相关数据。
@@ -415,6 +416,12 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     const questResults = await activeTaskCompletion;
     if (shutdownController.signal.aborted) {
       return false;
+    }
+    if (awaQuests.includes('battlePass')) {
+      await BattlePassTask.run(runtime, shutdownController.signal);
+      if (shutdownController.signal.aborted) {
+        return false;
+      }
     }
     const failedQuests = questResults.flatMap((result, index) => {
       if (result.status === 'rejected' || result.value === false) {
