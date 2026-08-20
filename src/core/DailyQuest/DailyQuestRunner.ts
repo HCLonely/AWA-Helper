@@ -292,6 +292,14 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     updateYamlFieldsSync(configPath, { awaCookie: runtime.newCookie });
     const awaAPIs = runtime.awa;
 
+    if (awaQuests.includes('battlePass')) {
+      await BattlePassTask.inspect(runtime, shutdownController.signal);
+      if (shutdownController.signal.aborted) {
+        return false;
+      }
+      new Logger({ type: 'questInfo', data: formatQuestReport(runtime.state) });
+    }
+
     // 每日任务
     if (awaQuests.includes('dailyQuest') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
       const dailyQuest = new DailyTask(runtime);

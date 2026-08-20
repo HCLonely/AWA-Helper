@@ -5,11 +5,36 @@
 /* global __ */
 import chalk from 'chalk';
 import { Logger, time } from '../../../tools';
-import type { BattlePassReward } from '../../../client/AWA/types';
-import type { BattlePassFailedState } from '../DailyQuestState';
+import type { BattlePassReward, BattlePassSnapshot } from '../../../client/AWA/types';
+import type { BattlePassFailedState, BattlePassRunState } from '../DailyQuestState';
 import { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 export class BattlePassTask {
+  /**
+   * 仅读取当前 Battle Pass 状态，供任务开始时立即展示进度。
+   * @param runtime - 当前 DailyQuest 运行时。
+   * @param signal - 任务取消信号。
+   * @returns 页面存在且读取成功时返回 true。
+   */
+  static async inspect(runtime: DailyQuestRuntime, signal?: AbortSignal): Promise<boolean> {
+    const url = runtime.state.battlePassUrl;
+    if (!url || signal?.aborted) {
+      return false;
+    }
+    const logger = new Logger(`${time()}${__('battlePassChecking')}`, false);
+    try {
+      const snapshot = await runtime.awa.battlePass.getPage(url);
+      BattlePassTask.applySnapshot(runtime, snapshot);
+      logger.log(snapshot.status === 'unknown' ? chalk.yellow(__('battlePassUnknown')) : chalk.green(__('logStatusOk')));
+      return true;
+    } catch (error) {
+      logger.log(chalk.red(__('logStatusError')));
+      new Logger(error);
+      runtime.state.battlePass = { status: 'unknown', tokenCount: 0, tokenTotal: 0, claimed: [], failed: [] };
+      return false;
+    }
+  }
+
   /**
    * 执行 Battle Pass 奖励领取。
    * @param runtime - 当前 DailyQuest 运行时。
@@ -24,9 +49,7 @@ export class BattlePassTask {
     const logger = new Logger(`${time()}${__('battlePassChecking')}`, false);
     try {
       const snapshot = await runtime.awa.battlePass.getPage(url);
-      runtime.state.battlePass = {
-        status: snapshot.status, tokenCount: snapshot.tokenCount, tokenTotal: snapshot.tokenTotal, claimed: [], failed: []
-      };
+      const battlePass = BattlePassTask.applySnapshot(runtime, snapshot);
       if (snapshot.status !== 'active') {
         logger.log(snapshot.status === 'unknown' ? chalk.yellow(__('battlePassUnknown')) : chalk.green(__('logStatusOk')));
         return true;
@@ -44,7 +67,7 @@ export class BattlePassTask {
         if (result.ok) {
           accepted.push(reward);
         } else {
-          runtime.state.battlePass.failed.push(BattlePassTask.failure(reward, result.reason));
+          battlePass.failed.push(BattlePassTask.failure(reward, result.reason));
         }
       }
 
@@ -53,26 +76,26 @@ export class BattlePassTask {
       }
       if (accepted.length > 0) {
         const refreshed = await runtime.awa.battlePass.getPage(url);
-        runtime.state.battlePass.status = refreshed.status;
-        runtime.state.battlePass.tokenCount = refreshed.tokenCount;
-        runtime.state.battlePass.tokenTotal = refreshed.tokenTotal;
+        battlePass.status = refreshed.status;
+        battlePass.tokenCount = refreshed.tokenCount;
+        battlePass.tokenTotal = refreshed.tokenTotal;
         const claimedIds = new Set(refreshed.rewards
           .filter((reward) => reward.state === 'claimed')
           .map((reward) => reward.milestoneId));
         for (const reward of accepted) {
           if (claimedIds.has(reward.milestoneId)) {
-            runtime.state.battlePass.claimed.push({
+            battlePass.claimed.push({
               name: reward.name,
               index: reward.index + 1,
               total: snapshot.rewards.length,
               milestoneId: reward.milestoneId
             });
           } else {
-            runtime.state.battlePass.failed.push(BattlePassTask.failure(reward, 'verification-failed'));
+            battlePass.failed.push(BattlePassTask.failure(reward, 'verification-failed'));
           }
         }
       }
-      logger.log(runtime.state.battlePass.failed.length > 0 ? chalk.yellow(__('battlePassPartial')) : chalk.green(__('logStatusOk')));
+      logger.log(battlePass.failed.length > 0 ? chalk.yellow(__('battlePassPartial')) : chalk.green(__('logStatusOk')));
       return true;
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
@@ -84,5 +107,13 @@ export class BattlePassTask {
 
   private static failure(reward: BattlePassReward, reason: string): BattlePassFailedState {
     return { name: reward.name, milestoneId: reward.milestoneId, reason };
+  }
+
+  private static applySnapshot(runtime: DailyQuestRuntime, snapshot: BattlePassSnapshot): BattlePassRunState {
+    const state: BattlePassRunState = {
+      status: snapshot.status, tokenCount: snapshot.tokenCount, tokenTotal: snapshot.tokenTotal, claimed: [], failed: []
+    };
+    runtime.state.battlePass = state;
+    return state;
   }
 }

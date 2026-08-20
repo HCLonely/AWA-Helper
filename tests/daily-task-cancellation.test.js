@@ -100,6 +100,29 @@ test('BattlePassTask stops claiming and does not refresh after cancellation', as
   assert.equal(pageLoads, 1);
 });
 
+test('BattlePassTask inspect publishes token progress without claiming rewards', async () => {
+  let claims = 0;
+  const runtime = {
+    state: { battlePassUrl: 'https://example.test/battle-pass' },
+    awa: { battlePass: {
+      async getPage() {
+        return {
+          status: 'active', tokenCount: 45, tokenTotal: 135,
+          rewards: [{ index: 0, milestoneId: 1, name: 'Reward', state: 'unlockable' }]
+        };
+      },
+      async claim() {
+        claims += 1;
+      }
+    } }
+  };
+
+  assert.equal(await BattlePassTask.inspect(runtime), true);
+  assert.equal(runtime.state.battlePass.tokenCount, 45);
+  assert.equal(runtime.state.battlePass.tokenTotal, 135);
+  assert.equal(claims, 0);
+});
+
 test('BattlePassTask reports a claim only after the refreshed page marks it claimed', async () => {
   let pageLoads = 0;
   const reward = {
