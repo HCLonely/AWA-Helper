@@ -216,5 +216,10 @@ test('settings use the validated config API and legacy config routes are removed
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
   assert.match(settings, /axios\.get\('\/api\/config'/);
   assert.match(settings, /axios\.put\('\/api\/config'/);
+  assert.match(settings, /error\?\.response\?\.data/);
+  assert.match(settings, /responseData\.errors\.map\(String\)\.join\('\\n'\)/);
+  assert.match(settings, /data-value-type=['"]integer-array['"]/);
+  assert.match(settings, /value\.defaultValue = encodeConfigValue\(config\[name\]\)/);
+  assert.match(settings, /typeof value === ['"]string['"][\s\S]*return htmlEncode\(value\)/);
   assert.doesNotMatch(server, /app\.post\('\/(?:get|set)Config'/);
 });

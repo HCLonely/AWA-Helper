@@ -119,7 +119,7 @@
                 desp: Cron expression
               ids:
                 name: Artifacts ids, comma separated
-                type: text
+                type: integer-array
     awaCookie:
       name: AWA Cookies
       desp: AWA Cookies.

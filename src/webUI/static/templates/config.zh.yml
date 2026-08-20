@@ -119,7 +119,7 @@
                   defaultValue: ''
                 ids:
                   name: 遗物id, 英文逗号分隔
-                  type: text
+                  type: integer-array
                   defaultValue: ''
     awaCookie:
       name: 外星人论坛Cookie

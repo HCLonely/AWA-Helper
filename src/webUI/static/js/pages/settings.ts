@@ -342,6 +342,17 @@
         config[String(dom(element).attr('name') ?? '')] = parseFloat(String(dom(element).val()));
         return element;
       }
+      if (dom(element).attr('data-value-type') === 'integer-array') {
+        const value = String(dom(element).val() ?? '')
+          .split(',')
+          .map((item) => Number(item.trim()));
+        if (isArray) {
+          config.push(value);
+          return element;
+        }
+        config[String(dom(element).attr('name') ?? '')] = value;
+        return element;
+      }
       if (isArray) {
         config.push(dom(element).val());
         return element;
@@ -354,7 +365,7 @@
   function generateBody(preId: string, name: string | number, options: TemplateOption, parentType = '', bindName = '', bindValue = ''): void {
     const id = `${preId}-${name}`;
     // text
-    if (options.type === 'text') {
+    if (options.type === 'text' || options.type === 'integer-array') {
       if (options.inputType === 'textarea') {
         dom(`#config-${preId}`).append(`<div class="mb-3" ${parentType === 'single-select' ? ` style="display: none;" bind-name="${bindName}" bind-value="${bindValue}"` : ''}>
           <label for="${id}" class="form-label">
@@ -384,6 +395,7 @@
           style="--bs-btn-padding-y: 0rem; --bs-btn-padding-x: .3rem;--bs-btn-font-size: .55rem;border-radius: 50%;margin-left: .5rem;">+</button>` : ''}
         </label>
         <input type="${options.inputType || 'text'}" class="form-control" id="${id}" name="${name}" data-parent="${preId}"
+          ${options.type === 'integer-array' ? ' data-value-type="integer-array"' : ''}
           ${options.desp ? ` aria-describedby="help-${id}"` : ''}
           ${options.placeholder ? ` placeholder="${options.placeholder}"` : ''}
           ${options.required ? ' required' : ''}
@@ -568,10 +580,23 @@
       showError(response.status);
       return false;
     }).catch((error) => {
-      showError(error instanceof Error ? error.message : String(error));
+      showError(formatRequestError(error));
       console.error(error);
       return false;
     });
+  }
+  function formatRequestError(error: any): string {
+    const responseData = error?.response?.data;
+    if (Array.isArray(responseData?.errors)) {
+      return responseData.errors.map(String).join('\n');
+    }
+    if (typeof responseData?.error === 'string') {
+      return responseData.error;
+    }
+    if (typeof responseData === 'string' && responseData) {
+      return responseData;
+    }
+    return error instanceof Error ? error.message : String(error);
   }
   function setDefaultConfig(data: Record<string, TemplateOption>, config: ConfigData): Record<string, TemplateOption> {
     return Object.fromEntries(Object.entries(data).map(([name, value]) => {
@@ -592,7 +617,7 @@
         if (config[name] === null && Array.isArray(value.defaultValue)) {
           value.defaultValue = [];
         } else {
-          value.defaultValue = config[name];
+          value.defaultValue = encodeConfigValue(config[name]);
         }
         if (value.bindValue) {
           value.bindValue.body[value.defaultValue] = setDefaultConfig(value.bindValue.body[value.defaultValue], config);
@@ -674,6 +699,15 @@
       }
       return [htmlEncode(name), value];
     }));
+  }
+  function encodeConfigValue(value: any): any {
+    if (typeof value === 'string') {
+      return htmlEncode(value);
+    }
+    if (Array.isArray(value)) {
+      return value.map(encodeConfigValue);
+    }
+    return value;
   }
   function showError(message: unknown, title = ''): void {
     dom('#modalLabel').html(`<span class="badge rounded-pill text-bg-danger">Error</span>${title || ''}`);
