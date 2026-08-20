@@ -422,6 +422,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       if (shutdownController.signal.aborted) {
         return false;
       }
+      new Logger({ type: 'questInfo', data: formatQuestReport(runtime.state) });
     }
     const failedQuests = questResults.flatMap((result, index) => {
       if (result.status === 'rejected' || result.value === false) {

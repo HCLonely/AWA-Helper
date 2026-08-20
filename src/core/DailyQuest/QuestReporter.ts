@@ -65,5 +65,13 @@ export const formatQuestReport = (state: DailyQuestState): QuestReport => {
       [__('extraARP')]: '0', [__('maxAvailableARP')]: state.communityEvent.totalTime
     };
   }
+  if (state.battlePass) {
+    report[__('battlePass')] = {
+      [__('status')]: __(`battlePassStatus_${state.battlePass.status}`),
+      [__('obtainedARP')]: state.battlePass.tokenCount,
+      [__('extraARP')]: '0',
+      [__('maxAvailableARP')]: state.battlePass.tokenTotal
+    };
+  }
   return report;
 };

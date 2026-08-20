@@ -9,6 +9,8 @@ export interface BattlePassClaimedState { name: string; index: number; total: nu
 export interface BattlePassFailedState { name: string; milestoneId: number; reason: string }
 export interface BattlePassRunState {
   status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
+  tokenCount: number;
+  tokenTotal: number;
   claimed: BattlePassClaimedState[];
   failed: BattlePassFailedState[];
 }

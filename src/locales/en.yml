@@ -128,8 +128,10 @@ battlePassChecking: Checking Battle Pass...
 battlePassUnknown: The Battle Pass page status could not be identified
 battlePassPartial: Some Battle Pass rewards could not be claimed
 battlePassStatus_not-started: Not started
+battlePassStatus_active: In progress
 battlePassStatus_completed: Completed
 battlePassStatus_ended: Ended
+battlePassStatus_unknown: Unknown
 battlePassClaimed: "Successfully claimed %s (%s/%s)"
 battlePassClaimFailed: "Failed to claim %s"
 doingTaskUS: Doing the task(US) [%s] ...

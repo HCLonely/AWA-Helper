@@ -24,7 +24,9 @@ export class BattlePassTask {
     const logger = new Logger(`${time()}${__('battlePassChecking')}`, false);
     try {
       const snapshot = await runtime.awa.battlePass.getPage(url);
-      runtime.state.battlePass = { status: snapshot.status, claimed: [], failed: [] };
+      runtime.state.battlePass = {
+        status: snapshot.status, tokenCount: snapshot.tokenCount, tokenTotal: snapshot.tokenTotal, claimed: [], failed: []
+      };
       if (snapshot.status !== 'active') {
         logger.log(snapshot.status === 'unknown' ? chalk.yellow(__('battlePassUnknown')) : chalk.green(__('logStatusOk')));
         return true;
@@ -52,6 +54,8 @@ export class BattlePassTask {
       if (accepted.length > 0) {
         const refreshed = await runtime.awa.battlePass.getPage(url);
         runtime.state.battlePass.status = refreshed.status;
+        runtime.state.battlePass.tokenCount = refreshed.tokenCount;
+        runtime.state.battlePass.tokenTotal = refreshed.tokenTotal;
         const claimedIds = new Set(refreshed.rewards
           .filter((reward) => reward.state === 'claimed')
           .map((reward) => reward.milestoneId));
@@ -73,7 +77,7 @@ export class BattlePassTask {
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
-      runtime.state.battlePass = { status: 'unknown', claimed: [], failed: [] };
+      runtime.state.battlePass = { status: 'unknown', tokenCount: 0, tokenTotal: 0, claimed: [], failed: [] };
       return true;
     }
   }

@@ -118,8 +118,10 @@ battlePassChecking: 正在检查 Battle Pass...
 battlePassUnknown: Battle Pass 页面状态暂时无法识别
 battlePassPartial: 部分 Battle Pass 奖励领取失败
 battlePassStatus_not-started: 未开始
+battlePassStatus_active: 进行中
 battlePassStatus_completed: 已完成
 battlePassStatus_ended: 已结束
+battlePassStatus_unknown: 未知
 battlePassClaimed: "成功领取 %s (%s/%s)"
 battlePassClaimFailed: "领取 %s 失败"
 

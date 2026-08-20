@@ -120,6 +120,20 @@
           dom('#steam-event').attr('class', 'table-success');
         }
       }
+      if (data[__('battlePass')]) {
+        const battlePass = data[__('battlePass')];
+        dom('#battle-pass').find('td').eq(0)
+          .text(display(battlePass[__('status')]));
+        dom('#battle-pass').find('td').eq(1)
+          .text(display(battlePass[__('obtainedARP')]));
+        dom('#battle-pass').find('td').eq(2)
+          .text(display(battlePass[__('maxAvailableARP')]));
+        const hasTokenTarget = Number(battlePass[__('maxAvailableARP')]) > 0;
+        dom('#battle-pass').attr('class', (hasTokenTarget && isTargetReached(
+          battlePass[__('obtainedARP')], battlePass[__('maxAvailableARP')]
+        )) || battlePass[__('status')] === __('battlePassStatus_completed') ? 'table-success' : '')
+          .show();
+      }
       return;
     }
     dom('#table-head').find('th').eq(1)
@@ -131,6 +145,7 @@
     dom('#daily-quest-0').find('th').text(__('dailyTask', ''));
     dom('#time-on-site').find('th').text(__('timeOnSite'));
     dom('#watch-twitch').find('th').text(__('watchTwitch'));
+    dom('#battle-pass').find('th').text(__('battlePass'));
     dom('#steam-event').find('th').text(__('steamCommunityEvent'));
     dom('#log-title').text(__('log'));
   }

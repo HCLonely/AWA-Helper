@@ -9,6 +9,7 @@ const source = fs.readFileSync(
   path.join(__dirname, '../src/webUI/static/js/pages/dailyQuest.js'),
   'utf8'
 );
+const page = fs.readFileSync(path.join(__dirname, '../src/webUI/dailyQuest.html'), 'utf8');
 
 const createHarness = () => {
   const sockets = [];
@@ -97,4 +98,10 @@ test('WebSocket error and close events schedule only one reconnect', () => {
   socket.onclose();
 
   assert.equal(harness.timers.size, 1);
+});
+
+test('DailyQuest WebUI renders Battle Pass status and token progress', () => {
+  assert.match(page, /id="battle-pass"/);
+  assert.match(source, /#battle-pass/);
+  assert.match(source, /battlePassStatus_completed/);
 });

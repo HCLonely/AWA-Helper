@@ -35,6 +35,8 @@ interface PushQuestInfo {
   signArp: { daily?: string; monthly?: string };
   battlePass?: {
     status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
+    tokenCount: number;
+    tokenTotal: number;
     claimed: Array<{ name: string; index: number; total: number; milestoneId: number }>;
     failed: Array<{ name: string; milestoneId: number; reason: string }>;
   };
@@ -61,6 +63,8 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
       steam.push([name, value]);
     } else if (name.includes(__('promotionalCalendar'))) {
       other.push([name, value]);
+    } else if (name === __('battlePass')) {
+      return;
     } else if (name === __('steamCommunityEvent')) {
       other[0] = [name, value];
     } else {

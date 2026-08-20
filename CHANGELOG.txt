@@ -1,6 +1,6 @@
 ### Features
 
-- feat: 新增支持 Battle Pass 自动领取功能
+- feat: 新增 Battle Pass 自动领取功能，并在 DailyQuest WebUI 和每日推送中显示完成状态与代币进度
 - feat: 将 Manager WebUI 默认端口调整为 2345，并同步健康检查、Docker、配置模板和文档
 - feat: Manager 密钥少于 16 个字符时输出安全警告，但不阻止程序启动
 - feat: 优化 Manager WebUI，集中管理每日任务、成就任务和遗物任务
