@@ -23,12 +23,15 @@ test('Battle Pass parser extracts status, tokens, rewards and claim form data', 
     </div>
     <div class="bp-marker" data-index="1" data-milestone-id="11" data-state="in_progress" title="Artifact">
       <div class="bp-popup"><div class="bp-popup__progress-text">11/25</div></div>
-    </div>`;
+    </div>
+    <div class="bp-marker" data-index="2" data-milestone-id="12" data-state="claimed" title="Claimed"></div>`;
 
   const result = parseBattlePass(html);
   assert.equal(result.status, 'active');
   assert.equal(result.tokenCount, 0);
   assert.equal(result.tokenTotal, 135);
+  assert.equal(result.claimedCount, 1);
+  assert.equal(result.rewardTotal, 3);
   assert.equal(result.endsAt, '2026-08-25T00:00:00+00:00');
   assert.deepEqual(result.rewards[0].claim, { path: '/battle-pass/claim/251538', csrfToken: 'csrf.token' });
   assert.equal(result.rewards[0].requiredArp, 25);
@@ -37,7 +40,13 @@ test('Battle Pass parser extracts status, tokens, rewards and claim form data', 
 });
 
 test('Battle Pass completed state takes precedence and reserved state detectors stay conservative', () => {
-  assert.equal(parseBattlePass('<div class="bp-header__started"></div><div class="bp-header__completed"></div>').status, 'completed');
+  const completed = parseBattlePass(`
+    <div class="bp-header__started"></div><div class="bp-header__completed"></div>
+    <div class="bp-marker" data-milestone-id="1" data-state="claimed"></div>
+    <div class="bp-marker" data-milestone-id="2" data-state="locked"></div>`);
+  assert.equal(completed.status, 'completed');
+  assert.equal(completed.claimedCount, 1);
+  assert.equal(completed.rewardTotal, 2);
   const $ = load('<main></main>');
   assert.equal(isBattlePassNotStarted($), false);
   assert.equal(isBattlePassEnded($), false);

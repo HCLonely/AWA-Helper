@@ -5,12 +5,12 @@
 import type { PromotionalCalendarEntry } from '../../client/AWA/types';
 export type { GetStartedItem, PromotionalCalendarEntry } from '../../client/AWA/types';
 export interface SteamCommunityEventState { path?: string; gameId?: string; status: string; playedTime: string; totalTime: string }
-export interface BattlePassClaimedState { name: string; index: number; total: number; milestoneId: number }
+export interface BattlePassClaimedState { name: string; milestoneId: number }
 export interface BattlePassFailedState { name: string; milestoneId: number; reason: string }
 export interface BattlePassRunState {
   status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
-  tokenCount: number;
-  tokenTotal: number;
+  claimedCount: number;
+  rewardTotal: number;
   claimed: BattlePassClaimedState[];
   failed: BattlePassFailedState[];
 }

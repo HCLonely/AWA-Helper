@@ -20,6 +20,8 @@ export interface BattlePassReward {
 
 export interface BattlePassSnapshot {
   status: BattlePassStatus;
+  claimedCount: number;
+  rewardTotal: number;
   tokenCount: number;
   tokenTotal: number;
   endsAt?: string;

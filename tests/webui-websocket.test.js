@@ -100,7 +100,7 @@ test('WebSocket error and close events schedule only one reconnect', () => {
   assert.equal(harness.timers.size, 1);
 });
 
-test('DailyQuest WebUI renders Battle Pass status and token progress', () => {
+test('DailyQuest WebUI renders Battle Pass status and claimed reward progress', () => {
   assert.match(page, /id="battle-pass"/);
   assert.match(source, /#battle-pass/);
   assert.match(source, /battlePassStatus_completed/);

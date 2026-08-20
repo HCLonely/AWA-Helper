@@ -26,23 +26,52 @@ test('push formatter does not append ARP twice to daily quest rewards', () => {
 test('push formatter appends Battle Pass results without ARP formatting', () => {
   const messages = {
     battlePass: 'BattlePass',
+    battlePassRewardSeparator: '、',
     battlePassClaimed: (name, index, total) => `成功领取 ${name} (${index}/${total})`,
     battlePassClaimFailed: (name) => `领取 ${name} 失败`
   };
   global.__ = (key, ...args) => typeof messages[key] === 'function' ? messages[key](...args) : (messages[key] || key);
   const message = pushQuestInfoFormat({
     dailyArp: '0', signArp: {},
-    report: { BattlePass: { status: '进行中', obtainedARP: 5, extraARP: 0, maxAvailableARP: 135 } },
+    report: { BattlePass: { status: '进行中', obtainedARP: 4, extraARP: 0, maxAvailableARP: 12 } },
     battlePass: {
       status: 'active',
-      tokenCount: 5,
-      tokenTotal: 135,
-      claimed: [{ name: '15 Battle Tokens', index: 1, total: 12, milestoneId: 1 }],
-      failed: [{ name: 'ARP Boost', milestoneId: 2, reason: 'rejected' }]
+      claimedCount: 4,
+      rewardTotal: 12,
+      claimed: [
+        { name: '15 Battle Tokens', milestoneId: 1 },
+        { name: 'ARP Boost', milestoneId: 2 }
+      ],
+      failed: [{ name: 'Mystery Reward', milestoneId: 3, reason: 'rejected' }]
     }
   });
-  assert.match(message, /BattlePass: 成功领取 15 Battle Tokens \(1\/12\)/);
-  assert.match(message, /BattlePass: 领取 ARP Boost 失败/);
-  assert.doesNotMatch(message, /BattlePass:\s+5 ARP/);
+  assert.match(message, /BattlePass: 成功领取 15 Battle Tokens、ARP Boost \(4\/12\)/);
+  assert.match(message, /BattlePass: 领取 Mystery Reward 失败/);
+  assert.doesNotMatch(message, /BattlePass:\s+4 ARP/);
   assert.doesNotMatch(message, /BattlePass:.*ARP$/m);
+});
+
+test('push formatter always includes Battle Pass progress except for not-started and ended states', () => {
+  const messages = {
+    battlePass: 'BattlePass',
+    battlePassProgress: (current, total) => `奖励领取进度 (${current}/${total})`,
+    battlePassStatusProgress: (status, current, total) => `${status} (${current}/${total})`,
+    'battlePassStatus_completed': '已完成',
+    'battlePassStatus_unknown': '未知',
+    'battlePassStatus_not-started': '未开始',
+    'battlePassStatus_ended': '已结束'
+  };
+  global.__ = (key, ...args) => typeof messages[key] === 'function' ? messages[key](...args) : (messages[key] || key);
+  const format = (status, claimedCount, rewardTotal) => pushQuestInfoFormat({
+    dailyArp: '0', signArp: {}, report: {},
+    battlePass: { status, claimedCount, rewardTotal, claimed: [], failed: [] }
+  });
+
+  assert.match(format('active', 3, 12), /BattlePass: 奖励领取进度 \(3\/12\)/);
+  assert.match(format('completed', 12, 12), /BattlePass: 已完成 \(12\/12\)/);
+  assert.match(format('unknown', 2, 12), /BattlePass: 未知 \(2\/12\)/);
+  assert.match(format('not-started', 0, 12), /BattlePass: 未开始(?:\n|$)/);
+  assert.doesNotMatch(format('not-started', 0, 12), /\(0\/12\)/);
+  assert.match(format('ended', 7, 12), /BattlePass: 已结束(?:\n|$)/);
+  assert.doesNotMatch(format('ended', 7, 12), /\(7\/12\)/);
 });

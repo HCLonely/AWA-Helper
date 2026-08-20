@@ -85,7 +85,7 @@ test('BattlePassTask stops claiming and does not refresh after cancellation', as
     awa: { battlePass: {
       async getPage() {
         pageLoads += 1;
-        return { status: 'active', tokenCount: 0, tokenTotal: 10, rewards };
+        return { status: 'active', claimedCount: 0, rewardTotal: 2, tokenCount: 0, tokenTotal: 10, rewards };
       },
       async claim() {
         claims += 1;
@@ -100,14 +100,14 @@ test('BattlePassTask stops claiming and does not refresh after cancellation', as
   assert.equal(pageLoads, 1);
 });
 
-test('BattlePassTask inspect publishes token progress without claiming rewards', async () => {
+test('BattlePassTask inspect publishes claimed reward progress without claiming rewards', async () => {
   let claims = 0;
   const runtime = {
     state: { battlePassUrl: 'https://example.test/battle-pass' },
     awa: { battlePass: {
       async getPage() {
         return {
-          status: 'active', tokenCount: 45, tokenTotal: 135,
+          status: 'active', claimedCount: 0, rewardTotal: 1, tokenCount: 45, tokenTotal: 135,
           rewards: [{ index: 0, milestoneId: 1, name: 'Reward', state: 'unlockable' }]
         };
       },
@@ -118,8 +118,8 @@ test('BattlePassTask inspect publishes token progress without claiming rewards',
   };
 
   assert.equal(await BattlePassTask.inspect(runtime), true);
-  assert.equal(runtime.state.battlePass.tokenCount, 45);
-  assert.equal(runtime.state.battlePass.tokenTotal, 135);
+  assert.equal(runtime.state.battlePass.claimedCount, 0);
+  assert.equal(runtime.state.battlePass.rewardTotal, 1);
   assert.equal(claims, 0);
 });
 
@@ -136,7 +136,11 @@ test('BattlePassTask reports a claim only after the refreshed page marks it clai
       async getPage() {
         pageLoads += 1;
         return {
-          status: pageLoads === 1 ? 'active' : 'completed', tokenCount: 10, tokenTotal: 10,
+          status: pageLoads === 1 ? 'active' : 'completed',
+          claimedCount: pageLoads === 1 ? 2 : 3,
+          rewardTotal: 3,
+          tokenCount: 10,
+          tokenTotal: 10,
           rewards: pageLoads === 1
             ? [...otherRewards, reward]
             : [...otherRewards, { ...reward, state: 'claimed', claim: undefined }]
@@ -149,6 +153,8 @@ test('BattlePassTask reports a claim only after the refreshed page marks it clai
   };
 
   assert.equal(await BattlePassTask.run(runtime), true);
-  assert.deepEqual(runtime.state.battlePass.claimed, [{ name: 'ARP Boost', index: 3, total: 3, milestoneId: 12 }]);
+  assert.deepEqual(runtime.state.battlePass.claimed, [{ name: 'ARP Boost', milestoneId: 12 }]);
+  assert.equal(runtime.state.battlePass.claimedCount, 3);
+  assert.equal(runtime.state.battlePass.rewardTotal, 3);
   assert.equal(runtime.state.battlePass.status, 'completed');
 });

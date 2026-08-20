@@ -133,6 +133,9 @@ battlePassStatus_completed: Completed
 battlePassStatus_ended: Ended
 battlePassStatus_unknown: Unknown
 battlePassClaimed: "Successfully claimed %s (%s/%s)"
+battlePassRewardSeparator: ", "
+battlePassProgress: "Reward claim progress (%s/%s)"
+battlePassStatusProgress: "%s (%s/%s)"
 battlePassClaimFailed: "Failed to claim %s"
 doingTaskUS: Doing the task(US) [%s] ...
 startingQuest: Starting task...

@@ -123,6 +123,9 @@ battlePassStatus_completed: 已完成
 battlePassStatus_ended: 已结束
 battlePassStatus_unknown: 未知
 battlePassClaimed: "成功领取 %s (%s/%s)"
+battlePassRewardSeparator: "、"
+battlePassProgress: "奖励领取进度 (%s/%s)"
+battlePassStatusProgress: "%s (%s/%s)"
 battlePassClaimFailed: "领取 %s 失败"
 
 ### DailyQuestUS.ts ###

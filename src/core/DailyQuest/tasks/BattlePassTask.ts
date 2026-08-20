@@ -30,7 +30,7 @@ export class BattlePassTask {
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
-      runtime.state.battlePass = { status: 'unknown', tokenCount: 0, tokenTotal: 0, claimed: [], failed: [] };
+      runtime.state.battlePass = { status: 'unknown', claimedCount: 0, rewardTotal: 0, claimed: [], failed: [] };
       return false;
     }
   }
@@ -74,11 +74,11 @@ export class BattlePassTask {
       if (signal?.aborted) {
         return false;
       }
-      if (accepted.length > 0) {
+      if (claimable.length > 0) {
         const refreshed = await runtime.awa.battlePass.getPage(url);
         battlePass.status = refreshed.status;
-        battlePass.tokenCount = refreshed.tokenCount;
-        battlePass.tokenTotal = refreshed.tokenTotal;
+        battlePass.claimedCount = refreshed.claimedCount;
+        battlePass.rewardTotal = refreshed.rewardTotal;
         const claimedIds = new Set(refreshed.rewards
           .filter((reward) => reward.state === 'claimed')
           .map((reward) => reward.milestoneId));
@@ -86,8 +86,6 @@ export class BattlePassTask {
           if (claimedIds.has(reward.milestoneId)) {
             battlePass.claimed.push({
               name: reward.name,
-              index: reward.index + 1,
-              total: snapshot.rewards.length,
               milestoneId: reward.milestoneId
             });
           } else {
@@ -100,7 +98,7 @@ export class BattlePassTask {
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
-      runtime.state.battlePass = { status: 'unknown', tokenCount: 0, tokenTotal: 0, claimed: [], failed: [] };
+      runtime.state.battlePass = { status: 'unknown', claimedCount: 0, rewardTotal: 0, claimed: [], failed: [] };
       return true;
     }
   }
@@ -111,7 +109,7 @@ export class BattlePassTask {
 
   private static applySnapshot(runtime: DailyQuestRuntime, snapshot: BattlePassSnapshot): BattlePassRunState {
     const state: BattlePassRunState = {
-      status: snapshot.status, tokenCount: snapshot.tokenCount, tokenTotal: snapshot.tokenTotal, claimed: [], failed: []
+      status: snapshot.status, claimedCount: snapshot.claimedCount, rewardTotal: snapshot.rewardTotal, claimed: [], failed: []
     };
     runtime.state.battlePass = state;
     return state;

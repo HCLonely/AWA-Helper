@@ -35,9 +35,9 @@ interface PushQuestInfo {
   signArp: { daily?: string; monthly?: string };
   battlePass?: {
     status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
-    tokenCount: number;
-    tokenTotal: number;
-    claimed: Array<{ name: string; index: number; total: number; milestoneId: number }>;
+    claimedCount: number;
+    rewardTotal: number;
+    claimed: Array<{ name: string; milestoneId: number }>;
     failed: Array<{ name: string; milestoneId: number; reason: string }>;
   };
 }
@@ -90,13 +90,19 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
     return `${separator}${status === __('done') ? '✔️' : '❌'}${name}:  ${obtainedArp}${extraArp && extraArp !== '0' ? ` + ${extraArp}` : ''} ARP${suffix}`;
   }).join('\n');
   const battlePassRows: string[] = [];
-  if (quest.battlePass && quest.battlePass.status !== 'unknown') {
-    if (quest.battlePass.status !== 'active' && quest.battlePass.claimed.length === 0 && quest.battlePass.failed.length === 0) {
+  if (quest.battlePass) {
+    const statusOnly = quest.battlePass.status === 'not-started' || quest.battlePass.status === 'ended';
+    if (statusOnly) {
       battlePassRows.push(`${__('battlePass')}: ${__(`battlePassStatus_${quest.battlePass.status}`)}`);
+    } else if (quest.battlePass.claimed.length > 0) {
+      const rewardNames = quest.battlePass.claimed.map((reward) => reward.name)
+        .join(__('battlePassRewardSeparator'));
+      battlePassRows.push(`${__('battlePass')}: ${__('battlePassClaimed', rewardNames, String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
+    } else if (quest.battlePass.status === 'active') {
+      battlePassRows.push(`${__('battlePass')}: ${__('battlePassProgress', String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
+    } else {
+      battlePassRows.push(`${__('battlePass')}: ${__('battlePassStatusProgress', __(`battlePassStatus_${quest.battlePass.status}`), String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
     }
-    quest.battlePass.claimed.forEach((reward) => {
-      battlePassRows.push(`${__('battlePass')}: ${__('battlePassClaimed', reward.name, String(reward.index), String(reward.total))}`);
-    });
     quest.battlePass.failed.forEach((reward) => {
       battlePassRows.push(`${__('battlePass')}: ${__('battlePassClaimFailed', reward.name)}`);
     });

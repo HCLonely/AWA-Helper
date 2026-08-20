@@ -68,9 +68,9 @@ export const formatQuestReport = (state: DailyQuestState): QuestReport => {
   if (state.battlePass) {
     report[__('battlePass')] = {
       [__('status')]: __(`battlePassStatus_${state.battlePass.status}`),
-      [__('obtainedARP')]: state.battlePass.tokenCount,
+      [__('obtainedARP')]: state.battlePass.claimedCount,
       [__('extraARP')]: '0',
-      [__('maxAvailableARP')]: state.battlePass.tokenTotal
+      [__('maxAvailableARP')]: state.battlePass.rewardTotal
     };
   }
   return report;

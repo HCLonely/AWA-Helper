@@ -67,6 +67,8 @@ export const parseBattlePass = (html: string): BattlePassSnapshot => {
   const countdown = $('.bp-header__countdown[data-countdown]').attr('data-countdown')?.trim();
   return {
     status,
+    claimedCount: rewards.filter((reward) => reward.state === 'claimed').length,
+    rewardTotal: rewards.length,
     tokenCount: parseInteger($('.bp-header__token-count').text().trim()),
     tokenTotal: parseInteger($('.bp-header__token-total').text().trim()),
     endsAt: countdown || undefined,
