@@ -440,7 +440,7 @@ dailyQuestMonitorStarted: '[DailyQuest] Quest status monitor started (interval=%
 dailyQuestMonitorStopped: '[DailyQuest] Quest status monitor stopped'
 awaListenerFailed: 'AWA listener failed: %s'
 twitchAuthorizationExpiredRetrying: Twitch authorization expired, retrying
-automaticInstallDisabled: Automatic installation is disabled until signed updates are available.
+updatePrepared: AWA-Helper %s has been downloaded and verified; it will be installed after this process exits.
 managerWeakSecretWarning: 'Warning: manager.secret is %s characters long; at least 16 characters are recommended.'
 logStatusOk: OK
 logStatusError: Error

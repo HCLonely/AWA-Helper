@@ -18,6 +18,7 @@ import { Scheduler } from './Scheduler';
 import { getManagerListenHost } from '../../server/network';
 import { AchievementJob, ArtifactJob, DailyQuestJob } from './jobs';
 import type { JobName, JobResult, JobSnapshot } from './Job';
+import { scheduleUpdate, UpdateInstallerError } from '../../tools/update';
 // @ts-ignore 由构建流程以文本形式导入。
 import CHANGELOG from '../../CHANGELOG.txt';
 // @ts-ignore 在构建期间由 YAML 生成。
@@ -78,6 +79,14 @@ class ManagerRuntime {
     this.hooks.onReady?.(this.getLocalWebUiUrl());
     this.hooks.onStateChange?.(this.coordinator.states.list());
     new Logger(`${time()}${__('managerStarted', __(`managerMode_${this.mode}`), String(this.loaded.raw.webUI?.port || 2345))}`);
+    if (await this.scheduleAutomaticUpdate()) {
+      if (this.mode === 'persistent') {
+        this.requestShutdown();
+        await this.shutdownRequested;
+        await this.stop();
+        return 0;
+      }
+    }
     if (this.mode === 'once') {
       new Logger(`${time()}${__('managerOneShotSelected')}`);
       const result = await this.coordinator.start('dailyQuest');
@@ -98,6 +107,28 @@ class ManagerRuntime {
     }
     const protocol = webUI?.ssl?.cert ? 'https' : 'http';
     return `${protocol}://127.0.0.1:${webUI?.port || 2345}`;
+  }
+
+  private async scheduleAutomaticUpdate(): Promise<boolean> {
+    if (!this.loaded.raw.autoUpdate || process.argv.includes('--no-update')) {
+      return false;
+    }
+    try {
+      const update = await scheduleUpdate({
+        currentVersion: this.version,
+        proxy: this.loaded.raw.proxy,
+        restart: this.mode === 'persistent'
+      });
+      new Logger(`${time()}${__('newVersion', `V${update.version}`)}`);
+      new Logger(`${time()}${__('updating')}`);
+      return true;
+    } catch (error) {
+      if (error instanceof UpdateInstallerError && error.code === 'UP_TO_DATE') {
+        return false;
+      }
+      new Logger(`${time()}${__('updateFailed')}: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
   }
 
   /**

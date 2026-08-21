@@ -117,10 +117,12 @@
     });
   }
   function updateHelper(secret: string): void {
+    const updateButton = dom('button.awa-helper-update');
+    updateButton.prop('disabled', true);
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updating')}</li>`);
     dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updating')}`);
     axios.post('/update', { secret }).then(async (response) => {
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 202) {
         await sleep(10);
         const result = await managerStatusChecker('start');
         if (result === 'success') {
@@ -140,7 +142,8 @@
       console.log(response);
     }).catch((error) => {
       const status = error?.response?.status;
-      const reason = status || error.message;
+      const reason = error?.response?.data?.error || status || error.message;
+      updateButton.prop('disabled', false);
       dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateFailed')}(${reason})!</li>`);
       dom('#log-area li:last-child')[0].scrollIntoView();
       dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updateFailed')}(${reason})!`);

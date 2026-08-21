@@ -21,7 +21,7 @@ import { decodeManagerWebSocketSecret } from './websocket/authenticate';
 import { getManagerListenHost } from './network';
 import { getLogFilePath, isLogScope, Logger } from '../tools/logging';
 import { time } from '../tools/common';
-import { getLatestVersion, isNewVersion } from '../tools/update';
+import { getReleaseCheck, scheduleUpdate, UpdateInstallerError } from '../tools/update';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import managerHtml from '../webUI/dist/index.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -142,14 +142,12 @@ class UnifiedServer {
     app.get(['/health/live', '/api/health/live'], (_, res) => res.json({ status: 'live', version: this.version }));
     app.get('/api/version/latest', async (_, res) => {
       try {
-        const latestVersion = await getLatestVersion(raw.proxy);
-        if (!latestVersion) {
-          return res.status(502).json({ error: 'Unable to determine the latest version' });
-        }
+        const release = await getReleaseCheck(this.version, raw.proxy);
         return res.json({
-          currentVersion: this.version,
-          latestVersion,
-          updateAvailable: isNewVersion(this.version, latestVersion)
+          currentVersion: release.currentVersion,
+          latestVersion: release.version,
+          releaseUrl: release.releaseUrl,
+          updateAvailable: release.updateAvailable
         });
       } catch (error) {
         new Logger(`${time()}Failed to check the latest version: ${error instanceof Error ? error.message : String(error)}`);
@@ -327,7 +325,30 @@ class UnifiedServer {
         webui: { port: raw.webUI?.port || 2345, ssl: !!raw.webUI?.ssl?.cert }
       });
     });
-    app.post('/update', (req, res) => authenticate(req, res) && res.status(501).send('Automatic installation is disabled; install a signed release manually.'));
+    app.post('/update', async (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      try {
+        new Logger(`${time()}${__('updateHelper')}`);
+        const update = await scheduleUpdate({ currentVersion: this.version, proxy: raw.proxy, restart: true });
+        res.status(202).json({ status: 'scheduled', ...update });
+        setImmediate(this.requestShutdown);
+      } catch (error) {
+        const known = error instanceof UpdateInstallerError;
+        let status = 500;
+        if (known && ['UP_TO_DATE', 'ALREADY_SCHEDULED'].includes(error.code)) {
+          status = 409;
+        } else if (known && error.code === 'UNSUPPORTED_PLATFORM') {
+          status = 422;
+        } else if (known && ['ASSET_NOT_FOUND', 'UNVERIFIED_ASSET', 'INTEGRITY_MISMATCH'].includes(error.code)) {
+          status = 502;
+        }
+        const message = error instanceof Error ? error.message : String(error);
+        new Logger(`${time()}${__('updateFailed')}: ${message}`);
+        res.status(status).json({ error: message, code: known ? error.code : 'UPDATE_FAILED' });
+      }
+    });
     app.post('/stopManager', (req, res) => {
       if (!authenticate(req, res)) {
         return;

@@ -172,7 +172,6 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       timeout,
       logsExpire,
       debug,
-      autoUpdate,
       awaCookie,
       awaHost,
       awaQuests,
@@ -189,7 +188,6 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       pusher,
       joinSteamCommunityEvent,
       TLSRejectUnauthorized,
-      managerServer,
       UA
     }: config = config;
     if (TLSRejectUnauthorized === false) {
@@ -247,7 +245,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
 
     // 检查更新
     globalThis.newVersionNotice = '';
-    await checkUpdate(version, managerServer, !!autoUpdate || process.argv.includes('--update'), proxy);
+    await checkUpdate(version, proxy);
     if (shutdownController.signal.aborted) {
       return false;
     }

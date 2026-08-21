@@ -10,6 +10,13 @@ import { ManagerRuntime } from './core/Manager';
 import { ProcessLock } from './tools/process/ProcessLock';
 import { runHealthcheck } from './tools/process/healthcheck';
 import { TrayBridge } from './tools/process/TrayBridge';
+import { loadConfig } from './tools/config';
+import { scheduleUpdate, UpdateInstallerError } from './tools/update';
+import { initializeI18n } from './tools/i18n';
+// @ts-ignore 在构建期间由 YAML 生成。
+import * as zh from './locales/zh.json';
+// @ts-ignore 在构建期间由 YAML 生成。
+import * as en from './locales/en.json';
 // @ts-ignore 由 Rollup 以字符串形式打包。
 import exampleConfig from './config.example.yml';
 
@@ -70,8 +77,38 @@ const main = async (): Promise<number> => {
   if (command.kind === 'healthcheck') {
     return await runHealthcheck() ? 0 : 1;
   }
+  if (command.kind === 'update') {
+    const updateConfig = (() => {
+      try {
+        const { proxy, language } = loadConfig().raw;
+        return { proxy, language };
+      } catch (error) {
+        if (!(error instanceof Error)) {
+          throw error;
+        }
+        const { message } = error;
+        if (!message.startsWith('Configuration file not found:')) {
+          throw error;
+        }
+        return { proxy: undefined, language: 'zh' };
+      }
+    })();
+    const { proxy: updateProxy, language: updateLanguage } = updateConfig;
+    initializeI18n(updateLanguage, { zh, en });
+    try {
+      const update = await scheduleUpdate({ currentVersion: version, proxy: updateProxy, restart: false });
+      console.log(__('updatePrepared', `V${update.version}`));
+      return 0;
+    } catch (error) {
+      if (error instanceof UpdateInstallerError && error.code === 'UP_TO_DATE') {
+        console.log(__('noUpdate'));
+        return 0;
+      }
+      throw error;
+    }
+  }
 
-  const mode = command.kind === 'run' ? command.mode : 'once';
+  const { mode } = command;
   if (command.kind === 'run' && command.deprecatedHelper) {
     console.warn('[deprecated] --helper is retained for compatibility; use --daily instead.');
   }

@@ -447,7 +447,7 @@ dailyQuestMonitorStarted: '[DailyQuest] 任务状态监控已启动（间隔=%s�
 dailyQuestMonitorStopped: '[DailyQuest] 任务状态监控已停止'
 awaListenerFailed: 'AWA 监听失败：%s'
 twitchAuthorizationExpiredRetrying: Twitch 授权已过期，正在重试
-automaticInstallDisabled: 自动安装已禁用，请等待提供带签名的更新包。
+updatePrepared: AWA-Helper %s 已下载并通过校验，将在当前进程退出后安装。
 managerWeakSecretWarning: '警告：manager.secret 当前长度为 %s，建议至少使用 16 个字符。'
 logStatusOk: 成功
 logStatusError: 错误
