@@ -55,7 +55,7 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 
 ##### 更新
 
-- 更新检查：程序会提示新版本；自动安装暂时禁用，请从 GitHub Release 手动更新；
+- 更新检查：程序会提示新版本；启用 `autoUpdate` 后会校验并自动安装 GitHub Release；
 - 手动更新: 双击'update.bat'.
 
 #### Linux
@@ -90,7 +90,7 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 
 #### 更新
 
-- 更新检查：程序会提示新版本；自动安装暂时禁用，请从 GitHub Release 手动更新；
+- 更新检查：程序会提示新版本；启用 `autoUpdate` 后会校验并自动安装 GitHub Release；
 - 手动更新: `./update.sh`.
 
 ### 通过 NodeJS 运行
@@ -127,7 +127,7 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 
 #### 更新
 
-- 更新检查：程序会提示新版本；自动安装暂时禁用，请从 GitHub Release 手动更新；
+- 更新检查：程序会提示新版本；启用 `autoUpdate` 后会校验并自动安装 GitHub Release；
 - 手动更新：`node index.js --update`；
 
 ### 使用 Docker
@@ -183,7 +183,7 @@ timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
-autoUpdate: false # 检查更新；自动安装暂时禁用
+autoUpdate: false # 检查并自动安装通过 SHA-256 校验的更新
 ```
 
 ### AWA-Manager 配置

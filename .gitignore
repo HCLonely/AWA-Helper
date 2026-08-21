@@ -36,6 +36,7 @@ test.ts
 test.exe
 Todo.md
 temp/
+.update/
 src/DailyQuestUS.ts
 src/SteamQuestSU.ts
 babel.index.js

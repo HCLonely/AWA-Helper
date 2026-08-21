@@ -34,6 +34,7 @@ test('tray source and workflows expose status controls and package the executabl
   }
   assert.match(nativeSource, /NIF_TIP \| NIF_SHOWTIP/);
   assert.match(nativeSource, /CurrentVersion\\\\Run/);
+  assert.match(nativeSource, /payload == "UPDATE"[\s\S]*shutdownRequested = true/);
   const releaseWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'Release.yml'), 'utf8');
   const testWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'Test.yml'), 'utf8');
   assert.match(releaseWorkflow, /Verify Windows tray artifacts/);

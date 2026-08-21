@@ -234,6 +234,9 @@ void handleProtocolLine(const std::string& line) {
     PostMessageW(windowHandle, kChildStatus, 0, 0);
   } else if (payload == "ERROR") {
     PostMessageW(windowHandle, kChildError, 0, 0);
+  } else if (payload == "UPDATE") {
+    shutdownRequested = true;
+    setTooltip(L"AWA-Helper - 正在更新...");
   }
 }
 

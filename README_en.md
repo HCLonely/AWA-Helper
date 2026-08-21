@@ -54,7 +54,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 ##### Update
 
-- Update checks notify you about new releases; automatic installation is temporarily disabled;
+- Update checks notify you about new releases; enable `autoUpdate` to verify and install GitHub Releases automatically;
 - Manual update: Double-click 'update.bat'.
 
 #### Linux
@@ -90,7 +90,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 #### Update
 
-- Update checks notify you about new releases; automatic installation is temporarily disabled;
+- Update checks notify you about new releases; enable `autoUpdate` to verify and install GitHub Releases automatically;
 - Manual update: `./update.sh` .
 
 ### Run via NodeJS
@@ -129,7 +129,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 #### Update
 
-- Update checks notify you about new releases; automatic installation is temporarily disabled;
+- Update checks notify you about new releases; enable `autoUpdate` to verify and install GitHub Releases automatically;
 - Manual update: `node index.js --update` ;
 
 ### Docker
@@ -185,7 +185,7 @@ timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
-autoUpdate: false # Check for updates; automatic installation is temporarily disabled
+autoUpdate: false # Check for and install updates that pass SHA-256 verification
 ```
 
 ### AWA-Manager configuration

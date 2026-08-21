@@ -179,13 +179,22 @@ test('DailyQuest sequential work and setup delays receive the shutdown signal', 
   assert.doesNotMatch(source, /setTimeout\(async \(\) =>/);
 });
 
-test('disabled automatic updates remain failures in the WebUI', () => {
+test('verified updates are scheduled by the server and failures stay failures in the WebUI', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
+  const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
   const updateHandler = source.slice(source.indexOf('function updateHelper'), source.indexOf('async function refreshUpdateButton'));
   const failureHandler = updateHandler.slice(updateHandler.indexOf('}).catch'));
+  assert.match(server, /app\.post\('\/update'[\s\S]*scheduleUpdate\([\s\S]*status\(202\)/);
+  assert.match(updateHandler, /managerStatusChecker\('start'\)/);
   assert.match(failureHandler, /updateFailed/);
   assert.doesNotMatch(failureHandler, /managerStatusChecker\('start'\)/);
   assert.doesNotMatch(failureHandler, /updateSuccessManager/);
+});
+
+test('--update runs before Manager locking and startup', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/index.ts'), 'utf8');
+  assert.ok(source.indexOf("command.kind === 'update'") < source.indexOf('new ProcessLock'));
+  assert.match(source, /command\.kind === 'update'[\s\S]*scheduleUpdate/);
 });
 
 test('release metadata comes from package.json and cross-platform SEA code cache is disabled', () => {
