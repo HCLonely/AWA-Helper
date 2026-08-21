@@ -47,9 +47,10 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 1. Download [AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
 2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
-3. Run (choose one of the following two):
+3. Choose how to run:
     - Run DailyQuest once: double-click `AWA-DailyQuest.bat`;
     - Run AWA-Manager: Double-click `AWA-Manager.bat` to run AWA-Manager;
+    - Run AWA-Manager in the system tray: double-click `AWA-Manager.exe`. Hover over the icon for task status, double-click it to open the WebUI, or use its context menu to inspect status, start or stop Helper/Achievement, and exit Manager.
 
 ##### Update
 

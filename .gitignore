@@ -12,6 +12,7 @@ AWA-Helper.exe
 *.blob
 !node-v18.17.1-win-x64.zip
 output/
+native/**/obj/
 log.txt
 version
 chrome-win

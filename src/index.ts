@@ -9,12 +9,14 @@ import { formatHelp, parseArguments } from './cli';
 import { ManagerRuntime } from './core/Manager';
 import { ProcessLock } from './tools/process/ProcessLock';
 import { runHealthcheck } from './tools/process/healthcheck';
+import { TrayBridge } from './tools/process/TrayBridge';
 // @ts-ignore 由 Rollup 以字符串形式打包。
 import exampleConfig from './config.example.yml';
 
 process.chdir(__dirname);
 
 const version = 'v__VERSION__';
+let activeTrayBridge: TrayBridge | undefined;
 
 /**
  * 创建 create Runtime Files 相关数据。
@@ -82,12 +84,32 @@ const main = async (): Promise<number> => {
   if (lock) {
     process.once('exit', () => lock.releaseSync());
   }
-  const runtime = new ManagerRuntime(mode, version);
+  const runtime = new ManagerRuntime(mode, version, {
+    onReady: (url) => activeTrayBridge?.ready(url),
+    onStateChange: (states) => activeTrayBridge?.status(states)
+  });
   /**
    * 停止 stop 相关数据。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   const stop = (): void => runtime.requestShutdown();
+  if (command.kind === 'run' && command.trayChild) {
+    activeTrayBridge = new TrayBridge({
+      shutdown: stop,
+      startHelper: () => {
+        void runtime.startJob('dailyQuest');
+      },
+      stopHelper: () => {
+        void runtime.stopJob('dailyQuest');
+      },
+      startAchievement: () => {
+        void runtime.startJob('achievement');
+      },
+      stopAchievement: () => {
+        void runtime.stopJob('achievement');
+      }
+    });
+  }
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
   try {
@@ -96,6 +118,8 @@ const main = async (): Promise<number> => {
     process.removeListener('SIGINT', stop);
     process.removeListener('SIGTERM', stop);
     await runtime.stop();
+    activeTrayBridge?.close();
+    activeTrayBridge = undefined;
     await lock?.release();
   }
 };
@@ -105,6 +129,9 @@ void main()
     process.exitCode = exitCode;
   })
   .catch((error) => {
+    activeTrayBridge?.error();
+    activeTrayBridge?.close();
+    activeTrayBridge = undefined;
     console.error(error);
     process.exitCode = 1;
   });

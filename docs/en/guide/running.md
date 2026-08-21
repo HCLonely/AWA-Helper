@@ -14,9 +14,26 @@
 
 `--helper` remains an alias for `--daily` for compatibility, but it is not recommended for new scripts.
 
-## Windows and Linux
+## Windows
 
-Release archives include startup scripts for their respective platforms. Choose the Manager script for continuous operation, or the DailyQuest script to run daily tasks once. On Linux, make the scripts executable before the first run:
+The Windows archive provides three independent entry points:
+
+| Entry point | Behavior |
+| --- | --- |
+| `AWA-Manager.exe` | Start the long-running Manager without a console and expose status and task controls in the system tray |
+| `AWA-Manager.bat` | Keep the console visible while running the long-running Manager |
+| `AWA-DailyQuest.bat` | Keep the console visible while running DailyQuest once |
+
+When using `AWA-Manager.exe`:
+
+- Hover over the tray icon to see live Helper, Achievement, and Artifact status.
+- Double-click the tray icon to open the WebUI.
+- Use the context menu to inspect status, open the logs directory, and start or stop Helper/Achievement according to their current state.
+- **Exit AWA-Manager** safely stops jobs, the scheduler, and the WebUI before exiting.
+
+## Linux
+
+The Linux archive includes its corresponding startup scripts. Choose the Manager script for continuous operation, or the DailyQuest script to run daily tasks once. Make the scripts executable before the first run:
 
 ```bash
 chmod +x AWA-Manager.sh AWA-DailyQuest.sh

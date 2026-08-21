@@ -31,6 +31,20 @@ test('JobCoordinator deduplicates a running job', async () => {
   assert.equal(runs, 1);
 });
 
+test('JobStateStore publishes isolated snapshots when job status changes', async () => {
+  const coordinator = new JobCoordinator();
+  const snapshots = [];
+  coordinator.states.subscribe((states) => snapshots.push(states));
+  coordinator.register({
+    name: 'dailyQuest',
+    run: async () => true
+  });
+  await coordinator.start('dailyQuest');
+  assert.deepEqual(snapshots.map((states) => states[0].status), ['idle', 'running', 'completed']);
+  snapshots[0][0].status = 'failed';
+  assert.equal(coordinator.states.get('dailyQuest').status, 'completed');
+});
+
 test('JobCoordinator aborts jobs through Manager', async () => {
   const coordinator = new JobCoordinator();
   coordinator.register({

@@ -372,6 +372,12 @@ class UnifiedServer {
       return;
     }
     new Logger(`${time()}${__('serverStopping')}`);
+    globalThis.wsClients.forEach((client) => {
+      try {
+        client.close(1001, 'Manager shutting down');
+      } catch (_error) { /* A disconnected client needs no further cleanup. */ }
+    });
+    globalThis.wsClients.clear();
     await new Promise<void>((resolve) => server.close(() => resolve()));
     new Logger(`${time()}${__('serverStopped')}`);
   }

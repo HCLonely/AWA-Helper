@@ -1,5 +1,6 @@
 ### Features
 
+- feat: Windows 发行版新增原生 AWA-Manager 托盘入口，支持实时状态、Helper/Achievement 启停和安全退出
 - feat: 新增 Battle Pass 自动领取功能
 - feat: 将 Manager WebUI 默认端口调整为 2345，并同步健康检查、Docker、配置模板和文档
 - feat: Manager 密钥少于 16 个字符时输出安全警告，但不阻止程序启动

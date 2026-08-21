@@ -4,3 +4,4 @@
  */
 export * from './healthcheck';
 export * from './ProcessLock';
+export * from './TrayBridge';

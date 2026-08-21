@@ -17,12 +17,18 @@ import { JobCoordinator } from './JobCoordinator';
 import { Scheduler } from './Scheduler';
 import { getManagerListenHost } from '../../server/network';
 import { AchievementJob, ArtifactJob, DailyQuestJob } from './jobs';
+import type { JobName, JobResult, JobSnapshot } from './Job';
 // @ts-ignore 由构建流程以文本形式导入。
 import CHANGELOG from '../../CHANGELOG.txt';
 // @ts-ignore 在构建期间由 YAML 生成。
 import * as zh from '../../locales/zh.json';
 // @ts-ignore 在构建期间由 YAML 生成。
 import * as en from '../../locales/en.json';
+
+interface ManagerRuntimeHooks {
+  onReady?: (url?: string) => void
+  onStateChange?: (states: JobSnapshot[]) => void
+}
 
 class ManagerRuntime {
   readonly coordinator = new JobCoordinator();
@@ -41,11 +47,16 @@ class ManagerRuntime {
    * @param mode - 用于选择处理分支的类型，类型为 `RuntimeMode`。
    * @param version - 用于比较或展示的应用版本号，类型为 `string`。
    */
-  constructor(private readonly mode: RuntimeMode, private readonly version: string) {
+  constructor(
+    private readonly mode: RuntimeMode,
+    private readonly version: string,
+    private readonly hooks: ManagerRuntimeHooks = {}
+  ) {
     this.server = new UnifiedServer(this.loaded, this.coordinator, version, () => this.requestShutdown());
     this.coordinator.register(new DailyQuestJob());
     this.coordinator.register(new AchievementJob(this.loaded.raw));
     this.coordinator.register(new ArtifactJob(this.loaded.path));
+    this.coordinator.states.subscribe((states) => this.hooks.onStateChange?.(states));
   }
 
   /**
@@ -64,6 +75,8 @@ class ManagerRuntime {
       ? __('managerWebUiDisabled')
       : __('managerWebUiStarting', getManagerListenHost(webUI?.local, process.env.AWA_HELPER_CONTAINER === 'true'), String(webUI?.port || 2345))}`);
     await this.server.start();
+    this.hooks.onReady?.(this.getLocalWebUiUrl());
+    this.hooks.onStateChange?.(this.coordinator.states.list());
     new Logger(`${time()}${__('managerStarted', __(`managerMode_${this.mode}`), String(this.loaded.raw.webUI?.port || 2345))}`);
     if (this.mode === 'once') {
       new Logger(`${time()}${__('managerOneShotSelected')}`);
@@ -76,6 +89,15 @@ class ManagerRuntime {
     await this.shutdownRequested;
     await this.stop();
     return 0;
+  }
+
+  private getLocalWebUiUrl(): string | undefined {
+    const { webUI } = this.loaded.raw;
+    if (webUI?.enable === false) {
+      return undefined;
+    }
+    const protocol = webUI?.ssl?.cert ? 'https' : 'http';
+    return `${protocol}://127.0.0.1:${webUI?.port || 2345}`;
   }
 
   /**
@@ -91,6 +113,21 @@ class ManagerRuntime {
     this.resolveShutdown();
     if (this.mode === 'once') {
       void this.coordinator.stopAll();
+    }
+  }
+
+  startJob(name: JobName): Promise<JobResult> {
+    if (name === 'achievement') {
+      fs.mkdirSync('data/achievement', { recursive: true });
+      fs.writeFileSync('data/achievement/enabled', '');
+    }
+    return this.coordinator.start(name);
+  }
+
+  async stopJob(name: JobName): Promise<void> {
+    await this.coordinator.stop(name);
+    if (name === 'achievement') {
+      fs.rmSync('data/achievement/enabled', { force: true });
     }
   }
 

@@ -6,6 +6,7 @@ import type { JobName, JobSnapshot, JobStatus } from './Job';
 
 class JobStateStore {
   private readonly states = new Map<JobName, JobSnapshot>();
+  private readonly listeners = new Set<(states: JobSnapshot[]) => void>();
 
   /**
    * 添加 register 相关数据。
@@ -15,6 +16,7 @@ class JobStateStore {
   register(name: JobName): void {
     if (!this.states.has(name)) {
       this.states.set(name, { name, status: 'idle' });
+      this.notify();
     }
   }
 
@@ -28,7 +30,13 @@ class JobStateStore {
   update(name: JobName, status: JobStatus, fields: Partial<JobSnapshot> = {}): JobSnapshot {
     const next = { ...(this.states.get(name) || { name }), ...fields, name, status };
     this.states.set(name, next);
+    this.notify();
     return next;
+  }
+
+  subscribe(listener: (states: JobSnapshot[]) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
   /**
@@ -47,6 +55,11 @@ class JobStateStore {
    */
   list(): JobSnapshot[] {
     return [...this.states.values()].map((state) => ({ ...state }));
+  }
+
+  private notify(): void {
+    const snapshot = this.list();
+    this.listeners.forEach((listener) => listener(snapshot));
   }
 }
 

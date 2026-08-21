@@ -5,7 +5,7 @@
 export type RuntimeMode = 'persistent' | 'once';
 
 export type Command =
-  | { kind: 'run'; mode: RuntimeMode; deprecatedHelper: boolean }
+  | { kind: 'run'; mode: RuntimeMode; deprecatedHelper: boolean; trayChild: boolean }
   | { kind: 'healthcheck' }
   | { kind: 'init' }
   | { kind: 'update' }

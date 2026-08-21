@@ -14,9 +14,26 @@
 
 `--helper` 是 `--daily` 的兼容别名，不建议在新脚本中继续使用。
 
-## Windows 与 Linux
+## Windows
 
-发行版包含对应平台的启动脚本。常驻运行请选择 Manager 脚本；只想执行一次每日任务时选择 DailyQuest 脚本。Linux 首次运行前需要添加执行权限：
+Windows 发行包提供三个互不替代的入口：
+
+| 入口 | 行为 |
+| --- | --- |
+| `AWA-Manager.exe` | 隐藏启动常驻 Manager，并在系统托盘中提供状态和任务控制 |
+| `AWA-Manager.bat` | 保留控制台窗口运行常驻 Manager |
+| `AWA-DailyQuest.bat` | 保留控制台窗口执行一次 DailyQuest |
+
+使用 `AWA-Manager.exe` 时：
+
+- 鼠标悬停托盘图标会显示 Helper、Achievement 和 Artifact 的实时状态；
+- 双击托盘图标会打开 WebUI；
+- 右键菜单可以查看运行状态、打开日志目录，以及根据当前状态启动或停止 Helper/Achievement；
+- “退出AWA-Manager”会安全停止任务、调度器和 WebUI 后再退出。
+
+## Linux
+
+Linux 发行版包含对应的启动脚本。常驻运行请选择 Manager 脚本；只想执行一次每日任务时选择 DailyQuest 脚本。首次运行前需要添加执行权限：
 
 ```bash
 chmod +x AWA-Manager.sh AWA-DailyQuest.sh

@@ -20,6 +20,14 @@ jobs:
       - run: npm ci
       - name: Verify
         run: npm run verify
+      - name: Compile Windows tray app
+        run: node scripts/build-tray.js
+      - name: Verify Windows tray executable
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath 'output/AWA-Manager.exe')) {
+            throw 'output/AWA-Manager.exe was not built'
+          }
       - name: Run Test
         shell: pwsh
         run: ./test.ps1

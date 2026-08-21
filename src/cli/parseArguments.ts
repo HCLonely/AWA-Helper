@@ -13,8 +13,12 @@ const parseArguments = (args: string[]): Command => {
   const hasManager = args.includes('--manager');
   const hasDaily = args.includes('--daily');
   const hasHelper = args.includes('--helper');
+  const trayChild = args.includes('--tray-child');
   if (hasManager && (hasDaily || hasHelper)) {
     throw new Error('--manager cannot be combined with --daily or --helper');
+  }
+  if (trayChild && (hasDaily || hasHelper)) {
+    throw new Error('--tray-child can only be used with persistent Manager mode');
   }
   if (args.includes('--healthcheck')) {
     return { kind: 'healthcheck' };
@@ -32,9 +36,9 @@ const parseArguments = (args: string[]): Command => {
     return { kind: 'version' };
   }
   if (hasDaily || hasHelper) {
-    return { kind: 'run', mode: 'once', deprecatedHelper: hasHelper && !hasDaily };
+    return { kind: 'run', mode: 'once', deprecatedHelper: hasHelper && !hasDaily, trayChild: false };
   }
-  return { kind: 'run', mode: 'persistent', deprecatedHelper: false };
+  return { kind: 'run', mode: 'persistent', deprecatedHelper: false, trayChild };
 };
 
 export { parseArguments };

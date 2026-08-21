@@ -48,9 +48,10 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 
 1. 下载[AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
 2. 编辑配置文件,[查看说明](#config-文件配置)
-3. 运行(以下两种二选一)：
+3. 选择运行方式：
     - 单次运行 DailyQuest：双击`AWA-DailyQuest.bat`；
     - 运行 AWA-Manager: 双击`AWA-Manager.bat`运行 AWA-Manager;
+    - 托盘运行 AWA-Manager：双击`AWA-Manager.exe`。悬停图标可查看任务状态，双击可打开管理页面；右键菜单可以查看状态、启动或停止 Helper/Achievement，以及退出 Manager。
 
 ##### 更新
 

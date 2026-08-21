@@ -29,7 +29,18 @@ jobs:
         uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
-      - run: npm run build
+      - name: Build Windows release with AWA-Manager tray app
+        run: npm run build
+      - name: Verify Windows tray artifacts
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath 'output/AWA-Manager.exe')) {
+            throw 'output/AWA-Manager.exe was not built'
+          }
+          $archiveEntries = tar -tf AWA-Helper-Win.tar.gz
+          if ($archiveEntries -notcontains './output/AWA-Manager.exe') {
+            throw 'AWA-Manager.exe is missing from AWA-Helper-Win.tar.gz'
+          }
       - run: node scripts/md5.js
       - name: Release
         uses: softprops/action-gh-release@v3

@@ -1,0 +1,3 @@
+#include "resource.h"
+
+IDI_AWA_MANAGER ICON "../../static/icon.ico"
