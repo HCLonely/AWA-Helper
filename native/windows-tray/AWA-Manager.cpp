@@ -21,7 +21,10 @@ constexpr UINT kExitManager = 1003;
 constexpr UINT kShowStatus = 1004;
 constexpr UINT kToggleHelper = 1005;
 constexpr UINT kToggleAchievement = 1006;
+constexpr UINT kToggleAutoStart = 1007;
 constexpr wchar_t kWindowClass[] = L"AWAHelperManagerTrayWindow";
+constexpr wchar_t kAutoStartKey[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+constexpr wchar_t kAutoStartValue[] = L"AWA-Manager";
 HINSTANCE instanceHandle = nullptr;
 HWND windowHandle = nullptr;
 NOTIFYICONDATAW trayIcon{};
@@ -44,6 +47,13 @@ std::wstring executableDirectory() {
   path.resize(length);
   const size_t separator = path.find_last_of(L"\\/");
   return separator == std::wstring::npos ? L"." : path.substr(0, separator);
+}
+
+std::wstring executablePath() {
+  std::wstring path(32768, L'\0');
+  const DWORD length = GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()));
+  path.resize(length);
+  return path;
 }
 
 std::wstring utf8ToWide(const std::string& value) {
@@ -96,6 +106,53 @@ std::wstring currentStatusText() {
 void showCurrentStatus() {
   const std::wstring status = currentStatusText();
   showNotification(L"AWA-Helper 当前状态", status.c_str(), NIIF_INFO);
+}
+
+bool autoStartEnabled() {
+  DWORD bytes = 0;
+  const LSTATUS sizeResult = RegGetValueW(HKEY_CURRENT_USER, kAutoStartKey, kAutoStartValue,
+    RRF_RT_REG_SZ, nullptr, nullptr, &bytes);
+  if (sizeResult != ERROR_SUCCESS || bytes < sizeof(wchar_t)) {
+    return false;
+  }
+  std::wstring value(bytes / sizeof(wchar_t), L'\0');
+  if (RegGetValueW(HKEY_CURRENT_USER, kAutoStartKey, kAutoStartValue,
+      RRF_RT_REG_SZ, nullptr, value.data(), &bytes) != ERROR_SUCCESS) {
+    return false;
+  }
+  value.resize(wcsnlen_s(value.c_str(), value.size()));
+  return _wcsicmp(value.c_str(), (L"\"" + executablePath() + L"\"").c_str()) == 0;
+}
+
+bool setAutoStart(bool enabled) {
+  HKEY key = nullptr;
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kAutoStartKey, 0, nullptr, 0, KEY_SET_VALUE,
+      nullptr, &key, nullptr) != ERROR_SUCCESS) {
+    return false;
+  }
+  LSTATUS result = ERROR_SUCCESS;
+  if (enabled) {
+    const std::wstring command = L"\"" + executablePath() + L"\"";
+    result = RegSetValueExW(key, kAutoStartValue, 0, REG_SZ,
+      reinterpret_cast<const BYTE*>(command.c_str()),
+      static_cast<DWORD>((command.size() + 1) * sizeof(wchar_t)));
+  } else {
+    result = RegDeleteValueW(key, kAutoStartValue);
+    if (result == ERROR_FILE_NOT_FOUND) {
+      result = ERROR_SUCCESS;
+    }
+  }
+  RegCloseKey(key);
+  return result == ERROR_SUCCESS;
+}
+
+void toggleAutoStart() {
+  const bool enable = !autoStartEnabled();
+  if (setAutoStart(enable)) {
+    showNotification(L"AWA-Manager", enable ? L"已启用开机自启。" : L"已关闭开机自启。", NIIF_INFO);
+  } else {
+    showNotification(L"AWA-Manager", L"无法更新开机自启设置。", NIIF_ERROR);
+  }
 }
 
 void updateStatusTooltip() {
@@ -266,6 +323,9 @@ void showContextMenu() {
   AppendMenuW(menu, MF_STRING | (webUiReady ? MF_ENABLED : MF_GRAYED), kOpenWebUi, L"打开管理页面");
   AppendMenuW(menu, MF_STRING, kShowStatus, L"查看运行状态");
   AppendMenuW(menu, MF_STRING, kOpenLogs, L"打开日志目录");
+  const bool autoStart = autoStartEnabled();
+  AppendMenuW(menu, MF_STRING | (autoStart ? MF_CHECKED : MF_UNCHECKED), kToggleAutoStart,
+    autoStart ? L"开机自启（已启用）" : L"开机自启（未启用）");
   AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
   AppendMenuW(menu, MF_STRING | (controlsEnabled && !helperStopping ? MF_ENABLED : MF_GRAYED),
     kToggleHelper, helperActive ? L"停止Helper" : L"启动Helper");
@@ -312,6 +372,9 @@ LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
           writeChildCommand(active ? "stop-achievement\n" : "start-achievement\n");
           break;
         }
+        case kToggleAutoStart:
+          toggleAutoStart();
+          break;
         case kExitManager:
           requestChildShutdown();
           break;

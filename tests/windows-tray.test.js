@@ -29,10 +29,11 @@ test('tray control commands map to Manager operations', () => {
 
 test('tray source and workflows expose status controls and package the executable', () => {
   const nativeSource = fs.readFileSync(path.join(root, 'native', 'windows-tray', 'AWA-Manager.cpp'), 'utf8');
-  for (const text of ['查看运行状态', '启动Helper', '停止Helper', '启动Achievement', '停止Achievement', '退出AWA-Manager']) {
+  for (const text of ['查看运行状态', '启动Helper', '停止Helper', '启动Achievement', '停止Achievement', '开机自启（已启用）', '开机自启（未启用）', '退出AWA-Manager']) {
     assert.ok(nativeSource.includes(text));
   }
   assert.match(nativeSource, /NIF_TIP \| NIF_SHOWTIP/);
+  assert.match(nativeSource, /CurrentVersion\\\\Run/);
   const releaseWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'Release.yml'), 'utf8');
   const testWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'Test.yml'), 'utf8');
   assert.match(releaseWorkflow, /Verify Windows tray artifacts/);

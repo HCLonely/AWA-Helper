@@ -29,6 +29,7 @@ Windows 发行包提供三个互不替代的入口：
 - 鼠标悬停托盘图标会显示 Helper、Achievement 和 Artifact 的实时状态；
 - 双击托盘图标会打开 WebUI；
 - 右键菜单可以查看运行状态、打开日志目录，以及根据当前状态启动或停止 Helper/Achievement；
+- 右键菜单会显示开机自启是否启用，点击该项可为当前 Windows 用户切换开机自启，无需管理员权限；
 - “退出AWA-Manager”会安全停止任务、调度器和 WebUI 后再退出。
 
 ## Linux

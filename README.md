@@ -51,7 +51,7 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 3. 选择运行方式：
     - 单次运行 DailyQuest：双击`AWA-DailyQuest.bat`；
     - 运行 AWA-Manager: 双击`AWA-Manager.bat`运行 AWA-Manager;
-    - 托盘运行 AWA-Manager：双击`AWA-Manager.exe`。悬停图标可查看任务状态，双击可打开管理页面；右键菜单可以查看状态、启动或停止 Helper/Achievement，以及退出 Manager。
+    - 托盘运行 AWA-Manager：双击`AWA-Manager.exe`。悬停图标可查看任务状态，双击可打开管理页面；右键菜单可以查看状态、启动或停止 Helper/Achievement、切换当前用户的开机自启，以及退出 Manager。
 
 ##### 更新
 

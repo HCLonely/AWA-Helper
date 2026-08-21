@@ -29,6 +29,7 @@ When using `AWA-Manager.exe`:
 - Hover over the tray icon to see live Helper, Achievement, and Artifact status.
 - Double-click the tray icon to open the WebUI.
 - Use the context menu to inspect status, open the logs directory, and start or stop Helper/Achievement according to their current state.
+- The context menu shows whether startup at sign-in is enabled and can toggle it for the current Windows user without administrator privileges.
 - **Exit AWA-Manager** safely stops jobs, the scheduler, and the WebUI before exiting.
 
 ## Linux

@@ -50,7 +50,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 3. Choose how to run:
     - Run DailyQuest once: double-click `AWA-DailyQuest.bat`;
     - Run AWA-Manager: Double-click `AWA-Manager.bat` to run AWA-Manager;
-    - Run AWA-Manager in the system tray: double-click `AWA-Manager.exe`. Hover over the icon for task status, double-click it to open the WebUI, or use its context menu to inspect status, start or stop Helper/Achievement, and exit Manager.
+    - Run AWA-Manager in the system tray: double-click `AWA-Manager.exe`. Hover over the icon for task status, double-click it to open the WebUI, or use its context menu to inspect status, start or stop Helper/Achievement, toggle startup at sign-in for the current user, and exit Manager.
 
 ##### Update
 
