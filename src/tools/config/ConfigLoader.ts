@@ -63,8 +63,8 @@ const normalizeManager = (value: config, configPath: string): NormalizedManagerC
  * 加载 load Config 相关数据。
  * @returns `LoadedConfig`，loadConfig 获取到的数据。
  */
-const loadConfig = (): LoadedConfig => {
-  const path = locateConfig();
+const loadConfig = (configPath?: string): LoadedConfig => {
+  const path = configPath || locateConfig();
   const source = fs.readFileSync(path, 'utf8');
   validateYaml(source);
   const raw = deepMerge(defaultConfig, parse(source));

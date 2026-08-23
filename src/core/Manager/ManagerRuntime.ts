@@ -55,7 +55,7 @@ class ManagerRuntime {
   ) {
     this.server = new UnifiedServer(this.loaded, this.coordinator, version, () => this.requestShutdown());
     this.coordinator.register(new DailyQuestJob());
-    this.coordinator.register(new AchievementJob(this.loaded.raw));
+    this.coordinator.register(new AchievementJob(this.loaded.path));
     this.coordinator.register(new ArtifactJob(this.loaded.path));
     this.coordinator.states.subscribe((states) => this.hooks.onStateChange?.(states));
   }

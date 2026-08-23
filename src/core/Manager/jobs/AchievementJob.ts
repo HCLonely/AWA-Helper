@@ -3,6 +3,8 @@
  * @description 将成就服务封装为可由 Manager 创建、运行和释放的作业。
  */
 import { AchievementService } from '../../Achievement/AchievementService';
+import { loadConfig } from '../../../tools/config';
+import { updateYamlFieldsSync } from '../../../tools/config/YamlConfig';
 import type { Job } from '../Job';
 
 class AchievementJob implements Job {
@@ -11,9 +13,9 @@ class AchievementJob implements Job {
 
   /**
    * 初始化 Achievement Job 实例。
-   * @param appConfig - 控制当前操作行为的配置，类型为 `config`。
+   * @param configPath - 配置文件路径；每次运行时重新读取，避免使用 Manager 启动时缓存的 Cookie。
    */
-  constructor(private readonly appConfig: config) {}
+  constructor(private readonly configPath: string) {}
 
   /**
    * 执行 run 相关数据。
@@ -21,16 +23,17 @@ class AchievementJob implements Job {
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
   async run(signal: AbortSignal): Promise<boolean> {
-    if (!this.appConfig.awaCookie) {
+    const appConfig = loadConfig(this.configPath).raw;
+    if (!appConfig.awaCookie) {
       throw new Error('awaCookie is not configured');
     }
     this.service = new AchievementService({
-      awaCookie: this.appConfig.awaCookie,
-      awaHost: this.appConfig.awaHost,
-      twitchCookie: this.appConfig.twitchCookie,
-      proxy: this.appConfig.proxy,
-      userAgent: this.appConfig.UA,
-      logRequests: this.appConfig.debug?.http === true
+      awaCookie: appConfig.awaCookie,
+      awaHost: appConfig.awaHost,
+      twitchCookie: appConfig.twitchCookie,
+      proxy: appConfig.proxy,
+      userAgent: appConfig.UA,
+      logRequests: appConfig.debug?.http === true
     });
     /**
      * 处理 abort 相关逻辑。
@@ -40,6 +43,7 @@ class AchievementJob implements Job {
     signal.addEventListener('abort', abort, { once: true });
     try {
       await this.service.init();
+      updateYamlFieldsSync(this.configPath, { awaCookie: this.service.awa.newCookie });
       if (signal.aborted) {
         return false;
       }
