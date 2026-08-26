@@ -17,6 +17,7 @@ export class AchievementService {
   awa: AWAApiClient;
   twitch!: TwitchClient | null;
   twitchCookie?: string;
+  private readonly proxy?: proxy;
   availableAchievements: Array<string> = [
     'Use 25 different borders',
     'Change your border once a day for a week',
@@ -84,6 +85,7 @@ export class AchievementService {
   constructor({ awaCookie, proxy, awaHost, twitchCookie, userAgent, logRequests }: {
     awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string; logRequests?: boolean
   }) {
+    this.proxy = proxy;
     this.awa = new AWAApiClient({
       cookie: awaCookie,
       proxy,
@@ -365,7 +367,11 @@ export class AchievementService {
     this.watchTwitchStatus.running = true;
     while (this.watchTwitchStatus.running && !signal?.aborted) {
       try {
-        this.twitch = new TwitchClient({ cookie: this.twitchCookie, logRequests: this.awa.context.logRequests });
+        this.twitch = new TwitchClient({
+          cookie: this.twitchCookie,
+          proxy: this.proxy,
+          logRequests: this.awa.context.logRequests
+        });
         await this.twitch.session.verify();
         if (!(await this.twitch.extensions.checkLinked()).ok) {
           return;

@@ -23,6 +23,7 @@ export class ASFContext {
   readonly commandURL: string;
   readonly headers: RawAxiosRequestHeaders;
   readonly botName: string;
+  readonly httpAgent?: myAxiosConfig['httpAgent'];
   readonly httpsAgent?: myAxiosConfig['httpsAgent'];
   readonly transport: HttpTransport;
   private readonly logRequests: boolean;
@@ -46,7 +47,13 @@ export class ASFContext {
       ...(options.password && { Authentication: options.password })
     };
     if (options.proxy?.enable?.includes('asf') && options.proxy.host && options.proxy.port) {
-      this.httpsAgent = createProxyAgent(options.proxy);
+      const targetProtocol = options.protocol === 'https' ? 'https' : 'http';
+      const agent = createProxyAgent(options.proxy, targetProtocol);
+      if (targetProtocol === 'https') {
+        this.httpsAgent = agent;
+      } else {
+        this.httpAgent = agent;
+      }
     }
   }
 
@@ -59,6 +66,9 @@ export class ASFContext {
     const requestOptions: myAxiosConfig = { ...options, headers: { ...this.headers, ...options.headers } };
     if (this.httpsAgent && !requestOptions.httpsAgent) {
       requestOptions.httpsAgent = this.httpsAgent;
+    }
+    if (this.httpAgent && !requestOptions.httpAgent) {
+      requestOptions.httpAgent = this.httpAgent;
     }
     const execute = () => this.transport.request<T>(requestOptions);
     return this.logRequests ? observeExternalRequest('ASF', requestOptions, execute) : execute();

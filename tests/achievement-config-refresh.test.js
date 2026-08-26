@@ -14,3 +14,10 @@ test('Manager gives AchievementJob the live configuration path instead of a star
   assert.match(source, /new AchievementJob\(this\.loaded\.path\)/);
   assert.doesNotMatch(source, /new AchievementJob\(this\.loaded\.raw\)/);
 });
+
+test('Achievement forwards its proxy configuration to both AWA and Twitch clients', () => {
+  const source = fs.readFileSync(path.join(__dirname, '../src/core/Achievement/AchievementService.ts'), 'utf8');
+  assert.match(source, /this\.proxy = proxy/);
+  assert.match(source, /new AWAApiClient\(\{[\s\S]*?proxy,/);
+  assert.match(source, /new TwitchClient\(\{[\s\S]*?proxy: this\.proxy,/);
+});

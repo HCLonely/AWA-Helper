@@ -60,6 +60,25 @@ test('ASF command API uses injected transport and validates the IPC envelope', a
   assert.deepEqual(JSON.parse(request.data), { Command: '!status bot' });
 });
 
+test('ASF applies the configured proxy agent for its target protocol', async () => {
+  const requests = [];
+  const transport = { request: async (config) => {
+    requests.push(config);
+    return response({ Success: true, Message: 'OK', Result: 'ready' });
+  } };
+  const proxy = { enable: ['asf'], protocol: 'http', host: '127.0.0.1', port: 8080 };
+
+  const httpContext = new ASFContext({ protocol: 'http', host: 'asf.local', port: 1242, botName: 'bot', proxy, transport });
+  await executeCommand(httpContext, '!status bot');
+  assert.ok(requests[0].httpAgent);
+  assert.equal(requests[0].httpsAgent, undefined);
+
+  const httpsContext = new ASFContext({ protocol: 'https', host: 'asf.local', port: 1242, botName: 'bot', proxy, transport });
+  await executeCommand(httpsContext, '!status bot');
+  assert.ok(requests[1].httpsAgent);
+  assert.equal(requests[1].httpAgent, undefined);
+});
+
 test('remote operations return discriminated business results', async () => {
   let requested = false;
   const transport = { request: async () => {

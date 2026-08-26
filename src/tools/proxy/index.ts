@@ -2,7 +2,10 @@
 import * as tunnel from 'tunnel';
 import { SocksProxyAgent, type SocksProxyAgentOptions } from 'socks-proxy-agent';
 
-export const formatProxy = (configuration: proxy): myAxiosConfig['httpsAgent'] => {
+export const formatProxy = (
+  configuration: proxy,
+  targetProtocol: 'http' | 'https' = 'https'
+): myAxiosConfig['httpsAgent'] => {
   const options: tunnel.ProxyOptions & SocksProxyAgentOptions = { host: configuration.host, port: configuration.port };
   if (configuration.protocol?.includes('socks')) {
     options.hostname = configuration.host;
@@ -16,10 +19,14 @@ export const formatProxy = (configuration: proxy): myAxiosConfig['httpsAgent'] =
     options.proxyAuth = `${configuration.username}:${configuration.password}`;
   }
   if (configuration.protocol === 'http') {
-    return tunnel.httpsOverHttp({ proxy: options });
+    return targetProtocol === 'http'
+      ? tunnel.httpOverHttp({ proxy: options })
+      : tunnel.httpsOverHttp({ proxy: options });
   }
   if (configuration.protocol === 'https') {
-    return tunnel.httpsOverHttps({ proxy: options });
+    return targetProtocol === 'http'
+      ? tunnel.httpOverHttps({ proxy: options })
+      : tunnel.httpsOverHttps({ proxy: options });
   }
   return undefined;
 };

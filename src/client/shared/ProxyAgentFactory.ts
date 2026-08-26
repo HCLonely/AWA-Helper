@@ -9,4 +9,7 @@ import { formatProxy } from '../../tools/proxy';
  * @param configuration - 控制当前操作行为的配置，类型为 `proxy`。
  * @returns `any`，createProxyAgent 创建的对象或数据。
  */
-export const createProxyAgent = (configuration: proxy): myAxiosConfig['httpsAgent'] => formatProxy(configuration);
+export const createProxyAgent = (
+  configuration: proxy,
+  targetProtocol: 'http' | 'https' = 'https'
+): myAxiosConfig['httpsAgent'] => formatProxy(configuration, targetProtocol);
