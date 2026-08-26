@@ -13,6 +13,7 @@ import type WebSocket from 'ws';
 import type { Server } from 'http';
 import { parse as parseYaml } from 'yaml';
 import { atomicWriteFileSync, updateYamlFieldsSync, validateYaml } from '../tools/config/YamlConfig';
+import { defaultConfig } from '../tools/config/ConfigLoader';
 import { deepMerge, validateHelperConfig } from '../tools/config/ConfigSchema';
 import type { LoadedConfig } from '../tools/config/types';
 import type { JobName } from '../core/Manager/Job';
@@ -39,6 +40,10 @@ import * as zh from '../locales/zh.json';
 // @ts-ignore 由构建流程生成本地化资源。
 import * as en from '../locales/en.json';
 
+interface ConfigReloadResult {
+  restartRequired: boolean
+}
+
 class UnifiedServer {
   private server?: Server;
 
@@ -48,12 +53,14 @@ class UnifiedServer {
    * @param coordinator - 负责协调作业启动与停止的协调器，类型为 `JobCoordinator`。
    * @param version - 用于比较或展示的应用版本号，类型为 `string`。
    * @param requestShutdown - 请求应用安全关闭的回调函数，类型为 `() => void`。
+   * @param reloadConfig - 配置写入成功后刷新 Manager 运行时的回调函数。
    */
   constructor(
     private readonly loaded: LoadedConfig,
     private readonly coordinator: JobCoordinator,
     private readonly version: string,
-    private readonly requestShutdown: () => void
+    private readonly requestShutdown: () => void,
+    private readonly reloadConfig: () => ConfigReloadResult
   ) {}
 
   /**
@@ -208,14 +215,15 @@ class UnifiedServer {
       }
       try {
         validateYaml(source);
-        const parsed = deepMerge(this.loaded.raw, parseYaml(source));
+        const parsed = deepMerge(defaultConfig, parseYaml(source));
         const errors = validateHelperConfig(parsed);
         if (errors.length > 0) {
           return res.status(422).json({ errors });
         }
         atomicWriteFileSync(configPath, source);
+        const { restartRequired } = this.reloadConfig();
         new Logger(`${time()}${__('serverConfigUpdated')}`);
-        return res.json({ status: 'success', restartRequired: true });
+        return res.json({ status: 'success', reloaded: true, restartRequired });
       } catch (error) {
         new Logger(`${time()}${__('serverConfigRejected', error instanceof Error ? error.name : __('unknownError'))}`);
         return res.status(422).json({ error: error instanceof Error ? error.message : String(error) });

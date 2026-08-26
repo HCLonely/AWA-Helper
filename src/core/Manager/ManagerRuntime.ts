@@ -36,6 +36,7 @@ class ManagerRuntime {
   private readonly loaded = loadConfig();
   private readonly scheduler = new Scheduler(this.coordinator, this.loaded.manager);
   private readonly server: UnifiedServer;
+  private readonly initialTlsRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
   private stopping = false;
   private shutdownSignalled = false;
   private resolveShutdown!: () => void;
@@ -53,7 +54,13 @@ class ManagerRuntime {
     private readonly version: string,
     private readonly hooks: ManagerRuntimeHooks = {}
   ) {
-    this.server = new UnifiedServer(this.loaded, this.coordinator, version, () => this.requestShutdown());
+    this.server = new UnifiedServer(
+      this.loaded,
+      this.coordinator,
+      version,
+      () => this.requestShutdown(),
+      () => this.reloadConfiguration()
+    );
     this.coordinator.register(new DailyQuestJob());
     this.coordinator.register(new AchievementJob(this.loaded.path));
     this.coordinator.register(new ArtifactJob(this.loaded.path));
@@ -163,6 +170,37 @@ class ManagerRuntime {
   }
 
   /**
+   * 从磁盘重新加载配置，并更新无需重启进程即可生效的运行时状态。
+   * WebUI 的监听方式由已经创建的 HTTP(S) Server 决定，因此相关变化会提示重启。
+   */
+  private reloadConfiguration(): { restartRequired: boolean } {
+    const next = loadConfig(this.loaded.path);
+    const previousWebUi = this.webUiServerSignature(this.loaded.raw.webUI);
+    const nextWebUi = this.webUiServerSignature(next.raw.webUI);
+
+    this.scheduler.reload(next.manager);
+    this.replaceObject(this.loaded.raw, next.raw);
+    this.replaceObject(this.loaded.manager, next.manager);
+    this.applyRuntimeConfiguration();
+
+    return { restartRequired: previousWebUi !== nextWebUi };
+  }
+
+  private webUiServerSignature(webUI: config['webUI']): string {
+    return JSON.stringify({
+      enable: webUI?.enable !== false,
+      port: webUI?.port || 2345,
+      local: webUI?.local,
+      ssl: webUI?.ssl
+    });
+  }
+
+  private replaceObject<T extends object>(target: T, source: T): void {
+    Object.keys(target).forEach((key) => delete (target as Record<string, unknown>)[key]);
+    Object.assign(target, source);
+  }
+
+  /**
    * 停止 stop 相关数据。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
@@ -185,20 +223,31 @@ class ManagerRuntime {
   private initializeEnvironment(): void {
     fs.mkdirSync('logs', { recursive: true });
     fs.mkdirSync('data', { recursive: true });
+    this.applyRuntimeConfiguration();
+    globalThis.log = true;
+    globalThis.newVersionNotice = '';
+  }
+
+  /** 将当前已加载配置同步到进程级的动态运行参数。 */
+  private applyRuntimeConfiguration(): void {
     initializeI18n(this.loaded.raw.language, { zh, en });
     globalThis.language = this.loaded.raw.language;
     globalThis.version = this.version;
     globalThis.webUI = this.loaded.raw.webUI?.enable !== false;
     configureWebUiColors(globalThis.webUI);
     globalThis.pusher = this.loaded.raw.pusher;
-    globalThis.log = true;
-    globalThis.newVersionNotice = '';
     setLogSecrets(this.loaded.raw);
     if (this.loaded.raw.pusher?.enable && this.loaded.raw.proxy?.enable?.includes('pusher')) {
       globalThis.pusherProxy = this.loaded.raw.proxy;
+    } else {
+      Reflect.deleteProperty(globalThis, 'pusherProxy');
     }
     if (this.loaded.raw.TLSRejectUnauthorized === false) {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    } else if (this.initialTlsRejectUnauthorized === undefined) {
+      delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    } else {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = this.initialTlsRejectUnauthorized;
     }
     if (this.loaded.raw.logsExpire) {
       cleanupExpiredLogs('logs', this.loaded.raw.logsExpire);

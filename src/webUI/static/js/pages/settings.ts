@@ -574,6 +574,14 @@
     }).then(async (response) => {
       console.log(response);
       if (response.status === 200) {
+        const saved = jsyaml.load(data) as ConfigData;
+        const newSecret = saved?.manager?.secret;
+        if (typeof newSecret === 'string' && newSecret) {
+          sessionStorage.managerServerSecret = newSecret;
+          if (localStorage.getItem('managerServerSecret')) {
+            localStorage.setItem('managerServerSecret', newSecret);
+          }
+        }
         showMsg('Success');
         return true;
       }

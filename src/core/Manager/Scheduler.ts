@@ -9,19 +9,24 @@ import type { JobCoordinator } from './JobCoordinator';
 
 class Scheduler {
   private readonly tasks: cron.ScheduledTask[] = [];
+  private started = false;
 
   /**
    * 初始化 Scheduler 实例。
    * @param coordinator - 负责协调作业启动与停止的协调器，类型为 `JobCoordinator`。
    * @param config - 控制当前操作行为的配置，类型为 `NormalizedManagerConfig`。
    */
-  constructor(private readonly coordinator: JobCoordinator, private readonly config: NormalizedManagerConfig) {}
+  constructor(private readonly coordinator: JobCoordinator, private config: NormalizedManagerConfig) {}
 
   /**
    * 执行 start 相关数据。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   start(): void {
+    if (this.started) {
+      return;
+    }
+    this.started = true;
     if (this.config.dailyQuestCron) {
       this.schedule('dailyQuest', this.config.dailyQuestCron, () => this.restart('dailyQuest'));
     }
@@ -42,8 +47,22 @@ class Scheduler {
     if (this.tasks.length > 0) {
       new Logger(`${time()}${__('schedulerStopping', String(this.tasks.length))}`);
     }
-    this.tasks.forEach((task) => task.stop());
+    this.tasks.forEach((task) => task.destroy());
     this.tasks.length = 0;
+    this.started = false;
+  }
+
+  /**
+   * 用新配置替换当前调度计划；仅在调度器已经启动时重新注册任务。
+   * @param config - 最新的标准 Manager 配置。
+   */
+  reload(config: NormalizedManagerConfig): void {
+    const shouldRestart = this.started;
+    this.stop();
+    this.config = config;
+    if (shouldRestart) {
+      this.start();
+    }
   }
 
   /**
