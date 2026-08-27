@@ -63,8 +63,8 @@ awaQuests:
   - dailyQuest
   # - battlePass
   - timeOnSite
-  - watchTwitch
-  - steamQuest
+  # - watchTwitch
+  # - steamQuest
 joinSteamCommunityEvent: true
 ```
 
@@ -82,7 +82,7 @@ asfPassword: ''
 asfBotname: ''
 ```
 
-`twitchCookie` must contain `unique_id` and `auth-token`. Steam tasks currently use ASF. Make sure that ASF IPC is accessible from the environment where AWA-Helper runs.
+When `watchTwitch` is enabled, `twitchCookie` must contain non-empty `unique_id` and `auth-token` fields. When `steamQuest` is enabled, configure `steamUse: ASF`, a valid ASF host, port, and bot name, and ensure that ASF IPC is reachable from the AWA-Helper environment.
 
 ## Proxy
 
@@ -99,7 +99,7 @@ proxy:
   password: ''
 ```
 
-`enable` accepts individual services: `github`, `twitch`, `awa`, `asf`, `steam`, or `pusher`. Supported protocols are `http`, `https`, `socks4`, and `socks5`.
+`enable` accepts individual services: `github`, `twitch`, `awa`, `asf`, or `pusher`. Steam quest endpoints on AWA use `awa`, while ASF IPC uses `asf`. The legacy `steam` target remains temporarily compatible but is deprecated. Supported protocols are `http`, `https`, `socks4`, and `socks5`.
 
 ## Notifications
 

@@ -68,8 +68,8 @@ findLast(
     awaCookie?: string
     awaHost: string
     awaBoosterNotice?: boolean
-    awaQuests: Array<string>
-    awaDailyQuestType: Array<string>
+    awaQuests: Array<'getStarted' | 'dailyQuest' | 'dailyQuestOld' | 'battlePass' | 'timeOnSite' | 'watchTwitch' | 'steamQuest'>
+    awaDailyQuestType: Array<'click' | 'visitLink' | 'openLink' | 'changeBorder' | 'changeAvatar' | 'viewNews' | 'sharePost' | 'replyPost'>
     awaSafeReply?: boolean,
     joinSteamCommunityEvent?: boolean
     twitchCookie?: string
@@ -93,7 +93,7 @@ findLast(
     pusher?: pusher
   }
   interface proxy {
-    enable: Array<string>
+    enable: Array<'github' | 'twitch' | 'awa' | 'asf' | 'steam' | 'pusher'>
     host: string
     port: number
     protocol?: string

@@ -15,6 +15,11 @@ test('WebUI defaults to port 2345', () => {
   assert.equal(defaultConfig.webUI.port, 2345);
 });
 
+test('credential-dependent quests are opt-in by default', () => {
+  assert.equal(defaultConfig.awaQuests.includes('watchTwitch'), false);
+  assert.equal(defaultConfig.awaQuests.includes('steamQuest'), false);
+});
+
 test('HTTP debug logging defaults to disabled and validates as a boolean', () => {
   assert.deepEqual(defaultConfig.debug, { http: false });
   const base = {
@@ -134,4 +139,49 @@ test('Manager local binding remains reachable through container port forwarding'
   assert.equal(getManagerListenHost(true, false), '127.0.0.1');
   assert.equal(getManagerListenHost(true, true), '0.0.0.0');
   assert.equal(getManagerListenHost(false, false), '0.0.0.0');
+});
+
+test('configuration rejects unsupported task and proxy target names', () => {
+  const base = {
+    language: 'zh', awaHost: 'www.alienwarearena.com', webUI: { enable: false }, awaDailyQuestType: []
+  };
+  const errors = validateHelperConfig({
+    ...base,
+    awaQuests: ['dailyQeust'],
+    proxy: { enable: ['gitub'], protocol: 'http', host: '127.0.0.1', port: 1080 }
+  });
+  assert.equal(errors.includes('awaQuests[0] contains unsupported value: dailyQeust'), true);
+  assert.equal(errors.includes('proxy.enable[0] contains unsupported value: gitub'), true);
+});
+
+test('configuration validates cron expressions before scheduling', () => {
+  const errors = validateHelperConfig({
+    language: 'zh', awaHost: 'www.alienwarearena.com', awaQuests: [], awaDailyQuestType: [],
+    webUI: { enable: false },
+    manager: {
+      dailyQuest: { cron: 'not-a-cron' },
+      achievement: { enable: true, cron: 'still-not-a-cron' },
+      artifacts: [{ cron: 'invalid', ids: [1, 2, 3] }]
+    }
+  });
+  assert.equal(errors.includes('manager.dailyQuest.cron must be a valid cron expression'), true);
+  assert.equal(errors.includes('manager.achievement.cron must be a valid cron expression'), true);
+  assert.equal(errors.includes('manager.artifacts[0].cron must be a valid cron expression'), true);
+});
+
+test('enabled integrations require their dependent configuration', () => {
+  const errors = validateHelperConfig({
+    language: 'zh', awaHost: 'www.alienwarearena.com',
+    awaQuests: ['watchTwitch', 'steamQuest'], awaDailyQuestType: [],
+    twitchCookie: 'auth-token=only',
+    asfProtocol: 'http', asfPort: 1242, asfHost: '', asfBotname: '',
+    webUI: { enable: true, port: 2345, ssl: { key: 'server.key', cert: '' } },
+    pusher: { enable: true, platform: '', key: {} }
+  });
+  assert.equal(errors.includes('twitchCookie must contain auth-token and unique_id when watchTwitch is enabled'), true);
+  assert.equal(errors.includes('asfHost must be a non-empty string when steamQuest is enabled'), true);
+  assert.equal(errors.includes('asfBotname must be a non-empty string when steamQuest is enabled'), true);
+  assert.equal(errors.includes('webUI.ssl.key and webUI.ssl.cert must be configured together'), true);
+  assert.equal(errors.includes('pusher.platform must be a non-empty string when enabled'), true);
+  assert.equal(errors.includes('pusher.key must be a non-empty object when enabled'), true);
 });

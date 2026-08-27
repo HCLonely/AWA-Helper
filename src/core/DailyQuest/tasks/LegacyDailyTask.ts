@@ -37,30 +37,30 @@ class LegacyDailyTask {
   /**
    * 处理 do 相关逻辑。
    * @param signal - 用于停止后续账户操作的中止信号。
-   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   * @returns `Promise<boolean>`，表示旧版每日任务是否已完成或当前没有可处理任务。
    */
-  async do(signal?: AbortSignal): Promise<void> {
+  async do(signal?: AbortSignal): Promise<boolean> {
     if (signal?.aborted) {
-      return;
+      return false;
     }
     if (!this.runtime.state.questInfo.dailyQuest?.[0]) {
       new Logger(time() + chalk.yellow(__('noDailyQuest')));
-      return;
+      return true;
     }
 
     if (this.checkDailyQuestCompleted()) {
-      return;
+      return true;
     }
 
     for (const { name } of this.runtime.state.questInfo.dailyQuest) {
       if (signal?.aborted) {
-        return;
+        return false;
       }
       const matchedQuest = this.matchQuest(name);
       if (matchedQuest.length > 0) {
         for (const quest of matchedQuest) {
           if (signal?.aborted) {
-            return;
+            return false;
           }
           const action = this.getAction(quest, signal);
           if (action && this.awaDailyQuestType.includes(quest)) {
@@ -69,16 +69,16 @@ class LegacyDailyTask {
             await this.runtime.visit(new URL(quest, `${this.runtime.awa.context.baseURL}/`).href, signal);
           }
           if (signal?.aborted) {
-            return;
+            return false;
           }
           this.done.push(quest);
           if (!await sleep(random(1, 2), signal)) {
-            return;
+            return false;
           }
         }
         await this.runtime.updateDailyQuests();
         if (this.checkDailyQuestCompleted()) {
-          return;
+          return true;
         }
       }
     }
@@ -86,56 +86,57 @@ class LegacyDailyTask {
     if (this.awaDailyQuestType.includes('viewNews') && !this.done.includes('viewNews')) {
       await this.runtime.viewNews(signal);
       if (signal?.aborted) {
-        return;
+        return false;
       }
     }
     if (this.awaDailyQuestType.includes('sharePost') && !this.done.includes('sharePost')) {
       await this.runtime.sharePosts(undefined, signal);
       if (signal?.aborted) {
-        return;
+        return false;
       }
     }
 
     await this.runtime.updateDailyQuests();
     if (signal?.aborted) {
-      return;
+      return false;
     }
     if (this.checkDailyQuestCompleted()) {
-      return;
+      return true;
     }
 
     if (this.awaDailyQuestType.includes('openLink')) {
       const linksPathname = ['/rewards/leaderboard', '/rewards', '/marketplace/', '/ucf/Video', '/faq-contact', '/account/personalization'];
       for (const pathname of linksPathname) {
         if (signal?.aborted) {
-          return;
+          return false;
         }
         if (!this.done.includes(pathname)) {
           await this.runtime.visit(new URL(pathname, `${this.runtime.awa.context.baseURL}/`).href, signal);
           if (!await sleep(random(1, 3), signal)) {
-            return;
+            return false;
           }
         }
       }
     }
     await this.runtime.updateDailyQuests();
     if (signal?.aborted) {
-      return;
+      return false;
     }
     if (this.checkDailyQuestCompleted()) {
-      return;
+      return true;
     }
     if (this.awaDailyQuestType.includes('replyPost') && !this.done.includes('replyPost')) {
       await this.runtime.replyPost(undefined, signal);
       if (signal?.aborted) {
-        return;
+        return false;
       }
       await this.runtime.updateDailyQuests();
       if (this.checkDailyQuestCompleted()) {
-        return;
+        return true;
       }
     }
     new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
+    return false;
   }
 
   /**

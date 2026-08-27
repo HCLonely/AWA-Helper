@@ -156,8 +156,6 @@
         - getStarted
         - dailyQuest
         - timeOnSite
-        - watchTwitch
-        - steamQuest
     awaDailyQuestType:
       name: 需要做的每日任务(旧版)类型
       desp: 按`Ctrl`多选
@@ -252,20 +250,17 @@
             - twitch
             - awa
             - asf
-            - steam
             - pusher
           optionsName:
             - 在检测更新时使用代理
             - 在访问Twitch站点时使用代理
             - 在访问外星人论坛站点时使用代理
             - 在访问ASF时使用代理
-            - 在访问Steam时使用代理
             - 在推送时使用代理
           defaultValue:
             - github
             - twitch
             - awa
-            - steam
         protocol:
           name: 代理协议
           type: single-select

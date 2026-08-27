@@ -402,13 +402,6 @@ serverConfigRejected: '[Server] 配置更新被拒绝：%s'
 serverAwaCredentialsUpdated: '[Server] AWA 凭据已更新'
 serverTwitchCredentialsUpdated: '[Server] Twitch 凭据已更新'
 serverManagerShutdownRequested: '[Server] API 请求关闭 Manager'
-serverLegacyDailyQuestStart: '[Server] 旧版 API 请求启动 DailyQuest'
-serverLegacyDailyQuestStop: '[Server] 旧版 API 请求停止 DailyQuest'
-serverLegacyAchievementStart: '[Server] 旧版 API 请求启动 Achievement'
-serverLegacyAchievementStop: '[Server] 旧版 API 请求停止 Achievement'
-serverLegacyConfigUpdated: '[Server] 已通过旧版 API 更新配置，需要重启后生效'
-serverLegacyConfigRejected: '[Server] 旧版 API 配置更新被拒绝：%s'
-serverLegacyManagerShutdown: '[Server] 旧版 API 请求关闭 Manager'
 serverListening: '[Server] 正在监听 %s://%s:%s'
 serverStopSkipped: '[Server] 服务未监听，跳过停止操作'
 serverStopping: '[Server] 正在停止 WebUI 服务'
@@ -449,6 +442,7 @@ awaListenerFailed: 'AWA 监听失败：%s'
 twitchAuthorizationExpiredRetrying: Twitch 授权已过期，正在重试
 updatePrepared: AWA-Helper %s 已下载并通过校验，将在当前进程退出后安装。
 managerWeakSecretWarning: '警告：manager.secret 当前长度为 %s，建议至少使用 16 个字符。'
+deprecatedSteamProxyTarget: '警告：proxy.enable 中的 steam 已弃用且不会控制独立请求；请按目标改用 awa 或 asf。'
 logStatusOk: 成功
 logStatusError: 错误
 logStatusFailed: 失败

@@ -16,6 +16,8 @@
   type JobStatus = 'idle' | 'running' | 'stopping' | string;
   type CheckStatus = 'start' | 'stop';
 
+  const authorization = (secret: string) => ({ Authorization: `Bearer ${secret}` });
+
   async function openLog(scope: string, secret: string): Promise<void> {
     const response = await axios.get(`/api/logs/${scope}`, {
       headers: { Authorization: `Bearer ${secret}` },
@@ -30,38 +32,36 @@
   function getStatus(secret: string): Promise<string | false | undefined> {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingDailyQuestStatus')}</li>`);
     dom('#log-area li:last-child')[0].scrollIntoView();
-    return axios.post('/runStatus', { secret }).then((response) => {
+    return axios.get('/api/jobs/dailyQuest', { headers: authorization(secret) }).then((response) => {
       console.log(response);
       if (response.status === 200) {
-        const lastRunTime = response.data?.lastRunTime;
+        const lastRunTime = response.data?.startedAt;
+        const runStatus = ['running', 'stopping'].includes(response.data?.status) ? 'Running' : 'Stop';
         dom('.last-run-time').text(lastRunTime ? dayjs(lastRunTime).format('YYYY-MM-DD HH:mm:ss') : '-');
-        dom('.run-status').text(response.data?.runStatus);
-        if (response.data?.webui) {
-          dom('.run-status').html(`<a href="/daily-quest" target="_blank">${response.data?.runStatus}</a>`);
-        }
+        dom('.run-status').html(`<a href="/daily-quest" target="_blank">${runStatus}</a>`);
         dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('getDailyQuestStatusSuccess')}</li>`);
         dom('#log-area li:last-child')[0].scrollIntoView();
-        return response.data?.runStatus;
+        return runStatus;
       }
       dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('getDailyQuestStatusFailed')}(${response.status})!</li>`);
       dom('#log-area li:last-child')[0].scrollIntoView();
       dom('.last-run-time').text('Error');
       dom('.run-status').text('Error');
-      return false;
+      return false as const;
     }).catch((error) => {
       dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('getDailyQuestStatusFailed')}(${error.message})！</li>`);
       dom('#log-area li:last-child')[0].scrollIntoView();
       dom('.last-run-time').text('Error');
       dom('.run-status').text('Error');
       console.error(error);
-      return false;
+      return false as const;
     });
   }
   function startDailyQuest(secret: string): void {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingDailyQuest')}</li>`);
     dom('#log-area li:last-child')[0].scrollIntoView();
-    axios.post('/start', { secret }).then(async (response) => {
-      if (response.status === 200) {
+    axios.post('/api/jobs/dailyQuest/start', {}, { headers: authorization(secret) }).then(async (response) => {
+      if (response.status === 202) {
         const result = await statusChecker(secret, 'start');
         if (result === 'success') {
           dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('startSuccess')}</li>`);
@@ -88,7 +88,7 @@
   function stopDailyQuest(secret: string, stopManager = false): void {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingDailyQuest')}</li>`);
     dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingDailyQuest')}`);
-    axios.post('/stop', { secret }).then(async (response) => {
+    axios.post('/api/jobs/dailyQuest/stop', {}, { headers: authorization(secret) }).then(async (response) => {
       if (response.status === 200) {
         const result = await statusChecker(secret, 'stop');
         if (result === 'success') {
@@ -121,7 +121,7 @@
     updateButton.prop('disabled', true);
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updating')}</li>`);
     dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updating')}`);
-    axios.post('/update', { secret }).then(async (response) => {
+    axios.post('/api/manager/update', {}, { headers: authorization(secret) }).then(async (response) => {
       if (response.status === 200 || response.status === 202) {
         await sleep(10);
         const result = await managerStatusChecker('start');
@@ -166,7 +166,7 @@
   async function managerStatusChecker(status: CheckStatus, times = 1): Promise<'success' | 'error'> {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingManagerStatus')}</li>`);
     dom('#log-area li:last-child')[0].scrollIntoView();
-    const runStatus = await axios.get('/').then(() => true).catch(() => false);
+    const runStatus = await axios.get('/api/health/live').then(() => true).catch(() => false);
     if (status === 'start') {
       if (runStatus) {
         return 'success';
@@ -192,7 +192,7 @@
   function stopAWAManager(secret: string): void {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingManager')}</li>`);
     dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingManager')}`);
-    axios.post('/stopManager', { secret }).then(async (response) => {
+    axios.post('/api/manager/shutdown', {}, { headers: authorization(secret) }).then(async (response) => {
       const result = await managerStatusChecker('stop');
       if (result === 'success') {
         dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('managerStopped')}</li>`);
@@ -242,8 +242,8 @@
   function startAchievement(secret: string): void {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('startingAchievement')}</li>`);
     dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('startingAchievement')}`);
-    axios.post('/startAchievement', { secret }).then(async (response) => {
-      if (response.data === 'success') {
+    axios.post('/api/jobs/achievement/start', {}, { headers: authorization(secret) }).then(async (response) => {
+      if (response.status === 202) {
         dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStarted')}</li>`);
         dom('#log-area li:last-child')[0].scrollIntoView();
         dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStarted')}`);
@@ -264,8 +264,8 @@
   function stopAchievement(secret: string): void {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('stoppingAchievement')}</li>`);
     dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('stoppingAchievement')}`);
-    axios.post('/stopAchievement', { secret }).then(async (response) => {
-      if (response.data === 'success') {
+    axios.post('/api/jobs/achievement/stop', {}, { headers: authorization(secret) }).then(async (response) => {
+      if (response.data?.status === 'success') {
         dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('achievementStopped')}</li>`);
         dom('#log-area li:last-child')[0].scrollIntoView();
         dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('achievementStopped')}`);
@@ -324,7 +324,7 @@
     dom('#remember-secret').prop('checked', true);
   }
   dom('button.awa-helper-config').click(() => {
-    window.open('/configer', '_target');
+    window.open('/settings', '_target');
   });
   dom('button.refresh-status').click(() => {
     if (!managerServerSecret) {

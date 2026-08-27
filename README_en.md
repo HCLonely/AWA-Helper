@@ -298,7 +298,6 @@ proxy:
     - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
-    - steam # 在访问Steam时使用代理，不使用删掉此行
     - pusher # 在推送时使用代理，不使用删掉此行
   protocol: 'http' # 代理协议，'http'或'socks'
   host: '127.0.0.1' # 代理host

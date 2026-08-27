@@ -43,8 +43,17 @@ test('WebUI buttons request their matching scoped log endpoints', () => {
   assert.match(source, /openLog\('achievement'/);
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
   assert.match(server, /getLogFilePath\(candidate\)/);
-  assert.match(server, /sendLogs\(req, res, 'dailyQuest'\)/);
-  assert.match(server, /sendLogs\(req, res, 'achievement'\)/);
+  assert.match(server, /app\.get\('\/api\/logs\/:job'/);
+});
+
+test('Unified server no longer exposes legacy API compatibility routes', () => {
+  const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
+  [
+    '/start', '/stop', '/startAchievement', '/stopAchievement', '/runStatus', '/update',
+    '/stopManager', '/runLogs', '/awaAchievementLogs', '/updateCookie', '/updateTwitchCookie',
+    '/health/live', '/run-status', '/dailyQuest', '/awa-helper', '/configer'
+  ].forEach((route) => assert.ok(!server.includes(`'${route}'`), `legacy route remains on server: ${route}`));
+  assert.doesNotMatch(server, /req\.body\?\.secret/);
 });
 
 test('Manager WebUI synchronizes Achievement buttons with the running job state', () => {
@@ -53,6 +62,23 @@ test('Manager WebUI synchronizes Achievement buttons with the running job state'
   assert.match(source, /\.prop\('disabled', running \|\| stopping\)/);
   assert.match(source, /\.prop\('disabled', !running\)/);
   assert.match(source, /refreshAchievementStatus\(managerServerSecret\)/);
+});
+
+test('Manager WebUI uses only the unified API routes', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
+  [
+    '/api/jobs/dailyQuest',
+    '/api/jobs/dailyQuest/start',
+    '/api/jobs/dailyQuest/stop',
+    '/api/jobs/achievement/start',
+    '/api/jobs/achievement/stop',
+    '/api/manager/update',
+    '/api/manager/shutdown'
+  ].forEach((route) => assert.ok(source.includes(route), `missing unified route ${route}`));
+  ['/runStatus', '/startAchievement', '/stopAchievement', '/stopManager'].forEach((route) => {
+    assert.ok(!source.includes(route), `legacy route remains in WebUI: ${route}`);
+  });
+  assert.doesNotMatch(source, /axios\.post\('\/(?:start|stop|update)'/);
 });
 
 test('log retention recognizes every scoped filename', () => {

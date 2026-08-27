@@ -13,6 +13,7 @@
 
 ### Breaking Changes
 
+- breaking: 移除 Manager 服务端旧 API、旧页面路径及请求体密钥兼容，内置 WebUI、健康检查和油猴脚本统一使用 `/api/*` 与 Bearer 鉴权
 - breaking: 移除仅校验 YAML 语法的旧 `/getConfig` 和 `/setConfig` 接口，设置页改用经过完整结构校验的 `/api/config`
 - breaking: 移除所有 Achievement 错误拼写对应的页面、接口、标识符、数据目录和日志前缀兼容逻辑
 - breaking: WebSocket 在本地和远程模式下均要求提供有效的 Manager 密钥

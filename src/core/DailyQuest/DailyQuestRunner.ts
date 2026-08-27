@@ -14,15 +14,11 @@ import { BattlePassTask } from './tasks/BattlePassTask';
 import { formatQuestReport } from './QuestReporter';
 import { SteamClient } from '../../client/Steam/SteamClient';
 import * as fs from 'fs';
-import { join, resolve } from 'path';
-import { parse } from 'yaml';
 import { sleep, configureWebUiColors, Logger, time, checkUpdate, push, pushQuestInfoFormat } from '../../tools';
 import chalk from 'chalk';
-import * as yamlLint from 'yaml-lint';
 import * as i18n from 'i18n';
-// @ts-ignore 由构建流程以文本形式导入。
-import { createConfigValidationError, updateYamlFieldsSync } from '../../tools/config/YamlConfig';
-import { deepMerge, validateHelperConfig } from '../../tools/config/ConfigSchema';
+import { loadConfig } from '../../tools/config';
+import { updateYamlFieldsSync } from '../../tools/config/YamlConfig';
 import { setLogSecrets } from '../../tools/logging/sanitize';
 import { cleanupExpiredLogs } from '../../tools/logging/retention';
 import { DEFAULT_AWA_HOST, DEFAULT_USER_AGENT } from '../../client/shared';
@@ -100,73 +96,18 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     // Manager 统一管理项目级启动信息和共享服务器的生命周期。
     const { version } = globalThis;
 
-    // 获取配置文件路径
-    let configPath = 'config.yml';
-    if (/dist$/.test(process.cwd()) || /output$/.test(process.cwd())) {
-      if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
-        configPath = join('../', configPath);
-      }
-    }
-    if (!fs.existsSync(configPath)) {
-      configPath = 'config/config.yml';
-      if (/dist$/.test(process.cwd()) || /output$/.test(process.cwd())) {
-        if (!fs.existsSync(configPath) && fs.existsSync(join('../', configPath))) {
-          configPath = join('../', configPath);
-        }
-      }
-    }
-    if (!fs.existsSync(configPath)) {
-      new Logger(chalk.red(`${__('configFileNotFound')}[${chalk.yellow(resolve(configPath))}]!`));
+    let loadedConfig: ReturnType<typeof loadConfig>;
+    try {
+      loadedConfig = loadConfig();
+    } catch (error) {
+      const locatedError = error as Error & { mark?: { line: number } };
+      const errorLine = Number.isInteger(locatedError.mark?.line) ? chalk.blue((locatedError.mark?.line || 0) + 1) : '???';
+      new Logger(time() + chalk.red(__('configFileErrorAlter', errorLine, chalk.yellow(__('configFileErrorLocation')))));
+      new Logger(locatedError.message);
       return;
     }
-
-    // 默认配置
-    const defaultConfig: config = {
-      language: 'zh',
-      timeout: 86400,
-      logsExpire: 30,
-      debug: { http: false },
-      webUI: {
-        enable: false,
-        port: 2345,
-        local: true,
-        reverseProxyPort: 0
-      },
-      awaHost: 'www.alienwarearena.com',
-      awaBoosterNotice: true,
-      awaQuests: ['getStarted', 'dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
-      awaDailyQuestType: [
-        'click',
-        'visitLink',
-        'openLink',
-        'changeBorder',
-        'changeAvatar',
-        'viewNews'
-      ],
-      asfProtocol: 'http'
-    };
-    // 读取配置文件
-    const configString = fs.readFileSync(configPath).toString();
-    let config: config | null = null;
-    await yamlLint
-      .lint(configString)
-      .then(() => {
-        const parsedConfig = deepMerge(defaultConfig, parse(configString));
-        const validationErrors = validateHelperConfig(parsedConfig);
-        if (validationErrors.length > 0) {
-          throw createConfigValidationError(configString, validationErrors);
-        }
-        config = parsedConfig;
-        setLogSecrets(parsedConfig);
-      })
-      .catch((error) => {
-        const errorLine = Number.isInteger(error.mark?.line) ? chalk.blue(error.mark.line + 1) : '???';
-        new Logger(time() + chalk.red(__('configFileErrorAlter', errorLine, chalk.yellow(__('configFileErrorLocation')))));
-        new Logger(error.message);
-      });
-    if (!config) {
-      return;
-    }
+    const { path: configPath, raw: config } = loadedConfig;
+    setLogSecrets(config);
     const {
       language,
       timeout,
@@ -298,10 +239,14 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       new Logger({ type: 'questInfo', data: formatQuestReport(runtime.state) });
     }
 
+    const failedSequentialTasks: string[] = [];
+
     // 每日任务
     if (awaQuests.includes('dailyQuest') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
       const dailyQuest = new DailyTask(runtime);
-      await dailyQuest.do(shutdownController.signal);
+      if (!await dailyQuest.do(shutdownController.signal)) {
+        failedSequentialTasks.push('AWA DailyQuest');
+      }
       if (shutdownController.signal.aborted) {
         return false;
       }
@@ -311,7 +256,9 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       const dailyQuestOld = new LegacyDailyTask(runtime, {
         awaDailyQuestType
       });
-      await dailyQuestOld.do(shutdownController.signal);
+      if (!await dailyQuestOld.do(shutdownController.signal)) {
+        failedSequentialTasks.push('AWA Legacy DailyQuest');
+      }
       if (shutdownController.signal.aborted) {
         return false;
       }
@@ -424,18 +371,20 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       return false;
     }
     if (awaQuests.includes('battlePass')) {
-      await BattlePassTask.run(runtime, shutdownController.signal);
+      if (!await BattlePassTask.run(runtime, shutdownController.signal)) {
+        failedSequentialTasks.push('Battle Pass');
+      }
       if (shutdownController.signal.aborted) {
         return false;
       }
       new Logger({ type: 'questInfo', data: formatQuestReport(runtime.state) });
     }
-    const failedQuests = questResults.flatMap((result, index) => {
+    const failedQuests = [...failedSequentialTasks, ...questResults.flatMap((result, index) => {
       if (result.status === 'rejected' || result.value === false) {
         return [quests[index]?.name || `Task ${index + 1}`];
       }
       return [];
-    });
+    })];
     if (failedQuests.length > 0) {
       if (!claimTerminalOutcome('failed')) {
         return false;

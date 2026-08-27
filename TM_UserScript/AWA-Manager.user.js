@@ -210,7 +210,8 @@
         const cookie = cookies.map((e) => `${e.name}=${e.value}`).filter((e) => e).join(';');
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在同步Cookie...`);
         GM_Axios.post(new URL('/api/cookies/awa', url).href, {
-          data: { secret, cookie, userAgent: navigator.userAgent }
+          headers: { Authorization: `Bearer ${secret}` },
+          data: { cookie, userAgent: navigator.userAgent }
         }).then((response) => {
           if (response.status === 200) { // { lastRunTime, runStatus }
             GM_setValue('time', Date.now());
@@ -246,7 +247,10 @@
       if (!error) {
         const cookie = cookies.map((e) => (['auth-token', 'unique_id'].includes(e.name) ? `${e.name}=${e.value}` : null)).filter((e) => e).join(';');
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在同步Twitch Cookie...`);
-        GM_Axios.post(new URL('/api/cookies/twitch', url).href, { data: { secret, cookie } }).then((response) => {
+        GM_Axios.post(new URL('/api/cookies/twitch', url).href, {
+          headers: { Authorization: `Bearer ${secret}` },
+          data: { cookie }
+        }).then((response) => {
           if (response.status === 200) {
             $('#awa-manager-server-logs').text(`${time()}AWA-Manager: Twitch Cookie同步成功！`);
             $('#log-area').append(`<li>${time()}AWA-Manager: Twitch Cookie同步成功！</li>`);
@@ -273,19 +277,17 @@
   }
   function getStatus(url, secret) {
     $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在获取AWA-Helper运行状态...`);
-    return GM_Axios.post(`${url}runStatus`, { data: { secret }, dataType: 'json' }).then((response) => {
+    return GM_Axios.get(new URL('/api/jobs/dailyQuest', url).href, {
+      headers: { Authorization: `Bearer ${secret}` },
+      dataType: 'json'
+    }).then((response) => {
       console.log(response);
       if (response.status === 200) {
-        $('.last-run-time').text(response.data?.lastRunTime);
-        $('.run-status').text(response.data?.runStatus);
-        if (response.data?.webui) {
-          const webuiURL = new URL(url);
-          webuiURL.protocol = response.data?.webui.ssl ? 'https:' : 'http:';
-          webuiURL.port = response.data?.webui.port;
-          $('.run-status').html(`<a href="${webuiURL.href}" target="_blank">${response.data?.runStatus}</a>`);
-        }
+        const runStatus = ['running', 'stopping'].includes(response.data?.status) ? 'Running' : 'Stop';
+        $('.last-run-time').text(response.data?.startedAt || '-');
+        $('.run-status').html(`<a href="${new URL('/', url).href}" target="_blank">${runStatus}</a>`);
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 运行状态获取成功！`);
-        return response.data?.runStatus;
+        return runStatus;
       }
       $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 运行状态获取失败(${response.status})！`);
       $('.last-run-time').text('Error');
@@ -301,8 +303,10 @@
   }
   function startHelper(url, secret) {
     $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在启动AWA-Helper...`);
-    GM_Axios.post(`${url}start`, { data: { secret }, retry: 0 }).then(async (response) => {
-      if (response.status === 200) {
+    GM_Axios.post(new URL('/api/jobs/dailyQuest/start', url).href, {
+      headers: { Authorization: `Bearer ${secret}` }, data: {}, retry: 0
+    }).then(async (response) => {
+      if (response.status === 202) {
         const result = await statusChecker(url, secret, 'start');
         if (result === 'success') {
           $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 启动成功！`);
@@ -324,7 +328,9 @@
   }
   function stopHelper(url, secret) {
     $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在终止AWA-Helper...`);
-    GM_Axios.post(`${url}stop`, { data: { secret }, retry: 0 }).then(async (response) => {
+    GM_Axios.post(new URL('/api/jobs/dailyQuest/stop', url).href, {
+      headers: { Authorization: `Bearer ${secret}` }, data: {}, retry: 0
+    }).then(async (response) => {
       if (response.status === 200) {
         const result = await statusChecker(url, secret, 'stop');
         if (result === 'success') {

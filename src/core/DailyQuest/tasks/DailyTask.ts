@@ -64,7 +64,7 @@ class DailyTask {
     }
 
     new Logger(time() + chalk.red(__('dailyQuestNotCompleted')));
-    return true;
+    return false;
   }
   /**
    * 检查 check Daily Quest Completed 相关数据。

@@ -236,6 +236,9 @@ class ManagerRuntime {
     globalThis.webUI = this.loaded.raw.webUI?.enable !== false;
     configureWebUiColors(globalThis.webUI);
     globalThis.pusher = this.loaded.raw.pusher;
+    if (this.loaded.raw.proxy?.enable?.includes('steam')) {
+      new Logger(`${time()}${__('deprecatedSteamProxyTarget')}`);
+    }
     setLogSecrets(this.loaded.raw);
     if (this.loaded.raw.pusher?.enable && this.loaded.raw.proxy?.enable?.includes('pusher')) {
       globalThis.pusherProxy = this.loaded.raw.proxy;

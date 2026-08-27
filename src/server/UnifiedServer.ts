@@ -124,8 +124,7 @@ class UnifiedServer {
      * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
      * @returns `unknown`，requestSecret 请求返回的响应结果。
      */
-    const requestSecret = (req: express.Request): unknown => req.body?.secret ||
-      req.headers.authorization?.replace(/^Bearer\s+/i, '');
+    const requestSecret = (req: express.Request): unknown => req.headers.authorization?.replace(/^Bearer\s+/i, '');
     /**
      * 处理 authenticate 相关逻辑。
      * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
@@ -140,13 +139,38 @@ class UnifiedServer {
       res.status(401).json({ error: 'Authentication required' });
       return false;
     };
+    const updateManager = async (req: express.Request, res: express.Response): Promise<express.Response> => {
+      if (!authenticate(req, res)) {
+        return res;
+      }
+      try {
+        new Logger(`${time()}${__('updateHelper')}`);
+        const update = await scheduleUpdate({ currentVersion: this.version, proxy: raw.proxy, restart: true });
+        const response = res.status(202).json({ status: 'scheduled', ...update });
+        setImmediate(this.requestShutdown);
+        return response;
+      } catch (error) {
+        const known = error instanceof UpdateInstallerError;
+        let status = 500;
+        if (known && ['UP_TO_DATE', 'ALREADY_SCHEDULED'].includes(error.code)) {
+          status = 409;
+        } else if (known && error.code === 'UNSUPPORTED_PLATFORM') {
+          status = 422;
+        } else if (known && ['ASSET_NOT_FOUND', 'UNVERIFIED_ASSET', 'INTEGRITY_MISMATCH'].includes(error.code)) {
+          status = 502;
+        }
+        const message = error instanceof Error ? error.message : String(error);
+        new Logger(`${time()}${__('updateFailed')}: ${message}`);
+        return res.status(status).json({ error: message, code: known ? error.code : 'UPDATE_FAILED' });
+      }
+    };
 
     app.get('/', (_, res) => res.send(render(managerHtml)));
-    app.get(['/daily-quest', '/dailyQuest', '/awa-helper'], (_, res) => res.send(render(dailyQuestHtml)));
+    app.get('/daily-quest', (_, res) => res.send(render(dailyQuestHtml)));
     app.get('/achievement', (_, res) => res.send(render(achievementHtml)));
-    app.get(['/settings', '/configer'], (_, res) => res.send(settingsHtml));
+    app.get('/settings', (_, res) => res.send(settingsHtml));
     app.get('/js/template.yml', (_, res) => res.type('text/yaml').send(raw.language === 'en' ? templateYmlEN : templateYml));
-    app.get(['/health/live', '/api/health/live'], (_, res) => res.json({ status: 'live', version: this.version }));
+    app.get('/api/health/live', (_, res) => res.json({ status: 'live', version: this.version }));
     app.get('/api/version/latest', async (_, res) => {
       try {
         const release = await getReleaseCheck(this.version, raw.proxy);
@@ -162,14 +186,6 @@ class UnifiedServer {
       }
     });
     app.get('/api/health/ready', (_, res) => res.json({ status: 'ready', jobs: this.coordinator.states.list() }));
-    app.get('/run-status', (req, res) => {
-      const remote = req.socket.remoteAddress || '';
-      if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(remote)) {
-        return res.status(404).end();
-      }
-      return res.send(String(process.pid));
-    });
-
     app.get('/api/jobs', (req, res) => authenticate(req, res) && res.json(this.coordinator.states.list()));
     app.get('/api/jobs/:name', (req, res) => {
       if (!authenticate(req, res)) {
@@ -188,6 +204,10 @@ class UnifiedServer {
       try {
         const name = req.params.name as JobName;
         new Logger(`${time()}${__('serverJobStartRequested', name)}`);
+        if (name === 'achievement') {
+          fs.mkdirSync(path.join('data', 'achievement'), { recursive: true });
+          fs.writeFileSync(path.join('data', 'achievement', 'enabled'), '');
+        }
         void this.coordinator.start(name, req.body?.payload);
         res.status(202).json(this.coordinator.states.get(name));
       } catch (error) {
@@ -201,6 +221,9 @@ class UnifiedServer {
       }
       new Logger(`${time()}${__('serverJobStopRequested', req.params.name)}`);
       await this.coordinator.stop(req.params.name as JobName);
+      if (req.params.name === 'achievement') {
+        fs.rmSync(path.join('data', 'achievement', 'enabled'), { force: true });
+      }
       res.json({ status: 'success' });
     });
 
@@ -229,7 +252,7 @@ class UnifiedServer {
         return res.status(422).json({ error: error instanceof Error ? error.message : String(error) });
       }
     });
-    app.post(['/api/cookies/awa', '/updateCookie'], (req, res) => {
+    app.post('/api/cookies/awa', (req, res) => {
       if (!authenticate(req, res)) {
         return;
       }
@@ -240,7 +263,7 @@ class UnifiedServer {
       new Logger(`${time()}${__('serverAwaCredentialsUpdated')}`);
       return res.json({ status: 'success' });
     });
-    app.post(['/api/cookies/twitch', '/updateTwitchCookie'], (req, res) => {
+    app.post('/api/cookies/twitch', (req, res) => {
       if (!authenticate(req, res)) {
         return;
       }
@@ -271,12 +294,6 @@ class UnifiedServer {
     };
     app.get('/api/logs', (req, res) => sendLogs(req, res));
     app.get('/api/logs/:job', (req, res) => sendLogs(req, res));
-    app.post('/runLogs', (req, res) => {
-      sendLogs(req, res, 'dailyQuest');
-    });
-    app.post('/awaAchievementLogs', (req, res) => {
-      sendLogs(req, res, 'achievement');
-    });
     app.post('/api/manager/shutdown', (req, res) => {
       if (!authenticate(req, res)) {
         return;
@@ -285,86 +302,7 @@ class UnifiedServer {
       res.json({ status: 'success' });
       setImmediate(this.requestShutdown);
     });
-
-    // Legacy API aliases retained for one compatibility cycle.
-    app.post('/start', async (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      new Logger(`${time()}${__('serverLegacyDailyQuestStart')}`);
-      void this.coordinator.start('dailyQuest');
-      res.send('success');
-    });
-    app.post('/stop', async (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      new Logger(`${time()}${__('serverLegacyDailyQuestStop')}`);
-      await this.coordinator.stop('dailyQuest');
-      res.send('success');
-    });
-    app.post('/startAchievement', async (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      new Logger(`${time()}${__('serverLegacyAchievementStart')}`);
-      fs.mkdirSync(path.join('data', 'achievement'), { recursive: true });
-      fs.writeFileSync(path.join('data', 'achievement', 'enabled'), '');
-      void this.coordinator.start('achievement');
-      res.send('success');
-    });
-    app.post('/stopAchievement', async (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      new Logger(`${time()}${__('serverLegacyAchievementStop')}`);
-      await this.coordinator.stop('achievement');
-      fs.rmSync(path.join('data', 'achievement', 'enabled'), { force: true });
-      res.send('success');
-    });
-    app.post('/runStatus', (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      const state = this.coordinator.states.get('dailyQuest');
-      return res.json({
-        runStatus: ['running', 'stopping'].includes(state?.status || '') ? 'Running' : 'Stop',
-        lastRunTime: state?.startedAt || '',
-        webui: { port: raw.webUI?.port || 2345, ssl: !!raw.webUI?.ssl?.cert }
-      });
-    });
-    app.post('/update', async (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      try {
-        new Logger(`${time()}${__('updateHelper')}`);
-        const update = await scheduleUpdate({ currentVersion: this.version, proxy: raw.proxy, restart: true });
-        res.status(202).json({ status: 'scheduled', ...update });
-        setImmediate(this.requestShutdown);
-      } catch (error) {
-        const known = error instanceof UpdateInstallerError;
-        let status = 500;
-        if (known && ['UP_TO_DATE', 'ALREADY_SCHEDULED'].includes(error.code)) {
-          status = 409;
-        } else if (known && error.code === 'UNSUPPORTED_PLATFORM') {
-          status = 422;
-        } else if (known && ['ASSET_NOT_FOUND', 'UNVERIFIED_ASSET', 'INTEGRITY_MISMATCH'].includes(error.code)) {
-          status = 502;
-        }
-        const message = error instanceof Error ? error.message : String(error);
-        new Logger(`${time()}${__('updateFailed')}: ${message}`);
-        res.status(status).json({ error: message, code: known ? error.code : 'UPDATE_FAILED' });
-      }
-    });
-    app.post('/stopManager', (req, res) => {
-      if (!authenticate(req, res)) {
-        return;
-      }
-      new Logger(`${time()}${__('serverLegacyManagerShutdown')}`);
-      res.send('success');
-      setImmediate(this.requestShutdown);
-    });
+    app.post('/api/manager/update', updateManager);
 
     // @ts-ignore express-ws 会在运行时扩展 Express。
     app.ws('/ws', (ws: WebSocket, req) => {

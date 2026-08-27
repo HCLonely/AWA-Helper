@@ -155,8 +155,6 @@
       - getStarted
       - dailyQuest
       - timeOnSite
-      - watchTwitch
-      - steamQuest
     awaDailyQuestType:
       name: Types of daily tasks (old) that need to be done
       desp: Press `Ctrl` to select multiple
@@ -254,20 +252,17 @@
           - twitch
           - awa
           - asf
-          - steam
           - pusher
           optionsName:
           - Use a proxy when checking updates
           - Using a proxy when accessing the Twitch site
           - Using a proxy when visiting the Alien Forum site
           - Use a proxy when accessing ASF
-          - Using a proxy when accessing Steam
           - Use a proxy when pushing
           defaultValue:
           - github
           - twitch
           - awa
-          - steam
         protocol:
           name: Proxy protocol
           type: single-select

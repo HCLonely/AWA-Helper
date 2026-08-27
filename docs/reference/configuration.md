@@ -63,8 +63,8 @@ awaQuests:
   - dailyQuest
   # - battlePass
   - timeOnSite
-  - watchTwitch
-  - steamQuest
+  # - watchTwitch
+  # - steamQuest
 joinSteamCommunityEvent: true
 ```
 
@@ -82,7 +82,7 @@ asfPassword: ''
 asfBotname: ''
 ```
 
-`twitchCookie` 需要包含 `unique_id` 和 `auth-token`。Steam 任务目前使用 ASF，请确保 ASF IPC 可从 AWA-Helper 所在环境访问。
+启用 `watchTwitch` 时，`twitchCookie` 必须包含非空的 `unique_id` 和 `auth-token`。启用 `steamQuest` 时，必须配置 `steamUse: ASF`、有效的 ASF Host、端口和 Botname，并确保 ASF IPC 可从 AWA-Helper 所在环境访问。
 
 ## 代理
 
@@ -99,7 +99,7 @@ proxy:
   password: ''
 ```
 
-`enable` 可按服务选择 `github`、`twitch`、`awa`、`asf`、`steam` 或 `pusher`。协议支持 `http`、`https`、`socks4` 和 `socks5`。
+`enable` 可按服务选择 `github`、`twitch`、`awa`、`asf` 或 `pusher`。AWA 上的 Steam 任务接口使用 `awa`，ASF IPC 使用 `asf`。旧配置中的 `steam` 暂时兼容但已弃用。协议支持 `http`、`https`、`socks4` 和 `socks5`。
 
 ## 消息推送
 

@@ -34,7 +34,7 @@ const requestHealthEndpoint = (port: number, useTls: boolean): Promise<boolean> 
   const request = transport.get({
     hostname: '127.0.0.1',
     port,
-    path: '/health/live',
+    path: '/api/health/live',
     timeout: 3000,
     rejectUnauthorized: false
   }, (response) => {

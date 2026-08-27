@@ -395,13 +395,6 @@ serverConfigRejected: '[Server] Configuration update rejected: %s'
 serverAwaCredentialsUpdated: '[Server] AWA credentials updated'
 serverTwitchCredentialsUpdated: '[Server] Twitch credentials updated'
 serverManagerShutdownRequested: '[Server] Manager shutdown requested through API'
-serverLegacyDailyQuestStart: '[Server] DailyQuest start requested through legacy API'
-serverLegacyDailyQuestStop: '[Server] DailyQuest stop requested through legacy API'
-serverLegacyAchievementStart: '[Server] Achievement start requested through legacy API'
-serverLegacyAchievementStop: '[Server] Achievement stop requested through legacy API'
-serverLegacyConfigUpdated: '[Server] Configuration updated through legacy API; restart required'
-serverLegacyConfigRejected: '[Server] Legacy configuration update rejected: %s'
-serverLegacyManagerShutdown: '[Server] Manager shutdown requested through legacy API'
 serverListening: '[Server] Listening on %s://%s:%s'
 serverStopSkipped: '[Server] Stop skipped; server is not listening'
 serverStopping: '[Server] Stopping WebUI server'
@@ -442,6 +435,7 @@ awaListenerFailed: 'AWA listener failed: %s'
 twitchAuthorizationExpiredRetrying: Twitch authorization expired, retrying
 updatePrepared: AWA-Helper %s has been downloaded and verified; it will be installed after this process exits.
 managerWeakSecretWarning: 'Warning: manager.secret is %s characters long; at least 16 characters are recommended.'
+deprecatedSteamProxyTarget: 'Warning: proxy.enable target steam is deprecated and controls no distinct request path; use awa or asf for the intended target.'
 logStatusOk: OK
 logStatusError: Error
 logStatusFailed: Failed

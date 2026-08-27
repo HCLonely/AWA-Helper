@@ -18,7 +18,7 @@ const defaultConfig: config = {
   debug: { http: false },
   webUI: { enable: true, port: 2345, local: true },
   awaHost: 'www.alienwarearena.com',
-  awaQuests: ['getStarted', 'dailyQuest', 'timeOnSite', 'watchTwitch', 'steamQuest'],
+  awaQuests: ['getStarted', 'dailyQuest', 'timeOnSite'],
   awaDailyQuestType: ['click', 'visitLink', 'openLink', 'changeBorder', 'changeAvatar', 'viewNews'],
   asfProtocol: 'http'
 };

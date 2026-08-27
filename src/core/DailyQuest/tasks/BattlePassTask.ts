@@ -99,7 +99,7 @@ export class BattlePassTask {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       runtime.state.battlePass = { status: 'unknown', claimedCount: 0, rewardTotal: 0, claimed: [], failed: [] };
-      return true;
+      return false;
     }
   }
 

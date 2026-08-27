@@ -119,7 +119,7 @@ test('log retention removes old logs even when there are only a few files', (t) 
 
 test('health endpoint probe reflects the actual server response', async () => {
   const server = http.createServer((req, res) => {
-    res.statusCode = req.url === '/health/live' ? 200 : 404;
+    res.statusCode = req.url === '/api/health/live' ? 200 : 404;
     res.end();
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -179,12 +179,21 @@ test('DailyQuest sequential work and setup delays receive the shutdown signal', 
   assert.doesNotMatch(source, /setTimeout\(async \(\) =>/);
 });
 
+test('DailyQuest uses the shared validated configuration loader', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/core/DailyQuest/DailyQuestRunner.ts'), 'utf8');
+  assert.match(source, /loadConfig\(\)/);
+  assert.doesNotMatch(source, /const defaultConfig: config/);
+  assert.doesNotMatch(source, /yamlLint\.lint/);
+});
+
 test('verified updates are scheduled by the server and failures stay failures in the WebUI', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
   const updateHandler = source.slice(source.indexOf('function updateHelper'), source.indexOf('async function refreshUpdateButton'));
   const failureHandler = updateHandler.slice(updateHandler.indexOf('}).catch'));
-  assert.match(server, /app\.post\('\/update'[\s\S]*scheduleUpdate\([\s\S]*status\(202\)/);
+  assert.match(server, /app\.post\('\/api\/manager\/update', updateManager\)/);
+  assert.match(server, /const updateManager[\s\S]*scheduleUpdate\([\s\S]*status\(202\)/);
+  assert.match(updateHandler, /\/api\/manager\/update/);
   assert.match(updateHandler, /managerStatusChecker\('start'\)/);
   assert.match(failureHandler, /updateFailed/);
   assert.doesNotMatch(failureHandler, /managerStatusChecker\('start'\)/);
