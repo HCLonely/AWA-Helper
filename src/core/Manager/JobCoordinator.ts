@@ -56,7 +56,7 @@ class JobCoordinator {
     })
       .then((success) => {
         const result: JobResult = {
-          success: success !== false && !controller.signal.aborted,
+          success: success === true && !controller.signal.aborted,
           message: controller.signal.aborted ? __('jobCancelledMessage') : undefined,
           startedAt,
           finishedAt: new Date().toISOString()

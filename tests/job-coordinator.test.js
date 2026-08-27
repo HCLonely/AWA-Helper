@@ -45,6 +45,19 @@ test('JobStateStore publishes isolated snapshots when job status changes', async
   assert.equal(coordinator.states.get('dailyQuest').status, 'completed');
 });
 
+test('JobCoordinator fails closed when a job omits its boolean result', async () => {
+  const coordinator = new JobCoordinator();
+  coordinator.register({
+    name: 'dailyQuest',
+    run: async () => undefined
+  });
+
+  const result = await coordinator.start('dailyQuest');
+
+  assert.equal(result.success, false);
+  assert.equal(coordinator.states.get('dailyQuest').status, 'failed');
+});
+
 test('JobCoordinator aborts jobs through Manager', async () => {
   const coordinator = new JobCoordinator();
   coordinator.register({

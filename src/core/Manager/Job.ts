@@ -18,9 +18,9 @@ export interface Job {
      * 执行 run 相关数据。
      * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal`。
      * @param payload - 当前请求或操作使用的数据内容，类型为 `unknown`。
-     * @returns `Promise<boolean | void>`，run 执行完成后的结果。
+     * @returns `Promise<boolean>`，明确表示作业是否成功完成。
      */
-run(signal: AbortSignal, payload?: unknown): Promise<boolean | void>
+run(signal: AbortSignal, payload?: unknown): Promise<boolean>
     /**
      * 停止 dispose 相关数据。
      * @returns `void | Promise<void>`，清理同步完成时返回空值，异步清理时返回完成凭据。

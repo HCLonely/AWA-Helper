@@ -10,9 +10,9 @@ class DailyQuestJob implements Job {
   /**
    * 执行 run 相关数据。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal`。
-   * @returns `Promise<boolean | void>`，run 执行完成后的结果。
+   * @returns `Promise<boolean>`，明确表示每日任务是否成功完成。
    */
-  run(signal: AbortSignal): Promise<boolean | void> {
+  run(signal: AbortSignal): Promise<boolean> {
     return runDailyQuest({ signal });
   }
 }

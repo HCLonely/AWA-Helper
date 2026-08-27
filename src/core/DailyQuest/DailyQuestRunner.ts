@@ -37,9 +37,9 @@ type TerminalOutcome = 'timeout' | 'failed' | 'completed';
 /**
  * 执行 run Daily Quest 相关数据。
  * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRunnerOptions`。
- * @returns `Promise<boolean | void>`，runDailyQuest 执行完成后的结果。
+ * @returns `Promise<boolean>`，明确表示每日任务是否成功完成。
  */
-const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<boolean | void> => {
+const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<boolean> => {
   globalThis.log = true;
   const shutdownController = new AbortController();
   /**
@@ -104,7 +104,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       const errorLine = Number.isInteger(locatedError.mark?.line) ? chalk.blue((locatedError.mark?.line || 0) + 1) : '???';
       new Logger(time() + chalk.red(__('configFileErrorAlter', errorLine, chalk.yellow(__('configFileErrorLocation')))));
       new Logger(locatedError.message);
-      return;
+      return false;
     }
     const { path: configPath, raw: config } = loadedConfig;
     setLogSecrets(config);
@@ -181,7 +181,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     if (missingAwaParams.length > 0) {
       new Logger(chalk.red(__('missingAwaParams')));
       new Logger(missingAwaParams);
-      return;
+      return false;
     }
 
     // 检查更新
@@ -305,6 +305,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
             if (!await sleep(10, shutdownController.signal)) {
               return false;
             }
+          } else {
+            failedSequentialTasks.push('Twitch initialization');
           }
         } else {
           new Logger(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
@@ -354,6 +356,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
             if (!await sleep(30, shutdownController.signal)) {
               return false;
             }
+          } else {
+            failedSequentialTasks.push('Steam ASF initialization');
           }
         }
       }

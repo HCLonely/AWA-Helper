@@ -186,6 +186,16 @@ test('DailyQuest uses the shared validated configuration loader', () => {
   assert.doesNotMatch(source, /yamlLint\.lint/);
 });
 
+test('DailyQuest reports preflight and enabled integration initialization failures', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/core/DailyQuest/DailyQuestRunner.ts'), 'utf8');
+  const configFailure = source.slice(source.indexOf('loadedConfig = loadConfig()'), source.indexOf('const { path: configPath'));
+  const missingAwaFailure = source.slice(source.indexOf('if (missingAwaParams.length > 0)'), source.indexOf('// 检查更新'));
+  assert.match(configFailure, /return false/);
+  assert.match(missingAwaFailure, /return false/);
+  assert.match(source, /else \{\s*failedSequentialTasks\.push\('Twitch initialization'\)/);
+  assert.match(source, /else \{\s*failedSequentialTasks\.push\('Steam ASF initialization'\)/);
+});
+
 test('verified updates are scheduled by the server and failures stay failures in the WebUI', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');
