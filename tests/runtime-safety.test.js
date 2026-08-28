@@ -196,6 +196,13 @@ test('DailyQuest reports preflight and enabled integration initialization failur
   assert.match(source, /else \{\s*failedSequentialTasks\.push\('Steam ASF initialization'\)/);
 });
 
+test('top-level startup failures are persisted to the Manager log', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../src/index.ts'), 'utf8');
+  const failureHandler = source.slice(source.lastIndexOf('.catch((error)'), source.length);
+  assert.match(failureHandler, /new Logger\(error\)/);
+  assert.doesNotMatch(failureHandler, /console\.error\(error\)/);
+});
+
 test('verified updates are scheduled by the server and failures stay failures in the WebUI', () => {
   const source = fs.readFileSync(path.resolve(__dirname, '../src/webUI/static/js/pages/index.ts'), 'utf8');
   const server = fs.readFileSync(path.resolve(__dirname, '../src/server/UnifiedServer.ts'), 'utf8');

@@ -13,6 +13,7 @@ import { TrayBridge } from './tools/process/TrayBridge';
 import { loadConfig } from './tools/config';
 import { scheduleUpdate, UpdateInstallerError } from './tools/update';
 import { initializeI18n } from './tools/i18n';
+import { Logger } from './tools/logging';
 // @ts-ignore 在构建期间由 YAML 生成。
 import * as zh from './locales/zh.json';
 // @ts-ignore 在构建期间由 YAML 生成。
@@ -169,6 +170,6 @@ void main()
     activeTrayBridge?.error();
     activeTrayBridge?.close();
     activeTrayBridge = undefined;
-    console.error(error);
+    new Logger(error);
     process.exitCode = 1;
   });
