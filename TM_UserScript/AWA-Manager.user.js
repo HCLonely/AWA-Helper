@@ -213,7 +213,7 @@
           headers: { Authorization: `Bearer ${secret}` },
           data: { cookie, userAgent: navigator.userAgent }
         }).then((response) => {
-          if (response.status === 200) { // { lastRunTime, runStatus }
+          if (response.status === 200) {
             GM_setValue('time', Date.now());
             $('.cookie-server-status').text('Success');
             $('#awa-manager-server-logs').text(`${time()}AWA-Manager: Cookie同步成功！`);
