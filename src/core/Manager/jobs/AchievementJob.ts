@@ -41,9 +41,10 @@ class AchievementJob implements Job {
      */
     const abort = (): void => this.service?.stop();
     signal.addEventListener('abort', abort, { once: true });
+    let initialized = false;
     try {
       await this.service.init();
-      updateYamlFieldsSync(this.configPath, { awaCookie: this.service.awa.newCookie });
+      initialized = true;
       if (signal.aborted) {
         return false;
       }
@@ -51,6 +52,9 @@ class AchievementJob implements Job {
       return true;
     } finally {
       signal.removeEventListener('abort', abort);
+      if (initialized && this.service) {
+        updateYamlFieldsSync(this.configPath, { awaCookie: this.service.awa.newCookie });
+      }
       this.service?.destroy();
       this.service = undefined;
     }

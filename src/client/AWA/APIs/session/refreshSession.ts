@@ -14,11 +14,6 @@ export const refreshSession = async (context: AWAContext): Promise<string> => {
   const options: myAxiosConfig = {
     url: `${context.baseURL}/`, method: 'GET', headers: { ...context.headers, cookie: context.cookie.stringify() },
     maxRedirects: 0,
-    /**
-     * 检查 validate Status 相关数据。
-     * @param status - 当前对象或任务的状态，类型为 `number`。
-     * @returns `boolean`，表示 validateStatus 检查是否通过。
-     */
     validateStatus: (status) => status === 200 || status === 302
   };
   if (context.httpsAgent) {

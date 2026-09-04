@@ -7,6 +7,7 @@ test('AchievementJob reloads and persists the AWA cookie for every run', () => {
   const source = fs.readFileSync(path.join(__dirname, '../src/core/Manager/jobs/AchievementJob.ts'), 'utf8');
   assert.match(source, /const appConfig = loadConfig\(this\.configPath\)\.raw/);
   assert.match(source, /updateYamlFieldsSync\(this\.configPath, \{ awaCookie: this\.service\.awa\.newCookie \}\)/);
+  assert.match(source, /finally\s*\{[\s\S]*updateYamlFieldsSync/);
 });
 
 test('Manager gives AchievementJob the live configuration path instead of a startup snapshot', () => {

@@ -3,6 +3,7 @@
  * @description 将指定遗物槽位的替换请求封装为 Manager 作业。
  */
 import { ArtifactService } from '../../Artifact/ArtifactService';
+import { updateYamlFieldsSync } from '../../../tools/config/YamlConfig';
 import type { Job } from '../Job';
 
 class ArtifactJob implements Job {
@@ -32,10 +33,17 @@ class ArtifactJob implements Job {
     if (!service.initted) {
       return false;
     }
-    if (!await service.init() || signal.aborted) {
+    if (!await service.init()) {
       return false;
     }
-    return service.start(ids);
+    try {
+      if (signal.aborted) {
+        return false;
+      }
+      return await service.start(ids);
+    } finally {
+      updateYamlFieldsSync(this.configPath, { awaCookie: service.newCookie });
+    }
   }
 }
 

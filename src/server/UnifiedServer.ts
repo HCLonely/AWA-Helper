@@ -260,6 +260,7 @@ class UnifiedServer {
         return res.status(400).json({ error: 'cookie is required' });
       }
       updateYamlFieldsSync(configPath, { awaCookie: req.body.cookie, ...(req.body.userAgent ? { UA: req.body.userAgent } : {}) });
+      this.reloadConfig();
       new Logger(`${time()}${__('serverAwaCredentialsUpdated')}`);
       return res.json({ status: 'success' });
     });
@@ -271,6 +272,7 @@ class UnifiedServer {
         return res.status(422).json({ error: 'invalid Twitch cookie' });
       }
       updateYamlFieldsSync(configPath, { twitchCookie: req.body.cookie });
+      this.reloadConfig();
       new Logger(`${time()}${__('serverTwitchCredentialsUpdated')}`);
       return res.json({ status: 'success' });
     });

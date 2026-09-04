@@ -9,11 +9,17 @@ import { AWAContext } from '../../AWAContext';
  * @returns `Promise<string>`，getControlCenter 获取或生成的文本内容。
  */
 export const getControlCenter = async (context: AWAContext): Promise<string> => {
-  const options: myAxiosConfig = { url: `${context.baseURL}/control-center`, method: 'GET', headers: context.headers };
+  const options: myAxiosConfig = {
+    url: `${context.baseURL}/control-center`, method: 'GET', headers: {
+      ...context.headers,
+      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
+    }
+  };
   if (context.httpsAgent) {
     options.httpsAgent = context.httpsAgent;
   }
   const response = await context.request(options);
+
   context.updateCookies(response.headers?.['set-cookie']);
   return String(response.data);
 };

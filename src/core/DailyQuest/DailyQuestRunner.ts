@@ -63,6 +63,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     return true;
   };
   const runtimeHolder: { current?: DailyQuestRuntime } = {};
+  let activeConfigPath: string | undefined;
+  let awaInitialized = false;
   /**
    * 处理 current Push Info 相关逻辑。
    * @returns `{ report: QuestReport; dailyArp: string; signArp: { daily?: string; monthly?: string; }; } | undefined`，当前可推送的任务报告与积分信息；尚未生成报告时返回 `undefined`。
@@ -107,6 +109,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       return false;
     }
     const { path: configPath, raw: config } = loadedConfig;
+    activeConfigPath = configPath;
     setLogSecrets(config);
     const {
       language,
@@ -228,6 +231,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       shutdownController.abort(new Error('DailyQuest initialization failed'));
       return false;
     }
+    awaInitialized = true;
     updateYamlFieldsSync(configPath, { awaCookie: runtime.newCookie });
     const awaAPIs = runtime.awa;
 
@@ -407,6 +411,9 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
     shutdownController.abort(new Error('DailyQuest completed'));
     return true;
   } finally {
+    if (awaInitialized && activeConfigPath && runtimeHolder.current) {
+      updateYamlFieldsSync(activeConfigPath, { awaCookie: runtimeHolder.current.newCookie });
+    }
     if (timeoutHandle) {
       clearTimeout(timeoutHandle);
     }
