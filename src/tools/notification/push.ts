@@ -71,42 +71,50 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
       daily.push([name, value]);
     }
   });
-  const rows = [...daily, ...online, ...steam, ...other].filter((row): row is [string, ReportValue] => !!row);
-  const body = rows.map(([name, value]) => {
-    const status = value[__('status')];
-    const obtained = value[__('obtainedARP')];
-    const extra = value[__('extraARP')];
-    if (name === __('steamCommunityEvent')) {
-      const complete = parseInt(String(obtained), 10) >= parseInt(String(value[__('maxAvailableARP')]), 10);
-      return `---\n${complete ? '✔️' : '⚠️'}${name}:  ${obtained}/${value[__('maxAvailableARP')]}\n---`;
-    }
-    if (name.includes(__('promotionalCalendar'))) {
-      return `---\n${status === __('done') ? '✔️' : '⚠️'}${name}:  ${status === __('done') ? obtained : status}`;
-    }
-    const separator = name === __('timeOnSite') ? '---\n' : '';
-    const suffix = name === __('watchTwitch') ? '\n---' : '';
-    const obtainedArp = normalizeArpValue(obtained);
-    const extraArp = normalizeArpValue(extra);
-    return `${separator}${status === __('done') ? '✔️' : '❌'}${name}:  ${obtainedArp}${extraArp && extraArp !== '0' ? ` + ${extraArp}` : ''} ARP${suffix}`;
-  }).join('\n');
+  const formatRows = (rows: Array<[string, ReportValue] | undefined>): string => rows
+    .filter((row): row is [string, ReportValue] => !!row)
+    .map(([name, value]) => {
+      const status = value[__('status')];
+      const obtained = value[__('obtainedARP')];
+      const extra = value[__('extraARP')];
+      if (name === __('steamCommunityEvent')) {
+        const complete = parseInt(String(obtained), 10) >= parseInt(String(value[__('maxAvailableARP')]), 10);
+        return `${complete ? '✔️' : '⚠️'}${name}:  ${obtained}/${value[__('maxAvailableARP')]}`;
+      }
+      if (name.includes(__('promotionalCalendar'))) {
+        return `${status === __('done') ? '✔️' : '⚠️'}${name}:  ${status === __('done') ? obtained : status}`;
+      }
+      const obtainedArp = normalizeArpValue(obtained);
+      const extraArp = normalizeArpValue(extra);
+      return `${status === __('done') ? '✔️' : '❌'}${name}:  ${obtainedArp}${extraArp && extraArp !== '0' ? ` + ${extraArp}` : ''} ARP`;
+    }).join('\n');
   const battlePassRows: string[] = [];
   if (quest.battlePass) {
     const statusOnly = quest.battlePass.status === 'not-started' || quest.battlePass.status === 'ended';
+    const statusIcon = quest.battlePass.status === 'completed' ? '✔️' : '⚠️';
     if (statusOnly) {
-      battlePassRows.push(`${__('battlePass')}: ${__(`battlePassStatus_${quest.battlePass.status}`)}`);
+      battlePassRows.push(`${statusIcon}${__('battlePass')}: ${__(`battlePassStatus_${quest.battlePass.status}`)}`);
     } else if (quest.battlePass.claimed.length > 0) {
       const rewardNames = quest.battlePass.claimed.map((reward) => reward.name)
         .join(__('battlePassRewardSeparator'));
-      battlePassRows.push(`${__('battlePass')}: ${__('battlePassClaimed', rewardNames, String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
+      battlePassRows.push(`✔️${__('battlePass')}: ${__('battlePassClaimed', rewardNames, String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
     } else if (quest.battlePass.status === 'active') {
-      battlePassRows.push(`${__('battlePass')}: ${__('battlePassProgress', String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
+      battlePassRows.push(`⚠️${__('battlePass')}: ${__('battlePassProgress', String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
     } else {
-      battlePassRows.push(`${__('battlePass')}: ${__('battlePassStatusProgress', __(`battlePassStatus_${quest.battlePass.status}`), String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
+      battlePassRows.push(`${statusIcon}${__('battlePass')}: ${__('battlePassStatusProgress', __(`battlePassStatus_${quest.battlePass.status}`), String(quest.battlePass.claimedCount), String(quest.battlePass.rewardTotal))}`);
     }
     quest.battlePass.failed.forEach((reward) => {
-      battlePassRows.push(`${__('battlePass')}: ${__('battlePassClaimFailed', reward.name)}`);
+      battlePassRows.push(`❌${__('battlePass')}: ${__('battlePassClaimFailed', reward.name)}`);
     });
   }
-  const battlePass = battlePassRows.length > 0 ? `\n---\n${battlePassRows.join('\n')}` : '';
-  return `👉${__('dailyArp', quest.dailyArp)}\n\n${quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`}${quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`}---\n${body}${battlePass}`;
+  const sections = [
+    formatRows(daily),
+    formatRows(online),
+    formatRows(steam),
+    formatRows(other.slice(0, 1)),
+    formatRows(other.slice(1)),
+    battlePassRows.join('\n')
+  ].filter(Boolean);
+  const body = sections.join('\n---\n');
+  return `👉${__('dailyArp', quest.dailyArp)}\n\n${quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`}${quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`}---${body ? `\n${body}` : ''}`;
 };

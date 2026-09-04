@@ -47,6 +47,8 @@ test('push formatter appends Battle Pass results without ARP formatting', () => 
   });
   assert.match(message, /BattlePass: 成功领取 15 Battle Tokens、ARP Boost \(4\/12\)/);
   assert.match(message, /BattlePass: 领取 Mystery Reward 失败/);
+  assert.match(message, /✔️BattlePass: 成功领取/);
+  assert.match(message, /❌BattlePass: 领取 Mystery Reward 失败/);
   assert.doesNotMatch(message, /BattlePass:\s+4 ARP/);
   assert.doesNotMatch(message, /BattlePass:.*ARP$/m);
 });
@@ -67,11 +69,30 @@ test('push formatter always includes Battle Pass progress except for not-started
     battlePass: { status, claimedCount, rewardTotal, claimed: [], failed: [] }
   });
 
-  assert.match(format('active', 3, 12), /BattlePass: 奖励领取进度 \(3\/12\)/);
-  assert.match(format('completed', 12, 12), /BattlePass: 已完成 \(12\/12\)/);
-  assert.match(format('unknown', 2, 12), /BattlePass: 未知 \(2\/12\)/);
-  assert.match(format('not-started', 0, 12), /BattlePass: 未开始(?:\n|$)/);
+  assert.match(format('active', 3, 12), /⚠️BattlePass: 奖励领取进度 \(3\/12\)/);
+  assert.match(format('completed', 12, 12), /✔️BattlePass: 已完成 \(12\/12\)/);
+  assert.match(format('unknown', 2, 12), /⚠️BattlePass: 未知 \(2\/12\)/);
+  assert.match(format('not-started', 0, 12), /⚠️BattlePass: 未开始(?:\n|$)/);
   assert.doesNotMatch(format('not-started', 0, 12), /\(0\/12\)/);
-  assert.match(format('ended', 7, 12), /BattlePass: 已结束(?:\n|$)/);
+  assert.match(format('ended', 7, 12), /⚠️BattlePass: 已结束(?:\n|$)/);
   assert.doesNotMatch(format('ended', 7, 12), /\(7\/12\)/);
+});
+
+test('push formatter never emits consecutive separators between report sections', () => {
+  const messages = {
+    status: 'status', obtainedARP: 'obtainedARP', extraARP: 'extraARP', maxAvailableARP: 'maxAvailableARP',
+    done: 'done', steamCommunityEvent: 'Steam Event', promotionalCalendar: 'Promo',
+    dailyArp: (value) => `Today ${value} ARP`, dailySign: () => 'Daily\n', monthlySign: () => 'Monthly\n'
+  };
+  global.__ = (key, ...args) => typeof messages[key] === 'function' ? messages[key](...args) : (messages[key] || key);
+  const message = pushQuestInfoFormat({
+    dailyArp: '10', signArp: { daily: '1', monthly: '1' },
+    report: {
+      'Steam Event': { status: 'done', obtainedARP: 900, extraARP: 0, maxAvailableARP: 900 },
+      'Promo[Day 5]': { status: 'done', obtainedARP: 10, extraARP: 0, maxAvailableARP: 0 }
+    }
+  });
+
+  assert.match(message, /Steam Event: {2}900\/900\n---\n✔️Promo\[Day 5\]: {2}10/);
+  assert.doesNotMatch(message, /(?:^|\n)---\n---(?:\n|$)/);
 });
