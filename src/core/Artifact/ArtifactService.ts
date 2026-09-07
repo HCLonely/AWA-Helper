@@ -18,6 +18,7 @@ class ArtifactService {
   oldArtifacts: number[] = [];
   activePerks = '';
   initted = true;
+  readonly initialCookie: string;
 
   /**
    * 初始化 Artifact Service 实例。
@@ -27,6 +28,7 @@ class ArtifactService {
     const { awaCookie, awaHost, proxy, UA, debug }: {
       awaCookie?: string; awaHost?: string; proxy?: proxy; UA?: string; debug?: { http?: boolean }
     } = parse(fs.readFileSync(configPath, 'utf8'));
+    this.initialCookie = awaCookie || '';
     if (!awaCookie) {
       new Logger(time() + chalk.yellow(__('missingAwaCookie')));
       this.initted = false;
@@ -47,13 +49,16 @@ class ArtifactService {
    * 初始化 init 相关数据。
    * @returns `Promise<boolean>`，表示 init 检查是否通过。
    */
-  async init(): Promise<boolean> {
-    if (!this.awa) {
+  async init(signal?: AbortSignal): Promise<boolean> {
+    if (!this.awa || signal?.aborted) {
       return false;
     }
     new Logger(`${time()}${__('artifactInitializing')}`);
     try {
       await refreshSession(this.awa.context);
+      if (signal?.aborted) {
+        return false;
+      }
       const html = await getControlCenter(this.awa.context);
       const $ = load(html);
       if ($('a.nav-link-login').length) {
@@ -74,12 +79,12 @@ class ArtifactService {
    * @param newArtifacts - 准备装备的新遗物标识列表，类型为 `number[]`。
    * @returns `Promise<boolean>`，表示 start 检查是否通过。
    */
-  async start(newArtifacts: number[]): Promise<boolean> {
+  async start(newArtifacts: number[], signal?: AbortSignal): Promise<boolean> {
     new Logger(`${time()}${__('artifactRequestedSet', newArtifacts.join('|'))}`);
     if (newArtifacts.length !== 3 || new Set(newArtifacts).size !== 3 || newArtifacts.some((id) => !Number.isSafeInteger(id) || id <= 0)) {
       return false;
     }
-    if (!await this.getArtifactsInfo()) {
+    if (signal?.aborted || !await this.getArtifactsInfo()) {
       return false;
     }
     const oldSet = new Set(this.oldArtifacts);
@@ -89,9 +94,12 @@ class ArtifactService {
     const positions = [0, 1, 2].filter((index) => !unchangedPositions.includes(index)).map((index) => index + 1);
     new Logger(`${time()}${__('artifactReplacementCount', String(replacements.length))}`);
     for (let index = 0; index < positions.length; index++) {
-      if (!await this.changeArtifact(replacements[index], positions[index])) {
+      if (signal?.aborted || !await this.changeArtifact(replacements[index], positions[index])) {
         return false;
       }
+    }
+    if (signal?.aborted) {
+      return false;
     }
     await this.getArtifactsInfo();
     const success = this.oldArtifacts.length === newArtifacts.length &&

@@ -3,6 +3,7 @@
  * @description 维护 Twitch Cookie、Client-ID、请求头和可注入 HTTP 传输状态。
  */
 import type { RawAxiosRequestHeaders } from 'axios';
+import { withRequestSignal } from '../../tools/http/RequestContext';
 import { Cookie, http } from '../../tools';
 import { observeExternalRequest } from '../../tools/logging';
 import { createHttpTransport, createProxyAgent, DEFAULT_USER_AGENT, type CookieStore, type HttpTransport } from '../shared';
@@ -57,7 +58,7 @@ export class TwitchContext {
     if (this.httpsAgent && !requestOptions.httpsAgent) {
       requestOptions.httpsAgent = this.httpsAgent;
     }
-    const execute = () => this.transport.request<T>(requestOptions);
+    const execute = () => this.transport.request<T>(withRequestSignal(requestOptions));
     return this.logRequests ? observeExternalRequest('Twitch', requestOptions, execute) : execute();
   }
 }

@@ -3,6 +3,7 @@
  * @description 维护 ASF IPC 地址、身份请求头和可注入 HTTP 传输状态。
  */
 import type { RawAxiosRequestHeaders } from 'axios';
+import { withRequestSignal } from '../../tools/http/RequestContext';
 import { http } from '../../tools';
 import { observeExternalRequest } from '../../tools/logging';
 import { createHttpTransport, createProxyAgent, type HttpTransport } from '../shared';
@@ -70,7 +71,7 @@ export class ASFContext {
     if (this.httpAgent && !requestOptions.httpAgent) {
       requestOptions.httpAgent = this.httpAgent;
     }
-    const execute = () => this.transport.request<T>(requestOptions);
+    const execute = () => this.transport.request<T>(withRequestSignal(requestOptions));
     return this.logRequests ? observeExternalRequest('ASF', requestOptions, execute) : execute();
   }
 }

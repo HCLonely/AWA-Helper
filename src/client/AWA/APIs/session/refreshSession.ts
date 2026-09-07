@@ -10,7 +10,7 @@ import { AWAError } from '../../AWAError';
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
  * @returns `Promise<string>`，refreshSession 获取或生成的文本内容。
  */
-export const refreshSession = async (context: AWAContext): Promise<string> => {
+export const refreshSession = async (context: AWAContext, redirects = 0): Promise<string> => {
   const options: myAxiosConfig = {
     url: `${context.baseURL}/`, method: 'GET', headers: { ...context.headers, cookie: context.cookie.stringify() },
     maxRedirects: 0,
@@ -27,8 +27,11 @@ export const refreshSession = async (context: AWAContext): Promise<string> => {
     context.updateCookies(response.headers['set-cookie']);
     const homeSite = context.cookie.get('home_site');
     if (response.status === 302 && homeSite && homeSite !== context.host) {
-      context.host = homeSite;
-      return refreshSession(context);
+      if (redirects >= 5) {
+        throw new AWAError('refreshSession', 'Too many AWA home-site redirects', false);
+      }
+      context.host = context.assertTrustedURL(`https://${homeSite}/`).host;
+      return refreshSession(context, redirects + 1);
     }
     if (context.cookie.get('REMEMBERME') === 'deleted') {
       throw new AWAError('refreshSession', 'AWA cookie has expired', false, 602);

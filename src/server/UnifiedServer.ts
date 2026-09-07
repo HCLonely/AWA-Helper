@@ -21,6 +21,7 @@ import type { JobCoordinator } from '../core/Manager/JobCoordinator';
 import { decodeManagerWebSocketSecret } from './websocket/authenticate';
 import { getManagerListenHost } from './network';
 import { getLogFilePath, isLogScope, Logger } from '../tools/logging';
+import { MAX_WS_CLIENTS, sendWebUiMessage } from '../tools/logging/WebSocketLimits';
 import { time } from '../tools/common';
 import { getReleaseCheck, scheduleUpdate, UpdateInstallerError } from '../tools/update';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -46,6 +47,19 @@ interface ConfigReloadResult {
 
 class UnifiedServer {
   private server?: Server;
+  private heartbeat?: NodeJS.Timeout;
+  private readonly clients = new Set<WebSocket>();
+  private readonly awaitingPong = new Set<WebSocket>();
+
+  revokeWebSocketSessions(): void {
+    this.clients.forEach((client) => {
+      globalThis.wsClients.delete(client);
+      client.close(1008, 'Authentication changed');
+      client.terminate();
+    });
+    this.clients.clear();
+    this.awaitingPong.clear();
+  }
 
   /**
    * 初始化 Unified Server 实例。
@@ -146,6 +160,7 @@ class UnifiedServer {
       try {
         new Logger(`${time()}${__('updateHelper')}`);
         const update = await scheduleUpdate({ currentVersion: this.version, proxy: raw.proxy, restart: true });
+        this.coordinator.beginShutdown();
         const response = res.status(202).json({ status: 'scheduled', ...update });
         setImmediate(this.requestShutdown);
         return response;
@@ -203,6 +218,9 @@ class UnifiedServer {
       }
       try {
         const name = req.params.name as JobName;
+        if (this.coordinator.isClosing) {
+          return res.status(503).json({ error: 'Manager is shutting down' });
+        }
         new Logger(`${time()}${__('serverJobStartRequested', name)}`);
         if (name === 'achievement') {
           fs.mkdirSync(path.join('data', 'achievement'), { recursive: true });
@@ -301,6 +319,7 @@ class UnifiedServer {
         return;
       }
       new Logger(`${time()}${__('serverManagerShutdownRequested')}`);
+      this.coordinator.beginShutdown();
       res.json({ status: 'success' });
       setImmediate(this.requestShutdown);
     });
@@ -310,12 +329,28 @@ class UnifiedServer {
     app.ws('/ws', (ws: WebSocket, req) => {
       const candidate = decodeManagerWebSocketSecret(req.headers['sec-websocket-protocol']);
       if (!isValidSecret(candidate)) {
-        return ws.close(1008, 'Authentication required');
+        ws.close(1008, 'Authentication required');
+        ws.terminate();
+        return;
       }
+      if (this.coordinator.isClosing || this.clients.size >= MAX_WS_CLIENTS) {
+        ws.close(1013, 'Manager connection limit reached');
+        ws.terminate();
+        return;
+      }
+      this.clients.add(ws);
       globalThis.wsClients.add(ws);
-      ws.send(JSON.stringify(globalThis.logs));
-      ws.on('close', () => globalThis.wsClients.delete(ws));
-      ws.on('error', () => globalThis.wsClients.delete(ws));
+      sendWebUiMessage(ws, JSON.stringify(globalThis.logs));
+      const remove = (): void => {
+        this.clients.delete(ws);
+        this.awaitingPong.delete(ws);
+        globalThis.wsClients.delete(ws);
+      };
+      ws.on('close', remove);
+      ws.on('error', () => {
+        remove(); ws.terminate();
+      });
+      ws.on('pong', () => this.awaitingPong.delete(ws));
     });
 
     this.server = server;
@@ -326,6 +361,20 @@ class UnifiedServer {
       server.once('error', reject);
       server.listen(port, host);
     });
+    this.heartbeat = setInterval(() => {
+      this.clients.forEach((client) => {
+        if (this.awaitingPong.has(client) || client.readyState !== 1) {
+          globalThis.wsClients.delete(client);
+          this.clients.delete(client);
+          this.awaitingPong.delete(client);
+          client.terminate();
+          return;
+        }
+        this.awaitingPong.add(client);
+        client.ping();
+      });
+    }, 30_000);
+    this.heartbeat.unref();
     new Logger(`${time()}${__('serverListening', raw.webUI?.ssl?.cert ? 'https' : 'http', host, String(port))}`);
   }
 
@@ -334,6 +383,9 @@ class UnifiedServer {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async stop(): Promise<void> {
+    clearInterval(this.heartbeat);
+    this.heartbeat = undefined;
+    this.revokeWebSocketSessions();
     const { server } = this;
     this.server = undefined;
     if (!server?.listening) {
@@ -347,7 +399,13 @@ class UnifiedServer {
       } catch (_error) { /* A disconnected client needs no further cleanup. */ }
     });
     globalThis.wsClients.clear();
-    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await new Promise<void>((resolve) => {
+      const deadline = setTimeout(() => server.closeAllConnections(), 5000);
+      deadline.unref();
+      server.close(() => {
+        clearTimeout(deadline); resolve();
+      });
+    });
     new Logger(`${time()}${__('serverStopped')}`);
   }
 }

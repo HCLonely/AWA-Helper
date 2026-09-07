@@ -14,6 +14,7 @@ import { loadConfig } from './tools/config';
 import { scheduleUpdate, UpdateInstallerError } from './tools/update';
 import { initializeI18n } from './tools/i18n';
 import { Logger } from './tools/logging';
+import { formatLogValue } from './tools/logging/sanitize';
 // @ts-ignore 在构建期间由 YAML 生成。
 import * as zh from './locales/zh.json';
 // @ts-ignore 在构建期间由 YAML 生成。
@@ -170,6 +171,9 @@ void main()
     activeTrayBridge?.error();
     activeTrayBridge?.close();
     activeTrayBridge = undefined;
+    if (!globalThis.log) {
+      console.error(formatLogValue(error));
+    }
     new Logger(error);
     process.exitCode = 1;
   });

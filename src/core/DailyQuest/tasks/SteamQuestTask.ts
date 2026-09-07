@@ -1,3 +1,4 @@
+import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/DailyQuest/tasks/SteamQuestTask.ts
  * @description 协调 AWA Steam 任务信息与 ASF 游戏挂时、许可证和进度轮询。
@@ -28,19 +29,27 @@ export class SteamQuestTask {
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
-  async run(signal?: AbortSignal): Promise<boolean> {
+  run(signal?: AbortSignal): Promise<boolean> {
+    return runWithRequestSignal(signal ?? new AbortController().signal, () => this.runTask(signal));
+  }
+
+  private async runTask(signal?: AbortSignal): Promise<boolean> {
+    if (signal?.aborted) {
+      return false;
+    }
     const questLogger = new Logger(`${time()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`, false);
     const listings = await this.awa.steam.getSteamQuests().catch((error) => {
       questLogger.log(chalk.red(__('logStatusError')));
-      new Logger(error);
-      return null;
+      throw new Error(__('gettingSteamQuestInfo', 'Steam'), { cause: error });
     });
-    if (!listings) {
+    if (!listings || signal?.aborted) {
       return false;
     }
     const quests: PreparedSteamQuest[] = [];
     for (const listing of listings) {
-      const prepared = await this.prepareQuest(listing, signal);
+      const prepared = await this.prepareQuest(listing, signal).catch((error) => {
+        throw new Error(`${__('gettingSteamQuestInfo', 'Steam')} [${listing.name}] ${listing.link}`, { cause: error });
+      });
       if (prepared) {
         quests.push(prepared);
       }
@@ -55,23 +64,27 @@ export class SteamQuestTask {
       return true;
     }
 
+    if (signal?.aborted) {
+      return false;
+    }
     const licenseLogger = new Logger(`${time()}${__('addingLicense')}`, false);
     const licenseResult = await this.asf.licenses.add(requestedIds).catch((error) => {
       licenseLogger.log(chalk.red(__('logStatusError')));
-      new Logger(error);
-      return null;
+      throw new Error(__('addingLicense'), { cause: error });
     });
-    if (!licenseResult?.ok) {
+    if (signal?.aborted) {
       return false;
+    }
+    if (!licenseResult.ok) {
+      throw new Error(`${__('addingLicense')}: ${licenseResult.state}`);
     }
     licenseLogger.log(chalk.green(__('logStatusOk')));
     const matchLogger = new Logger(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
     const ownedIds = await this.asf.bot.getOwnedGames(requestedIds).catch((error) => {
       matchLogger.log(chalk.red(__('logStatusError')));
-      new Logger(error);
-      return null;
+      throw new Error(__('matchingGames', 'Steam'), { cause: error });
     });
-    if (!ownedIds) {
+    if (!ownedIds || signal?.aborted) {
       return false;
     }
     if (!ownedIds.length) {
@@ -82,27 +95,32 @@ export class SteamQuestTask {
     matchLogger.log(chalk.green(`${__('logStatusOk')} (${ownedIds.length})`));
     const trackedQuests = quests.filter((quest) => ownedIds.includes(quest.id));
     if (!trackedQuests.length && !eventAppId) {
-      return false;
+      throw new Error(__('steamNoMatchingQuests'));
     }
     const playLogger = new Logger(`${time()}${__('usingASF', chalk.yellow('ASF'))}`, false);
-    const playResult = await this.asf.bot.playGames(ownedIds).catch((error) => {
-      new Logger(error);
-      return null;
-    });
-    if (!playResult?.ok) {
-      playLogger.log(chalk.red(__('logStatusError')));
-      return false;
-    }
-    playLogger.log(chalk.green(__('logStatusOk')));
-
     try {
+      const playResult = await this.asf.bot.playGames(ownedIds).catch((error) => {
+        playLogger.log(chalk.red(__('logStatusError')));
+        throw new Error(__('usingASF', 'ASF'), { cause: error });
+      });
+      if (!playResult?.ok) {
+        playLogger.log(chalk.red(__('logStatusError')));
+        throw new Error(`${__('usingASF', 'ASF')}: ${playResult.state}`);
+      }
+      playLogger.log(chalk.green(__('logStatusOk')));
+
       if (!await sleep(this.pollDelaySeconds, signal)) {
         return true;
       }
       while (!signal?.aborted) {
         let complete = true;
         for (const quest of trackedQuests) {
-          const progressResult = await this.awa.steam.getQuestProgress(quest.link);
+          if (signal?.aborted) {
+            return false;
+          }
+          const progressResult = await this.awa.steam.getQuestProgress(quest.link).catch((error) => {
+            throw new Error(__('checkingProgress', quest.link), { cause: error });
+          });
           const progress = progressResult.found ? progressResult.value : null;
           if (progress === null || progress < 100) {
             complete = false;
@@ -119,7 +137,7 @@ export class SteamQuestTask {
       return true;
     } finally {
       const stopLogger = new Logger(`${time()}${__('stoppingPlayingGames')}`, false);
-      const stopResult = await this.asf.bot.stopGames().catch((error) => {
+      const stopResult = await runWithRequestSignal(AbortSignal.timeout(15_000), () => this.asf.bot.stopGames()).catch((error) => {
         new Logger(error);
         return null;
       });
@@ -136,6 +154,9 @@ export class SteamQuestTask {
   private async prepareQuest(listing: AWASteamQuestListing, signal?: AbortSignal): Promise<PreparedSteamQuest | null> {
     for (let attempt = 0; attempt < 5 && !signal?.aborted; attempt++) {
       const detail = await this.awa.steam.getQuestDetail(listing.link);
+      if (signal?.aborted) {
+        return null;
+      }
       if (detail.state === 'ready' && detail.appId) {
         return { ...listing, id: detail.appId };
       }
@@ -150,10 +171,16 @@ export class SteamQuestTask {
       }
       if (detail.state === 'selection-required') {
         let gameLookup = await this.awa.steam.getSelectableGameId(listing.link);
+        if (signal?.aborted) {
+          return null;
+        }
         if (!gameLookup.found && (await this.awa.steam.syncGames(listing.link)).ok) {
+          if (signal?.aborted) {
+            return null;
+          }
           gameLookup = await this.awa.steam.getSelectableGameId(listing.link);
         }
-        if (!gameLookup.found || !(await this.awa.steam.selectGame(listing.link, gameLookup.value)).ok) {
+        if (signal?.aborted || !gameLookup.found || !(await this.awa.steam.selectGame(listing.link, gameLookup.value)).ok) {
           return null;
         }
         continue;

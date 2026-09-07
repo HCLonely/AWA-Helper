@@ -83,7 +83,7 @@ export class SteamQuestAPI {
    */
   async syncGames(url: string): Promise<ActionResult<'synced', 'rejected'>> {
     const response = await this.request<{ success?: boolean }>({
-      url: url.replace('steam/quests', 'ajax/user/steam/quests/sync-owned-games'), method: 'GET',
+      url: url.replace('steam/quests', 'ajax/user/steam/quests/sync-owned-games'), method: 'GET', retryTimes: 0,
       responseType: 'json', headers: { referer: url }
     });
     return response.data?.success === true ? { ok: true, state: 'synced' } : { ok: false, state: 'rejected' };
@@ -110,7 +110,7 @@ export class SteamQuestAPI {
    */
   async startQuest(url: string): Promise<ActionResult<'started', 'rejected'>> {
     const response = await this.request<{ success?: boolean }>({
-      url: url.replace('steam/quests', 'ajax/user/steam/quests/start'), method: 'GET', headers: { referer: url }
+      url: url.replace('steam/quests', 'ajax/user/steam/quests/start'), method: 'GET', retryTimes: 0, headers: { referer: url }
     });
     return response.data?.success === true ? { ok: true, state: 'started' } : { ok: false, state: 'rejected' };
   }

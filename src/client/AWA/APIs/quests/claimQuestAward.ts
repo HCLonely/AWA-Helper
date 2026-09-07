@@ -12,7 +12,7 @@ import type { ActionResult } from '../../../shared';
  */
 export const claimQuestAward = async (context: AWAContext, questId: string): Promise<ActionResult<'claimed', 'rejected'>> => {
   const options: myAxiosConfig = {
-    url: `${context.baseURL}/ajax/user/quest-award/${questId}`, method: 'GET',
+    url: `${context.baseURL}/ajax/user/quest-award/${questId}`, method: 'GET', retryTimes: 0,
     headers: { ...context.headers, referer: `${context.baseURL}/` }
   };
   if (context.httpsAgent) {

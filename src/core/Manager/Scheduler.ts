@@ -10,6 +10,9 @@ import type { JobCoordinator } from './JobCoordinator';
 class Scheduler {
   private readonly tasks: cron.ScheduledTask[] = [];
   private started = false;
+  private generation = 0;
+  private readonly pending = new Map<string, Promise<unknown>>();
+  private readonly restartVersions = new Map<string, number>();
 
   /**
    * 初始化 Scheduler 实例。
@@ -23,7 +26,7 @@ class Scheduler {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   start(): void {
-    if (this.started) {
+    if (this.started || this.coordinator.isClosing) {
       return;
     }
     this.started = true;
@@ -44,6 +47,7 @@ class Scheduler {
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   stop(): void {
+    this.generation++;
     if (this.tasks.length > 0) {
       new Logger(`${time()}${__('schedulerStopping', String(this.tasks.length))}`);
     }
@@ -91,10 +95,29 @@ class Scheduler {
    * @param payload - 当前请求或操作使用的数据内容，类型为 `unknown`。
    * @returns `Promise<unknown>`，目标作业重新启动后产生的异步结果。
    */
-  private async restart(name: 'dailyQuest' | 'achievement' | 'artifact', payload?: unknown): Promise<unknown> {
-    new Logger(`${time()}${__('schedulerRestarting', name)}`);
-    await this.coordinator.stop(name);
-    return this.coordinator.start(name, payload);
+  private restart(name: 'dailyQuest' | 'achievement' | 'artifact', payload?: unknown): Promise<unknown> {
+    const { generation } = this;
+    const version = (this.restartVersions.get(name) || 0) + 1;
+    this.restartVersions.set(name, version);
+    const current = (): boolean => this.started && generation === this.generation && !this.coordinator.isClosing &&
+      (name === 'artifact' || this.restartVersions.get(name) === version);
+    const previous = name === 'artifact' ? this.pending.get(name) : undefined;
+    const completion = (previous ?? Promise.resolve()).catch(() => undefined).then(async () => {
+      if (!current()) {
+        return;
+      }
+      new Logger(`${time()}${__('schedulerRestarting', name)}`);
+      await this.coordinator.stop(name);
+      if (current()) {
+        return this.coordinator.start(name, payload);
+      }
+    }).finally(() => {
+      if (this.pending.get(name) === completion) {
+        this.pending.delete(name);
+      }
+    });
+    this.pending.set(name, completion);
+    return completion;
   }
 }
 

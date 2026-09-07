@@ -11,6 +11,7 @@ import { UnifiedServer } from '../../server';
 import { loadConfig } from '../../tools/config';
 import { setLogSecrets } from '../../tools/logging/sanitize';
 import { cleanupExpiredLogs } from '../../tools/logging/retention';
+import { cleanupCompletedUpdates } from '../../tools/update/retention';
 import { configureWebUiColors, Logger, time } from '../../tools';
 import { initializeI18n } from '../../tools/i18n';
 import { JobCoordinator } from './JobCoordinator';
@@ -37,7 +38,8 @@ class ManagerRuntime {
   private readonly scheduler = new Scheduler(this.coordinator, this.loaded.manager);
   private readonly server: UnifiedServer;
   private readonly initialTlsRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-  private stopping = false;
+  private stopPromise?: Promise<void>;
+  private maintenance?: NodeJS.Timeout;
   private shutdownSignalled = false;
   private resolveShutdown!: () => void;
   private readonly shutdownRequested = new Promise<void>((resolve) => {
@@ -83,6 +85,10 @@ class ManagerRuntime {
       ? __('managerWebUiDisabled')
       : __('managerWebUiStarting', getManagerListenHost(webUI?.local, process.env.AWA_HELPER_CONTAINER === 'true'), String(webUI?.port || 2345))}`);
     await this.server.start();
+    if (this.shutdownSignalled) {
+      await this.stop();
+      return 0;
+    }
     this.hooks.onReady?.(this.getLocalWebUiUrl());
     this.hooks.onStateChange?.(this.coordinator.states.list());
     new Logger(`${time()}${__('managerStarted', __(`managerMode_${this.mode}`), String(this.loaded.raw.webUI?.port || 2345))}`);
@@ -93,6 +99,10 @@ class ManagerRuntime {
         await this.stop();
         return 0;
       }
+    }
+    if (this.shutdownSignalled) {
+      await this.stop();
+      return 0;
     }
     if (this.mode === 'once') {
       new Logger(`${time()}${__('managerOneShotSelected')}`);
@@ -147,14 +157,17 @@ class ManagerRuntime {
       return;
     }
     this.shutdownSignalled = true;
+    this.scheduler.stop();
+    this.coordinator.beginShutdown();
     new Logger(`${time()}${__('managerShutdownRequested')}`);
     this.resolveShutdown();
-    if (this.mode === 'once') {
-      void this.coordinator.stopAll();
-    }
+    void this.coordinator.stopAll().catch((error) => new Logger(error));
   }
 
   startJob(name: JobName): Promise<JobResult> {
+    if (this.coordinator.isClosing) {
+      throw new Error('Manager is shutting down');
+    }
     if (name === 'achievement') {
       fs.mkdirSync('data/achievement', { recursive: true });
       fs.writeFileSync('data/achievement/enabled', '');
@@ -177,6 +190,9 @@ class ManagerRuntime {
     const next = loadConfig(this.loaded.path);
     const previousWebUi = this.webUiServerSignature(this.loaded.raw.webUI);
     const nextWebUi = this.webUiServerSignature(next.raw.webUI);
+    if (this.loaded.manager.secret !== next.manager.secret) {
+      this.server.revokeWebSocketSessions();
+    }
 
     this.scheduler.reload(next.manager);
     this.replaceObject(this.loaded.raw, next.raw);
@@ -204,16 +220,20 @@ class ManagerRuntime {
    * 停止 stop 相关数据。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  async stop(): Promise<void> {
-    if (this.stopping) {
-      return;
-    }
-    this.stopping = true;
-    new Logger(`${time()}${__('managerShutdownStarted')}`);
+  stop(): Promise<void> {
+    this.coordinator.beginShutdown();
     this.scheduler.stop();
-    await this.coordinator.stopAll();
-    await this.server.stop();
-    new Logger(`${time()}${__('managerShutdownCompleted')}`);
+    clearInterval(this.maintenance);
+    this.stopPromise ??= Promise.resolve().then(async () => {
+      new Logger(`${time()}${__('managerShutdownStarted')}`);
+      try {
+        await this.coordinator.stopAll();
+      } finally {
+        await this.server.stop();
+      }
+      new Logger(`${time()}${__('managerShutdownCompleted')}`);
+    });
+    return this.stopPromise;
   }
 
   /**
@@ -226,6 +246,16 @@ class ManagerRuntime {
     this.applyRuntimeConfiguration();
     globalThis.log = true;
     globalThis.newVersionNotice = '';
+    cleanupCompletedUpdates();
+    this.maintenance = setInterval(() => {
+      try {
+        cleanupExpiredLogs('logs', this.loaded.raw.logsExpire || 0);
+        cleanupCompletedUpdates();
+      } catch (error) {
+        new Logger(error);
+      }
+    }, 60 * 60 * 1000);
+    this.maintenance.unref();
   }
 
   /** 将当前已加载配置同步到进程级的动态运行参数。 */

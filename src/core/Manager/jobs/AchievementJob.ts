@@ -1,10 +1,11 @@
+import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/Manager/jobs/AchievementJob.ts
  * @description 将成就服务封装为可由 Manager 创建、运行和释放的作业。
  */
 import { AchievementService } from '../../Achievement/AchievementService';
 import { loadConfig } from '../../../tools/config';
-import { updateYamlFieldsSync } from '../../../tools/config/YamlConfig';
+import { createCookieCommit } from '../../../tools/config/YamlConfig';
 import type { Job } from '../Job';
 
 class AchievementJob implements Job {
@@ -22,11 +23,19 @@ class AchievementJob implements Job {
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal`。
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
-  async run(signal: AbortSignal): Promise<boolean> {
+  run(signal: AbortSignal): Promise<boolean> {
+    return runWithRequestSignal(signal ?? new AbortController().signal, () => this.runTask(signal));
+  }
+
+  private async runTask(signal: AbortSignal): Promise<boolean> {
+    if (signal.aborted) {
+      return false;
+    }
     const appConfig = loadConfig(this.configPath).raw;
     if (!appConfig.awaCookie) {
       throw new Error('awaCookie is not configured');
     }
+    const commitCookie = createCookieCommit(this.configPath, appConfig.awaCookie);
     this.service = new AchievementService({
       awaCookie: appConfig.awaCookie,
       awaHost: appConfig.awaHost,
@@ -52,11 +61,14 @@ class AchievementJob implements Job {
       return true;
     } finally {
       signal.removeEventListener('abort', abort);
-      if (initialized && this.service) {
-        updateYamlFieldsSync(this.configPath, { awaCookie: this.service.awa.newCookie });
+      try {
+        if (initialized && this.service) {
+          commitCookie(this.service.awa.newCookie);
+        }
+      } finally {
+        this.service?.destroy();
+        this.service = undefined;
       }
-      this.service?.destroy();
-      this.service = undefined;
     }
   }
 

@@ -6,6 +6,7 @@ import type { Job, JobName, JobResult } from './Job';
 import { JobStateStore } from './JobStateStore';
 import { Logger, time } from '../../tools';
 import { runWithLogScope } from '../../tools/logging';
+import { runWithRequestSignal } from '../../tools/http/RequestContext';
 
 interface ActiveJob {
   controller: AbortController
@@ -16,6 +17,16 @@ class JobCoordinator {
   readonly states = new JobStateStore();
   private readonly jobs = new Map<JobName, Job>();
   private readonly active = new Map<JobName, ActiveJob>();
+  private closing = false;
+  private stopPromise?: Promise<void>;
+
+  get isClosing(): boolean {
+    return this.closing;
+  }
+
+  beginShutdown(): void {
+    this.closing = true;
+  }
 
   /**
    * 添加 register 相关数据。
@@ -37,6 +48,9 @@ class JobCoordinator {
    * @returns `Promise<JobResult>`，start 执行完成后的结果。
    */
   start(name: JobName, payload?: unknown): Promise<JobResult> {
+    if (this.closing) {
+      throw new Error('Manager is shutting down');
+    }
     const running = this.active.get(name);
     if (running) {
       new Logger(`${time()}${__('jobDuplicateStart', name)}`);
@@ -48,12 +62,13 @@ class JobCoordinator {
     }
     const controller = new AbortController();
     const startedAt = new Date().toISOString();
-    new Logger(`${time()}${__('jobDispatching', name)}`);
-    this.states.update(name, 'running', { startedAt, finishedAt: undefined, message: undefined });
-    const completion = runWithLogScope(name, async () => {
+    const completion = Promise.resolve().then(() => runWithLogScope(name, async () => {
+      if (controller.signal.aborted) {
+        return false;
+      }
       new Logger(`${time()}${__('jobStarted', name)}`);
-      return job.run(controller.signal, payload);
-    })
+      return runWithRequestSignal(controller.signal, () => job.run(controller.signal, payload));
+    }))
       .then((success) => {
         const result: JobResult = {
           success: success === true && !controller.signal.aborted,
@@ -87,6 +102,8 @@ class JobCoordinator {
       })
       .finally(() => this.active.delete(name));
     this.active.set(name, { controller, completion });
+    new Logger(`${time()}${__('jobDispatching', name)}`);
+    this.states.update(name, 'running', { startedAt, finishedAt: undefined, message: undefined });
     return completion;
   }
 
@@ -112,11 +129,19 @@ class JobCoordinator {
    * 停止 stop All 相关数据。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  async stopAll(): Promise<void> {
-    new Logger(`${time()}${__('jobStoppingAll', String(this.active.size))}`);
-    await Promise.all([...this.active.keys()].map((name) => this.stop(name)));
-    await Promise.all([...this.jobs.values()].map(async (job) => job.dispose?.()));
-    new Logger(`${time()}${__('jobAllDisposed')}`);
+  stopAll(): Promise<void> {
+    this.beginShutdown();
+    this.stopPromise ??= Promise.resolve().then(async () => {
+      new Logger(`${time()}${__('jobStoppingAll', String(this.active.size))}`);
+      await Promise.all([...this.active.keys()].map((name) => this.stop(name)));
+      const disposed = await Promise.allSettled([...this.jobs.values()].map(async (job) => job.dispose?.()));
+      const failures = disposed.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
+      if (failures.length) {
+        throw new AggregateError(failures.map((result) => result.reason), 'Job cleanup failed');
+      }
+      new Logger(`${time()}${__('jobAllDisposed')}`);
+    });
+    return this.stopPromise;
   }
 }
 

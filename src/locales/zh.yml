@@ -14,6 +14,8 @@ pushTitle: 'AWA-Helper提醒'
 processWasKilled: 任务进程被终止
 processWasInterrupted: 任务进程被人为终止
 processError: 任务进程异常退出
+taskFailureUnknown: 任务返回失败，但未提供具体原因，请查看此前日志
+steamNoMatchingQuests: ASF 拥有的游戏与待执行的 Steam 任务不匹配
 processInitError: 任务初始化出错
 errorMessage: 错误信息
 processTimeout: 运行超时，强制退出程序

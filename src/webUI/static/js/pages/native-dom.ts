@@ -5,6 +5,18 @@
   const listeners = new WeakMap<EventTarget, Map<string, Listener[]>>();
   const storedData = new WeakMap<Element, Map<string, unknown>>();
 
+  const boundLogArea = (element: Element): void => {
+    const area = element.closest('#log-area');
+    if (!area) {
+      return;
+    }
+    let size = Array.from(area.children).reduce((total, child) => total + child.innerHTML.length, 0);
+    while (area.firstElementChild && (area.childElementCount > 1000 || size > 256 * 1024)) {
+      size -= area.firstElementChild.innerHTML.length;
+      area.firstElementChild.remove();
+    }
+  };
+
   const parseHtml = (html: string): Element[] => {
     const template = document.createElement('template');
     template.innerHTML = html.trim();
@@ -128,6 +140,7 @@
       }
       return this.each((_index, element) => {
         element.innerHTML = String(value ?? '');
+        boundLogArea(element);
       });
     }
     append(content: string | Element | NativeDom): this {
@@ -138,6 +151,7 @@
           const nodes = content instanceof NativeDom ? content.elements : [content];
           nodes.forEach((node) => element.append(parentIndex === 0 ? node : node.cloneNode(true)));
         }
+        boundLogArea(element);
       });
     }
     empty(): this {

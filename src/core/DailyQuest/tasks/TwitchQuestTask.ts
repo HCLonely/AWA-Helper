@@ -1,8 +1,10 @@
+import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/DailyQuest/tasks/TwitchQuestTask.ts
  * @description 发现可用 Twitch 频道并向 AWA 周期提交直播观看跟踪心跳。
  */
 import chalk from 'chalk';
+import { AWAError } from '../../../client/AWA/AWAError';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
 import { TwitchClient } from '../../../client/Twitch/TwitchClient';
 import type { DailyQuestRuntime } from '../DailyQuestRuntime';
@@ -39,7 +41,11 @@ export class TwitchQuestTask {
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
-  async run(signal?: AbortSignal): Promise<boolean> {
+  run(signal?: AbortSignal): Promise<boolean> {
+    return runWithRequestSignal(signal ?? new AbortController().signal, () => this.runTask(signal));
+  }
+
+  private async runTask(signal?: AbortSignal): Promise<boolean> {
     let retriedAuthorization = false;
     let dailyCapReached = false;
     while (!signal?.aborted && !this.isComplete()) {
@@ -102,9 +108,12 @@ export class TwitchQuestTask {
         retriedAuthorization = false;
       } catch (error) {
         logger.log(chalk.red(__('logStatusError')));
-        const status = error && typeof error === 'object' && 'response' in error
-          ? (error as { response?: { status?: number } }).response?.status
-          : undefined;
+        let status: number | undefined;
+        if (error instanceof AWAError) {
+          status = error.statusCode;
+        } else if (error && typeof error === 'object' && 'response' in error) {
+          status = (error as { response?: { status?: number } }).response?.status;
+        }
         if (status === 403 && !retriedAuthorization) {
           new Logger(`${time()}${chalk.yellow(__('twitchAuthorizationExpiredRetrying'))}`);
           retriedAuthorization = true;

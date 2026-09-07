@@ -3,6 +3,7 @@ import * as fs from 'fs-extra';
 import chalk from 'chalk';
 import { formatLogValue } from './sanitize';
 import { getLogFilePath, getLogScope, type LogScope } from './LogContext';
+import { sendWebUiMessage } from './WebSocketLimits';
 
 interface WebLogEntry {
   id: number;
@@ -29,16 +30,20 @@ const configureWebUiColors = (enabled: boolean): void => {
 const broadcastWebUi = (data: WebLogEntry): void => {
   const message = JSON.stringify(data);
   globalThis.wsClients.forEach((client) => {
-    if (client.readyState !== 1) {
-      globalThis.wsClients.delete(client);
-      return;
-    }
-    try {
-      client.send(message);
-    } catch (_error) {
-      globalThis.wsClients.delete(client);
-    }
+    sendWebUiMessage(client, message);
   });
+};
+
+const boundLogCache = (): void => {
+  const entries = Object.entries(globalThis.logs).filter(([key]) => key !== 'type');
+  let bytes = entries.reduce((total, [, entry]) => total + Buffer.byteLength(JSON.stringify(entry)), 0);
+  for (const [key, entry] of entries.filter(([key]) => !key.endsWith(':questInfo'))) {
+    if (bytes <= 512 * 1024) {
+      break;
+    }
+    bytes -= Buffer.byteLength(JSON.stringify(entry));
+    delete globalThis.logs[key];
+  }
 };
 
 const escapeHtml = (data: string): string => data
@@ -65,7 +70,14 @@ const toHtml = (value: unknown): string => {
 
 const writeFileLog = (scope: LogScope, value: unknown, newLine: boolean): void => {
   fs.mkdirSync('logs', { recursive: true });
-  fs.appendFileSync(getLogFilePath(scope), formatLogValue(value, true) + (newLine ? '\n' : ''));
+  const filename = getLogFilePath(scope);
+  const text = formatLogValue(value, true).slice(0, 64 * 1024) + (newLine ? '\n' : '');
+  if (fs.existsSync(filename) && fs.statSync(filename).size + Buffer.byteLength(text) > 10 * 1024 * 1024) {
+    const previous = filename.replace(/\.txt$/, '.1.txt');
+    fs.rmSync(previous, { force: true });
+    fs.renameSync(filename, previous);
+  }
+  fs.appendFileSync(filename, text);
 };
 
 export class Logger {
@@ -89,7 +101,11 @@ export class Logger {
         type: 'questInfo',
         scope: this.scope
       };
+      if (Buffer.byteLength(JSON.stringify(entry)) > 64 * 1024) {
+        return;
+      }
       globalThis.logs[`${this.scope}:questInfo`] = entry;
+      boundLogCache();
       broadcastWebUi(entry);
       return;
     }
@@ -102,13 +118,14 @@ export class Logger {
         process.stdout.write(consoleValue);
       }
     }
-    this.data += typeof value === 'string' ? value : formatLogValue(value);
+    this.data = (this.data + formatLogValue(value)).slice(-2048);
     const entry: WebLogEntry = { id: this.id, data: toHtml(this.data), type: 'log', scope: this.scope };
     globalThis.logs[`${this.scope}:${this.id}`] = entry;
     const ids = Object.keys(globalThis.logs).filter((id) => id.startsWith(`${this.scope}:`) && /\d+$/.test(id));
     if (ids.length > 1000) {
       ids.slice(0, ids.length - 1000).forEach((id) => delete globalThis.logs[id]);
     }
+    boundLogCache();
     broadcastWebUi(entry);
   }
 

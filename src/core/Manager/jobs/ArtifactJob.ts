@@ -1,9 +1,10 @@
+import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/Manager/jobs/ArtifactJob.ts
  * @description 将指定遗物槽位的替换请求封装为 Manager 作业。
  */
 import { ArtifactService } from '../../Artifact/ArtifactService';
-import { updateYamlFieldsSync } from '../../../tools/config/YamlConfig';
+import { createCookieCommit } from '../../../tools/config/YamlConfig';
 import type { Job } from '../Job';
 
 class ArtifactJob implements Job {
@@ -21,7 +22,11 @@ class ArtifactJob implements Job {
    * @param payload - 当前请求或操作使用的数据内容，类型为 `unknown`。
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
-  async run(signal: AbortSignal, payload?: unknown): Promise<boolean> {
+  run(signal: AbortSignal, payload?: unknown): Promise<boolean> {
+    return runWithRequestSignal(signal ?? new AbortController().signal, () => this.runTask(signal, payload));
+  }
+
+  private async runTask(signal: AbortSignal, payload?: unknown): Promise<boolean> {
     if (signal.aborted) {
       return false;
     }
@@ -33,16 +38,17 @@ class ArtifactJob implements Job {
     if (!service.initted) {
       return false;
     }
-    if (!await service.init()) {
+    const commitCookie = createCookieCommit(this.configPath, service.initialCookie);
+    if (!await service.init(signal)) {
       return false;
     }
     try {
       if (signal.aborted) {
         return false;
       }
-      return await service.start(ids);
+      return await service.start(ids, signal);
     } finally {
-      updateYamlFieldsSync(this.configPath, { awaCookie: service.newCookie });
+      commitCookie(service.newCookie);
     }
   }
 }

@@ -6,6 +6,9 @@ const path = require('node:path');
 const test = require('node:test');
 const { DailyQuestRuntime } = require('../dist/core/DailyQuest/DailyQuestRuntime');
 const { SteamQuestTask } = require('../dist/core/DailyQuest/tasks/SteamQuestTask');
+const { formatQuestFailure } = require('../dist/core/DailyQuest/QuestFailure');
+const { ASFError } = require('../dist/client/Steam/ASFError');
+const { setLogSecrets } = require('../dist/tools/logging/sanitize');
 
 const originalDirectory = process.cwd();
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-steam-task-'));
@@ -68,6 +71,44 @@ test('SteamQuestTask does not start ASF for an already completed community event
   const task = new SteamQuestTask(awa, asf, () => undefined, 0);
   assert.equal(await task.run(), true);
   assert.equal(licenseRequests, 0);
+});
+
+for (const stage of ['listing', 'license', 'owned', 'play', 'progress']) {
+  test(`Steam failure retains the cause at ${stage} and still cleans up playback`, async () => {
+    const failure = new ASFError('executeCommand', 'Connection failed', true, 503, {
+      cause: Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' })
+    });
+    const at = (name, value) => async () => { if (stage === name) throw failure; return value; };
+    let stopped = false;
+    const awa = { steam: {
+      getSteamQuests: at('listing', [{ name: 'Game', link: '/quest' }]),
+      getQuestDetail: async () => ({ state: 'ready', appId: '123' }),
+      getQuestProgress: at('progress', { found: true, value: 100 })
+    } };
+    const asf = { licenses: { add: at('license', { ok: true }) }, bot: {
+      getOwnedGames: at('owned', ['123']), playGames: at('play', { ok: true }),
+      stopGames: async () => { stopped = true; throw new Error('cleanup failed'); }
+    } };
+    await assert.rejects(new SteamQuestTask(awa, asf, () => undefined, 0).run(), (error) => {
+      assert.equal(error.cause, failure);
+      const message = formatQuestFailure('Steam ASF', error);
+      assert.match(message, /Steam ASF/);
+      assert.match(message, /executeCommand: 503: Connection failed/);
+      assert.match(message, /ECONNREFUSED/);
+      assert.doesNotMatch(message, /cleanup failed/);
+      return true;
+    });
+    assert.equal(stopped, ['play', 'progress'].includes(stage));
+  });
+}
+
+test('failure summaries redact secrets and handle missing or circular causes', () => {
+  setLogSecrets({ asfPassword: 'private-asf-password' });
+  const error = new Error('private-asf-password');
+  error.cause = error;
+  assert.equal(formatQuestFailure('Steam ASF', error), 'Steam ASF: ********');
+  assert.equal(formatQuestFailure('Steam ASF', undefined), 'Steam ASF: taskFailureUnknown');
+  assert.equal(formatQuestFailure('Steam ASF', 'request failed'), 'Steam ASF: request failed');
 });
 
 test('DailyQuestRuntime does not expose a game ID for an already completed community event', async () => {

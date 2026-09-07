@@ -16,6 +16,8 @@ pushTitle: 'AWA-Helper Reminder'
 processWasKilled: Task process terminated
 processWasInterrupted: The task process was manually terminated
 processError: The task process exited abnormally
+taskFailureUnknown: Task returned failure without a specific reason; check earlier logs
+steamNoMatchingQuests: Games owned by ASF do not match the pending Steam quests
 processInitError: Task initialization error
 errorMessage: Error message
 processTimeout: Run timeout. Force quit the program

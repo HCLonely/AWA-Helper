@@ -12,7 +12,7 @@ import type { ActionResult } from '../../../shared';
  */
 export const completeGetStartedItem = async (context: AWAContext, link: string): Promise<ActionResult<'completed', 'rejected'>> => {
   const options: myAxiosConfig = {
-    url: new URL(link, `${context.baseURL}/`).href, method: 'GET',
+    url: new URL(link, `${context.baseURL}/`).href, method: 'GET', retryTimes: 0,
     headers: { ...context.headers, origin: context.baseURL, referer: `${context.baseURL}/control-center` }
   };
   if (context.httpsAgent) {

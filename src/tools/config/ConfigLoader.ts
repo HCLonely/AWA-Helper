@@ -34,7 +34,7 @@ const locateConfig = (): string => {
   }
   const found = candidates.find((candidate) => fs.existsSync(candidate));
   if (!found) {
-    throw new Error(`Configuration file not found: ${resolve(candidates[1])}`);
+    throw new Error(`[CONFIG_NOT_FOUND] Configuration file not found: ${resolve(candidates[1])}`);
   }
   return found;
 };

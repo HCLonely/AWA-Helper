@@ -17,7 +17,7 @@ export const sendTwitchTrack = async (
   { channelId, jwt, extensionID }: { channelId: string; jwt: string; extensionID?: string }
 ): Promise<TwitchTrackResult> => {
   const options: myAxiosConfig = {
-    url: `${context.baseURL}/twitch/extensions/track`, method: 'GET',
+    url: `${context.baseURL}/twitch/extensions/track`, method: 'GET', retryTimes: 0,
     headers: {
       origin: `https://${extensionID}.ext-twitch.tv`, referer: `https://${extensionID}.ext-twitch.tv/`,
       'user-agent': context.headers['user-agent'], 'x-extension-channel': channelId, 'x-extension-jwt': jwt

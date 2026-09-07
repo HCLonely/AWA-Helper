@@ -6,12 +6,13 @@ try {
   Push-Location $testRoot
   try {
     $result = node index.js --helper 2>&1
+    $exitCode = $LASTEXITCODE
   }
   finally {
     Pop-Location
   }
 
-  if (((-split $result) -join '') -notmatch 'config.yml]!') {
+  if ($exitCode -eq 0 -or ($result -join "`n") -notmatch '\[CONFIG_NOT_FOUND\]') {
     Write-Output $result
     throw 'Test failed!'
   }
@@ -24,3 +25,5 @@ finally {
     Remove-Item -LiteralPath $resolvedTemp -Recurse -Force
   }
 }
+
+exit 0

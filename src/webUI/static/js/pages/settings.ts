@@ -13,6 +13,16 @@
     author?: string;
   }
   type ConfigData = Record<string, any>;
+  const mergeConfig = (original: ConfigData, edited: ConfigData): ConfigData => Object.fromEntries(
+    [...new Set([...Object.keys(original), ...Object.keys(edited)])].map((key) => {
+      const value = edited[key];
+      if (!Object.hasOwn(edited, key)) {
+        return [key, original[key]];
+      }
+      return [key, value && typeof value === 'object' && !Array.isArray(value)
+        ? mergeConfig(original[key] && typeof original[key] === 'object' ? original[key] : {}, value) : value];
+    })
+  );
   const setModalOpen = (selector: string, open: boolean): void => {
     document.querySelector(selector)?.classList.toggle('open', open);
   };
@@ -190,9 +200,8 @@
         form.find('.is-invalid[data-validation]')[0].scrollIntoView({ behavior: 'smooth' });
         return;
       }
-      const config = generateData(form);
+      const config = mergeConfig(oldConfig || {}, generateData(form));
       let result = '';
-      console.log(config);
       if (form.attr('data-type') === 'json') {
         result = JSON.stringify(config, null, 2);
       }
@@ -308,10 +317,20 @@
   }
   function generateData(parent: NativeDom, isArray = false): ConfigData | any[] {
     const config: any = isArray ? [] : {};
-    parent.find(`[data-parent="${(parent.attr('id') ?? '').replace('config-', '')}"]:visible`).map((index, element) => {
+    parent.find(`[data-parent="${(parent.attr('id') ?? '').replace('config-', '')}"]`).map((index, element) => {
+      let ancestor: Element | null = element;
+      while (ancestor && ancestor !== parent[0]) {
+        if (ancestor.hasAttribute('bind-name') && (ancestor as HTMLElement).style.display === 'none') {
+          return element;
+        }
+        ancestor = ancestor.parentElement;
+      }
       if (dom(element).attr('type') === 'object') {
         if (isArray) {
-          config.push(generateData(dom(element)));
+          const item = generateData(dom(element)) as ConfigData;
+          if (!(parent.attr('name') === 'artifacts' && item.cron === '' && Array.isArray(item.ids) && item.ids.length === 0)) {
+            config.push(item);
+          }
           return element;
         }
         config[String(dom(element).attr('name') ?? '')] = generateData(dom(element));
@@ -345,6 +364,7 @@
       if (dom(element).attr('data-value-type') === 'integer-array') {
         const value = String(dom(element).val() ?? '')
           .split(',')
+          .filter((item) => item.trim() !== '')
           .map((item) => Number(item.trim()));
         if (isArray) {
           config.push(value);

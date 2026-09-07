@@ -114,4 +114,29 @@ const updateYamlFieldsSync = (filePath: string, fields: Record<string, unknown>)
   atomicWriteFileSync(filePath, document.toString());
 };
 
-export { atomicWriteFileSync, createConfigValidationError, getYamlFieldLine, updateYamlFieldsSync, validateYaml };
+/** Commit session refreshes only while this job still owns the on-disk cookie. */
+const createCookieCommit = (filePath: string, initialCookie: string): ((cookie: string) => boolean) => {
+  let expectedCookie = initialCookie;
+  let superseded = false;
+  return (cookie) => {
+    if (superseded) {
+      return false;
+    }
+    const document = parseDocument(fs.readFileSync(filePath, 'utf8'));
+    if (document.errors.length) {
+      throw document.errors[0];
+    }
+    if (document.get('awaCookie') !== expectedCookie) {
+      superseded = true;
+      return false;
+    }
+    if (cookie !== expectedCookie) {
+      document.set('awaCookie', cookie);
+      atomicWriteFileSync(filePath, document.toString());
+      expectedCookie = cookie;
+    }
+    return true;
+  };
+};
+
+export { atomicWriteFileSync, createConfigValidationError, createCookieCommit, getYamlFieldLine, updateYamlFieldsSync, validateYaml };

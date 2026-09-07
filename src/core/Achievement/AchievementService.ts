@@ -29,33 +29,33 @@ export class AchievementService {
   ];
   Achievements!: Array<Achievement>;
   achievement2action: {
-    [key in typeof this.availableAchievements[number]]: () => Promise<void>;
+    [key in typeof this.availableAchievements[number]]: (signal?: AbortSignal) => Promise<void>;
   } = {
       /**
        * 处理当前映射项的回调逻辑。
        * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
        */
-      'Use 25 different borders': () => this.border25(),
+      'Use 25 different borders': (signal) => this.border25(signal),
       /**
        * 处理当前映射项的回调逻辑。
        * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
        */
-      'Change your border once a day for a week': () => this.onceADayForAWeek('border'),
+      'Change your border once a day for a week': (signal) => this.onceADayForAWeek('border', signal),
       /**
        * 处理当前映射项的回调逻辑。
        * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
        */
-      'Change your border once a month for a year': () => this.onceAMonthForAYear('border'),
+      'Change your border once a month for a year': (signal) => this.onceAMonthForAYear('border', signal),
       /**
        * 处理当前映射项的回调逻辑。
        * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
        */
-      'Change your avatar items every day for a week': () => this.onceADayForAWeek('avatar'),
+      'Change your avatar items every day for a week': (signal) => this.onceADayForAWeek('avatar', signal),
       /**
        * 处理当前映射项的回调逻辑。
        * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
        */
-      'Change your avatar once a month for 1 year': () => this.onceAMonthForAYear('avatar'),
+      'Change your avatar once a month for 1 year': (signal) => this.onceAMonthForAYear('avatar', signal),
       /**
        * 处理当前映射项的回调逻辑。
        * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
@@ -172,7 +172,7 @@ export class AchievementService {
         if (signal?.aborted) {
           return;
         }
-        await this.achievement2action[availableAchievement]();
+        await this.achievement2action[availableAchievement](signal);
         new Logger(`${time()}${__('doneAchievement', chalk.yellow(availableAchievement))}`);
       }
     }
@@ -185,7 +185,7 @@ export class AchievementService {
    * 处理 border25 相关逻辑。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  async border25(): Promise<void> {
+  async border25(signal?: AbortSignal): Promise<void> {
     const borderLookup = await this.awa.personalization.getAvatarItems('border');
     const { userAvatarInfo: UAI, ids: borders } = borderLookup.found ? borderLookup.value : {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
@@ -203,12 +203,14 @@ export class AchievementService {
 
     for (let i = 0; i < 25; i++) {
       userAvatarInfo.border = borderIds[i];
-      if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
+      if (signal?.aborted || !(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
         return;
       }
       this.userAvatarInfo = userAvatarInfo;
       // new Logger(`${time()}${__('changeBorder', chalk.yellow(borderId))}`, false);
-      await sleep(5);
+      if (!await sleep(5, signal)) {
+        return;
+      }
     }
     new Logger(`${time()}${chalk.green(__('doneBorder25'))}`);
   }
@@ -218,7 +220,7 @@ export class AchievementService {
    * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  async onceADayForAWeek(type: 'border' | 'avatar'): Promise<void> {
+  async onceADayForAWeek(type: 'border' | 'avatar', signal?: AbortSignal): Promise<void> {
     const now = new Date();
     const currentHour = now.getHours();
 
@@ -255,7 +257,7 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
+    if (signal?.aborted || !(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
       return;
     }
     this.userAvatarInfo = userAvatarInfo;
@@ -273,7 +275,7 @@ export class AchievementService {
    * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  async onceAMonthForAYear(type: 'border' | 'avatar'): Promise<void> {
+  async onceAMonthForAYear(type: 'border' | 'avatar', signal?: AbortSignal): Promise<void> {
     if (type === 'border' && this.incompletedAchievements.includes('Change your border once a day for a week')) {
       new Logger(`${time()}${__('borderOnceADayForAWeekExist', chalk.blue('Change your border once a day for a week'))}`);
       return;
@@ -319,7 +321,7 @@ export class AchievementService {
     userAvatarInfo[type] = selectedId.id;
     // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
-    if (!(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
+    if (signal?.aborted || !(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
       return;
     }
     this.userAvatarInfo = userAvatarInfo;

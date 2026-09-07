@@ -3,6 +3,7 @@
  * @description 维护 AWA 基础地址、身份 Cookie、请求头和可注入 HTTP 传输状态。
  */
 import type { RawAxiosRequestHeaders } from 'axios';
+import { withRequestSignal } from '../../tools/http/RequestContext';
 import { Cookie, http } from '../../tools';
 import { observeExternalRequest, safeRequestTarget } from '../../tools/logging';
 import { createHttpTransport, createProxyAgent, DEFAULT_AWA_HOST, DEFAULT_USER_AGENT, type CookieStore, type HttpTransport } from '../shared';
@@ -20,6 +21,7 @@ export interface AWAContextOptions {
 
 export class AWAContext {
   host: string;
+  private readonly initialOrigin: string;
   readonly cookie: CookieStore;
   readonly headers: RawAxiosRequestHeaders;
   readonly httpsAgent?: myAxiosConfig['httpsAgent'];
@@ -34,6 +36,12 @@ export class AWAContext {
    */
   constructor(options: AWAContextOptions) {
     this.host = options.host || DEFAULT_AWA_HOST;
+    if (!/^[a-z\d.-]+(?::\d+)?$/i.test(this.host)) {
+      throw new AWAError('configuration', 'Invalid AWA host', false);
+    }
+    const initialUrl = new URL(`https://${this.host}`);
+    this.host = initialUrl.host;
+    this.initialOrigin = initialUrl.origin;
     this.transport = options.transport || createHttpTransport(http);
     this.logRequests = options.logRequests ?? false;
     this.cookie = new Cookie(options.cookie);
@@ -56,6 +64,16 @@ export class AWAContext {
     return `https://${this.host}`;
   }
 
+  assertTrustedURL(target: string): URL {
+    const url = new URL(target, this.baseURL);
+    const awaHost = url.hostname === 'alienwarearena.com' || url.hostname.endsWith('.alienwarearena.com');
+    if (url.protocol !== 'https:' || url.username || url.password ||
+      (url.origin !== this.initialOrigin && !(awaHost && !url.port))) {
+      throw new AWAError('request', 'Refusing to send AWA credentials to an untrusted destination', false);
+    }
+    return url;
+  }
+
   /**
    * 更新 update Cookies 相关数据。
    * @param setCookie - 用于身份验证和维持会话的 Cookie，类型为 `string[] | undefined`。
@@ -74,15 +92,21 @@ export class AWAContext {
    * @returns `Promise<AxiosResponse<T, any, {}, any>>`，request 请求返回的响应结果。
    */
   async request<T = unknown>(options: myAxiosConfig) {
+    const target = this.assertTrustedURL(new URL(options.url || '', options.baseURL || this.baseURL).href);
     const requestOptions: myAxiosConfig = {
       ...options,
+      url: target.href,
+      baseURL: undefined,
+      beforeRedirect: (redirectOptions) => {
+        this.assertTrustedURL(`${redirectOptions.protocol}//${redirectOptions.hostname}${redirectOptions.port ? `:${redirectOptions.port}` : ''}${redirectOptions.path || '/'}`);
+      },
       headers: { ...this.headers, ...options.headers, cookie: this.cookie.stringify() }
     };
     if (this.httpsAgent && !requestOptions.httpsAgent) {
       requestOptions.httpsAgent = this.httpsAgent;
     }
     try {
-      const execute = () => this.transport.request<T>(requestOptions);
+      const execute = () => this.transport.request<T>(withRequestSignal(requestOptions));
       const response = this.logRequests
         ? await observeExternalRequest('AWA', requestOptions, execute)
         : await execute();

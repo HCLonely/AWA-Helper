@@ -187,6 +187,7 @@ try {
   Get-ChildItem -LiteralPath $source -Force | Copy-Item -Destination $target -Recurse -Force
   Set-Content -LiteralPath ${psQuote(path.join(path.dirname(stageRoot), 'last-result.json'))} -Value '{"status":"success"}'
   ${restartLines}
+  Set-Content -LiteralPath ${psQuote(path.join(stageRoot, 'completed.json'))} -Value '{"status":"success"}' -Encoding ASCII
 } catch {
   if (Test-Path -LiteralPath $backup) {
     Get-ChildItem -LiteralPath $backup -Force | Copy-Item -Destination $target -Recurse -Force
@@ -209,6 +210,7 @@ while kill -0 ${process.pid} 2>/dev/null; do sleep 1; done
 if cp -a ${shQuote(`${sourceRoot}${path.sep}.`)} ${shQuote(installRoot)}; then
   printf '%s' '{"status":"success"}' > ${shQuote(path.join(path.dirname(stageRoot), 'last-result.json'))}
   ${restartLine}
+  printf '%s' '{"status":"success"}' > ${shQuote(path.join(stageRoot, 'completed.json'))}
 else
   cp -a ${shQuote(`${backupRoot}${path.sep}.`)} ${shQuote(installRoot)} 2>/dev/null || true
   printf '%s' '{"status":"failed"}' > ${shQuote(path.join(path.dirname(stageRoot), 'last-result.json'))}

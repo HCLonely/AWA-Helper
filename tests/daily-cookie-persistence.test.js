@@ -8,5 +8,5 @@ test('DailyQuest persists the final refreshed AWA cookie during cleanup', () => 
   const source = fs.readFileSync(path.resolve(__dirname, '../src/core/DailyQuest/DailyQuestRunner.ts'), 'utf8');
   const cleanup = source.slice(source.lastIndexOf('} finally {'));
 
-  assert.match(cleanup, /updateYamlFieldsSync\(activeConfigPath, \{ awaCookie: runtimeHolder\.current\.newCookie \}\)/);
+  assert.match(cleanup, /commitCookie\?\.\(runtimeHolder\.current\.newCookie\)/);
 });

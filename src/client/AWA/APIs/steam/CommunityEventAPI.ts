@@ -19,8 +19,8 @@ export class CommunityEventAPI {
    * @param url - 目标资源或服务的 URL，类型为 `string`。
    * @returns `Promise<AxiosResponse<T, any, {}, any>>`，get 获取到的数据。
    */
-  private async get<T = unknown>(url: string): Promise<AxiosResponse<T>> {
-    const options: myAxiosConfig = { url, method: 'GET', headers: { ...this.context.headers, referer: this.context.baseURL } };
+  private async get<T = unknown>(url: string, retryTimes?: number): Promise<AxiosResponse<T>> {
+    const options: myAxiosConfig = { url, method: 'GET', retryTimes, headers: { ...this.context.headers, referer: this.context.baseURL } };
     if (this.context.httpsAgent) {
       options.httpsAgent = this.context.httpsAgent;
     }
@@ -62,7 +62,7 @@ export class CommunityEventAPI {
    * @returns 加入成功时返回 `joined`，远程拒绝时返回 `rejected`。
    */
   async join(path: string): Promise<ActionResult<'joined', 'rejected'>> {
-    const response = await this.get<{ success?: boolean }>(`${this.context.baseURL}/ajax/user/steam/community-event/start/${path}`);
+    const response = await this.get<{ success?: boolean }>(`${this.context.baseURL}/ajax/user/steam/community-event/start/${path}`, 0);
     return response.data?.success === true ? { ok: true, state: 'joined' } : { ok: false, state: 'rejected' };
   }
 }
