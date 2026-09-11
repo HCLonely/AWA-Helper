@@ -4,6 +4,7 @@ import { runWithRequestSignal } from '../../../tools/http/RequestContext';
  * @description 发现可用 Twitch 频道并向 AWA 周期提交直播观看跟踪心跳。
  */
 import chalk from 'chalk';
+import axios from 'axios';
 import { AWAError } from '../../../client/AWA/AWAError';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
 import { TwitchClient } from '../../../client/Twitch/TwitchClient';
@@ -48,6 +49,7 @@ export class TwitchQuestTask {
   private async runTask(signal?: AbortSignal): Promise<boolean> {
     let retriedAuthorization = false;
     let dailyCapReached = false;
+    let heartbeatErrors = 0;
     while (!signal?.aborted && !this.isComplete()) {
       if (dailyCapReached) {
         if (!await sleep(this.controlCenterPollSeconds, signal)) {
@@ -89,6 +91,7 @@ export class TwitchQuestTask {
       const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
       try {
         const result = await this.awa.twitch.sendTrack(trackingInfo);
+        heartbeatErrors = 0;
         logger.log(result.success ? chalk.green(`${__('logStatusOk')} (${result.state})`) : chalk.red(`${__('logStatusError')} (${result.state})`));
         if (result.state === 'daily_cap_reached') {
           new Logger(`${time()}${chalk.green(result.message || __('obtainedArp'))}`);
@@ -107,6 +110,9 @@ export class TwitchQuestTask {
         }
         retriedAuthorization = false;
       } catch (error) {
+        if (signal?.aborted || axios.isCancel(error)) {
+          return true;
+        }
         logger.log(chalk.red(__('logStatusError')));
         let status: number | undefined;
         if (error instanceof AWAError) {
@@ -114,7 +120,19 @@ export class TwitchQuestTask {
         } else if (error && typeof error === 'object' && 'response' in error) {
           status = (error as { response?: { status?: number } }).response?.status;
         }
-        if (status === 403 && !retriedAuthorization) {
+        const retryable = error instanceof AWAError ? error.retryable : axios.isAxiosError(error) && status === undefined;
+        if (status !== 403 && (retryable || status === 408 || status === 429 || (status !== undefined && status >= 500))) {
+          new Logger(`${time()}${chalk.red(error instanceof Error ? error.message : String(error))}`);
+          heartbeatErrors++;
+          if (heartbeatErrors >= 6) {
+            new Logger(`${time()}${chalk.yellow(__('trackError', chalk.yellow('Twitch')))}`);
+            if (!await sleep(5 * 60, signal)) {
+              return true;
+            }
+            heartbeatErrors = 0;
+            continue;
+          }
+        } else if (status === 403 && !retriedAuthorization) {
           new Logger(`${time()}${chalk.yellow(__('twitchAuthorizationExpiredRetrying'))}`);
           retriedAuthorization = true;
           if (!await this.initializeTwitch()) {

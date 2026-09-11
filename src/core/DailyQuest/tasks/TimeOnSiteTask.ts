@@ -26,11 +26,15 @@ class TimeOnSiteTask {
           return true;
         }
       }
+      await runtime.sendTimeOnSite();
       if (runtime.state.trackError >= 6) {
         new Logger(`${time()}${chalk.red(__('trackError', chalk.yellow('AWA')))}`);
-        return false;
+        if (!await sleep(5 * 60, signal)) {
+          return true;
+        }
+        runtime.state.trackError = 0;
+        continue;
       }
-      await runtime.sendTimeOnSite();
       if (!await sleep(60, signal)) {
         return true;
       }
