@@ -1,0 +1,3482 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": {
+      "name": "WebInspector",
+      "version": "537.36"
+    },
+    "pages": [
+      {
+        "startedDateTime": "2026-09-14T07:57:10.034Z",
+        "id": "page_2",
+        "title": "https://na.alienwarearena.com/control-center",
+        "pageTimings": {
+          "onContentLoad": 12722.712999999203,
+          "onLoad": null
+        }
+      }
+    ],
+    "entries": [
+      {
+        "_initiator": {
+          "type": "other"
+        },
+        "_priority": "VeryHigh",
+        "_resourceType": "document",
+        "cache": {},
+        "connection": "443",
+        "request": {
+          "method": "GET",
+          "url": "https://na.alienwarearena.com/control-center",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": ":authority",
+              "value": "na.alienwarearena.com"
+            },
+            {
+              "name": ":method",
+              "value": "GET"
+            },
+            {
+              "name": ":path",
+              "value": "/control-center"
+            },
+            {
+              "name": ":scheme",
+              "value": "https"
+            },
+            {
+              "name": "accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip, deflate, br, zstd"
+            },
+            {
+              "name": "accept-language",
+              "value": "zh-CN,zh;q=0.9,zh-TW;q=0.8"
+            },
+            {
+              "name": "cache-control",
+              "value": "no-cache"
+            },
+            {
+              "name": "dnt",
+              "value": "1"
+            },
+            {
+              "name": "pragma",
+              "value": "no-cache"
+            },
+            {
+              "name": "priority",
+              "value": "u=0, i"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Microsoft Edge\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "sec-fetch-dest",
+              "value": "document"
+            },
+            {
+              "name": "sec-fetch-mode",
+              "value": "navigate"
+            },
+            {
+              "name": "sec-fetch-site",
+              "value": "none"
+            },
+            {
+              "name": "sec-fetch-user",
+              "value": "?1"
+            },
+            {
+              "name": "sec-gpc",
+              "value": "1"
+            },
+            {
+              "name": "upgrade-insecure-requests",
+              "value": "1"
+            },
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "OK",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "cache-control",
+              "value": "max-age=0, must-revalidate, private"
+            },
+            {
+              "name": "content-security-policy",
+              "value": "frame-ancestors 'self'"
+            },
+            {
+              "name": "content-type",
+              "value": "text/html; charset=UTF-8"
+            },
+            {
+              "name": "date",
+              "value": "Mon, 14 Sep 2026 07:57:08 GMT"
+            },
+            {
+              "name": "expires",
+              "value": "Mon, 14 Sep 2026 07:57:08 GMT"
+            },
+            {
+              "name": "permissions-policy",
+              "value": "fullscreen=(self), geolocation=(), microphone=(), camera=(), accelerometer=(), gyroscope=(), magnetometer=(), payment=(), usb=(), browsing-topics=(), publickey-credentials-get=(self)"
+            },
+            {
+              "name": "strict-transport-security",
+              "value": "max-age=31557600; includeSubDomains"
+            },
+            {
+              "name": "via",
+              "value": "1.1 varnish"
+            },
+            {
+              "name": "x-cache",
+              "value": "MISS"
+            },
+            {
+              "name": "x-cache-hits",
+              "value": "0"
+            },
+            {
+              "name": "x-client-ip",
+              "value": "211.64.159.154"
+            },
+            {
+              "name": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "name": "x-country-code",
+              "value": "CN"
+            },
+            {
+              "name": "x-frame-options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "name": "x-host",
+              "value": "na.alienwarearena.com"
+            },
+            {
+              "name": "x-served-by",
+              "value": "cache-nrt-rjaa8190021-NRT"
+            },
+            {
+              "name": "x-timer",
+              "value": "S1789372628.502266,VS0,VE1052"
+            },
+            {
+              "name": "x-user-id",
+              "value": "13962059"
+            },
+            {
+              "name": "x-viewport",
+              "value": "desktop"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 146959,
+            "mimeType": "text/html"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 147521,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "198.18.0.18",
+        "startedDateTime": "2026-09-14T07:57:10.021Z",
+        "time": 11932.840000001306,
+        "timings": {
+          "blocked": 14.617000002168817,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0.21100000000000008,
+          "wait": 1157.6409999988325,
+          "receive": 10760.371000000305,
+          "_blocked_queueing": 13.235000002168817,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        },
+        "_connectionId": "1372",
+        "pageref": "page_2"
+      }
+    ]
+  }
+}
+
+
+<!DOCTYPE html>
+<html lang="en" class="h-100 layout-redesign">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="description" content="Join and gain access to exclusive in-game items, game keys, and some of the most sought after closed betas. Join a friendly and knowledgeable forum community for all PC gamers."/>        <meta property="og:image" content="https://media.alienwarearena.com/images/google-search-result-preview-1200x628.jpg">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="628">
+        <meta property="og:image:alt" content="A black and white preview image representing our PC gaming community, Alienware Arena, with the words 'ALIENWARE ARENA' stacked in the center.">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:image" content="https://media.alienwarearena.com/images/google-search-result-preview-1200x628.jpg">
+        <meta name="twitter:image:alt" content="A black and white preview image representing our PC gaming community, Alienware Arena, with the words 'ALIENWARE ARENA' stacked in the center.">
+        
+        <title>Control Center | Alienware Arena</title>
+
+                <link rel="stylesheet" href="/bundles/spoutlet/css/redesign/bootstrap.min.css">
+        <link rel="stylesheet" href="/bundles/spoutlet/css/fonts.css">
+        <link rel="stylesheet" href="/bundles/spoutlet/css/redesign/fontawesome.min.css">
+        <link rel="stylesheet" href="/bundles/spoutlet/css/redesign/header.css">
+        <link rel="stylesheet" href="/bundles/spoutlet/css/redesign/footer.css">
+        <link rel="stylesheet" href="/bundles/spoutlet/css/redesign/main.min.css">
+        <link rel="stylesheet" href="/bundles/spoutlet/css/misc.css">
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flickity/2.1.2/flickity.min.css">
+        <link rel="stylesheet" href="/bundles/avatar/css/user-avatar.css">
+        
+
+                    <style>
+                body { background-image: url('https://media.alienwarearena.com/media/4c38fed48cc7d9b9ba59478532b00166.jpg') !important; }
+            </style>
+            
+    <link href="/bundles/user/css/account.css" rel="stylesheet">
+    <link href="/bundles/user/css/quests.css" rel="stylesheet">
+    <link href="/bundles/user/css/cards.css" rel="stylesheet">
+    <link href="/bundles/user/css/steamCommunityEvent.css" rel="stylesheet">
+
+    <link rel="icon" href="https://media.alienwarearena.com/images/favicons/favicon.png" sizes="48x48" type="image/png" />
+    <link rel="icon" href="https://media.alienwarearena.com/images/favicons/favicon-32x32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="https://media.alienwarearena.com/images/favicons/favicon-16x16.png" sizes="16x16" type="image/png" />
+    <link rel="icon" href="https://media.alienwarearena.com/images/favicons/favicon.ico" type="image/x-icon"/>
+    <link rel="manifest" href="https://media.alienwarearena.com/images/favicons/manifest.json" />
+    <link rel="mask-icon" href="https://media.alienwarearena.com/images/favicons/safari-pinned-tab.svg" color="#712cf9" />
+    <link rel="apple-touch-icon" href="https://media.alienwarearena.com/images/favicons/apple-touch-icon.png" sizes="180x180" />
+
+    <meta name="theme-color" content="#712cf9" />
+
+            <script src="/bundles/spoutlet/js/jquery-3.7.1.min.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/handlebars.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/handlebars.helpers.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flickity/2.1.2/flickity.pkgd.min.js"></script>
+
+        <script src="/bundles/user/js/simplewebauthn.min.js"></script>
+
+        <script>const { platformAuthenticatorIsAvailable, startRegistration, startAuthentication } = SimpleWebAuthnBrowser;</script>
+
+        <!-- Structured data for Google Search Results preview image -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "url": "https://alienwarearena.com",
+            "name": "Alienware Arena",
+            "description": "Join and gain access to exclusive in-game items, game keys, and some of the most sought after closed betas. Join a friendly and knowledgeable forum community for all PC gamers.",
+            "image": {
+                "@type": "ImageObject",
+                "url": "https://media.alienwarearena.com/images/google-search-result-preview-1200x628.jpg",
+                "width": 1200,
+                "height": 628
+            }
+        }
+        </script>
+
+            
+    
+    
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N1BFZVF7TM"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-N1BFZVF7TM');
+</script>
+
+<script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-9917033-1']);
+    _gaq.push(['_setDomainName', 'na.alienwarearena.com']);
+    _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+    function recordOutboundLink(link, category, action) {
+        _gat._getTrackerByName()._trackEvent(category, action);
+        setTimeout('document.location = "' + link.href + '"', 100);
+    }
+    </script>
+
+    <!-- Global site tag (gtag.js) - Google Ads: 1024781286 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1024781286"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-1024781286');
+</script>
+
+<!-- Google tag nav and notification events -->
+<script type="text/javascript">
+    $(document).on('click', '.nav-item', function(e) {
+        if ($(this).is('#notification-dropdown')) {
+            const elem = $(e.target).parent().parent();
+            gtag('event', 'notification_click', {
+                'notification_type': elem.data('type') ? elem.data('type') : 'icon',
+            });
+        } else {
+            gtag('event', 'nav_click', {
+                'nav_item': $(e.target).text(),
+            });
+        }
+    });
+</script>
+
+        <!-- Facebook Pixel Code -->
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '2718339828271423');
+  fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=2718339828271423&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Facebook Pixel Code -->
+
+    
+<meta name="facebook-domain-verification" content="uzlf5h23sg37xh90z994cf35ca7rge" />
+
+
+                        <script type="text/javascript" src="https://cdn.weglot.com/weglot.min.js"></script>
+<script>
+    Weglot.initialize({
+        api_key: 'wg_9ebcb9fb6744147af2370c134df1ed004'
+    });
+</script>
+            </head>
+
+<body  class="body-account">
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="facebook" viewBox="0 0 351.942 406.3875">
+        <path d="M175.971,27.7128l151.971,87.7405v175.4811l-151.971,87.7405L24,290.9343V115.4532L175.971,27.7128m0-27.7128L0,101.5969v203.1938l175.971,101.5969,175.971-101.5969V101.5969L175.971,0h0Z"/>
+        <path d="M226.7601,216.8353l6.062-39.5007h-37.9021v-25.6333c0-10.8066,5.2946-21.3405,22.2698-21.3405h17.2309v-33.6306s-15.6366-2.6686-30.5868-2.6686c-31.2135,0-51.6161,18.9191-51.6161,53.1678v30.1051h-34.6964v39.5007h34.6964v95.4906h42.7022v-95.4906h31.8402Z"/>
+      </symbol>
+      <symbol id="instagram" viewBox="0 0 351.942 406.3876">
+        <path d="M175.971,27.7128l151.971,87.7405v175.4811l-151.971,87.7405L24,290.9343V115.4532L175.971,27.7128m0-27.7128L0,101.5969v203.1938l175.971,101.5969,175.971-101.5969V101.5969L175.971,0h0Z"/>
+        <path d="M175.992,154.8577c-26.7552,0-48.336,21.5808-48.336,48.336s21.5808,48.336,48.336,48.336,48.336-21.5808,48.336-48.336-21.5808-48.336-48.336-48.336Zm0,79.7608c-17.2899,0-31.4247-14.0928-31.4247-31.4247s14.0928-31.4247,31.4247-31.4247,31.4247,14.0928,31.4247,31.4247-14.1348,31.4247-31.4247,31.4247h0Zm61.5874-81.738c0,6.2681-5.0482,11.2742-11.2742,11.2742-6.2681,0-11.2742-5.0482-11.2742-11.2742s5.0482-11.2742,11.2742-11.2742,11.2742,5.0482,11.2742,11.2742Zm32.0137,11.4425c-.7152-15.1024-4.1647-28.48-15.2286-39.5018-11.0218-11.0218-24.3994-14.4714-39.5018-15.2286-15.5651-.8834-62.2184-.8834-77.7836,0-15.0603,.7152-28.4379,4.1647-39.5018,15.1865-11.0639,11.0218-14.4714,24.3994-15.2286,39.5018-.8834,15.5651-.8834,62.2184,0,77.7836,.7152,15.1024,4.1647,28.48,15.2286,39.5018,11.0639,11.0218,24.3994,14.4714,39.5018,15.2286,15.5651,.8834,62.2184,.8834,77.7836,0,15.1024-.7152,28.48-4.1647,39.5018-15.2286,11.0218-11.0218,14.4714-24.3994,15.2286-39.5018,.8834-15.5651,.8834-62.1764,0-77.7415h0Zm-20.1085,94.4425c-3.2813,8.2453-9.6336,14.5976-17.9209,17.9209-12.41,4.922-41.8576,3.7861-55.5717,3.7861s-43.2038,1.0938-55.5717-3.7861c-8.2453-3.2813-14.5976-9.6336-17.9209-17.9209-4.9219-12.41-3.7861-41.8576-3.7861-55.5717s-1.0938-43.2038,3.7861-55.5717c3.2813-8.2453,9.6336-14.5976,17.9209-17.9209,12.41-4.9219,41.8576-3.7861,55.5717-3.7861s43.2038-1.0938,55.5717,3.7861c8.2453,3.2813,14.5976,9.6336,17.9209,17.9209,4.922,12.41,3.7861,41.8576,3.7861,55.5717s1.1358,43.2037-3.7861,55.5717Z"/>
+      </symbol>
+      <symbol id="twitter" viewBox="0 0 351.942 406.3876">
+        <path d="M175.971,27.7128l151.971,87.7405v175.4811l-151.971,87.7405L24,290.9343V115.4532L175.971,27.7128m0-27.7128L0,101.5969v203.1938l175.971,101.5969,175.971-101.5969V101.5969L175.971,0h0Z"/>
+        <path d="m175.78,175.33l-70.93-101.02L170.06,0h-15.25l-56.74,64.66L52.67,0H0l68.82,98.02L.93,175.33h15.25l59.42-67.66,47.51,67.66h52.67ZM46.43,12l106.26,151.33h-23.34L23.09,12h23.34Z" transform="translate(86 114)"/>
+      </symbol>
+      <symbol id="discord" viewBox="0 0 351.942 406.3876">
+        <path d="M175.971,27.7128l151.971,87.7405v175.4811l-151.971,87.7405L24,290.9343V115.4532L175.971,27.7128m0-27.7128L0,101.5969v203.1938l175.971,101.5969,175.971-101.5969V101.5969L175.971,0h0Z"/>
+        <path d="M244.984,140.3789c-.0552-.1069-.1465-.1906-.2578-.2362-12.8635-5.9019-26.4382-10.1105-40.3844-12.5203-.2599-.0483-.5214,.0755-.6489,.3071-1.8484,3.3549-3.5264,6.801-5.0275,10.325-15.0332-2.282-30.3247-2.282-45.3579,0-1.5111-3.533-3.2159-6.9799-5.1068-10.325-.1327-.226-.3903-.3479-.6492-.3071-13.9476,2.4048-27.5232,6.6136-40.385,12.5206-.1101,.0467-.203,.1264-.2659,.2281-25.7211,38.4111-32.7671,75.8778-29.3106,112.8806,.0196,.1832,.1128,.3507,.2581,.464,14.9772,11.0895,31.7293,19.5541,49.5416,25.0328,.2569,.0771,.5346-.0139,.6961-.2281,3.8257-5.2054,7.2155-10.7175,10.1351-16.4802,.1568-.3091,.0334-.6868-.2758-.8436-.0221-.0112-.0448-.0211-.0681-.0296-5.3455-2.0453-10.5206-4.5109-15.4767-7.3736-.3028-.178-.404-.5678-.226-.8706,.042-.0715,.0976-.134,.1636-.1841,1.0399-.7791,2.0805-1.5896,3.0735-2.4082,.1799-.1482,.4283-.1817,.6411-.0864,32.4695,14.8184,67.6222,14.8184,99.7074,0,.2134-.1014,.4662-.0708,.6492,.0786,.9934,.8186,2.0336,1.6368,3.0813,2.4159,.2812,.2103,.3386,.6086,.1283,.8898-.0497,.0664-.1118,.1224-.183,.165-4.9448,2.8868-10.1246,5.3508-15.4842,7.3659-.3266,.1243-.4905,.4897-.3663,.8163,.0084,.0221,.018,.0437,.0289,.0647,2.9684,5.7307,6.3533,11.2358,10.1273,16.4711,.1571,.2202,.4374,.3154,.6961,.2362,17.8442-5.4601,34.6256-13.9255,49.6215-25.0318,.1477-.1078,.2418-.2741,.2581-.4562,4.1381-42.779-6.9279-79.9387-29.3332-112.8806Zm-101.9141,90.342c-9.7757,0-17.8306-8.971-17.8306-19.9884s7.8986-19.9891,17.8306-19.9891c10.0095,0,17.9865,9.0496,17.8302,19.9884,0,11.0181-7.899,19.9891-17.8302,19.9891Zm65.925,0c-9.7754,0-17.8302-8.971-17.8302-19.9884s7.8986-19.9891,17.8302-19.9891c10.0102,0,17.9868,9.0496,17.8306,19.9884,0,11.0181-7.8204,19.9891-17.8306,19.9891Z"/>
+      </symbol>
+      <symbol id="twitch" viewBox="0 0 351.942 406.3876">
+        <path d="M175.971,27.7128l151.971,87.7405v175.4811l-151.971,87.7405L24,290.9343V115.4532L175.971,27.7128m0-27.7128L0,101.5969v203.1938l175.971,101.5969,175.971-101.5969V101.5969L175.971,0h0Z"/>
+        <path d="M 92.994 110.062 L 79.4 144.79 L 79.4 286.722 L 127.719 286.722 L 127.719 312.392 L 154.897 312.392 L 180.568 286.722 L 219.825 286.722 L 272.672 233.875 L 272.672 110.062 L 92.994 110.062 Z M 254.554 224.822 L 224.349 255.012 L 176.034 255.012 L 150.365 280.683 L 150.365 255.012 L 109.597 255.012 L 109.597 128.177 L 254.547 128.177 L 254.547 224.822 L 254.554 224.822 Z M 224.349 162.908 L 224.349 215.753 L 206.236 215.753 L 206.236 162.908 L 224.349 162.908 Z M 176.031 162.908 L 176.031 215.753 L 157.917 215.753 L 157.917 162.908 L 176.031 162.908 Z"></path>
+      </symbol>
+      <symbol id="youtube" viewBox="0 0 351.942 406.3876">
+        <path d="M175.971,27.7128l151.971,87.7405v175.4811l-151.971,87.7405L24,290.9343V115.4532L175.971,27.7128m0-27.7128L0,101.5969v203.1938l175.971,101.5969,175.971-101.5969V101.5969L175.971,0h0Z"/>
+        <path d="M278.2652,151.6207c-2.4556-9.246-9.6905-16.5278-18.8767-18.999-16.6506-4.4905-83.4175-4.4905-83.4175-4.4905,0,0-66.7666,0-83.4175,4.4905-9.1862,2.4716-16.4211,9.753-18.8767,18.999-4.4615,16.7589-4.4615,51.7247-4.4615,51.7247,0,0,0,34.9658,4.4615,51.7247,2.4556,9.246,9.6905,16.2245,18.8767,18.6956,16.651,4.4905,83.4175,4.4905,83.4175,4.4905,0,0,66.7666,0,83.4175-4.4905,9.1862-2.4712,16.4211-9.4497,18.8767-18.6957,4.4615-16.7589,4.4615-51.7247,4.4615-51.7247,0,0,0-34.9658-4.4615-51.7247Zm-124.1307,83.4711v-63.4927l55.8039,31.7472-55.8039,31.7456h0Z"/>
+      </symbol>
+      <symbol id="alienware" viewBox="0 0 139.55 198.28">
+        <path d="M316.8,444.88c19.56-41,50.16-48,50.16-48,2.61,47.11-50.16,48-50.16,48m-69.43-48s30.59,7,50.16,48c0,0-52.77-.89-50.16-48m129-22.19c-.43-5.52-1.08-11-2.05-16.44a108.94,108.94,0,0,0-4.05-16,82,82,0,0,0-3.08-7.74,65.34,65.34,0,0,0-3.91-7.29,57.52,57.52,0,0,0-10.61-12.74A66.23,66.23,0,0,0,339.13,305a69.4,69.4,0,0,0-15.44-6,65.76,65.76,0,0,0-33.05,0,69.4,69.4,0,0,0-15.44,6,66.23,66.23,0,0,0-13.54,9.48,57.35,57.35,0,0,0-5.77,6A58.7,58.7,0,0,0,251,327.2a67,67,0,0,0-3.9,7.29,79.4,79.4,0,0,0-3.08,7.74,110.25,110.25,0,0,0-4.06,16c-1,5.42-1.61,10.92-2,16.44a163.2,163.2,0,0,0-.54,16.53A106.59,106.59,0,0,0,239,407.63c.49,2.73,1.11,5.47,1.86,8.14s1.65,5.3,2.64,7.87c4,10.26,9.57,19.76,15.7,29,3.06,4.62,6.23,9.16,9.46,13.66a140.31,140.31,0,0,0,10.21,13,67.35,67.35,0,0,0,5.94,5.76,58.47,58.47,0,0,0,6.73,4.94,39.1,39.1,0,0,0,7.46,3.73,26.37,26.37,0,0,0,4,1.08,23.8,23.8,0,0,0,8.36,0,26.06,26.06,0,0,0,4-1.08,38.89,38.89,0,0,0,7.47-3.73,58.47,58.47,0,0,0,6.73-4.94,67.35,67.35,0,0,0,5.94-5.76,142,142,0,0,0,10.21-13c3.23-4.5,6.39-9,9.46-13.66,6.13-9.22,11.74-18.72,15.7-29,1-2.57,1.88-5.19,2.63-7.87s1.38-5.41,1.87-8.14a106.59,106.59,0,0,0,1.55-16.41c.12-5.5-.11-11-.54-16.53" transform="translate(-237.39 -296.9)"/>
+      </symbol>
+      <symbol id="navlogo" viewBox="0 0 447.75 100.94">
+        <polygon points="149.53 71.27 156.26 71.27 152.91 62.27"/><path d="m184.87 61.73h-3.1v5.15h3.1c2.08 0 3.1-1.01 3.1-2.62-0.01-1.54-1.02-2.53-3.1-2.53z"/><polygon points="280.21 71.27 286.94 71.27 283.59 62.27"/><path d="m114.18 49.97v26.86c0 5.65 4.58 10.23 10.23 10.23h187.64c5.65 0 10.23-4.58 10.23-10.23v-26.86h-208.1zm45.01 29.1-1.55-4.17h-9.48l-1.55 4.17h-4.81l8.56-21.11h5.06l8.58 21.11h-4.81zm29.64 0-4.79-8.64h-2.28v8.64h-4.39v-21.11h7.57c5.07 0 7.23 2.79 7.23 6.28 0 2.65-1.44 4.78-3.77 5.71l5.35 9.12h-4.92zm34.33-17.26h-9.99v4.76h8.81v3.88h-8.81v4.76h9.99v3.86h-14.38v-21.11h14.38v3.85zm34.66 17.26h-5.01l-10.5-15.17v15.17h-4.39v-21.11h4.98l10.55 15.08v-15.08h4.36v21.11zm32.05 0-1.55-4.17h-9.48l-1.55 4.17h-4.81l8.56-21.11h5.07l8.58 21.11h-4.82z"/><polygon points="431.5 14.42 434.96 11.35 424.36 11.35 424.36 14.42"/><polygon points="437.27 22.87 421.6 22.85 421.6 3.48 436.68 3.48 436.68 0.3 418.04 0.3 418.04 26 437.63 26 437.63 22.87"/><polygon points="59.86 0.3 56.3 0.3 56.3 26 73.38 26 76.83 22.85 59.86 22.85"/><rect x="106.03" y=".3" width="3.56" height="25.7"/><polygon points="209.52 21 192.51 0.35 192.46 0.3 188.87 0.3 188.87 26 192.28 26 192.28 5.22 209.29 25.94 209.34 26 212.89 26 212.89 0.3 209.52 0.3"/><polygon points="270.93 21.38 263.25 0.4 263.21 0.3 259.97 0.3 252.26 21.35 246.23 0.41 246.2 0.3 242.47 0.3 249.93 25.89 249.96 26 253.92 26 261.58 5.35 269.2 26 273.15 26 280.65 0.5 280.71 0.3 276.99 0.3"/><path d="m386.08 12.59c1.17-1.07 1.77-2.53 1.77-4.33v-0.9c0-1.09-0.21-2.09-0.63-2.96-0.42-0.88-1.02-1.63-1.8-2.24-0.77-0.61-1.71-1.07-2.8-1.39-1.08-0.31-2.29-0.47-3.59-0.47h-13.22v25.7h3.56v-22.52h9.44c1.94 0 3.44 0.5 4.45 1.48 0.65 0.63 1.03 1.59 1.03 2.64v0.83c0 0.64-0.15 1.21-0.44 1.69-0.3 0.49-0.69 0.9-1.17 1.22-0.48 0.33-1.04 0.58-1.67 0.74-0.64 0.17-1.29 0.27-1.94 0.29h-8.35v3.04h7.63l6.19 10.49 0.04 0.08h3.95l-6.71-11.32c1.71-0.35 3.15-1.05 4.26-2.07z"/><path d="m11.86 0-11.35 25.78-0.1 0.22h3.96l3.33-7.56 0.64-1.52h10.96l3.96 9.08h3.93l-11.62-26h-3.71zm6.09 13.84h-8.32l4.08-9.71 4.24 9.71z"/><path d="m321.28 0-11.36 25.78-0.1 0.22h3.96l3.33-7.56 0.64-1.52h10.95l3.92 8.99 0.04 0.09h3.93l-11.6-26h-3.71zm6.09 13.84h-8.32l4.08-9.71 4.24 9.71z"/><polygon points="152.81 14.42 156.27 11.35 145.67 11.35 145.67 14.42"/><polygon points="142.92 22.85 142.92 3.48 158 3.48 158 0.3 139.36 0.3 139.35 26 158.95 26 158.95 22.87 158.58 22.87"/><path d="M439.95,0.79V0.3h3.08v0.49h-1.28v2.7h-0.58v-2.7H439.95z"/><path d="M444.43,0.3l1.35,1.9l1.37-1.9h0.61v3.19h-0.58V1.08l-1.23,1.72h-0.35l-1.21-1.72v2.4h-0.58V0.3H444.43z"/></symbol>
+    </svg>
+
+    <!-- Hidden image for Google Search Results preview image -->
+    <img src="https://media.alienwarearena.com/images/google-search-result-preview-1200x628.jpg" alt="A black and white preview image representing our PC gaming community, Alienware Arena, with the words 'ALIENWARE ARENA' stacked in the center." width="1200" height="628" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: rect(0 0 0 0);">
+
+    <div class="overlay" aria-hidden="true">
+        <a href="#" id="dismiss-overlay" class="btn-times-animated"></a>
+        <div class="overlay-content"></div>
+    </div>
+
+    
+<header>
+    <div class="onboarding-container">
+    <span class="onboarding_header py-2 d-flex align-items-center">Get Started</span>
+    <div class="onboarding_divider"></div>
+    <div class="onboarding_items px-4 flex-column">
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/8" data-description="Learn about what makes Arena great." >
+                    What is Arena?
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/9" data-description="From the Control Center, you can view today’s Daily, Steam and Twitch Quests and your Daily Login rewards. Select any quest and follow the instructions to begin. Completing quests will earn you ARP." >
+                    Where do I find my Quests?
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/10" data-description="To participate in Steam, Twitch and Discord quests, you will need to connect your accounts to Alienware Arena. Select the icon under connected accounts to start." >
+                    Connected Accounts
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/11" data-description="Steam and Twitch require certain settings to be enabled on their side for Arena to properly communicate with them. Review the steps on this page to make sure your accounts are set up correctly." >
+                    Verify your Connected Account Settings
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/12" data-description="Chat with the Community and earn even more ARP by participating in our daily adventures." >
+                    Join Alienware Discord to earn more ARP
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/13" data-description="Find new items from the Calendar and Marketplace" >
+                    Customize your Avatar
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link " href="/onboarding/item/14" data-description="Share your thoughts here with the community about anything and everything gaming and Arena related. React to your first relay!" data-img-src="https://media.alienwarearena.com/media/137b94a19b868e12adf48e073fcfa873.jpg">
+                    React to your first Relay
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <i class="fa-regular fa-square"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/15" data-description="From the Marketplace, you can use your ARP to claim new Avatar items, Artifacts, Dell Rewards, Game Vault and more." >
+                    Marketplace
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/16" data-description="Artifacts have different powers which can increase the rate you earn ARP, complete tasks and discounts in the Marketplace. Purchase the Starter Set below to get started." data-img-src="https://media.alienwarearena.com/media/d2f2cc325b4438572c0a0be2b99de21b.jpg">
+                    Artifacts
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/17" data-description="Scroll down to view your Chaotic Artifacts, which can be equipped by selecting the card and clicking equip. Artifacts can only be swapped every 24 hours, so choose wisely." >
+                    Equip Your Artifacts
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+                    <div class="onboarding_item d-flex justify-content-between">
+                <a class="onboarding-link completed" href="/onboarding/item/18" data-description="Complete actions across the site to earn achievements. Complete the onboarding ones now to become a verified member." >
+                    Earn Achievements
+                </a>
+
+                <div class="d-flex flex-grow-1 justify-content-end align-items-center">
+                                            <span class="text-success toast_arp">+1 ARP</span>
+                        <i class="fa-regular fa-square-check"></i>
+                                    </div>
+            </div>
+            </div>
+</div>
+
+<script type="text/javascript">
+
+    $(function(){
+        $('.onboarding_header').click(function () {
+            $('.onboarding_items').toggleClass('active');
+        });
+
+        $('.onboarding-link').click(function(e) {
+            e.preventDefault();
+
+            var description = $(this).data('description');
+            var image = $(this).data('img-src');
+            
+            if (description) {
+                localStorage.setItem('one_time_message', description);
+            }
+
+            if (image) {
+                localStorage.setItem('one_time_image', image);
+            }
+
+            window.location.href = $(this).attr('href');
+        });
+    });
+</script>
+
+<style>
+
+    *{
+        box-sizing: border-box;
+    }
+    .onboarding-container{
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1035;
+        width: 400px;
+        position: fixed;
+        background-color: transparent;
+    }
+    .onboarding_header{
+        color: #fff;
+        font-size: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background-color: #000;
+        cursor: pointer;
+        justify-content: center;
+        text-transform: uppercase;
+    }
+    .onboarding_items {
+        display: none;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background-color: #000;
+        padding-top: 10px;
+    }
+    .onboarding_items.active {
+        display: flex;
+        margin-bottom: 2px;
+    }
+    .onboarding_item{
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+    .onboarding_item a {
+        color: #01f5ff;
+    }
+    .onboarding_item a.completed {
+        text-decoration: line-through;
+    }
+    .onboarding_divider{
+        background-color: transparent;
+        height: 2px;
+    }
+    .toast_arp{
+        margin-right: 8px;
+    }
+    @media (max-width: 400px) {
+        .onboarding-container{
+            width: 100vw !important;
+            padding: 0 2px;
+        }
+        .onboarding_item_text{
+            font-size: 15px;
+            font-weight: 600;
+        }
+    }
+    @media (max-height: 740px) {
+        .onboarding_item {
+            padding-top: 0.5vh;
+            padding-bottom: 0.5vh;
+        }
+    }
+</style>
+
+    <nav class="navbar navbar-top navbar-expand-lg navbar-dark fixed-top bg-transparent navbar-main has-fixed-menu" role="navigation">
+        <div class="container">
+            <a href="/" class="logo d-flex order-1 order-lg-0 mx-auto mx-lg-0"><svg class="ai" width="150" height="40" role="img" aria-label="Alienware Arena Home Page"><use xlink:href="#navlogo"></use></svg></a>
+
+                            <button
+                    class="navbar-toggler order-0"
+                    type="button"
+                    data-toggle="collapse"
+                    data-bs-toggle="collapse"
+                    data-target="#navbarCollapse"
+                    data-bs-target="#navbarCollapse"
+                    aria-controls="navbarCollapse"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                                    <ul class="nav navbar-nav mr-auto d-none d-lg-flex">
+                        <li class="nav-item nav-item-search position-relative">
+                            <a href="#" class="btn-times-animated" id="searchCollapse"></a>
+<a class="nav-link btn-search" href="#" role="img" aria-label="Search"><i class="awicon search" aria-hidden="true"></i></a>
+<form role="search" id="navbar-search-form">
+    <div class="search-form">
+        <div class="form-group">
+            <input type="text" class="form-control text-white" id="navbar-search-input" placeholder="Enter search here...">
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+var searchPath = "/g-search/search-term";
+var logSearchPath = "/api/v1/metrics/siteWideSearch/";
+</script>
+
+                        </li>
+                    </ul>
+                
+                <div class="collapse navbar-collapse order-1" id="navbarCollapse">
+                    <ul class="navbar-nav ms-auto mb-2 mb-md-0 align-items-center">
+                                                    <li class="nav-item px-2 dropdown">
+                                <h2 class="sr-only">Discover Menu</h2>
+                                <button 
+                                    class="nav-link dropdown-toggle" 
+                                    type="button"
+                                    data-bs-toggle="dropdown" 
+                                    data-toggle="dropdown" 
+                                    aria-controls="discover-panel"
+                                    aria-expanded="false"
+                                    aria-haspopup="true"
+                                >
+                                    <span class="nav-heading-text">Discover</span>
+                                </button>
+                                <div class="dropdown-menu" id="discover-panel">
+                                                                            <a class="dropdown-item" href="/ucf/News?filter=Alienware%20New%20Releases,Alienware%20IQ,Alienware%20Moments&amp;filterType=type">Alienware Pulse</a>
+                                        <a class="dropdown-item" href="/ucf/News">Blogs</a>
+                                                                                                                <a class="dropdown-item" href="/ucf/Video">Videos</a>
+                                                                                                                <a class="dropdown-item" href="/wallpapers">Wallpapers</a>
+                                                                        <a class="dropdown-item" href="https://www.alienware.com" target="_blank" rel="noopener">Alienware.com</a>
+                                </div>
+                            </li>
+                        
+                        <li class="nav-item px-2 dropdown">
+                            <h2 class="sr-only">Games Menu</h2>
+                            <button 
+                                class="nav-link dropdown-toggle" 
+                                type="button"
+                                data-bs-toggle="dropdown" 
+                                data-toggle="dropdown" 
+                                aria-controls="games-panel"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                            >
+                                <span class="nav-heading-text">Games</span>
+                            </button>
+                            <div class="dropdown-menu" id="games-panel">
+                                                                    <a class="dropdown-item" href="/ucf/Giveaway">Giveaways</a>
+                                
+                                                                    <a class="dropdown-item" href="/community-giveaways">Community Giveaways</a>
+                                                                
+                                <a class="dropdown-item" href="/quests">Quests</a>
+                                <a class="dropdown-item" href="/steam/events">Steam Events</a>
+                            </div>
+                        </li>
+
+                        <li class="nav-item px-2 dropdown">
+                            <h2 class="sr-only">Community Menu</h2>
+                            <button 
+                                class="nav-link dropdown-toggle" 
+                                type="button"
+                                data-bs-toggle="dropdown" 
+                                data-toggle="dropdown" 
+                                aria-controls="community-panel"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                            >
+                                <span class="nav-heading-text">Community</span>
+                            </button>
+                            <div class="dropdown-menu" id="community-panel">
+                                <a class="dropdown-item" href="/relay/my-feed">Relay</a>
+                                <a class="dropdown-item" href="/rewards/leaderboard">Leaderboard</a>
+                                <a class="dropdown-item" href="/page/hive-influencers">Hive</a>
+                                <a class="dropdown-item" href="https://discord.gg/Alienware" target="_blank" rel="noopener">Discord</a>
+
+                                                                    <a class="dropdown-item" href="/faq-contact">FAQ</a>
+                                                            </div>
+                        </li>
+
+                        <li class="nav-item px-2 dropdown">
+                            <h2 class="sr-only">Rewards Menu</h2>
+                            <button 
+                                class="nav-link dropdown-toggle" 
+                                type="button"
+                                data-bs-toggle="dropdown" 
+                                data-toggle="dropdown" 
+                                aria-controls="rewards-panel"
+                                aria-expanded="false"
+                                aria-haspopup="true"
+                            >
+                                <span class="nav-heading-text">Rewards</span>
+                            </button>
+                            <div class="dropdown-menu" id="rewards-panel">
+                                <a class="dropdown-item" href="/whatisarena">What is Arena</a>
+                                <a class="dropdown-item" href="/marketplace/">Marketplace</a>
+                                <a class="dropdown-item" href="/marketplace/game-vault">Game Vault</a>
+                                <a class="dropdown-item" href="/marketplace/redeem-code">Redeem Code</a>
+
+                            </div>
+                        </li>
+
+                        <li class="nav-item px-2" id="nav-admin" style="display:none;">
+                            <a class="nav-link" href="/admin">Admin</a>
+                        </li>
+                    </ul>
+
+                </div>
+                        
+            <div class="navbar-icons order-2 ">
+                <ul class="navbar-nav ms-auto mb-2 mb-md-0 align-items-center">
+                                            <li class="nav-item ms-md-4 nav-item-promo">
+                            <a class="nav-link" href="#" aria-label="View daily rewards calendar" role="img"><i class="awicon promocal" aria-hidden="true"></i></a>
+                        </li>
+
+                        <li class="nav-item ms-md-4 dropdown" id="notification-dropdown">
+    <a href="#notifications" class="nav-link dropdown-toggle toggle-notifications" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-controls="notification-dropdown-menu" aria-label="Notifications" role="img">
+        <i class="fa-regular fa-bell fa-2x" aria-hidden="true"></i>
+        <span class="badge text-success" data-notification-count style="display:none;position:absolute;top:10px;right:5px;" aria-label="Unread notifications"></span>
+    </a>
+
+    <div class="nav-notifications__menu animated dropdown-menu dropdown-menu-end dropdown-menu-right" id="notification-dropdown-menu">
+        <div class="notification-list small" id="notification-wrapper"></div>
+
+        <div class="my-2">
+            <a href="/account/communications" class="nav-notifications__menu-footer">
+                Show all notifications
+            </a>
+        </div>
+    </div>
+</li>
+
+
+<script id="notification-item-template" type="text/x-handlebars-template">
+<div class="dropdown-item notification-item {{type}} {{# if needsToWrap }}needs-wrap{{else}}no-wrap{{/if}}" data-id="{{notificationId}}" data-type="{{type}}" data-seen="{{dateFormat seen.date 'YYYY-MM-DD HH:mm:ss'}}" >
+    {{# if avatarUrlSmall }}
+        <img class="notification-item__avatar" src="{{avatarUrlSmall}}" alt="User avatar">
+    {{else}}
+        <img class="notification-item__avatar" src="https://media.alienwarearena.com/images/content/default-avatars/alienware_v2_32x32.png" alt="Default user avatar">
+    {{/if}}
+
+    <div class="notification-item__subject">
+        {{{ notificationHtml }}}
+    </div>
+</div>
+
+</script>
+
+
+<script id="registration-promotion-modal-template" type="text/x-handlebars-template"><div class="row text-center">
+<div class="modal fade registration-promotion-modal" id="registration-promotion-modal" tabindex="-1" role="dialog" data-notification-id="{{notificationId}}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">You've been rewarded!</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="registration-promotion-body">
+                    {{#if additionalText}}
+                        {{{additionalText}}}
+                    {{/if}}
+
+                    <p>You've been awarded the following for registering:</p>
+
+                    <hr>
+
+                    {{#if arp}}
+                        <p>Bonus ARP: {{arp}}</p>
+                        <hr>
+                    {{/if}}
+
+                    {{#each rewards}}
+                        <p>{{title}}
+
+                        {{#if keyCode}}
+                            <p>Your code is: {{keyCode}}</p>
+                        {{/if}}
+
+                        {{#if instructions}}
+                            <div class="instructions">
+                                <p>Please follow the instructions below:</p>
+
+                                <ol class="reward-instructions">
+                                    {{#each instructions}}
+                                        <li>{{{this}}}</li>
+                                    {{/each}}
+                                </ol>
+                            </div>
+                        {{/if}}
+
+                        {{#if download_url}}
+                            <p>Click <a href="{{download_url}}">here</a> to download.</p>
+                        {{/if}}
+
+                        <hr>
+                    {{/each}}
+
+                    {{#if has_dell_advantage}}
+                        <p>For more information on Dell Rewards, please click <a href="https://na.alienwarearena.com/page/dell-advantage" target="_blank" rel="noopener">here</a>.</p>
+                    {{/if}}
+
+                    {{#if has_boost}}
+                        <p>To activate your boost, please click <a href="{{my_rewards_url}}">here</a>.</p>
+                    {{/if}}
+
+                    {{#if has_rewards}}
+                        <p>You can see all of your claimed rewards on your <a href="{{my_rewards_url}}">rewards page</a>.
+                    {{/if}}
+                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+
+
+<script id="user-achievement-notification-template" type="text/x-handlebars-template">
+    <a href="{{user_achievement_url}}">
+        <div class="user-achievement-notification" id="user-achievement-notification" data-notification-id="{{notificationId}}" >
+            <div class="artifact-border h-100 text-center">
+                <div class="frame-wrapper mt-1" style="background: linear-gradient(to right, {{user_achievement_category_color_d}}, {{user_achievement_category_color_l}});">    
+                    <span class="frame-title">{{user_achievement_name}}</span>
+                </div>
+                <div class="description-wrapper">
+                    <div class="notif-description">{{user_achievement_description}}</div>
+                </div>
+                <div class="slot-wrapper">
+                    <div class="notif-text slot-name">{{user_achievement_reward_slot}}</div>
+                    <div class="notif-text reward-name">{{user_achievement_reward_name}}</div>
+                </div>
+                <div class="achievement-badge achievement-badge-{{ achievement.position }}" 
+                    data-badge-id="{{ notificationId }}">
+                    <img src="{{ user_achievement_image }}" 
+                            title="{{ user_achievement_name }}" 
+                            style="box-shadow: 0px 0px 13px 12px {{user_achievement_category_color}};" />
+                </div>
+                <div class="frame-wrapper mb-1" style="background: linear-gradient(to right, {{user_achievement_category_color_l}}, {{user_achievement_category_color_d}});">    
+                    {{user_achievement_reward_description}}
+                </div>
+            </div>
+        </div>
+    </a>
+</script>
+
+
+<script id="seasonal-achievement-notification-template" type="text/x-handlebars-template">
+    <a href="{{user_achievement_url}}">
+        <div class="user-achievement-notification seasonal-achievement-notification" id="seasonal-achievement-notification" data-notification-id="{{notificationId}}" >
+            <div class="artifact-border h-100 text-center">
+                <div class="frame-wrapper mt-1">    
+                    <span class="frame-title">{{user_achievement_name}}</span>
+                </div>
+                <div class="description-wrapper">
+                    <div class="notif-description">{{user_achievement_description}}</div>
+                </div>
+                <div class="slot-wrapper">
+                    <div class="notif-text reward-name">{{user_achievement_reward_name}}</div>
+                </div>
+                <div class="achievement-badge achievement-badge-{{ achievement.position }}" 
+                    data-badge-id="{{ notificationId }}">
+                    <img src="{{ user_achievement_image }}" 
+                            title="{{ user_achievement_name }}" 
+                            style="box-shadow: 0px 0px 13px 12px rgb(255, 209, 28);" />
+                </div>
+                <div class="frame-wrapper mb-1">    
+                    {{user_achievement_reward_description}}
+                </div>
+            </div>
+        </div>
+    </a>
+</script>
+
+
+<script id="birthday-gift-modal-template" type="text/x-handlebars-template">
+    <div class="modal fade birthday-gift-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content modal-dark">
+                <div class="modal-header">
+                    <h4 class="modal-title">Birthday Gift</h4>
+                    <button type="button" class="close btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="birthday-gift-assets">
+                        <div class="birthday-gift-arp-asset">
+                            <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="ARP reward" title="50 ARP">
+                            <h1 class="birthday-gift-count">50</h1>
+                        </div>
+                        <div class="birthday-gift-fragment-asset">
+                            <img src="https://media.alienwarearena.com/images/artifacts/calendar_fragment.png" alt="Fragment reward" title="5 Fragments">
+                            <h1 class="birthday-gift-count">5</h1>
+                        </div>
+                    </div>
+                    <p class="birthday-gift-copy">Happy Birthday from everyone at Alienware Arena</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+<style>
+    .birthday-gift-assets {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+
+    .birthday-gift-arp-asset,
+    .birthday-gift-fragment-asset {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .birthday-gift-arp-asset img,
+    .birthday-gift-fragment-asset img {
+        display: block;
+        max-width: 140px;
+        max-height: 140px;
+        width: auto;
+        height: auto;
+        filter:
+            drop-shadow(0 0 10px rgba(108, 239, 255, 0.55))
+            drop-shadow(0 0 18px rgba(108, 239, 255, 0.4));
+    }
+
+    .birthday-gift-count {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #fff;
+        margin: 0;
+    }
+
+    .birthday-gift-copy {
+        margin: 0;
+        font-size: 16px;
+    }
+</style>
+
+<script type="text/javascript">
+$(function() {
+    var t = Handlebars.compile($('#notification-item-template').html());
+    var rp = Handlebars.compile($('#registration-promotion-modal-template').html());
+    var ua = Handlebars.compile($('#user-achievement-notification-template').html());
+    var sa = Handlebars.compile($('#seasonal-achievement-notification-template').html());
+    var bg = Handlebars.compile($('#birthday-gift-modal-template').html());
+    var birthdayGiftClaimUrlTemplate = '/rewards/birthday-gift/claim/0';
+    var nf = 60000; // 1 minute interval between polls
+    var utotal = 0;
+    var pollTimeout;
+
+    function queueNotificationUpdate() {
+        pollTimeout = setTimeout(doNotificationUpdate, nf);
+    }
+
+    function isNotificationRendered(id) {
+        return $('.notification-item[data-id="'+id+'"]').length > 0;
+    }
+
+    function doNotificationUpdate() {
+        $.get('/ajax/user/notifications/user-notifications-data', function (r) {
+            if (r.success) {
+                let achievementModalShown = false;
+
+                for (var i = r.notifications.length - 1; i >= 0; i--) {
+                    var n = r.notifications[i];
+
+                    if (isNotificationRendered(n.notificationId)) {
+                        continue;
+                    }
+
+                    var rendered = t(n);
+
+                    if (n.type == 'registration_promotion' && !n.seen) {
+                        if (n.arp || n.rewards.length) {
+                            var renderedModal = rp(n);
+
+                            $('body').append(renderedModal);
+
+                            $('.registration-promotion-modal').modal('show');
+
+                            $('.registration-promotion-modal').on('hidden.bs.modal', function (e) {
+                                var data = $(e.currentTarget).data();
+                                var notificationIds = [data.notificationId];
+                                $.ajax({
+                                    url: "/notifications/user-notifications-seen",
+                                type: "post",
+                                data: JSON.stringify({notifications: notificationIds}),
+                                success: function (r) {
+                                    if (r.success) {
+                                        updateUnseenCount(null);
+                                    }
+                                }
+                            });
+                        });
+                        }
+                    }
+
+                    if (n.type == 'user_achievement' && !n.seen && !achievementModalShown) {
+                        var renderedModal = ua(n);
+
+                        $('body').append(renderedModal);
+
+                        $(function(){
+                            $('.user-achievement-notification').addClass('show');
+
+                            achievementModalShown = true;
+
+                            var data = $('.user-achievement-notification').data();
+                            var notificationIds = [data.notificationId];
+
+                            $.ajax({
+                                url: "/notifications/user-notifications-seen",
+                                type: "post",
+                                data: JSON.stringify({notifications: notificationIds}),
+                                success: function (r) {
+                                    if (r.success) {
+                                        updateUnseenCount(r.unseenCount ?? null);
+                                    }
+                                }
+                            });
+
+                            setTimeout(function() {
+                                $('.user-achievement-notification').remove();
+                                achievementModalShown = false;
+                            },7000);
+                        });
+                    }
+
+                    if (n.type == 'seasonal_achievement' && !n.seen && !achievementModalShown) {
+                        var renderedModal = sa(n);
+
+                        $('body').append(renderedModal);
+
+                        $(function(){
+                            $('.seasonal-achievement-notification').addClass('show');
+
+                            achievementModalShown = true;
+
+                            var data = $('.seasonal-achievement-notification').data();
+                            var notificationIds = [data.notificationId];
+
+                            $.ajax({
+                                url: "/notifications/user-notifications-seen",
+                                type: "post",
+                                data: JSON.stringify({notifications: notificationIds}),
+                                success: function (r) {
+                                    if (r.success) {
+                                        updateUnseenCount(r.unseenCount ?? null);
+                                    }
+                                }
+                            });
+
+                            setTimeout(function() {
+                                $('.seasonal-achievement-notification').remove();
+                                achievementModalShown = false;
+                            },7000);
+                        });
+                    }
+
+                    $('#notification-wrapper').prepend(rendered);
+
+                    if (!Notify.needsPermission && !n.seen) {
+                        var bn = new Notify('Alienware Arena', {
+                            body: n.notificationString,
+                            timestamp: moment(n.timestamp.date).format('YYYY-MM-DD HH:mm:ss')+'Z',
+                            icon: 'https://media.alienwarearena.com/images/content/default-avatars/alienware_v2_62x62.png',
+                            data: n,
+                            requireInteraction: true,
+                            tag: n.notificationId,
+                            notifyClick: function (e) {
+                                e.preventDefault();
+                                var notif = e.srcElement.data;
+                                window.open(notif.targetUrl, '_blank');
+                                notificationSeen(notif.notificationId);
+                            },
+                            notifyClose: function (e) {
+                                e.preventDefault();
+                                var notif = e.srcElement.data;
+                                notificationSeen(notif.notificationId);
+                            }
+                        });
+                        bn.show();
+                    }
+                }
+
+                if (r.unseenCount > 0) {
+                    updateUnseenCount(r.unseenCount);
+                }
+
+                $('.notification-timestamp').timeago();
+
+                queueNotificationUpdate();
+            }
+        });
+        utotal++;
+    }
+
+    function notificationSeen(notificationId) {
+        $.post('/notifications/user-notification-seen'+'/'+notificationId, function (r) {
+            updateUnseenCount(r.unseenCount);
+        });
+    }
+
+    function updateUnseenCount(unseenCount) {
+        if (!unseenCount) {
+            $('#notification-dropdown .badge').text('');
+            $('#notification-dropdown .badge').hide();
+            return;
+        }
+
+        $('#notification-dropdown .badge').text(unseenCount);
+        $('#notification-dropdown .badge').fadeIn();
+    }
+
+    function openBirthdayGiftModal() {
+        $('.birthday-gift-modal').remove();
+        $('body').append(bg({}));
+        $('.birthday-gift-modal').modal('show');
+        $('.birthday-gift-modal').on('hidden.bs.modal', function () {
+            $(this).remove();
+        });
+    }
+
+    function claimBirthdayGift(notificationId) {
+        var claimUrl = birthdayGiftClaimUrlTemplate.replace(/\/0$/, '/' + notificationId);
+        openBirthdayGiftModal();
+
+        $.post(claimUrl, function (r) {
+            if (r.success && r.status === 'awarded') {
+                updateUnseenCount(r.unseenCount ?? null);
+                return;
+            }
+
+            if (r.status === 'expired' || r.status === 'already_awarded') {
+                showNotify('info', '', r.message, 'fas fa-gift', 4500);
+                updateUnseenCount(r.unseenCount ?? null);
+                return;
+            }
+
+            showNotify('error', '', 'Something went wrong.', 'fas fa-exclamation-circle', 4500);
+        }).fail(function () {
+            showNotify('error', '', 'Something went wrong.', 'fas fa-exclamation-circle', 4500);
+        });
+    }
+
+    doNotificationUpdate();
+    queueNotificationUpdate();
+
+    $('body').on('click', '.notification-item[data-type="birthday_gift"]', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var notificationId = $(this).data('id');
+
+        if (!notificationId) {
+            return;
+        }
+
+        claimBirthdayGift(notificationId);
+    });
+
+    $('.notification-dropdown').on('show.bs.dropdown', function (e) {
+        var notificationIds = [];
+
+        $('.notification-item').each(function(i, a) {
+            var data = $(this).data();
+            notificationIds.push(data.id);
+        });
+
+        $.ajax({
+            url: "/notifications/user-notifications-seen",
+            type: "post",
+            data: JSON.stringify({notifications: notificationIds}),
+            success: function (r) {
+                if (r.success) {
+                    $('#notification-dropdown .badge').text('');
+                    $('#notification-dropdown .badge').hide();
+                }
+            }
+        });
+    });
+});
+</script>
+                                    
+                    <li class="nav-item-mus ">
+                        
+
+
+<ul class="navbar-nav">
+    <li class="nav-item dropdown">
+        <a class="nav-link" id="umCollapse" href="#" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="img" aria-label="User menu">
+            <i class="fa-solid fa-gear fa-2x text-success" aria-hidden="true"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end dropdown-menu-right">
+            <a class="dropdown-item" href="/member/HCLovely">Profile</a>
+            <a class="dropdown-item" href="/control-center">Control Center</a>
+            <a class="dropdown-item" href="/account">Account Settings</a>
+                        <a class="dropdown-item" href="/logout">Logout</a>
+
+        </div>
+    </li>
+</ul>
+
+
+
+
+<script type="text/javascript">
+    var user_is_logged_in = true;
+    var user_is_complete  = true;
+    var user_id           = 13962059;
+    var user_uuid         = "1601998f-9621-485b-8dbb-a8d66715c028";
+    var user_username     = "HCLovely";
+    var user_profile_url  = "/member/HCLovely";
+    var user_member_since = "2026";
+    var user_custom_title = "Lunar";
+    var user_insignia     = "https://media.alienwarearena.com/images/content/rank-insignias/1.png";
+    var user_token        = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTM5NjIwNTksInVpZCI6IjE2MDE5OThmLTk2MjEtNDg1Yi04ZGJiLWE4ZDY2NzE1YzAyOCIsInVzZXJuYW1lIjoiaGNsb3ZlbHkiLCJzaXRlIjo0LCJzaWQiOiJyaTQ5ZWU2Z2RycDdwMWljOW4xbDFqa21qMiIsImlhdCI6MTc4OTM3MjYyOX0.ySyGv4Wt7HIpnBAmuTPZBRjSgzaez2yh71daa4esDgk";
+    var user_avatars      = [];
+    window.logout_url     = "/logout";
+
+    
+    var user_has_fb       = false;
+    var has_admin_role    = false;
+    var is_admin          = false;
+    var is_forum_mod      = false;
+    var can_report        = true;
+    var user_country      = "CN";
+    var arp_tier          = 1;
+    var arp_balance       = 744;
+    var arp_lifetime      = 744;
+    var steamId           = 0;
+    var steamOptin        = false;
+    var login_id          = 653761628;
+    var allow_all_perks   = false;
+    var consecutive_logins = {"count":5};
+    var monthly_logins    = {"count":14,"extra_arp":10};
+    var user_has_dell_advantage = false;
+    var dell_account_id   = null;
+    var epsilon_balance   = 0;
+    var has_epsilon_rewards   = false;
+    var userArpBoost = null;
+    var artifactLangDiscount = 1;
+    var fragment_balance = 0;
+    var bonusCalendarArp = 0;
+    var arpMultiplier = 1;
+    var user_has_mfa = false;
+    var cg_opted_in = false;
+
+    
+    var user_border       = {
+        'hex': null,
+        'img': null    };
+
+            user_avatars.push({size: 26, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+            user_avatars.push({size: 32, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+            user_avatars.push({size: 38, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+            user_avatars.push({size: 62, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+            user_avatars.push({size: 84, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+            user_avatars.push({size: 100, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+            user_avatars.push({size: 184, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+            user_avatars.push({size: 500, url: 'https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=400'});
+    
+    
+            var d = new Date();
+        d.setTime(d.getTime() + 24*60*60*1000*30);
+        document.cookie = 'user_dob' + "=" + "1994-01-01" + ";path=/;expires=" + d.toGMTString();
+    
+    var ckeditor_configs = [];
+
+ckeditor_configs['basic'] = {
+    toolbar:  {
+        items: [
+            'bold',
+            'italic',
+            'underline',
+            '|',
+            'link',
+            'blockQuote',
+            'bulletedList',
+            'numberedList',
+            '|',
+            'mediaEmbed',
+            'insertImage'
+        ]
+    },
+    basicstylesdropdown: {
+        options: [
+            'bold',
+            'italic',
+            'underline'
+        ]
+    },
+    mediaEmbed: {
+        previewsInData: true
+    },
+    extraPlugins: [CustomUploadAdapterPlugin]
+};
+
+ckeditor_configs['simple'] = {
+    toolbar: [
+        ['Bold', 'Italic', 'Underline']
+    ],
+    height: 200,
+    resize_enabled: false,
+    removePlugins: 'elementspath,scayt,wsc,contextmenu,tabletools,liststyle',
+    // Enable browser native spell check
+    disableNativeSpellChecker: false,
+    browserContextMenuOnCtrl: true,
+    // Ensure spell check attribute is set
+    startupFocus: false,
+    tabSpaces: 0
+};
+
+ckeditor_configs['special'] = {
+    toolbar: {
+        items: [
+            'heading',
+            '|',
+            'fontFamily',
+            'fontSize',
+            '|',
+            'highlight',
+            'alignment',
+            'basicstylesdropdown',
+            '|',
+            'link',
+            'blockQuote',
+            'bulletedList',
+            'numberedList',
+            'insertTable',
+            '|',
+            'insertImage',
+            'mediaEmbed',
+        ]
+    },
+    heading: {
+        options: [
+            { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+            { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+            { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+            { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
+            { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' },
+            { model: 'heading5', view: 'h5', title: 'Heading 5', class: 'ck-heading_heading5' },
+            { model: 'heading6', view: 'h6', title: 'Heading 6', class: 'ck-heading_heading6' }
+        ]
+    },
+    highlight: {
+        options: [
+            { model: 'yellowMarker', class: 'marker-yellow', title: 'Yellow Marker', color: 'var(--yellow)', type: 'marker' },
+            { model: 'orangeMarker', class: 'marker-orange', title: 'Orange Marker', color: 'var(--orange)', type: 'marker' },
+            { model: 'greenMarker', class: 'marker-green', title: 'Green marker', color: 'var(--green)', type: 'marker' },
+            { model: 'pinkMarker', class: 'marker-pink', title: 'Pink marker', color: 'var(--pink)', type: 'marker' },
+            { model: 'blueMarker', class: 'marker-blue', title: 'Blue marker', color: 'var(--blue)', type: 'marker' },
+            { model: 'purpleMarker', class: 'marker-purple', title: 'Purple marker', color: 'var(--purple)', type: 'marker' },
+            { model: 'greenPen', class: 'pen-green', title: 'Green pen', color: 'var(--green)', type: 'pen' },
+            { model: 'yellowPen', class: 'pen-yellow', title: 'Yellow pen', color: 'var(--yellow)', type: 'pen' },
+            { model: 'orangePen', class: 'pen-orange', title: 'Orange pen', color: 'var(--orange)', type: 'pen' },
+            { model: 'pinkPen', class: 'pen-pink', title: 'Pink pen', color: 'var(--pink)', type: 'pen' },
+            { model: 'bluePen', class: 'pen-blue', title: 'Blue pen', color: 'var(--blue)', type: 'pen' },
+            { model: 'purplePen', class: 'pen-purple', title: 'Purple pen', color: 'var(--purple)', type: 'pen' }
+        ]
+    },
+    image: {
+        toolbar: [
+            'imageStyle:full',
+            'imageStyle:side',
+            'imageStyle:alignLeft',
+            'imageStyle:alignCenter',
+            'imageStyle:alignRight',
+            '|',
+            'imageTextAlternative'
+        ],
+        styles: [
+            'full',
+            'side',
+            'alignLeft',
+            'alignCenter',
+            'alignRight'
+        ]
+    },
+    table: {
+        contentToolbar: [
+            'tableColumn',
+            'tableRow',
+            'mergeTableCells'
+        ]
+    },
+    mediaEmbed: {
+        previewsInData: true
+    },
+    alignment: {
+        options: [
+            'left',
+            'center',
+            'right'
+        ]
+    },
+    basicstylesdropdown: {
+        options: [
+            'bold',
+            'italic',
+            'underline',
+            'code',
+            'strikethrough',
+            'subscript',
+            'superscript'
+        ]
+    },
+    extraPlugins: [CustomUploadAdapterPlugin]
+};
+
+function CustomUploadAdapterPlugin(editor) {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        return new UploadAdapter(loader, '/ck/image-upload');
+    };
+}
+
+var ckeditor_config = {};
+
+    ckeditor_config = ckeditor_configs.basic;
+
+
+var ckeditor_config_file = '/bundles/spoutlet/ckeditor/config.advanced.js';
+
+
+    $(function() {
+    var pi = 60000; // 1 minute interval between polls
+    var pollTimeout;
+
+    function queueUpdate() {
+        pollTimeout = setTimeout(doUpdate, pi);
+    }
+
+    function updateRequest(recaptchaToken) {
+        $.ajax({
+            type: 'post',
+            url: '\/tos\/track',
+            data: JSON.stringify({ url: window.location.href }),
+            success: function(r) {
+                //console.log(r);
+                if (r.success) {
+                    queueUpdate();
+                } 
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function doUpdate() {
+        updateRequest();
+    }
+
+    doUpdate();
+});
+
+</script>
+
+
+
+
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+            <noscript>
+                <div style="background: rgba(0,0,0,0.95); padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 75px; margin-bottom: -50px;">
+                    <div class="container">
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+                                                            <div>
+                                    <h4 style="color: #00d4ff; margin: 0 0 10px 0; font-size: 1em;">Discover</h4>
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                                                                    <li style="margin-bottom: 5px;"><a href="/ucf/News?filter=Alienware%20New%20Releases,Alienware%20IQ,Alienware%20Moments&amp;filterType=type" style="color: #ccc; text-decoration: none;">Alienware Pulse</a></li>
+                                            <li style="margin-bottom: 5px;"><a href="/ucf/News" style="color: #ccc; text-decoration: none;">Blogs</a></li>
+                                                                                                                            <li style="margin-bottom: 5px;"><a href="/ucf/Video" style="color: #ccc; text-decoration: none;">Videos</a></li>
+                                                                                <li><a href="https://www.alienware.com" target="_blank" rel="noopener" style="color: #ccc; text-decoration: none;">Alienware.com</a></li>
+                                    </ul>
+                                </div>
+                            
+                            <div>
+                                <h4 style="color: #00d4ff; margin: 0 0 10px 0; font-size: 1em;">Games</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                                                            <li style="margin-bottom: 5px;"><a href="/ucf/Giveaway" style="color: #ccc; text-decoration: none;">Giveaways</a></li>
+                                                                                                                <li style="margin-bottom: 5px;"><a href="/community-giveaways" style="color: #ccc; text-decoration: none;">Community Giveaways</a></li>
+                                                                        <li style="margin-bottom: 5px;"><a href="/page/arcade" style="color: #ccc; text-decoration: none;">Arena Arcade BETA</a></li>
+                                    <li style="margin-bottom: 5px;"><a class="dropdown-item" href="/quests" style="color: #ccc; text-decoration: none;">Quests</a></li>
+                                    <li><a href="/steam/events" style="color: #ccc; text-decoration: none;">Steam Events</a></li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 style="color: #00d4ff; margin: 0 0 10px 0; font-size: 1em;">Community</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 5px;"><a href="/relay/my-feed" style="color: #ccc; text-decoration: none;">Relay</a></li>
+                                    <li style="margin-bottom: 5px;"><a href="/rewards/leaderboard" style="color: #ccc; text-decoration: none;">Leaderboard</a></li>
+                                    <li style="margin-bottom: 5px;"><a href="/page/hive-influencers" style="color: #ccc; text-decoration: none;">Hive</a></li>
+                                    <li><a href="https://discord.gg/Alienware" target="_blank" rel="noopener" style="color: #ccc; text-decoration: none;">Discord</a></li>
+
+                                                                            <li style="margin-bottom: 5px;"><a href="/faq-contact" style="color: #ccc; text-decoration: none;">FAQ</a></li>
+                                                                     </ul>
+                            </div>
+
+                            <div>
+                                <h4 style="color: #00d4ff; margin: 0 0 10px 0; font-size: 1em;">Rewards</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 5px;"><a href="/whatisarena" style="color: #ccc; text-decoration: none;">What is Arena</a></li>
+                                    <li style="margin-bottom: 5px;"><a href="/marketplace/" style="color: #ccc; text-decoration: none;">Marketplace</a></li>
+                                    <li><a href="/marketplace/game-vault" style="color: #ccc; text-decoration: none;">Game Vault</a></li>
+                                    <li><a href="/marketplace/redeem-code" style="color: #ccc; text-decoration: none;">Redeem Code</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </noscript>
+        
+
+    
+    <nav id="um" class="fixed">
+        <div class="um-menu mx-3 d-flex flex-column">
+                            
+    
+<section class="um-main">
+    <div class="row">
+        <div class="col">
+            <div class="um-main__avatar d-flex justify-content-center">
+                <div class="col-6 col-offset-3">
+                    <a class="avatar-container" href="/account/personalization" aria-label="Edit avatar">
+                        
+
+
+
+
+<div class="user-avatar ">
+    
+    <img class="user-avatar__sizer user-avatar__avatar" src="https://media.alienwarearena.com/media/00825a3ff4d68867c811e8e36c2e828b.png?quality=75&amp;width=160" alt="Avatar of HCLovely">
+
+    </div>
+                    </a>
+                </div>
+            </div>
+            <div class="text-center um-username"><a href="#" class="um-username-link"></a></div>
+            <div class="col-6 offset-3">
+                <img class="img-fluid" src="https://media.alienwarearena.com/images/content/tier-tags/1.png" alt="User tier badge">
+            </div>
+            <div class="um-nav-lifetime-arp">Lifetime ARP: <span class="homepage-arp-lifetime">0</span></div>
+            <div class="um-nav-total-arp">Redeemable ARP: <span class="homepage-arp-total">0</span></div>
+        </div>
+    </div>
+</section>                            <div class="um-account">
+    <section class="um-nav-links">
+        <div class="um-nav-link-container d-flex flex-column">
+                            <a class="um-nav-link active" href="/control-center">
+                    <i class="fa-solid fa-square-poll-vertical me-2"></i> Control Center
+                </a>
+                            <a class="um-nav-link " href="/account/personalization">
+                    <i class="fa-solid fa-image-portrait me-2"></i> Personalization
+                </a>
+                            <a class="um-nav-link " href="/account/my-rewards/">
+                    <i class="fa-solid fa-store me-2"></i> My Rewards
+                </a>
+                            <a class="um-nav-link " href="/account/arp-log">
+                    <i class="fa-solid fa-book me-2"></i> My ARP Progress
+                </a>
+                            <a class="um-nav-link " href="/account/endofyear">
+                    <i class="fa-solid fa-fire me-2"></i> My Yearly Review
+                </a>
+                            <a class="um-nav-link " href="/account/communications">
+                    <i class="fa-regular fa-message me-2"></i> Communications
+                </a>
+                            <a class="um-nav-link " href="/member/HCLovely/artifacts">
+                    <i class="fa-solid fa-sim-card me-2"></i> Artifacts
+                </a>
+                            <a class="um-nav-link " href="/member/HCLovely/achievements">
+                    <i class="fa-solid fa-award me-2"></i> Achievements
+                </a>
+                            <a class="um-nav-link " href="/account">
+                    <i class="fa-solid fa-key me-2"></i> Account Settings
+                </a>
+                    </div>
+    </section>
+</div>
+                                <div class="d-flex justify-content-center">
+                    <a href="https://www.dell.com/en-us/shop/cty/pdp/spd/alienware-aurora-act1250-gaming-desktop" target="_blank" rel="noopener">
+        
+                                    <img class="img-fluid d-none d-md-block" src="https://media.alienwarearena.com/media/8c30a023b43504e23473746ad8c44c27.jpg" alt="userprofile">
+                            <img class="img-fluid d-block d-md-none" src="https://media.alienwarearena.com/media/8c30a023b43504e23473746ad8c44c27.jpg" alt="userprofile">
+                    
+                    </a>
+            </div>
+                            <div class="text-center pb-3 um-footer mt-auto">
+    <section class="um-footer__join-date">
+        <div>
+            <div>Member Since:</div>
+            <div class="js-um-member-since"></div>
+        </div>
+    </section>
+
+    <section class="um-footer__logout">
+        <a href="/logout">
+            LOG OUT >
+        </a>
+    </section>
+</div>                    </div>
+    </nav>
+
+    <!-- Begin page content -->
+    <main class="flex-shrink-0">
+        <div class="container account has-fixed-menu">
+                <div class="row">
+    <div class="col-12">
+        <div class="user-profile__profile-card">
+            <div class="user-profile__card-header">
+                <h3>Daily Quests</h3>
+            </div>
+            
+            <div class="user-profile__card-body">
+                <table class="table table-borderless mb-0">
+                    <thead>
+                        <tr class="card-table-heading">
+                            <th scope="col" class="col py-0">Game</th>
+                            <th scope="col" class="col-3 py-0 col-md-2 text-end">Status</th>
+                            <th scope="col" class="col-3 py-0 col-md-2 text-end">Reward</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                                                    
+
+
+
+    
+<tr class="card-table-row">
+    <td class="col d-flex align-items-center">
+                    <a class="quest-title flex-grow-1 d-flex align-items-center" href="/quests/6231" data-quest-id="6231"  data-award-on-click="false" aria-label="Play What&#039;s Inside the Mine?">
+                <div class="flex-shrink-0">
+                                            <img class="quest-list__thumbnail" src="https://media.alienwarearena.com/media/392291c7f69114398826318d75cee390.png" alt="What&#039;s Inside the Mine?">
+                                    </div>
+                <div class="flex-grow-1 ms-3">
+                    What&#039;s Inside the Mine?
+                </div>
+            </a>
+                <div>
+                                                                        <a href="/quests/6231" aria-label="Play What&#039;s Inside the Mine?"><i class="far fa-play-circle quest-list__play" aria-hidden="true"></i></a>
+                                                        </div>
+    </td>
+    <td class="col-3 col-md-2 text-end">
+                    <span class="quest-item-progress">Incomplete</span>
+            </td>
+    <td class="col-3 col-md-2 text-end">
+            </td>
+</tr>
+
+<script>
+    $(() => {
+        $('body').on('click', '.quest-title', function (e) {
+
+            let id = $(this).data('quest-id');
+            let aoc = $(this).data('awardOnClick');
+
+            if (aoc) {
+                $.get(`/ajax/user/quest-award/${id}`, (r) => {
+                    console.log(r);
+                });
+            }
+        });
+    });
+</script>
+
+                                            </tbody>
+                </table>
+            </div>
+
+            <div class="user-profile__card-footer"></div>
+        </div>
+    </div>
+</div>
+                         <a href="/steam/community-event/idle-champions-of-the-forgotten-realms-community-event">
+            <div class="community-event-banner" style="border: 1px solid #ff0000; box-shadow: 0 0 10px #ff0000;">
+                <div class="event-header">
+                    <div class="event-title-date">
+                        <h3>Idle Champions of the Forgotten Realms Community Event Event: 9.10.26 - 9.18.26</h3>
+                    </div>
+                    <div class="event-status" style="color: #3A8C25;">
+                        LIVE
+                    </div>
+                </div>
+                                    <div class="event-banner-image">
+                        <img src="https://media.alienwarearena.com/media/2234b61d96d5e8ff6826c4957bddae04.png?quality=75" alt="Idle Champions of the Forgotten Realms Community Event banner">
+                    </div>
+                            </div>
+        </a>
+    
+    
+
+    <div class="row">
+    <div class="col-12">
+        <div class="user-profile__profile-card">
+            <div class="user-profile__card-header">
+                <h3>Steam Quests</h3>
+            </div>
+            
+            <div class="user-profile__card-body">
+                <table class="table table-borderless mb-0">
+                    <thead>
+                        <tr class="card-table-heading">
+                            <th scope="col" class="col py-0">Available Quests</th>
+                            <th scope="col" class="col-2 py-0 text-end">Status</th>
+                            <th scope="col" class="col-2 py-0 text-end">Reward</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                                                    
+<tr class="card-table-row py-2">
+    <td class="col flex-grow-1 d-flex align-items-center justify-content-between">
+        <a href="/steam/quests/choose-your-own-game-171" class="d-flex align-items-center" aria-label="View Choose Your Own Game quest">
+            <div class="flex-shrink-0">
+                                    <img class="quest-list__thumbnail" src="https://media.alienwarearena.com/media/siteImg/2023/awa-steam.gif" alt="Choose Your Own Game">
+                            </div>
+            <div class="flex-grow-1 ms-3 quest-list__quest-details">
+                <div>Choose Your Own Game</div>
+                <div class="small">Choose your own game to play for 1 hour to receive your reward!</div>
+            </div>
+        </a>
+        <div>
+            <a id="control-center__steam-quest-play-783" href="/steam/quests/choose-your-own-game-171" aria-label="Play Steam Quest">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </td>
+    <td class="col-2 text-end" id="control-center__steam-quest-status-783">
+        Incomplete    </td>
+    <td class="col-2 text-end" id="control-center__steam-quest-reward-783" style="visibility: hidden;">
+        15 ARP
+    </td>
+</tr>
+                                                    
+<tr class="card-table-row py-2">
+    <td class="col flex-grow-1 d-flex align-items-center justify-content-between">
+        <a href="/steam/quests/goat-simulator-3" class="d-flex align-items-center" aria-label="View Goat Simulator 3 quest">
+            <div class="flex-shrink-0">
+                                    <img class="quest-list__thumbnail" src="https://cdn.cloudflare.steamstatic.com/steam/apps/850190/header.jpg" alt="Goat Simulator 3">
+                            </div>
+            <div class="flex-grow-1 ms-3 quest-list__quest-details">
+                <div>Goat Simulator 3</div>
+                <div class="small">Play Goat Simulator 3 for 1 hour to receive your reward!</div>
+            </div>
+        </a>
+        <div>
+            <a id="control-center__steam-quest-play-784" href="/steam/quests/goat-simulator-3" aria-label="Play Steam Quest">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </td>
+    <td class="col-2 text-end" id="control-center__steam-quest-status-784">
+        Incomplete    </td>
+    <td class="col-2 text-end" id="control-center__steam-quest-reward-784" style="visibility: hidden;">
+        25 ARP
+    </td>
+</tr>
+                                                    
+<tr class="card-table-row py-2">
+    <td class="col flex-grow-1 d-flex align-items-center justify-content-between">
+        <a href="/steam/quests/apex-legends-31" class="d-flex align-items-center" aria-label="View Apex Legends quest">
+            <div class="flex-shrink-0">
+                                    <img class="quest-list__thumbnail" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/header.jpg" alt="Apex Legends">
+                            </div>
+            <div class="flex-grow-1 ms-3 quest-list__quest-details">
+                <div>Apex Legends</div>
+                <div class="small">Play Apex Legends for 1 hour to receive your reward!</div>
+            </div>
+        </a>
+        <div>
+            <a id="control-center__steam-quest-play-785" href="/steam/quests/apex-legends-31" aria-label="Play Steam Quest">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </td>
+    <td class="col-2 text-end" id="control-center__steam-quest-status-785">
+        Incomplete    </td>
+    <td class="col-2 text-end" id="control-center__steam-quest-reward-785" style="visibility: hidden;">
+        25 ARP
+    </td>
+</tr>
+                                            </tbody>
+                </table>
+            </div>
+
+            <div class="user-profile__card-footer"></div>
+        </div>
+    </div>
+</div>
+    
+    <div class="row">
+    <div class="col-12">
+        <div class="user-profile__profile-card">
+            <div class="user-profile__card-header">
+                <h3 class="col">Watch Twitch</h3>
+                <h3 class="col-3 text-end"><span id="control-center__twitch-arp-status"></span>: <span id="control-center__twitch-arp"></span> ARP</h3>
+                <h3 class="col-3 text-end" id="control-center__twitch-max-reached" stysle="display:none;">Max Cap Reached</h3>
+            </div>
+            
+            <div class="user-profile__card-body">
+                                                                            
+                    <div class="row mx-0">
+                        <p class="card-table-heading justify-content-start ">
+                            Nexus
+                            
+                                                            <span class="hive-info justify-content-start">
+                                                                            Earn ARP at 2x normal speed!
+                                                                    </span>
+                                                    </p>
+                    </div>
+                                            <div class="row card-table-row py-2 ">
+    <div class="d-flex align-items-center">
+        <div class="flex-shrink-0">
+            <div class="quest-list__stream-thumbnail quest-list__thumbnail">
+                <span class="quest-list__stream-live">LIVE</span>
+                <a href="https://www.twitch.tv/witchmob">
+                    <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_witchmob-100x100.jpg" class="align-self-center mr-3" alt="witchmob">
+                </a>
+            </div>
+        </div>
+        <div class="flex-grow-1 ms-3 quest-list__quest-details ">
+            <div>witchmob</div>
+            <div class="small"></div>
+            <div class="small"></div>
+        </div>
+        <div>
+            <a href="https://www.twitch.tv/witchmob" target="_blank" rel="noopener" aria-label="Play Twitch Stream">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+                                                                                                
+                    <div class="row mx-0">
+                        <p class="card-table-heading justify-content-start ">
+                            Partners
+                            
+                                                    </p>
+                    </div>
+                                            <div class="row card-table-row py-2 ">
+    <div class="d-flex align-items-center">
+        <div class="flex-shrink-0">
+            <div class="quest-list__stream-thumbnail quest-list__thumbnail">
+                <span class="quest-list__stream-live">LIVE</span>
+                <a href="https://www.twitch.tv/redbeard">
+                    <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_redbeard-100x100.jpg" class="align-self-center mr-3" alt="redbeard">
+                </a>
+            </div>
+        </div>
+        <div class="flex-grow-1 ms-3 quest-list__quest-details ">
+            <div>redbeard</div>
+            <div class="small"></div>
+            <div class="small"></div>
+        </div>
+        <div>
+            <a href="https://www.twitch.tv/redbeard" target="_blank" rel="noopener" aria-label="Play Twitch Stream">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+                                            <div class="row card-table-row py-2 ">
+    <div class="d-flex align-items-center">
+        <div class="flex-shrink-0">
+            <div class="quest-list__stream-thumbnail quest-list__thumbnail">
+                <span class="quest-list__stream-live">LIVE</span>
+                <a href="https://www.twitch.tv/rogue">
+                    <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_rogue-100x100.jpg" class="align-self-center mr-3" alt="rogue">
+                </a>
+            </div>
+        </div>
+        <div class="flex-grow-1 ms-3 quest-list__quest-details ">
+            <div>rogue</div>
+            <div class="small"></div>
+            <div class="small"></div>
+        </div>
+        <div>
+            <a href="https://www.twitch.tv/rogue" target="_blank" rel="noopener" aria-label="Play Twitch Stream">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+                                            <div class="row card-table-row py-2 ">
+    <div class="d-flex align-items-center">
+        <div class="flex-shrink-0">
+            <div class="quest-list__stream-thumbnail quest-list__thumbnail">
+                <span class="quest-list__stream-live">LIVE</span>
+                <a href="https://www.twitch.tv/sirhcez">
+                    <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_sirhcez-100x100.jpg" class="align-self-center mr-3" alt="sirhcez">
+                </a>
+            </div>
+        </div>
+        <div class="flex-grow-1 ms-3 quest-list__quest-details ">
+            <div>sirhcez</div>
+            <div class="small"></div>
+            <div class="small"></div>
+        </div>
+        <div>
+            <a href="https://www.twitch.tv/sirhcez" target="_blank" rel="noopener" aria-label="Play Twitch Stream">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+                                            <div class="row card-table-row py-2 ">
+    <div class="d-flex align-items-center">
+        <div class="flex-shrink-0">
+            <div class="quest-list__stream-thumbnail quest-list__thumbnail">
+                <span class="quest-list__stream-live">LIVE</span>
+                <a href="https://www.twitch.tv/kalamazi_247">
+                    <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_kalamazi_247-100x100.jpg" class="align-self-center mr-3" alt="kalamazi_247">
+                </a>
+            </div>
+        </div>
+        <div class="flex-grow-1 ms-3 quest-list__quest-details ">
+            <div>kalamazi_247</div>
+            <div class="small"></div>
+            <div class="small"></div>
+        </div>
+        <div>
+            <a href="https://www.twitch.tv/kalamazi_247" target="_blank" rel="noopener" aria-label="Play Twitch Stream">
+                <span aria-hidden="true"><i class="far fa-play-circle quest-list__play"></i></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+                                                </div>
+
+            <div class="user-profile__card-footer"></div>
+        </div>
+    </div>
+</div>
+
+    <div class="d-flex flex-column flex-lg-row justify-content-center align-items-center align-items-lg-start control-center__arp-summary">
+        <div class="lh-sm me-0 me-lg-auto text-center text-lg-start">
+            <div>Time on Site - Max ARP per day: <span id="control-center__tos-max-arp">5</span></div>
+            <div class="fs-4 text-success">Earned ARP: <span id="control-center__tos-arp"></span></div>
+        </div>
+
+        <div class="lh-sm mt-2 mt-lg-0">
+            <a href="/steam/questsetup" class="btn btn-outline-primary btn-arrow btn-help">Help With Quest Setup</a>
+        </div>
+
+        <div class="lh-sm ms-lg-auto mt-2 mt-lg-0 text-center text-lg-start">
+            <div>Total ARP earned today:</div>
+            <div class="fs-4 text-success" id="control-center__total-arp"></div>
+        </div>
+    </div>
+
+    
+<div>
+    <div class="row d-lg-block">
+        <div class="col-12">
+            <div class="user-profile__profile-card">
+                <div class="user-profile__card-header">
+                    <h3 class="mx-auto">Today's Reward</h3>
+                </div>
+                
+                <div class="user-profile__card-body py-4">
+                    <div class="row mx-0 calendar-rewards__calendar justify-content-center" id="todays-rewards">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row d-none d-lg-block">
+        <div class="col-12">
+            <div class="user-profile__profile-card">
+                <div class="user-profile__card-header">
+                    <h3 class="text-center">7-Day Streak Rewards</h3>
+                </div>
+                
+                <div class="user-profile__card-body py-4">
+                    <div class="row mx-0 calendar-rewards__calendar" id="streak-days">
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=1>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 1 reward: 1 ARP">
+                    <span>1</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=1></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>1</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=2>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 2 reward: 1 ARP">
+                    <span>1</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=1></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>2</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=3>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 3 reward: 2 ARP">
+                    <span>2</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=2></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>3</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=4>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 4 reward: 2 ARP">
+                    <span>2</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=2></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>4</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=5>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 5 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>5</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=6>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 6 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>6</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=7>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 7 reward: 5 ARP">
+                    <span>5</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=5></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>7</p>
+        </div>
+    </div>
+
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row d-none d-lg-block">
+        <div class="col-12">
+            <div class="user-profile__profile-card">
+                <div class="user-profile__card-header">
+                    <h3 class="text-center">28-Day Daily Login Rewards</h3>
+                </div>
+                
+                <div class="user-profile__card-body py-4">
+                                        <div class="row mx-0 calendar-rewards__calendar" id="monthly-days-1">
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=1>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 1 reward: 1 ARP">
+                    <span>1</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=1></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>1</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=2>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 2 reward: 1 ARP">
+                    <span>1</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=1></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>2</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=3>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 3 reward: 1 ARP">
+                    <span>1</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=1></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>3</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=4>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 4 reward: 1 ARP">
+                    <span>1</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=1></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>4</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=5>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img class="img-fluid" src="https://media.alienwarearena.com/media/8f3473df6c71e84114e0a21e1ebcd753.png" data-bs-toggle="tooltip" data-bs-title="Trippy Pumpkins" data-bs-custom-class="calendar-rewards__tooltip" alt="Day 5 reward: Trippy Pumpkins">
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>5</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=6>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 6 reward: 1 ARP">
+                    <span>1</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=1></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>6</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=7>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 7 reward: 2 ARP">
+                    <span>2</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=2></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>7</p>
+        </div>
+    </div>
+
+                                            </div>
+                                        <div class="row mx-0 calendar-rewards__calendar" id="monthly-days-2">
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=8>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 8 reward: 2 ARP">
+                    <span>2</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=2></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>8</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=9>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 9 reward: 2 ARP">
+                    <span>2</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=2></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>9</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=10>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 10 reward: 2 ARP">
+                    <span>2</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=2></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>10</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=11>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 11 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>11</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=12>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 12 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>12</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=13>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 13 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>13</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=14>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 14 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>14</p>
+        </div>
+    </div>
+
+                                            </div>
+                                        <div class="row mx-0 calendar-rewards__calendar" id="monthly-days-3">
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=15>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 15 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>15</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=16>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img class="img-fluid" src="https://media.alienwarearena.com/media/ec42d118c667c46ebe81eb3d64558635.png" data-bs-toggle="tooltip" data-bs-title="Fall Leaves" data-bs-custom-class="calendar-rewards__tooltip" alt="Day 16 reward: Fall Leaves">
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>16</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=17>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 17 reward: 3 ARP">
+                    <span>3</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=3></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>17</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=18>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 18 reward: 4 ARP">
+                    <span>4</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=4></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>18</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=19>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 19 reward: 4 ARP">
+                    <span>4</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=4></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>19</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=20>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img class="img-fluid" src="https://media.alienwarearena.com/media/ad52438be82462ad4f9446a9c3fd0655.png" data-bs-toggle="tooltip" data-bs-title="Harvest Border" data-bs-custom-class="calendar-rewards__tooltip" alt="Day 20 reward: Harvest Border">
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>20</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=21>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 21 reward: 4 ARP">
+                    <span>4</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=4></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>21</p>
+        </div>
+    </div>
+
+                                            </div>
+                                        <div class="row mx-0 calendar-rewards__calendar" id="monthly-days-4">
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=22>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 22 reward: 4 ARP">
+                    <span>4</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=4></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>22</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=23>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 23 reward: 4 ARP">
+                    <span>4</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=4></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>23</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=24>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 24 reward: 5 ARP">
+                    <span>5</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=5></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>24</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=25>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 25 reward: 5 ARP">
+                    <span>5</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=5></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>25</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=26>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 26 reward: 5 ARP">
+                    <span>5</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=5></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>26</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=27>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg" alt="Day 27 reward: 6 ARP">
+                    <span>6</span>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=6></div>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>27</p>
+        </div>
+    </div>
+
+                                                        <div class="col calendar-rewards__day px-2 py-1 px-xl-4 py-xl-2" data-day=28>
+                    <div class="calendar-rewards__reward px-2 py-4 p-xl-4">
+                                    <img src="https://media.alienwarearena.com/images/artifacts/calendar_fragment.png" title="5 Fragments" alt="Day 28 reward: 5 fragments">
+                    <span class="calendar-rewards__reward-fragments">5</span>
+                            </div>
+        
+        <div class="text-center mt-2 calendar-rewards__day-label">
+            <p class="small">Day</p> 
+            <p>28</p>
+        </div>
+    </div>
+
+                                            </div>
+                                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                    </div>
+    </main>
+
+    
+
+    <footer class="footer mt-auto py-3 bg-transparent has-fixed-menu">
+        <div class="footer-redesign-content text-center">
+            <ul class="list-inline list-unstyled d-inline-block">
+                                    <li class="list-inline-item"><a href="/faq-contact">FAQ/Support</a></li>
+                
+                <li class="list-inline-item"><a href="https://na.alienwarearena.com/legal/terms">Terms of Service</a></li>
+                <li class="list-inline-item"><a href="https://na.alienwarearena.com/legal/privacy">Privacy Policy</a></li>
+                
+                                    <li class="list-inline-item"><a href="/about">About Us</a></li>
+                            </ul>
+
+            <a href="http://www.alienware.com/" class="mb-3 mx-2 mb-md-0 text-muted text-decoration-none lh-1">
+                <svg class="ai" width="30" height="24"><use xlink:href="#alienware"></use></svg>
+            </a>
+            <span class="mb-3 mb-md-0 text-muted">
+                                    Copyright 2023 Dell Technologies. All Rights Reserved.
+                            </span>
+        </div>
+    </footer>
+
+                <script src="/bundles/spoutlet/js/bootstrap.bundle.min.js"></script>
+        <script src="/bundles/spoutlet/js/default.min.js"></script>
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/notify.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/jquery.timeago.min.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/jquery.timeago.en-short.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/jquery.cookie.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/dtsel.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/search.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/moment.min.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/notify.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/custom.js"></script>
+        <script type="text/javascript" src="/bundles/spoutlet/js/homepage-video.js"></script>
+        <script src="/bundles/spoutlet/js/main.js"></script>
+
+        <!-- load notifications / flash messages -->
+        <script type="text/javascript" src="/bundles/spoutlet/js/bootstrap-notify.min.js"></script>
+
+        
+
+        <script>
+            if(navigator.userAgent.indexOf("MSIE ") > -1 || navigator.userAgent.indexOf("Trident/") > -1) {
+                $("#main").prepend('<div class="p-5"><p class="browserframe">You are using an <strong>outdated</strong> browser. Please use <a href="https://www.microsoft.com/en-us/windows/microsoft-edge?redirect=true">Microsoft Edge</a> to improve your experience.</p></div>');
+                throw new Error("This website does not support Internet Explorer and will not render properly. Please migrate to Microsoft Edge.");
+            }
+        </script>
+
+        <script>
+Dell = window.Dell || {};
+Dell.Metrics = Dell.Metrics || {};
+Dell.Metrics.sc = Dell.Metrics.sc || {};
+Dell.Metrics.sc.country = "CN"; /**dynamic value based on site**/
+Dell.Metrics.sc.language = "en";
+Dell.Metrics.sc.segment = "corp";
+Dell.Metrics.sc.customerset = "";
+Dell.Metrics.sc.cms = "external";
+Dell.Metrics.sc.pagename = "";
+Dell.Metrics.sc.applicationname = "Browse:Product Detail(STP)";
+</script>
+
+<script type="text/javascript">
+    $(function() {
+        if ($('#g-recaptcha-script').length < 1) {
+            console.log('Not deferring ensighten. Loading...');
+            $.getScript("//nexus.ensighten.com/dell/external/Bootstrap.js");            $.getScript("//nexus.dell.com/dell/marketing/Bootstrap.js");                    }
+    });
+</script>
+
+
+
+
+        
+    
+    <script>
+        $(function() {
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            let dailyArpData = {"timeOnSiteArp":5,"timeOnSiteCap":5,"dailyArp":26,"twitchData":{"startedAt":"2026-09-14 06:30:19","updatedAt":"2026-09-14 07:17:41","totalPoints":15,"timeWatched":38,"bonusPoints":0,"pointsToAward":0.2,"underCap":false}};
+
+            $('#control-center__tos-max-arp').text(dailyArpData.timeOnSiteCap);
+            $('#control-center__tos-arp').text(dailyArpData.timeOnSiteArp);
+            $('#control-center__total-arp').text(dailyArpData.dailyArp);
+
+            $('#control-center__twitch-arp-status').text(dailyArpData.twitchData.underCap ? 'Incomplete' : 'Complete');
+            $('#control-center__twitch-arp').text(dailyArpData.twitchData.totalPoints + dailyArpData.twitchData.bonusPoints);
+
+            if (!dailyArpData.twitchData.underCap) {
+                $('#control-center__twitch-max-reached').show();
+            } else {
+                $('#control-center__twitch-max-reached').hide();
+            }
+        });
+    </script>
+
+    <script type="text/javascript">
+
+function initActiveNavItem() {
+    var currentUrl = window.location.href;
+
+    if (currentUrl.indexOf('Giveaway') >= 0) {
+        $('ul.components li').removeClass('active');
+        $('#giveaways').addClass('active');
+    }
+
+    if (currentUrl.indexOf('News') >= 0) {
+        $('ul.components li').removeClass('active');
+        $('#news').addClass('active');
+    }
+
+    if (currentUrl.indexOf('groups') >= 0) {
+        $('ul.components li').removeClass('active');
+        $('#groups').addClass('active');
+    }
+
+    if (currentUrl.indexOf('forums') >= 0) {
+        $('ul.components li').removeClass('active');
+        $('#forums').addClass('active');
+    }
+}
+
+function initUserData() {
+    if (!has_admin_role) {
+        $('#sidebar-admin').remove();
+        $('#nav-admin').remove();
+    } else {
+        $('#nav-admin').show();
+    }
+
+    if (!user_is_logged_in) { return; }
+
+    if ($('#um').hasClass('other-user')) {
+        return;
+    }
+
+    var a = getObject(user_avatars, 'size', 184);
+
+    $('.homepage-arp-total').text(arp_balance.toLocaleString());
+    $('.homepage-arp-lifetime').text(arp_lifetime.toLocaleString());
+    
+    $('.um-arp-total').text(arp_balance);
+    $('.um-arp-lifetime').text(arp_lifetime);
+    $('.um-tier').text(arp_tier);
+    $('.um-username-link').text(user_username).attr('href', user_profile_url);
+    $('.um-avatar-link').attr('href', '/account/personalization');
+    $('.js-um-member-since').text(user_member_since);
+    // $('.um-avatar').attr('src', a.url);
+    $('.um-profile, .sb-profile').attr('href', user_profile_url);
+
+
+
+    if (bonusCalendarArp > 0 || arpMultiplier > 1) {
+        $('.calendar-rewards__reward-bonus').each(function() {
+            let $ele = $(this);
+            let originalArp = $ele.data('original');
+            let totalArp = Math.ceil((originalArp + bonusCalendarArp) * arpMultiplier);
+            let bonusArp = totalArp - originalArp;
+
+            $(this).text('+' + bonusArp);
+        })
+    }
+    
+    let $currentStreakReward = $('#streak-days .calendar-rewards__day[data-day=' + consecutive_logins['count'] + ']');
+    $currentStreakReward.addClass('current');
+
+    appendCurrentReward($currentStreakReward, '7');
+
+    if(monthly_logins['count'] < 29) {
+        var week = Math.ceil(monthly_logins['count'] / 7);
+
+        let $currentReward = $('#monthly-days-' + week + ' .calendar-rewards__day[data-day=' + monthly_logins['count'] + ']');
+        
+        $currentReward.addClass('current');
+
+        appendCurrentReward($currentReward, '28');
+    } else {
+        let $currentReward = $(`
+            <div class="col calendar-rewards__day px-4 py-2" data-day=${monthly_logins['count']}>
+                <div class="calendar-rewards__reward p-4">
+                    <img src="/bundles/spoutlet/img/AW-calendar-reward.svg">
+                    <h1>${monthly_logins['extra_arp']}</h1>
+
+                    <div class="calendar-rewards__reward-bonus" data-original=${monthly_logins['extra_arp']}></div>
+                </div>
+
+                <div class="text-center mt-2 calendar-rewards__day-label">
+                    <p class="small">Day</p> 
+                    <p>${monthly_logins['count']}</p>
+                </div>
+            </div>
+        `);
+
+        appendCurrentReward($currentReward, '28', true);
+    }
+
+    $('#notification-dropdown').addClass('logged-in');
+
+    if (has_epsilon_rewards) {
+        let elm = $('.um-epsilon-balance');
+        elm.text(epsilon_balance);
+
+        if(epsilon_balance >= 1000000) {
+            elm.css('font-size', '.98rem');
+        }
+
+        $('.um-dell-rewards').show();
+    }
+}
+
+function appendCurrentReward($reward, dayReward, determineWidth = false) {
+    let $clonedReward = $($reward.clone().prop("outerHTML")).removeClass('col');
+
+    let width = determineWidth ? $('#monthly-days-1 [data-day="1"]').css('width') : $reward.css('width');
+
+    $clonedReward.css('width', width);
+    $('.calendar-rewards__day-label', $clonedReward).html('<p class="small">' + dayReward + '-Day</p><p>Reward</p>');
+
+    $('.calendar-rewards__calendar#todays-rewards').append($clonedReward);
+
+    $(window).on("resize", function() {
+        $clonedReward.css('width', $('#monthly-days-1 [data-day="1"]').css('width'));
+    });
+}
+
+function toggleLoggedInControls() {
+    $('[data-is-logged-in="true"]').toggle(user_is_logged_in);
+}
+
+function toggleDailyCalendar() {
+    var isShown = $('.overlay-content .advent-calendar').length;
+
+    if (isShown) {
+        $('.overlay-content').empty();
+        $('.overlay').removeClass('dark arp');
+        // Hide overlay from screen readers when hidden
+        $('.overlay').attr('aria-hidden', 'true');
+    } else {
+        $('.overlay-content').html($('#advent-calendar-container').html());
+        $('.overlay').addClass('dark arp');
+        // Show overlay to screen readers when active
+        $('.overlay').removeAttr('aria-hidden');
+    }
+
+    $('.toggle-calendar').toggleClass('left right');
+    $('.toggle-calendar .calendar-action').toggleClass('active');
+}
+
+function toggleProductsCampaign() {
+    var isShown = $('.overlay-content .product-campaign').length;
+
+    if (isShown) {
+        $('.overlay-content').empty();
+        $('.overlay').removeClass('dark arp');
+
+        $("#overlay-content").removeClass('w-100');
+        $("#um").removeClass('hide-on-sm');
+        $('.overlay').attr('aria-hidden', 'true');
+    }
+    else {
+        $('.overlay-content').html($('#product-campaign-container').html());
+        $('.overlay').addClass('dark arp');
+
+        $("#overlay-content").addClass('w-100');
+        $("#um").addClass('hide-on-sm');
+        $('.overlay').removeAttr('aria-hidden');
+    }
+
+    $('body').toggleClass('no-overflow');
+    $('.js-toggle-product-campaign').toggleClass('left right');
+
+    $(".product-campaign__products-wrapper").mCustomScrollbar({
+        theme: "minimal"
+    });
+}
+
+function showArpOverlay() {
+    hideOverlay();
+    $('.navbar-top').fadeOut(function () {
+
+        if (!$('.overlay').hasClass('active')) {
+            $('.overlay').addClass('active dark');
+        }
+
+        if (!$('.overlay').hasClass('arp')) {
+            $('.overlay').addClass('arp');
+        }
+
+        $('body').toggleClass('no-overflow');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        $('.navbar-top').fadeOut(function () {
+            $('#dismiss-overlay').addClass('open');
+        });
+    });
+
+    $('.overlay').removeAttr('aria-hidden');
+}
+
+function showPromoCalendarIfRequired() {
+    if (!user_is_logged_in || !user_is_complete) {
+        return;
+    }
+
+    // We are on a page that shouldn't display the PAC (e.g. Authenticator)
+    if (!$('.nav-item-promo').length) {
+        return;
+    }
+
+    var viewed  = $.cookie(getPromoCalendarCookieName());
+
+    if (viewed) {
+        return;
+    }
+
+    togglePromotionalCalendar();
+}
+
+function getPromoCalendarCookieName() {
+    var d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+
+    var cookieSuffix = '' + d.getUTCFullYear() + (d.getUTCMonth() + 1) + d.getUTCDate();
+
+    return 'promo_calendar_viewed_' + cookieSuffix;
+}
+
+function togglePromotionalCalendar() {
+    var $promoCalendar = $('#promotional-calendar-container');
+
+    if (!$promoCalendar.length) {
+        return;
+    }
+
+    var isShown = $('.overlay-content .promotional-calendar').length;
+
+    $('body').trigger('overlay.pac.pretoggle', { willBeShown: !isShown });
+
+    if (isShown) {
+        $('.overlay-content').empty();
+        $('.overlay').removeClass('no-click active promo-cal');
+        $('#dismiss-overlay').removeClass('open');
+        $('body').removeClass('no-overflow');
+        $('.navbar-top').fadeIn();
+        $('.overlay').attr('aria-hidden', 'true');
+    } else {
+        $('.navbar-top').fadeOut();
+        $('.overlay-content').html($('#promotional-calendar-container').html());
+        $('.overlay').addClass('no-click active promo-cal');
+        $('#dismiss-overlay').addClass('open');
+        $('body').addClass('no-overflow');
+        $.cookie(getPromoCalendarCookieName(), true, {expires: 1});
+        $('.overlay').removeAttr('aria-hidden');
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    $('body').trigger('overlay.pac.toggle', { wasShown: !isShown });
+}
+
+function dismissOverlay() {
+    if (!$('.overlay').hasClass('auth')) {
+        hideOverlay();
+    }
+}
+
+function hideOverlay() {
+    if ($('.overlay').hasClass('promo-cal')) {
+        togglePromotionalCalendar();
+    }
+
+    if (getUrlParameter('promotion_token')) {
+        location.reload();
+    }
+
+    $('#sidebar, #um').removeClass('active');
+    $('.overlay').removeClass('active auth arp dark');
+    $('.dismiss-menu').removeClass('active');
+    $('#sidebarCollapse').fadeIn();
+
+    if ($('.navbar-top').not(':visible')) {
+        $('.navbar-top').fadeIn();
+    }
+
+    $('.overlay-content').empty();
+    $('#dismiss-overlay').removeClass('open');
+    $('body').removeClass('no-overflow');
+    $("#overlay-content").removeClass('w-100');
+    $("#um").removeClass('hide-on-sm');
+
+    $('.toggle-calendar').removeClass('right').addClass('left');
+    $('.toggle-calendar .calendar-view').addClass('active');
+    $('.toggle-calendar .calendar-hide').removeClass('active');
+
+    $('.overlay').attr('aria-hidden', 'true');
+
+}
+
+function getObjects(obj, key, val) {
+    var objects = [];
+    for (var i in obj) {
+        if (!obj.hasOwnProperty(i)) continue;
+        if (typeof obj[i] == 'object') {
+            objects = objects.concat(getObjects(obj[i], key, val));
+        } else if (i == key && obj[key] == val) {
+            objects.push(obj);
+        }
+    }
+    return objects;
+}
+
+function getObject(obj, key, val) {
+    var newObj = false;
+    $.each(obj, function() {
+        var testObject = this;
+        $.each(testObject, function(k,v) {
+            if(val == v && k == key) {
+                newObj = testObject;
+            }
+        })
+    })
+
+    return newObj;
+}
+
+function nl2br (str, replaceMode, isXhtml) {
+  var breakTag = (isXhtml) ? '<br />' : '<br>';
+  var replaceStr = (replaceMode) ? '$1'+ breakTag : '$1'+ breakTag +'$2';
+  return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, replaceStr);
+}
+
+function showNotify(type, title, message, icon, delay, placement) {
+    if (type == 'error') {
+        type = 'danger';
+    }
+
+    icon = icon || 'fas fa-exclamation-circle';
+    delay = delay === undefined ? 5000 : delay;
+    placement = placement || {
+        from: "top",
+        align: "center"
+    };
+
+    $.notify({
+        icon: icon,
+        title: title,
+        message: message
+    }, {
+        type: type,
+        delay: delay,
+        placement: placement,
+        z_index: 1051,
+        offset: 80,
+        template: `<div data-notify="container" class="col-sm-4 col-lg-3 alert alert-{0} alert-dismissible animated fadeInUp" role="alert">
+                        <button type="button" class="close btn-close" data-notify="dismiss" data-dismiss="alert" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true" class="dismiss-icon">&times;</span>
+                        </button>
+                        <span data-notify="icon"></span>
+                        <span data-notify="message">{2}</span>
+                    </div>`
+    })
+}
+
+function checkMicrosoftLink() {
+    var li = $('.components > li[data-country-codes]');
+
+    if (!li.length) return;
+
+    var countries = li.data('country-codes');
+
+    if (countries.includes(user_country.toLowerCase())) {
+        li.show();
+    }
+}
+
+/* ---------- OTP ---------- */
+(function($) {
+    $.fn.otp = function(action) {
+        var $wrapper = $(this);
+        const $inputs = $wrapper.find("input");
+
+        if (action === 'reset') {
+            reset();
+            return;
+        }
+
+        if (action === 'loading') {
+            loading();
+            return;
+        }
+
+        $inputs.each(function(index) {
+            const $input = $(this);
+            $input.val('');
+            $input.data('index', index);
+            $input.on('keyup', handleOtp);
+            $input.on('paste', handleOnPasteOtp);
+            $input.on('click', clearAndFocus);
+        });
+
+        $wrapper.slideDown(400, function() {
+            $inputs.eq(0).focus();
+        });
+
+        function loading() {
+            $('.otp-inputs', $wrapper).hide();
+            $('.otp-loading', $wrapper).show();
+        }
+
+        function reset() {
+            $('.otp-loading', $wrapper).hide();
+            $('.otp-inputs', $wrapper).show();
+        }
+
+        function clearAndFocus() {
+            $inputs.each(function() {
+                $(this).val('');
+            });
+            $inputs.eq(0).focus();
+        }
+
+        function handleOtp(e) {
+            /**
+             * <input type="text" maxlength="1" />
+             * NOTE: On mobile devices `maxlength` property isn't supported,
+             * So we to write our own logic to make it work.
+             */
+
+            const $input = $(this);
+            let currentValue = $input.val();
+            let isValidInput = e.key.match(/^[0-9]$/gi);
+
+            $input.val(isValidInput ? e.key : "");
+            let fieldIndex = $input.data('index');
+
+            if (fieldIndex < $inputs.length - 1 && isValidInput) {
+                $input.next().focus();
+            }
+            if (e.key === "Backspace" && fieldIndex > 0) {
+                $input.prev().focus();
+            }
+            if (fieldIndex === $inputs.length - 1 && isValidInput) {
+                handleOtpFilled();
+            }
+        }
+
+        function handleOnPasteOtp(e) {
+            const data = e.originalEvent.clipboardData.getData("text");
+            const value = data.split("");
+            if (value.length === $inputs.length) {
+                $inputs.each(function(index) {
+                    $(this).val(value[index]);
+                });
+                $inputs.eq($inputs.length - 1).focus();
+                handleOtpFilled();
+            }
+        }
+
+        function handleOtpFilled() {
+            var otp = '';
+            $inputs.each(function() {
+                const $input = $(this);
+                otp += $input.val();
+                $input.blur();
+            });
+
+            if (otp.length == $inputs.length) {
+                if ($wrapper.data('auto-submit')) {
+                    const $form = $wrapper.closest('form');
+
+                    if ($form.length) {
+                        loading();
+                        $form.submit();
+                    }
+                }
+
+                $wrapper.trigger('otp:submit', { otp: otp });
+            }
+        }
+    }
+})(jQuery); 
+
+initUserData();
+
+$(function () {
+
+    initActiveNavItem();
+
+    showPromoCalendarIfRequired();
+    toggleLoggedInControls();
+    checkMicrosoftLink();
+
+    if (getUrlParameter('arp-overlay')) {
+        showArpOverlay();
+    }
+
+    $('.timeago').timeago();
+
+    $('body').on('click', '[data-toggle="arp-overlay"], .toggle-arp-overlay', function (e) {
+        e.preventDefault();
+
+        if (user_is_logged_in) {
+            window.location = '/whatisarena';
+            return;
+        }
+
+        showArpOverlay();
+    });
+
+    $('body').on('click', '.toggle-calendar', function(e) {
+        e.preventDefault();
+
+        toggleDailyCalendar();
+    });
+
+    $('body').on('click', '.js-toggle-product-campaign', function(e) {
+        e.preventDefault();
+
+        toggleProductsCampaign();
+    });
+
+    $('body').on('click', '.nav-link-login, .giveaway-link-login', function (e) {
+        e.preventDefault();
+
+        $('.overlay').toggleClass('auth active');
+        $('body').addClass('no-overflow');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        $('.navbar-top').fadeOut(function () {
+            $('#dismiss-overlay').addClass('open');
+            $('.overlay.auth').mCustomScrollbar({ theme: 'minimal'});
+            
+            $.get('/login_form', function (r) {
+                $('.overlay-content').html(r.form);
+            });
+        });
+
+        $('.overlay').removeAttr('aria-hidden');
+    });
+
+    $('body').on('click', '#join-tab', function (e) {
+        e.preventDefault();
+
+        $.get('/account/register?contentOnly=1', function (r) {
+            $('.overlay-content').html(r);
+            $('.overlay').addClass('auth active');
+            $('.overlay.auth').mCustomScrollbar({ theme: 'minimal'});
+
+            $('.btn-register').on('click', function () {
+                $('.form-user-registration').submit();
+            });
+        });
+
+        $('.overlay').removeAttr('aria-hidden');
+    });
+
+    $('body').on('click', '.container-auth .btn-oauth', function (e) {
+        e.preventDefault();
+
+        let href = $(this).attr('href');
+        let rememberMe = $('#login-form input[name="_remember_me"]').is(':checked');
+
+        if (rememberMe) {
+            href = addQueryParams(href, { '_remember_me': rememberMe, 'state[_remember_me]': 'true' });
+        }
+
+        window.location.href = href;
+    });
+
+    
+    $(window).on("load resize",function(){
+        var winWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+
+        if (winWidth > 576) {
+            $("#sidebar, #um").mCustomScrollbar({
+                theme: "minimal"
+            });
+        } else {
+            $("#sidebar, #um").mCustomScrollbar("destroy");
+        }
+    });
+
+    $(document).on('keyup', function (e) {
+        if (e.key == 'Escape' || e.key == 'Esc') {
+            hideOverlay();
+        }
+    });
+
+    $('body').on('click', '.dismiss-menu, .overlay:not(.no-click, .arp)', function (e) {
+        dismissOverlay();
+    });
+
+    $('body').on('click', '.btn-search', function (e) {
+        e.preventDefault();
+
+        $(this).toggleClass('closed');
+
+        setTimeout(function () {
+            $('#searchCollapse').toggleClass('open');
+            $('.search-form').toggleClass('open');
+            $('.search-form input').focus();
+        }, 300);
+    });
+
+    $('body').on('click', '#searchCollapse', function (e) {
+        e.preventDefault();
+
+        $('#searchCollapse').toggleClass('open');
+        $('.search-form').toggleClass('open');
+
+        setTimeout(function () {
+            $('.btn-search').toggleClass('closed');
+        }, 300);
+    });
+
+    $('body').on('click', '#dismiss-overlay', function (e) {
+        e.preventDefault();
+
+        hideOverlay();
+    });
+
+    $('body').on('click', '.arp-wizard .nav-link', function (e) {
+        e.preventDefault();
+
+        $('.arp-wizard .nav-link').removeClass('active');
+        $(this).addClass('active');
+
+        $('#arp-wizard-carousel').carousel($(this).data('number'));
+    });
+
+    $('body').on('click', '.dropdown-toggler', function (e) {
+        e.preventDefault();
+
+        $(this).find('i').toggleClass('active');
+    });
+
+    $('body').on('click', '[data-url-link]:not(.tile-slider__card)', function (e) {
+        let link = $(this).data('urlLink');
+
+        if( ! link) {
+            return;
+        }
+
+        e.preventDefault();
+
+        window.location = link;
+    });
+
+    $('body').on('click', '.toggle-notifications', function (e) {
+        e.preventDefault();
+
+        var t = $(this);
+
+        if ($('[data-notification-count]').text() != '') {
+
+            $.post('/notifications/user-notifications-mark-all-seen', function () {
+                $('[data-notification-count]').text('');
+            });
+        }
+    });
+
+    $(document).scroll(function () {
+        var nav = $('.navbar-top');
+        nav.toggleClass('scrolled', $(this).scrollTop() > nav.height());
+    });
+
+    var bsButton = $.fn.button;
+
+    $.fn.button = function(option) {
+        // original behavior - use function.apply to preserve context
+        var ret = bsButton.apply(this, arguments);
+
+        var $this = $(this);
+
+        if (option == 'loading') {
+            var loadingText = $this.data('loadingText') || 'Loading...';
+            loadingText = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + loadingText;
+
+            if ($this.html() !== loadingText) {
+                $this.data('original-text', $(this).html());
+                $this.html(loadingText);
+            }
+        } else if (option == 'reset') {
+            $this.html($this.data('original-text'));
+        }
+
+        // preserve return value
+        return ret;
+    };
+});
+
+</script>
+
+    
+    
+    
+    
+    <script type="text/javascript">
+var weakPassword = false;
+var currentPath = window.location.pathname;
+var allowedPaths = ['/account/password', '/incomplete'];
+
+
+if (weakPassword && allowedPaths.indexOf(currentPath) < 0) {
+    window.location = '/account/password?w=1';
+}
+
+</script>
+
+        <link rel="stylesheet" href="/bundles/spoutlet/css/ckeditor5.css">
+<script type="text/javascript" src="/bundles/spoutlet/ckeditor5/ckeditor.js"></script>
+<script type="text/javascript" src="/bundles/spoutlet/ckeditor5/plugins/uploadadapter.js"></script>
+<script type="text/javascript" src="/bundles/spoutlet/ckeditor5/translations/de.js"></script>
+<script type="text/javascript" src="/bundles/spoutlet/ckeditor5/translations/fr.js"></script>
+
+<script type="text/javascript">
+    var ckeditors = [];
+
+    buildCkEditor = function(selector, config) {
+        ClassicEditor.create(document.querySelector(selector),
+            config
+        ).then(editor => {
+            if (editor.sourceElement) {
+                if ($.inArray(editor.sourceElement.id, ckeditors) === -1) {
+                    ckeditors[editor.sourceElement.id] = editor;
+                }
+            }
+            config.ckeditorVersion = 'ckeditor5';
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    };
+
+    focusCkEditor = function (selector) {
+        var editor = ckeditors[selector];
+        editor.editing.view.focus();
+    };
+
+    var tas = document.querySelectorAll('.ckeditor');
+
+    for (var i = tas.length - 1; i >= 0; i--) {
+        var sel = tas[i].id;
+        buildCkEditor('#'+sel, ckeditor_config);
+    }
+
+</script>
+
+                    
+    
+
+            
+        
+    <div class="modal fade modal-one-time-message" role="dialog" tabindex="-1" id="one-time-message-modal">
+    <div class="modal-dialog modal-dark" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+
+            <div class="modal-body">
+                <p></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        if (localStorage.getItem('one_time_message')) {
+            $('#one-time-message-modal .modal-body p').html(nl2br(localStorage.getItem('one_time_message')));
+            localStorage.removeItem('one_time_message');
+
+            if (localStorage.getItem('one_time_image')) {
+                $('#one-time-message-modal .modal-body p').prepend(`<img src="${nl2br(localStorage.getItem('one_time_image'))}" class="img-fluid mb-2" style="max-width: 100%;" />`);
+                localStorage.removeItem('one_time_image');
+            }
+
+            $('#one-time-message-modal').modal('show');
+        }
+    });
+</script>
+</body>
+</html>

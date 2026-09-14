@@ -9,6 +9,8 @@ export interface CookieStore {
      * @returns `string | null`，get 获取到的数据。
      */
 get(name: string): string | null;
+/** Remove a stale session cookie before reauthentication. */
+remove(name: string): CookieStore;
     /**
      * 处理 stringify 相关逻辑。
      * @returns `string`，stringify 获取或生成的文本内容。

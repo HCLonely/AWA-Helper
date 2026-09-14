@@ -18,7 +18,19 @@ export const getControlCenter = async (context: AWAContext): Promise<string> => 
   if (context.httpsAgent) {
     options.httpsAgent = context.httpsAgent;
   }
-  const response = await context.request(options);
+  let response = await context.request(options);
+
+  // A stale PHP session/sc pair can authenticate the account while losing its
+  // login record. Renew both together through REMEMBERME, once per fetch.
+  const html = String(response.data);
+  const rememberMe = context.cookie.get('REMEMBERME');
+  if (rememberMe && rememberMe !== 'deleted' &&
+    /\b(?:var|let|const)\s+login_id\s*=\s*null\s*;/.test(html) &&
+    /\bconsecutive_logins\s*=\s*\{\s*"count"\s*:\s*0\s*\}/.test(html)) {
+    context.cookie.remove('PHPSESSID').remove('sc');
+    context.headers.cookie = context.cookie.stringify();
+    response = await context.request(options);
+  }
 
   context.updateCookies(response.headers?.['set-cookie']);
   return String(response.data);

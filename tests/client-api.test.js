@@ -48,6 +48,56 @@ test('Twitch GraphQL API uses injected transport and platform-only endpoint', as
   assert.equal(request.headers['Client-Id'], 'client-id');
 });
 
+test('AWA control center renews an incomplete login session and keeps redirect cookies', async () => {
+  let calls = 0;
+  const stale = '<script>var login_id = null; var consecutive_logins = {"count":0};</script>';
+  const restored = '<script>var login_id = 42; var consecutive_logins = {"count":5};</script>';
+  const context = new AWAContext({
+    cookie: 'REMEMBERME=remember;PHPSESSID=stale;sc=stale;home_site=arena.example', host: 'arena.example',
+    transport: { request: async (config) => {
+      if (++calls === 1) {
+        return response(stale);
+      }
+      assert.equal(config.headers.cookie, 'REMEMBERME=remember;home_site=arena.example');
+      const redirect = { protocol: 'https:', hostname: 'arena.example', path: '/control-center', headers: { Cookie: 'stale' } };
+      config.beforeRedirect(redirect, { headers: { 'set-cookie': ['PHPSESSID=fresh; Path=/', 'sc=fresh; Path=/'] }, statusCode: 302 });
+      assert.equal(redirect.headers.Cookie, undefined);
+      assert.equal(redirect.headers.cookie, 'REMEMBERME=remember;home_site=arena.example;PHPSESSID=fresh;sc=fresh');
+      return response(restored);
+    } }
+  });
+  assert.equal(await getControlCenter(context), restored);
+  assert.equal(calls, 2);
+  assert.equal(context.cookie.get('PHPSESSID'), 'fresh');
+  assert.equal(context.cookie.get('sc'), 'fresh');
+});
+
+test('AWA control center recovery is bounded and requires a missing login record plus REMEMBERME', async () => {
+  for (const [cookie, html, expected] of [
+    ['REMEMBERME=remember', 'var login_id = null; var consecutive_logins = {"count":0};', 2],
+    ['PHPSESSID=session', 'var login_id = null; var consecutive_logins = {"count":0};', 1],
+    ['REMEMBERME=deleted', 'var login_id = null; var consecutive_logins = {"count":0};', 1],
+    ['REMEMBERME=remember', 'var login_id = 42; var consecutive_logins = {"count":0};', 1],
+    ['REMEMBERME=remember', 'var login_id = null; var consecutive_logins = {"count":5};', 1]
+  ]) {
+    let calls = 0;
+    const context = new AWAContext({ cookie, transport: { request: async () => { calls++; return response(html); } } });
+    assert.equal(await getControlCenter(context), html);
+    assert.equal(calls, expected);
+  }
+});
+
+test('AWA rejects untrusted redirects before updating or forwarding session cookies', async () => {
+  const context = new AWAContext({ cookie: 'PHPSESSID=original', transport: { request: async (config) => {
+    const redirect = { protocol: 'https:', hostname: 'attacker.example', path: '/', headers: {} };
+    assert.throws(() => config.beforeRedirect(redirect, { headers: { 'set-cookie': ['PHPSESSID=malicious'] }, statusCode: 302 }), /untrusted/);
+    assert.deepEqual(redirect.headers, {});
+    return response('ok');
+  } } });
+  await context.request({ url: '/control-center' });
+  assert.equal(context.cookie.get('PHPSESSID'), 'original');
+});
+
 test('ASF command API uses injected transport and validates the IPC envelope', async () => {
   let request;
   const transport = { request: async (config) => {

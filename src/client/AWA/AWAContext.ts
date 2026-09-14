@@ -97,8 +97,17 @@ export class AWAContext {
       ...options,
       url: target.href,
       baseURL: undefined,
-      beforeRedirect: (redirectOptions) => {
+      beforeRedirect: (redirectOptions, responseDetails) => {
         this.assertTrustedURL(`${redirectOptions.protocol}//${redirectOptions.hostname}${redirectOptions.port ? `:${redirectOptions.port}` : ''}${redirectOptions.path || '/'}`);
+        // Authentication cookies may be issued on a 302, before the final HTML response.
+        const setCookie = responseDetails?.headers['set-cookie'];
+        this.updateCookies(typeof setCookie === 'string' ? [setCookie] : setCookie);
+        for (const name of Object.keys(redirectOptions.headers)) {
+          if (name.toLowerCase() === 'cookie') {
+            delete redirectOptions.headers[name];
+          }
+        }
+        redirectOptions.headers.cookie = this.cookie.stringify();
       },
       headers: { ...this.headers, ...options.headers, cookie: this.cookie.stringify() }
     };
