@@ -26,6 +26,8 @@ features:
 
 首次使用请先阅读[快速开始](/guide/getting-started)，选择适合的安装方式并完成账号关联。随后参考[配置文件](/reference/configuration)设置 Cookie、任务类型和定时计划。
 
+通过 [WebUI 与日志](/guide/webui)了解可视化设置、配置生效时机和分页日志预览。
+
 ::: warning 使用提醒
 后台运行 Steam 游戏可能带来游戏反作弊风险。游玩《使命召唤》等带反作弊系统的游戏时，请先停止 AWA-Helper。
 :::

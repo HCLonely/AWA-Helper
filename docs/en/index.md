@@ -26,6 +26,8 @@ features:
 
 If this is your first time using AWA-Helper, read the [Getting Started](/en/guide/getting-started) guide to choose an installation method and link your accounts. Then use the [Configuration Reference](/en/reference/configuration) to configure cookies, task types, and schedules.
 
+Read [WebUI and Logs](/en/guide/webui) for visual settings, when configuration changes take effect, and paginated log previews.
+
 ::: warning Steam safety
 Running Steam games in the background may carry an anti-cheat risk. Stop AWA-Helper before playing games with anti-cheat systems, such as Call of Duty.
 :::

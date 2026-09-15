@@ -35,7 +35,8 @@ export default defineConfig({
             text: '使用指南',
             items: [
               { text: '快速开始', link: '/guide/getting-started' },
-              { text: '运行方式', link: '/guide/running' }
+              { text: '运行方式', link: '/guide/running' },
+              { text: 'WebUI 与日志', link: '/guide/webui' }
             ]
           },
           {
@@ -71,7 +72,8 @@ export default defineConfig({
             text: 'Guide',
             items: [
               { text: 'Getting Started', link: '/en/guide/getting-started' },
-              { text: 'Running AWA-Helper', link: '/en/guide/running' }
+              { text: 'Running AWA-Helper', link: '/en/guide/running' },
+              { text: 'WebUI and Logs', link: '/en/guide/webui' }
             ]
           },
           {
