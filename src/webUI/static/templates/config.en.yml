@@ -3,7 +3,7 @@
   type: yml
   filename: config.yml
   quote: AWA-Helper config generator v__VERSION__
-  author: HCLonely
+  author: by HCLonely
   body:
     language:
       name: Display language

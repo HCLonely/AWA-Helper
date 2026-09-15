@@ -23,6 +23,10 @@
     "src/webUI/static/js/pages/achievement.ts",
     "src/webUI/static/js/pages/dailyQuest.ts",
     "src/webUI/static/js/pages/index.ts",
+    "src/webUI/static/js/pages/settings-i18n.ts",
+    "src/webUI/static/js/pages/settings-model.ts",
+    "src/webUI/static/js/pages/settings-view.ts",
+    "src/webUI/static/js/pages/settings-api.ts",
     "src/webUI/static/js/pages/settings.ts"
   ]
 }

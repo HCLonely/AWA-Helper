@@ -2,7 +2,7 @@
   type: yml
   filename: config.yml
   quote: AWA-Helper配置文件生成器 v__VERSION__
-  author: HCLonely
+  author: by HCLonely
   body:
     language:
       name: 显示语言

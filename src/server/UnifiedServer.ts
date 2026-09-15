@@ -185,7 +185,7 @@ class UnifiedServer {
     app.get('/', (_, res) => res.send(render(managerHtml)));
     app.get('/daily-quest', (_, res) => res.send(render(dailyQuestHtml)));
     app.get('/achievement', (_, res) => res.send(render(achievementHtml)));
-    app.get('/settings', (_, res) => res.send(settingsHtml));
+    app.get('/settings', (_, res) => res.send(render(settingsHtml)));
     app.get('/js/template.yml', (_, res) => res.type('text/yaml').send(raw.language === 'en' ? templateYmlEN : templateYml));
     app.get('/api/health/live', (_, res) => res.json({ status: 'live', version: this.version }));
     app.get('/api/version/latest', async (_, res) => {

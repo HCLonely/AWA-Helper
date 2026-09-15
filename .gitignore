@@ -58,6 +58,7 @@ DailyQuestO.ts
 
 test
 logs/*
+tests/
 
 *05.md
 *06.md
