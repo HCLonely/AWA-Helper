@@ -7,3 +7,5 @@ export * from './LogContext';
 export * from './OperationLog';
 export * from './retention';
 export * from './sanitize';
+
+export { flushLogs, writeFileLog } from './LogWriter';

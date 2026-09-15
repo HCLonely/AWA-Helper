@@ -5,15 +5,32 @@
   const listeners = new WeakMap<EventTarget, Map<string, Listener[]>>();
   const storedData = new WeakMap<Element, Map<string, unknown>>();
 
-  const boundLogArea = (element: Element): void => {
+  const logAreas = new WeakMap<Element, { sizes: Map<Element, number>; size: number }>();
+  const boundLogArea = (element: Element, changed?: Element[]): void => {
     const area = element.closest('#log-area');
     if (!area) {
       return;
     }
-    let size = Array.from(area.children).reduce((total, child) => total + child.innerHTML.length, 0);
-    while (area.firstElementChild && (area.childElementCount > 1000 || size > 256 * 1024)) {
-      size -= area.firstElementChild.innerHTML.length;
-      area.firstElementChild.remove();
+    let state = logAreas.get(area);
+    if (!state || (element === area && !changed)) {
+      state = { sizes: new Map(), size: 0 };
+      logAreas.set(area, state);
+      changed = Array.from(area.children);
+    }
+    const children = changed ?? [element.closest('#log-area > *') ?? element];
+    for (const child of children) {
+      if (child.parentElement !== area) {
+        continue;
+      }
+      const size = child.innerHTML.length;
+      state.size += size - (state.sizes.get(child) ?? 0);
+      state.sizes.set(child, size);
+    }
+    while (area.firstElementChild && (area.childElementCount > 1000 || state.size > 256 * 1024)) {
+      const child = area.firstElementChild;
+      state.size -= state.sizes.get(child) ?? 0;
+      state.sizes.delete(child);
+      child.remove();
     }
   };
 
@@ -145,13 +162,23 @@
     }
     append(content: string | Element | NativeDom): this {
       return this.each((parentIndex, element) => {
+        const previous = element.lastElementChild;
         if (typeof content === 'string') {
           element.insertAdjacentHTML('beforeend', content);
         } else {
           const nodes = content instanceof NativeDom ? content.elements : [content];
-          nodes.forEach((node) => element.append(parentIndex === 0 ? node : node.cloneNode(true)));
+          element.append(...nodes.map((node) => (parentIndex === 0 ? node : node.cloneNode(true))));
         }
-        boundLogArea(element);
+        if (element.id === 'log-area') {
+          const added: Element[] = [];
+          let child = previous ? previous.nextElementSibling : element.firstElementChild;
+          while (child) {
+            added.push(child); child = child.nextElementSibling;
+          }
+          boundLogArea(element, added);
+        } else {
+          boundLogArea(element);
+        }
       });
     }
     empty(): this {

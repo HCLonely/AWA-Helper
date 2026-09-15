@@ -50,6 +50,12 @@
         try changing this!
       type: boolean
       defaultValue: true
+    logsMaxMB:
+      name: Log storage budget
+      desp: "MiB, default 512; 0 disables the budget. Current-day and active files are retained."
+      type: text
+      inputType: number
+      defaultValue: 512
     logsExpire:
       name: Log retention time
       desp: 'Log retention time, unit: days. The default is 30 days, 0 means no limit.'

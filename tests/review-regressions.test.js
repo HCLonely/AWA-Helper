@@ -16,7 +16,7 @@ const { runWithRequestSignal } = require('../dist/tools/http/RequestContext');
 const { http, retryDelayMs } = require('../dist/tools/http/client');
 const { sendWebUiMessage, MAX_WS_BUFFER } = require('../dist/tools/logging/WebSocketLimits');
 const { cleanupCompletedUpdates } = require('../dist/tools/update/retention');
-const { Logger, getLogFilePath } = require('../dist/tools/logging');
+const { flushLogs, Logger, getLogFilePath } = require('../dist/tools/logging');
 const { cleanupExpiredLogs } = require('../dist/tools/logging/retention');
 const { AchievementService } = require('../dist/core/Achievement/AchievementService');
 const { ArtifactService } = require('../dist/core/Artifact/ArtifactService');
@@ -150,7 +150,7 @@ test('HTTP retry respects zero and cancellation during Retry-After', async () =>
   let attempts = 0;
   const adapter = async (config) => {
     attempts++;
-    throw new axios.AxiosError('busy', 'ERR_BAD_RESPONSE', config, {}, { status: 503, headers: { 'retry-after': '999999' }, config });
+    throw new axios.AxiosError('busy', 'ERR_BAD_RESPONSE', config, {}, { status: 503, headers: { 'retry-after': '10' }, config });
   };
   await assert.rejects(http.get('https://synthetic.test', { adapter, retryTimes: 0 }));
   assert.equal(attempts, 1);
@@ -162,10 +162,10 @@ test('HTTP retry respects zero and cancellation during Retry-After', async () =>
   assert.equal(attempts, 2);
 });
 
-test('Retry-After supports dates and has a finite thirty-second ceiling', () => {
+test('Retry-After supports dates without shortening the server delay', () => {
   const now = Date.UTC(2026, 8, 6);
   assert.equal(retryDelayMs(new Date(now + 5000).toUTCString(), 100, now), 5000);
-  assert.equal(retryDelayMs('999999999999', 100, now), 30000);
+  assert.equal(retryDelayMs('999999999999', 100, now), 999999999999000);
   assert.equal(retryDelayMs('invalid', 100, now), 100);
   assert.equal(retryDelayMs(new Date(now - 5000).toUTCString(), 100, now), 0);
 });
@@ -181,7 +181,7 @@ test('slow WebSocket clients are terminated before adding to an oversized output
   assert.equal(globalThis.wsClients.has(client), false);
 });
 
-test('log cache bytes, repeated entries and rotated files stay bounded', (t) => {
+test('log cache bytes, repeated entries and rotated files stay bounded', async (t) => {
   const cwd = process.cwd();
   const webUI = globalThis.webUI;
   t.after(() => { process.chdir(cwd); globalThis.webUI = webUI; });
@@ -193,11 +193,13 @@ test('log cache bytes, repeated entries and rotated files stay bounded', (t) => 
   for (let index = 0; index < 400; index++) new Logger('x'.repeat(4096));
   assert.deepEqual(globalThis.logs['manager:questInfo'].data, { state: 'latest' });
   assert.ok(Buffer.byteLength(JSON.stringify(globalThis.logs)) < 550 * 1024);
+  await flushLogs();
   const filename = getLogFilePath('manager');
   const fd = fs.openSync(filename, 'w');
   fs.ftruncateSync(fd, 10 * 1024 * 1024);
   fs.closeSync(fd);
   new Logger('after rotation');
+  await flushLogs();
   assert.ok(fs.statSync(filename).size < 100);
   assert.equal(fs.statSync(filename.replace('.txt', '.1.txt')).size, 10 * 1024 * 1024);
   assert.equal(cleanupExpiredLogs('logs', 1, new Date(2099, 0, 1)), 2);

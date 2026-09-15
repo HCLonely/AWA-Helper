@@ -60,6 +60,7 @@ const createHarness = () => {
     lang: 'en',
     localStorage: storage,
     sessionStorage: storage,
+    document: { addEventListener() {} },
     TextEncoder,
     window
   };

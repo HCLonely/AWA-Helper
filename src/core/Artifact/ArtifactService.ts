@@ -3,10 +3,9 @@
  * @description 读取当前 AWA 遗物配置，并按指定槽位完成遗物替换操作。
  */
 /* global __ */
-import * as fs from 'fs';
 import chalk from 'chalk';
 import { load } from 'cheerio';
-import { parse } from 'yaml';
+import { getRunConfiguration } from '../../tools/config/RunConfiguration';
 import { AWAApiClient } from '../../client/AWA/AWAApiClient';
 import { AWAError } from '../../client/AWA/AWAError';
 import { getControlCenter, refreshSession } from '../../client/AWA/APIs';
@@ -27,7 +26,7 @@ class ArtifactService {
   constructor(configPath: string) {
     const { awaCookie, awaHost, proxy, UA, debug }: {
       awaCookie?: string; awaHost?: string; proxy?: proxy; UA?: string; debug?: { http?: boolean }
-    } = parse(fs.readFileSync(configPath, 'utf8'));
+    } = getRunConfiguration(configPath).raw;
     this.initialCookie = awaCookie || '';
     if (!awaCookie) {
       new Logger(time() + chalk.yellow(__('missingAwaCookie')));

@@ -54,3 +54,5 @@ interface NativeDom {
 declare const I18n: Record<string, Record<string, string> | undefined>;
 declare const lang: string;
 declare function __(text: string, ...values: string[]): string;
+
+declare function openLogPreview(scope: string, secret: string): void;

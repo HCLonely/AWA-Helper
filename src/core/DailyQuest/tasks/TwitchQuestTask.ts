@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import axios from 'axios';
 import { AWAError } from '../../../client/AWA/AWAError';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
+import type { TwitchChannelTrackingInfo } from '../../../client/Twitch/types';
 import { TwitchClient } from '../../../client/Twitch/TwitchClient';
 import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 import { Logger, sleep, time } from '../../../tools';
@@ -50,6 +51,8 @@ export class TwitchQuestTask {
     let retriedAuthorization = false;
     let dailyCapReached = false;
     let heartbeatErrors = 0;
+    let trackingInfo: TwitchChannelTrackingInfo | undefined;
+    let trackingExpires = 0;
     while (!signal?.aborted && !this.isComplete()) {
       if (dailyCapReached) {
         if (!await sleep(this.controlCenterPollSeconds, signal)) {
@@ -57,37 +60,40 @@ export class TwitchQuestTask {
         }
         continue;
       }
-      const streamLogger = new Logger(`${time()}${__('gettingLiveInfo')}`, false);
-      const streams = await this.awa.twitch.getAvailableStreams().catch((error: unknown) => {
-        streamLogger.log(chalk.red(__('logStatusError')));
-        new Logger(error);
-        return null;
-      });
-      if (!streams) {
-        if (!await this.waitForAvailableStreams(signal)) {
-          return true;
+      if (!trackingInfo || Date.now() >= trackingExpires) {
+        const streamLogger = new Logger(`${time()}${__('gettingLiveInfo')}`, false);
+        const streams = await this.awa.twitch.getAvailableStreams().catch((error: unknown) => {
+          streamLogger.log(chalk.red(__('logStatusError')));
+          new Logger(error);
+          return null;
+        });
+        if (!streams) {
+          if (!await this.waitForAvailableStreams(signal)) {
+            return true;
+          }
+          continue;
         }
-        continue;
-      }
-      const streamCount = streams.Hive.length + streams.Nexus.length;
-      streamLogger.log(streamCount > 0 ? chalk.green(`OK (${streamCount})`) : chalk.blue(__('noLive')));
-      if (streamCount === 0) {
-        if (!await this.waitForAvailableStreams(signal)) {
-          return true;
+        const streamCount = streams.Hive.length + streams.Nexus.length;
+        streamLogger.log(streamCount > 0 ? chalk.green(`OK (${streamCount})`) : chalk.blue(__('noLive')));
+        if (streamCount === 0) {
+          if (!await this.waitForAvailableStreams(signal)) {
+            return true;
+          }
+          continue;
         }
-        continue;
-      }
-      const channelLogger = new Logger(`${time()}${__('gettingChannelInfo')}`, false);
-      const trackingLookup = await this.twitch.channels.findTracking([...streams.Hive, ...streams.Nexus]);
-      if (!trackingLookup.found) {
-        channelLogger.log(chalk.blue(__('noLive')));
-        if (!await this.waitForAvailableStreams(signal)) {
-          return true;
+        const channelLogger = new Logger(`${time()}${__('gettingChannelInfo')}`, false);
+        const trackingLookup = await this.twitch.channels.findTracking([...streams.Hive, ...streams.Nexus]);
+        if (!trackingLookup.found) {
+          channelLogger.log(chalk.blue(__('noLive')));
+          if (!await this.waitForAvailableStreams(signal)) {
+            return true;
+          }
+          continue;
         }
-        continue;
+        trackingInfo = trackingLookup.value;
+        trackingExpires = trackingExpiry(trackingInfo.jwt);
+        channelLogger.log(chalk.green(`${__('logStatusOk')} (${trackingInfo.streamerName || trackingInfo.channelId})`));
       }
-      const trackingInfo = trackingLookup.value;
-      channelLogger.log(chalk.green(`${__('logStatusOk')} (${trackingInfo.streamerName || trackingInfo.channelId})`));
       const logger = new Logger(`${time()}${__('sendingOnlineTrack', chalk.yellow('Twitch'))}`, false);
       try {
         const result = await this.awa.twitch.sendTrack(trackingInfo);
@@ -100,6 +106,7 @@ export class TwitchQuestTask {
         }
         if (result.state === 'streamer_offline' || result.state === 'no_channel_found') {
           new Logger(`${time()}${chalk.blue(result.state === 'streamer_offline' ? __('liveOffline', chalk.yellow(trackingInfo.channelId)) : __('noChannelFound', chalk.yellow(trackingInfo.channelId)))}`);
+          trackingInfo = undefined;
           if (!await sleep(60, signal)) {
             return true;
           }
@@ -135,6 +142,7 @@ export class TwitchQuestTask {
         } else if (status === 403 && !retriedAuthorization) {
           new Logger(`${time()}${chalk.yellow(__('twitchAuthorizationExpiredRetrying'))}`);
           retriedAuthorization = true;
+          trackingInfo = undefined;
           if (!await this.initializeTwitch()) {
             return false;
           }
@@ -176,3 +184,14 @@ export class TwitchQuestTask {
     }
   }
 }
+
+/** Refresh within five minutes, or earlier than JWT expiry; unknown tokens use one minute. */
+export const trackingExpiry = (jwt: string, now = Date.now()): number => {
+  try {
+    const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8')) as { exp?: number };
+    if (typeof payload.exp === 'number' && Number.isFinite(payload.exp)) {
+      return Math.max(now, Math.min(now + (5 * 60 * 1000), (payload.exp * 1000) - 30000));
+    }
+  } catch (_error) { /* Opaque tokens are deliberately short-lived in the local cache. */ }
+  return now + 60000;
+};

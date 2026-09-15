@@ -1,3 +1,5 @@
+import { readLogPage } from '../tools/logging/LogPage';
+import { startLogReplay } from '../tools/logging/WebSocketReplay';
 /**
  * @file src/server/UnifiedServer.ts
  * @description 在同一端口托管 WebUI、管理 API、日志接口和带身份验证的 WebSocket。
@@ -21,7 +23,7 @@ import type { JobCoordinator } from '../core/Manager/JobCoordinator';
 import { decodeManagerWebSocketSecret } from './websocket/authenticate';
 import { getManagerListenHost } from './network';
 import { getLogFilePath, isLogScope, Logger } from '../tools/logging';
-import { MAX_WS_CLIENTS, sendWebUiMessage } from '../tools/logging/WebSocketLimits';
+import { MAX_WS_CLIENTS, sendWebUiMessage, subscribeWebUiScope } from '../tools/logging/WebSocketLimits';
 import { time } from '../tools/common';
 import { getReleaseCheck, scheduleUpdate, UpdateInstallerError } from '../tools/update';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -310,8 +312,41 @@ class UnifiedServer {
         return res.status(404).json({ error: 'Unknown log scope' });
       }
       const filename = getLogFilePath(candidate);
-      return res.type('text/plain').send(fs.existsSync(filename) ? fs.readFileSync(filename, 'utf8') : '');
+      const stream = fs.createReadStream(filename);
+      res.type('text/plain');
+      stream.once('error', (error: NodeJS.ErrnoException) => {
+        if (!res.headersSent) {
+          res.status(error.code === 'ENOENT' ? 200 : 500).end();
+        } else {
+          res.destroy();
+        }
+      });
+      res.once('close', () => stream.destroy());
+      stream.once('open', () => {
+        if (res.destroyed) {
+          stream.destroy(); return;
+        }
+        stream.pipe(res);
+      });
+      return res;
     };
+    app.get('/api/logs/:job/page', async (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      if (!isLogScope(req.params.job)) {
+        res.status(400).json({ error: 'Invalid log scope' }); return;
+      }
+      const { cursor } = req.query;
+      if (cursor !== undefined && typeof cursor !== 'string') {
+        res.status(400).json({ error: 'Invalid log cursor' }); return;
+      }
+      try {
+        res.json(await readLogPage(getLogFilePath(req.params.job), cursor));
+      } catch (error) {
+        res.status(error instanceof Error && error.message === 'Invalid log cursor' ? 400 : 500).json({ error: 'Unable to read log page' });
+      }
+    });
     app.get('/api/logs', (req, res) => sendLogs(req, res));
     app.get('/api/logs/:job', (req, res) => sendLogs(req, res));
     app.post('/api/manager/shutdown', (req, res) => {
@@ -338,9 +373,23 @@ class UnifiedServer {
         ws.terminate();
         return;
       }
+      const scope = new URL(req.url, 'http://localhost').searchParams.get('scope');
+      if (scope && !isLogScope(scope)) {
+        ws.close(1008, 'Invalid log scope');
+        ws.terminate();
+        return;
+      }
+      if (isLogScope(scope)) {
+        subscribeWebUiScope(ws, scope);
+      }
       this.clients.add(ws);
       globalThis.wsClients.add(ws);
-      sendWebUiMessage(ws, JSON.stringify(globalThis.logs));
+      const replay = scope ? Object.fromEntries(Object.entries(globalThis.logs).filter(([key, value]) => key === 'type' || (typeof value === 'object' && value.scope === scope))) : globalThis.logs;
+      if (new URL(req.url, 'http://localhost').searchParams.get('replay') === 'chunks') {
+        startLogReplay(ws, Object.values(replay).filter((value): value is webLogEntry => typeof value === 'object'));
+      } else {
+        sendWebUiMessage(ws, JSON.stringify(replay));
+      }
       const remove = (): void => {
         this.clients.delete(ws);
         this.awaitingPong.delete(ws);

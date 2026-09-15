@@ -1,3 +1,5 @@
+import { successfulOutcome, type TaskOutcome } from '../TaskOutcome';
+import { safeErrorMessage } from '../../tools/logging/sanitize';
 /**
  * @file src/core/Manager/JobCoordinator.ts
  * @description 注册并协调作业的启动、去重、取消、等待和状态同步。
@@ -70,13 +72,14 @@ class JobCoordinator {
       return runWithRequestSignal(controller.signal, () => job.run(controller.signal, payload));
     }))
       .then((success) => {
+        const outcome: TaskOutcome = typeof success === 'boolean' ? { status: success ? 'completed' : 'failed' } : success;
         const result: JobResult = {
-          success: success === true && !controller.signal.aborted,
-          message: controller.signal.aborted ? __('jobCancelledMessage') : undefined,
+          success: successfulOutcome(outcome) && !controller.signal.aborted,
+          message: controller.signal.aborted ? __('jobCancelledMessage') : outcome.message,
           startedAt,
           finishedAt: new Date().toISOString()
         };
-        let status: 'cancelled' | 'completed' | 'failed' = result.success ? 'completed' : 'failed';
+        let { status } = outcome;
         if (controller.signal.aborted) {
           status = 'cancelled';
         }
@@ -89,7 +92,7 @@ class JobCoordinator {
       .catch((error: unknown) => {
         const result: JobResult = {
           success: false,
-          message: error instanceof Error ? error.message : String(error),
+          message: safeErrorMessage(error),
           startedAt,
           finishedAt: new Date().toISOString()
         };

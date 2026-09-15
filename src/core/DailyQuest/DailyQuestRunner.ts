@@ -1,3 +1,5 @@
+import type { TaskOutcome } from '../TaskOutcome';
+import { logWriter } from '../../tools/logging/LogWriter';
 /**
  * @file src/core/DailyQuest/DailyQuestRunner.ts
  * @description 创建每日任务运行环境，依次执行配置加载、任务处理、报告推送和资源清理。
@@ -18,11 +20,10 @@ import * as fs from 'fs';
 import { sleep, configureWebUiColors, Logger, time, checkUpdate, push, pushQuestInfoFormat } from '../../tools';
 import chalk from 'chalk';
 import * as i18n from 'i18n';
-import { loadConfig } from '../../tools/config';
-import { createCookieCommit } from '../../tools/config/YamlConfig';
+import { hasRunConfiguration, getRunConfiguration as loadConfig, createSessionCommit as createCookieCommit } from '../../tools/config/RunConfiguration';
 import { runWithRequestSignal } from '../../tools/http/RequestContext';
 import { setLogSecrets } from '../../tools/logging/sanitize';
-import { cleanupExpiredLogs } from '../../tools/logging/retention';
+import { maintainLogs } from '../../tools/logging/retention';
 import { DEFAULT_AWA_HOST, DEFAULT_USER_AGENT } from '../../client/shared';
 
 // @ts-ignore 在构建期间由 YAML 生成。
@@ -32,6 +33,7 @@ import * as en from '../../locales/en.json';
 
 interface DailyQuestRunnerOptions {
   signal?: AbortSignal
+  onOutcome?: (outcome: TaskOutcome) => void
 }
 
 type TerminalOutcome = 'timeout' | 'failed' | 'completed';
@@ -41,8 +43,11 @@ type TerminalOutcome = 'timeout' | 'failed' | 'completed';
  * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRunnerOptions`。
  * @returns `Promise<boolean>`，明确表示每日任务是否成功完成。
  */
-const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<boolean> => {
-  globalThis.log = true;
+const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}): Promise<boolean> => {
+  const managed = hasRunConfiguration();
+  if (!managed) {
+    globalThis.log = true;
+  }
   const shutdownController = new AbortController();
   /**
    * 处理 abort From Manager 相关逻辑。
@@ -83,6 +88,7 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   const runtimeHolder: { current?: DailyQuestRuntime } = {};
   let commitCookie: ((cookie: string) => boolean) | undefined;
   let awaInitialized = false;
+  let partialOutcome = false;
   /**
    * 处理 current Push Info 相关逻辑。
    * @returns `{ report: QuestReport; dailyArp: string; signArp: { daily?: string; monthly?: string; }; } | undefined`，当前可推送的任务报告与积分信息；尚未生成报告时返回 `undefined`。
@@ -94,15 +100,17 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
   return runWithRequestSignal(shutdownController.signal, async () => {
     try {
     // 国际化
-      i18n.configure({
-        locales: ['zh', 'en'],
-        staticCatalog: {
-          zh,
-          en
-        },
-        defaultLocale: 'zh',
-        register: globalThis
-      });
+      if (!managed) {
+        i18n.configure({
+          locales: ['zh', 'en'],
+          staticCatalog: {
+            zh,
+            en
+          },
+          defaultLocale: 'zh',
+          register: globalThis
+        });
+      }
       // Manager 统一管理项目级启动信息和共享服务器的生命周期。
       const { version } = globalThis;
 
@@ -142,27 +150,31 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
         TLSRejectUnauthorized,
         UA
       }: config = config;
-      if (TLSRejectUnauthorized === false) {
+      if (!managed && TLSRejectUnauthorized === false) {
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
       }
-      globalThis.webUI = !!webUI?.enable;
-      configureWebUiColors(globalThis.webUI);
-      globalThis.language = language || 'zh';
-      globalThis.pusher = pusher;
+      if (!managed) {
+        globalThis.webUI = !!webUI?.enable;
+        configureWebUiColors(globalThis.webUI);
+        globalThis.language = language || 'zh';
+        globalThis.pusher = pusher;
+      }
       const resolvedAwaHost = awaHost || DEFAULT_AWA_HOST;
       const userAgent = UA || DEFAULT_USER_AGENT;
-      i18n.setLocale(language);
+      if (!managed) {
+        i18n.setLocale(language);
+      }
 
       // 清理日志
-      if (fs.existsSync('logs')) {
+      if (!managed && fs.existsSync('logs')) {
         if (logsExpire) {
           const logger = new Logger(`${time()}${__('clearingLogs')}`, false);
-          cleanupExpiredLogs('logs', logsExpire);
+          await maintainLogs('logs', logsExpire, 0, (file) => logWriter.isActive(file));
           logger.log(chalk.green(__('logStatusOk')));
         }
       }
       // 设置推送代理
-      if (pusher?.enable && proxy?.enable?.includes('pusher')) {
+      if (!managed && pusher?.enable && proxy?.enable?.includes('pusher')) {
         globalThis.pusherProxy = proxy;
       }
 
@@ -383,7 +395,10 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
         return false;
       }
       if (awaQuests.includes('battlePass')) {
-        if (!await BattlePassTask.run(runtime, shutdownController.signal)) {
+        const outcome = await BattlePassTask.runDetailed(runtime, shutdownController.signal);
+        partialOutcome ||= outcome.status === 'partial';
+        onOutcome?.(outcome);
+        if (outcome.status === 'failed') {
           failedSequentialTasks.push('Battle Pass');
         }
         if (shutdownController.signal.aborted) {
@@ -410,8 +425,8 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       if (!claimTerminalOutcome('completed')) {
         return false;
       }
-      new Logger(time() + chalk.green(__('allTaskCompleted')));
-      await push(`${__('pushTitle')}:\n${__('allTaskCompleted')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
+      new Logger(time() + chalk.green(__(partialOutcome ? 'taskPartiallyCompleted' : 'allTaskCompleted')));
+      await push(`${__('pushTitle')}:\n${__(partialOutcome ? 'taskPartiallyCompleted' : 'allTaskCompleted')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`);
       shutdownController.abort(new Error('DailyQuest completed'));
       return true;
     } finally {
@@ -426,6 +441,22 @@ const runDailyQuest = async ({ signal }: DailyQuestRunnerOptions = {}): Promise<
       }
     }
   });
+};
+
+export const runDailyQuestOutcome = async (signal?: AbortSignal): Promise<TaskOutcome> => {
+  let partial: TaskOutcome | undefined;
+  const ok = await runDailyQuest({ signal, onOutcome: (outcome) => {
+    if (outcome.status === 'partial') {
+      partial = outcome;
+    }
+  } });
+  if (signal?.aborted) {
+    return { status: 'cancelled' };
+  }
+  if (!ok) {
+    return { status: 'failed' };
+  }
+  return partial ?? { status: 'completed' };
 };
 
 export { runDailyQuest, DailyQuestRunnerOptions };

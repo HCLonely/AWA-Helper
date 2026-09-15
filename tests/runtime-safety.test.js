@@ -9,7 +9,7 @@ const { cleanupExpiredLogs } = require('../dist/tools/logging/retention');
 const { formatLogValue, setLogSecrets } = require('../dist/tools/logging/sanitize');
 const { requestHealthEndpoint } = require('../dist/tools/process/healthcheck');
 const chalk = require('chalk');
-const { configureWebUiColors, Logger, sleep } = require('../dist/tools');
+const { flushLogs, configureWebUiColors, Logger, sleep } = require('../dist/tools');
 const { decodeManagerWebSocketSecret } = require('../dist/server/websocket/authenticate');
 
 test('log formatting removes configured secrets and Axios request headers', () => {
@@ -39,7 +39,8 @@ test('WebUI logs preserve object details instead of coercing them to object Obje
   const originalWebUI = globalThis.webUI;
   const originalLog = globalThis.log;
   const messages = [];
-  t.after(() => {
+  t.after(async () => {
+    await flushLogs();
     process.chdir(originalDirectory);
     globalThis.webUI = originalWebUI;
     globalThis.log = originalLog;
@@ -72,7 +73,8 @@ test('WebUI logs preserve Chalk colors when stdout has no color support', (t) =>
   const originalLog = globalThis.log;
   const originalColorLevel = chalk.level;
   const messages = [];
-  t.after(() => {
+  t.after(async () => {
+    await flushLogs();
     process.chdir(originalDirectory);
     globalThis.webUI = originalWebUI;
     globalThis.log = originalLog;

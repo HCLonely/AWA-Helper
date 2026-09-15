@@ -3,7 +3,6 @@
  * @description 维护单次每日任务运行状态，并协调 AWA 页面访问、任务刷新和论坛操作。
  */
 /* global __ */
-import * as fs from 'fs';
 import { load } from 'cheerio';
 import chalk from 'chalk';
 import { AWAApiClient } from '../../client/AWA/AWAApiClient';
@@ -16,7 +15,7 @@ import { Logger, random, sleep, time } from '../../tools';
 import { DailyQuestState } from './DailyQuestState';
 import { formatQuestReport } from './QuestReporter';
 import { AWAError } from '../../client/AWA/AWAError';
-import { getLogFilePath } from '../../tools/logging';
+import { writeFileLog } from '../../tools/logging';
 
 export interface DailyQuestRuntimeOptions {
   awaCookie: string; host: string; proxy?: proxy; userAgent?: string;
@@ -93,11 +92,12 @@ export class DailyQuestRuntime {
         logger.log(chalk.red(__('ipBanned')));
         return { ok: false, reason: 'network-rejected' };
       }
-      if (load(html)('a.nav-link-login').length) {
+      const page = load(html);
+      if (page('a.nav-link-login').length) {
         logger.log(chalk.red(__('tokenExpired')));
         return { ok: false, reason: 'session-expired' };
       }
-      const snapshot = parseControlCenter(html, this.awa.context.baseURL);
+      const snapshot = parseControlCenter(html, this.awa.context.baseURL, page);
       this.state.questInfo = snapshot.questInfo;
       this.state.userProfileUrl = snapshot.userProfileUrl || this.state.userProfileUrl;
       this.state.dailyQuestLink = snapshot.dailyQuestLink;
@@ -138,8 +138,7 @@ export class DailyQuestRuntime {
       }
 
       const report = formatQuestReport(this.state);
-      fs.mkdirSync('logs', { recursive: true });
-      fs.appendFileSync(getLogFilePath('dailyQuest'), `${JSON.stringify(report, null, 2)}\n`);
+      writeFileLog('dailyQuest', JSON.stringify(report, null, 2));
       if (!verify) {
         Logger.consoleLog(`${time()}${__('taskInfo')}`);
         console.table(report);

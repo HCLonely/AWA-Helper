@@ -45,3 +45,61 @@ const cleanupExpiredLogs = (directory: string, expireDays: number, now = new Dat
 };
 
 export { cleanupExpiredLogs };
+
+/** Bounded asynchronous maintenance; never follows links or removes active files. */
+export const maintainLogs = async (
+  directory: string, expireDays: number, maxBytes: number,
+  isActive: (filename: string) => boolean = () => false, now = new Date()
+): Promise<{ removed: number; remainingBytes: number }> => {
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const candidates: Array<{ filename: string; bytes: number; date: number; removable: boolean }> = [];
+  let total = 0;
+  let removed = 0;
+  const root = path.resolve(directory);
+  try {
+    if ((await fs.promises.lstat(root)).isSymbolicLink()) {
+      return { removed, remainingBytes: total };
+    }
+    const entries = await fs.promises.readdir(root, { withFileTypes: true });
+    for (const entry of entries) {
+      const match = entry.name.match(logDatePattern);
+      if (!match || !entry.isFile() || entry.isSymbolicLink()) {
+        continue;
+      }
+      const date = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      const parsed = new Date(date);
+      if (parsed.getUTCFullYear() !== Number(match[1]) || parsed.getUTCMonth() !== Number(match[2]) - 1 || parsed.getUTCDate() !== Number(match[3])) {
+        continue;
+      }
+      const filename = path.join(root, entry.name);
+      try {
+        const stat = await fs.promises.lstat(filename);
+        if (!stat.isFile() || stat.isSymbolicLink()) {
+          continue;
+        }
+        total += stat.size;
+        candidates.push({ filename, bytes: stat.size, date, removable: date < today });
+      } catch (_error) { /* Rotation may remove an entry while scanning. */ }
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw error;
+    }
+  }
+  candidates.sort((a, b) => a.date - b.date);
+  for (const candidate of candidates) {
+    const expired = expireDays > 0 && (today - candidate.date) / 86400000 >= expireDays;
+    if (!candidate.removable || isActive(candidate.filename) || !(expired || (maxBytes > 0 && total > maxBytes))) {
+      continue;
+    }
+    try {
+      if (!(await fs.promises.lstat(candidate.filename)).isFile()) {
+        continue;
+      }
+      await fs.promises.unlink(candidate.filename);
+      total -= candidate.bytes;
+      removed++;
+    } catch (_error) { /* Busy files are retried on the next maintenance pass. */ }
+  }
+  return { removed, remainingBytes: total };
+};

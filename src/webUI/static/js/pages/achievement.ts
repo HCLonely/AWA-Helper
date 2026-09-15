@@ -33,14 +33,7 @@
   });
   requiredElement('#achievement-refresh').addEventListener('click', refreshAchievement);
   requiredElement('#achievement-logs').addEventListener('click', async () => {
-    const response = await fetch('/api/logs/achievement', { headers: headers() });
-    if (!response.ok) {
-      return;
-    }
-    const blob = new Blob(['\uFEFF', await response.text()], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank', 'noopener,noreferrer');
-    setTimeout(() => URL.revokeObjectURL(url), 60 * 1000);
+    openLogPreview('achievement', getSecret());
   });
   void refreshAchievement();
 })();

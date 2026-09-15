@@ -1,10 +1,10 @@
+import { withRunConfiguration, createSessionCommit as createCookieCommit } from '../../../tools/config/RunConfiguration';
 import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/Manager/jobs/ArtifactJob.ts
  * @description 将指定遗物槽位的替换请求封装为 Manager 作业。
  */
 import { ArtifactService } from '../../Artifact/ArtifactService';
-import { createCookieCommit } from '../../../tools/config/YamlConfig';
 import type { Job } from '../Job';
 
 class ArtifactJob implements Job {
@@ -34,6 +34,10 @@ class ArtifactJob implements Job {
     if (ids.length !== 3 || new Set(ids).size !== 3 || ids.length !== (Array.isArray(payload) ? payload.length : 0)) {
       throw new Error('Exactly three distinct positive artifact IDs are required');
     }
+    return withRunConfiguration(this.configPath, () => this.runConfiguredTask(signal, ids));
+  }
+
+  private async runConfiguredTask(signal: AbortSignal, ids: number[]): Promise<boolean> {
     const service = new ArtifactService(this.configPath);
     if (!service.initted) {
       return false;

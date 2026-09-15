@@ -19,5 +19,5 @@ VOLUME ["/usr/src/app/output/config", "/usr/src/app/output/logs", "/usr/src/app/
 
 EXPOSE 2345
 USER node
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["node", "index.js", "--healthcheck"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["node", "healthcheck.js"]
 CMD [ "node", "index.js" ]

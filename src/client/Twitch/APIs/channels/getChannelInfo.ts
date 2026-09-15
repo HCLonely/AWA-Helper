@@ -2,12 +2,15 @@
  * @file src/client/Twitch/APIs/channels/getChannelInfo.ts
  * @description 将 Twitch 登录名解析为对应的频道标识。
  */
+import { getRequestSignal } from '../../../../tools/http/RequestContext';
 import { TwitchContext } from '../../TwitchContext';
 import { TwitchError } from '../../TwitchError';
 import { channelInfoQuery } from '../../queries';
 import { parseTwitchChannelId, type TwitchChannelQueryData } from '../../parsers';
 import type { TwitchGqlEnvelope } from '../../types';
 import type { LookupResult } from '../../../shared';
+
+const channelIds = new WeakMap<TwitchContext, Map<string, { id: string; expires: number }>>();
 
 /**
  * 获取 get Channel Info 相关数据。
@@ -16,9 +19,19 @@ import type { LookupResult } from '../../../shared';
  * @returns 找到频道时返回频道 ID，否则返回 `not-found`。
  */
 export const getChannelInfo = async (context: TwitchContext, channelLogin: string): Promise<LookupResult<string>> => {
+  getRequestSignal()?.throwIfAborted();
   if (!context.clientId) {
     throw new TwitchError('getChannelInfo', 'Twitch Client-Id is not initialized');
   }
+  const cache = channelIds.get(context) ?? new Map<string, { id: string; expires: number }>();
+  channelIds.set(context, cache);
+  const cached = cache.get(channelLogin);
+  if (cached && cached.expires > Date.now()) {
+    cache.delete(channelLogin);
+    cache.set(channelLogin, cached);
+    return { found: true, value: cached.id };
+  }
+  cache.delete(channelLogin);
   const options: myAxiosConfig = {
     url: 'https://gql.twitch.tv/gql', method: 'POST',
     headers: { ...context.headers, 'Client-Id': context.clientId }, data: channelInfoQuery(channelLogin)
@@ -29,6 +42,12 @@ export const getChannelInfo = async (context: TwitchContext, channelLogin: strin
   try {
     const response = await context.request<Array<TwitchGqlEnvelope<TwitchChannelQueryData>>>(options);
     const channelId = parseTwitchChannelId(response.data);
+    if (channelId) {
+      cache.set(channelLogin, { id: channelId, expires: Date.now() + (60 * 60 * 1000) });
+      while (cache.size > 128) {
+        cache.delete(cache.keys().next().value!);
+      }
+    }
     return channelId ? { found: true, value: channelId } : { found: false, reason: 'not-found' };
   } catch (error) {
     throw new TwitchError('getChannelInfo', `Unable to resolve Twitch channel ${channelLogin}`, true, undefined, { cause: error });

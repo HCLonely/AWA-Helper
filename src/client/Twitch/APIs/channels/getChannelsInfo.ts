@@ -2,6 +2,7 @@
  * @file src/client/Twitch/APIs/channels/getChannelsInfo.ts
  * @description 从候选 Twitch 频道中选择具有可用奖励扩展的直播频道。
  */
+import { getRequestSignal } from '../../../../tools/http/RequestContext';
 import { TwitchContext } from '../../TwitchContext';
 import type { TwitchChannelTrackingInfo } from '../../types';
 import type { LookupResult } from '../../../shared';
@@ -15,7 +16,8 @@ import { getChannelInfo } from './getChannelInfo';
  * @returns 找到可跟踪频道时返回频道与扩展信息，否则返回 `no-trackable-channel`。
  */
 export const getChannelsInfo = async (context: TwitchContext, channelLogins: string[]): Promise<LookupResult<TwitchChannelTrackingInfo, 'no-trackable-channel'>> => {
-  for (const streamerName of channelLogins) {
+  for (const streamerName of new Set(channelLogins)) {
+    getRequestSignal()?.throwIfAborted();
     const channel = await getChannelInfo(context, streamerName).catch(() => ({ found: false as const, reason: 'not-found' as const }));
     if (!channel.found) {
       continue;

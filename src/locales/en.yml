@@ -442,3 +442,21 @@ logStatusError: Error
 logStatusFailed: Failed
 logStatusClosed: Closed
 logStatusFinished: Finished
+
+logStorageBudgetExceeded: Log storage budget exceeded; current or busy files retained.
+
+logPreview: Log preview
+logLoading: Loading…
+logRotated: Log rotated or truncated; showing latest content.
+logEmpty: No log file yet.
+logPageLimit: Each page shows at most 64 KiB.
+logReadFailed: Unable to read; check connection and authentication.
+logOlder: Older
+logLatest: Latest
+logClose: Close
+
+jobStatus_partial: "Partially completed"
+jobStatus_skipped: "Skipped"
+achievementActionResult: "Achievement action %s: %s"
+
+taskPartiallyCompleted: Tasks finished with some operations incomplete.

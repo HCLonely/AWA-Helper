@@ -28,6 +28,7 @@ const fixture = (mode = 'persistent') => {
     './JobCoordinator': { JobCoordinator: Coordinator }, './Scheduler': { Scheduler },
     '../../server': { UnifiedServer: Server },
     '../../tools/config': { loadConfig: () => ({ path: 'synthetic.yml', raw: { webUI: { enable: false } }, manager: { secret: 'synthetic-manager-secret' } }) },
+    '../../tools/logging/LogWriter': { flushLogs: async () => { events.push('logs flushed'); } },
     '../../tools': { Logger, time: () => '' },
     './jobs': { DailyQuestJob: class {}, AchievementJob: class {}, ArtifactJob: class {} }
   };

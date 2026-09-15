@@ -1,11 +1,11 @@
+import type { TaskOutcome } from '../../TaskOutcome';
+import { withRunConfiguration, getRunConfiguration as loadConfig, createSessionCommit as createCookieCommit } from '../../../tools/config/RunConfiguration';
 import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/Manager/jobs/AchievementJob.ts
  * @description 将成就服务封装为可由 Manager 创建、运行和释放的作业。
  */
 import { AchievementService } from '../../Achievement/AchievementService';
-import { loadConfig } from '../../../tools/config';
-import { createCookieCommit } from '../../../tools/config/YamlConfig';
 import type { Job } from '../Job';
 
 class AchievementJob implements Job {
@@ -21,13 +21,16 @@ class AchievementJob implements Job {
   /**
    * 执行 run 相关数据。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal`。
-   * @returns `Promise<boolean>`，表示 run 检查是否通过。
+   * @returns `Promise<boolean | TaskOutcome>`，表示 run 检查是否通过。
    */
-  run(signal: AbortSignal): Promise<boolean> {
-    return runWithRequestSignal(signal ?? new AbortController().signal, () => this.runTask(signal));
+  run(signal: AbortSignal): Promise<boolean | TaskOutcome> {
+    if (signal.aborted) {
+      return Promise.resolve(false);
+    }
+    return runWithRequestSignal(signal ?? new AbortController().signal, () => withRunConfiguration(this.configPath, () => this.runTask(signal)));
   }
 
-  private async runTask(signal: AbortSignal): Promise<boolean> {
+  private async runTask(signal: AbortSignal): Promise<boolean | TaskOutcome> {
     if (signal.aborted) {
       return false;
     }
@@ -57,8 +60,7 @@ class AchievementJob implements Job {
       if (signal.aborted) {
         return false;
       }
-      await this.service.run(signal);
-      return true;
+      return await this.service.run(signal);
     } finally {
       signal.removeEventListener('abort', abort);
       try {

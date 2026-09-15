@@ -450,3 +450,21 @@ logStatusError: 错误
 logStatusFailed: 失败
 logStatusClosed: 已关闭
 logStatusFinished: 已结束
+
+logStorageBudgetExceeded: 日志容量超过预算；已保留当天或正在使用的文件。
+
+logPreview: 日志预览
+logLoading: 正在读取…
+logRotated: 日志已轮转或截断，显示最新内容。
+logEmpty: 暂无日志。
+logPageLimit: 每页最多显示 64 KiB。
+logReadFailed: 读取失败，请检查连接与认证。
+logOlder: 较早内容
+logLatest: 最新内容
+logClose: 关闭
+
+jobStatus_partial: "部分完成"
+jobStatus_skipped: "已跳过"
+achievementActionResult: "成就操作 %s：%s"
+
+taskPartiallyCompleted: 任务已结束，但有部分操作未完成。

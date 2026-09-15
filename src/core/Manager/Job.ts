@@ -1,9 +1,10 @@
+import type { TaskOutcome } from '../TaskOutcome';
 /**
  * @file src/core/Manager/Job.ts
  * @description 定义 Manager 可调度作业的名称、运行函数和资源释放契约。
  */
 export type JobName = 'dailyQuest' | 'achievement' | 'artifact';
-export type JobStatus = 'idle' | 'running' | 'stopping' | 'completed' | 'failed' | 'cancelled';
+export type JobStatus = 'idle' | 'running' | 'stopping' | 'completed' | 'partial' | 'skipped' | 'failed' | 'cancelled';
 
 export interface JobResult {
   success: boolean
@@ -20,7 +21,7 @@ export interface Job {
      * @param payload - 当前请求或操作使用的数据内容，类型为 `unknown`。
      * @returns `Promise<boolean>`，明确表示作业是否成功完成。
      */
-run(signal: AbortSignal, payload?: unknown): Promise<boolean>
+run(signal: AbortSignal, payload?: unknown): Promise<boolean | TaskOutcome>
     /**
      * 停止 dispose 相关数据。
      * @returns `void | Promise<void>`，清理同步完成时返回空值，异步清理时返回完成凭据。

@@ -59,6 +59,7 @@ const fixture = ({ cancelDuringSetup = false, failSetup = false, failPush = fals
     i18n: { configure: () => {}, setLocale: () => {} },
     fs: { existsSync: () => false }
   };
+  dependencies['../../tools/config/RunConfiguration'] = { hasRunConfiguration: () => false, getRunConfiguration: dependencies['../../tools/config'].loadConfig, createSessionCommit: dependencies['../../tools/config/YamlConfig'].createCookieCommit };
   const sandbox = {
     exports: {}, require: (name) => dependencies[name] || (name === 'chalk' ? require('chalk') : {}),
     globalThis: {}, __: (key) => key, process: { argv: [], env: {} }, AbortController, AbortSignal, setTimeout, clearTimeout

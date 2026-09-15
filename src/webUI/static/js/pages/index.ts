@@ -19,15 +19,7 @@
   const authorization = (secret: string) => ({ Authorization: `Bearer ${secret}` });
 
   async function openLog(scope: string, secret: string): Promise<void> {
-    const response = await axios.get(`/api/logs/${scope}`, {
-      headers: { Authorization: `Bearer ${secret}` },
-      responseType: 'blob'
-    });
-    const text = await response.data.text();
-    const utf8Blob = new Blob(['\uFEFF', text], { type: 'text/plain;charset=utf-8' });
-    const objectUrl = URL.createObjectURL(utf8Blob);
-    window.open(objectUrl, '_blank', 'noopener,noreferrer');
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 60 * 1000);
+    openLogPreview(scope, secret);
   }
   function getStatus(secret: string): Promise<string | false | undefined> {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingDailyQuestStatus')}</li>`);

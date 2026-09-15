@@ -29,6 +29,8 @@ export class AWAContext {
   readonly logRequests: boolean;
   userId?: string;
   username?: string;
+  /** Invalidates shared page reads across other operations, including GET mutations. */
+  readRevision = 0;
 
   /**
    * 初始化 AWAContext 实例。
@@ -93,6 +95,10 @@ export class AWAContext {
    */
   async request<T = unknown>(options: myAxiosConfig) {
     const target = this.assertTrustedURL(new URL(options.url || '', options.baseURL || this.baseURL).href);
+    const changesReadBoundary = target.pathname !== '/control-center';
+    if (changesReadBoundary) {
+      this.readRevision++;
+    }
     const requestOptions: myAxiosConfig = {
       ...options,
       url: target.href,
@@ -129,6 +135,10 @@ export class AWAContext {
         ? (error as { response?: { status?: number } }).response?.status
         : undefined;
       throw new AWAError('request', `AWA request failed: ${safeRequestTarget(options.url)}`, statusCode === undefined || statusCode >= 500, statusCode, { cause: error });
+    } finally {
+      if (changesReadBoundary) {
+        this.readRevision++;
+      }
     }
   }
 }

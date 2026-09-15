@@ -19,6 +19,7 @@
   "files": [
     "src/webUI/static/js/pages/browser-globals.d.ts",
     "src/webUI/static/js/pages/native-dom.ts",
+    "src/webUI/static/js/pages/log-preview.ts",
     "src/webUI/static/js/pages/achievement.ts",
     "src/webUI/static/js/pages/dailyQuest.ts",
     "src/webUI/static/js/pages/index.ts",

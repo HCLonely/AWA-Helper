@@ -13,7 +13,7 @@ import json from '@rollup/plugin-json';
 import { importAsString } from 'rollup-plugin-string-import';
 import terser from '@rollup/plugin-terser';
 
-export default {
+const application = {
   input: 'dist/index.js',
   // Undici conditionally uses the Node 22.13+ built-in SQLite cache store.
   // Keep it external like the other Node built-ins instead of bundling it.
@@ -38,3 +38,10 @@ export default {
       include: ['**/*.html', '**/*.yml', '**/CHANGELOG.txt', '**/icon.ico']
     })]
 };
+
+
+export default [application, {
+  input: 'dist/healthcheck.js',
+  output: { file: 'output/healthcheck.js', format: 'cjs' },
+  plugins: [nodeResolve({ preferBuiltins: true, exportConditions: ['node'] }), commonjs(), terser()]
+}];

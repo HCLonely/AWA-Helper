@@ -24,6 +24,11 @@
       </div>
     </div>
   </main>
+  <script>
+    var I18n = __I18N__;
+    function __(key) { return I18n[document.documentElement.lang]?.[key] || key; }
+  </script>
+  <script src="static/js/pages/log-preview.js" inline></script>
   <script src="static/js/pages/achievement.js" inline></script>
 </body>
 </html>

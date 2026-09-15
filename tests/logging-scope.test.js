@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { Logger, getLogFilePath, runWithLogScope, safeRequestTarget } = require('../dist/tools/logging');
+const { flushLogs, Logger, getLogFilePath, runWithLogScope, safeRequestTarget } = require('../dist/tools/logging');
 
 test('external request log targets remove query strings and fragments', () => {
   assert.equal(
@@ -25,12 +25,14 @@ test('Logger separates Manager, DailyQuest, Achievement, and Artifact files', as
     await runWithLogScope('dailyQuest', async () => { await Promise.resolve(); new Logger('daily-entry'); });
     runWithLogScope('achievement', () => new Logger('achievement-entry'));
     runWithLogScope('artifact', () => new Logger('artifact-entry'));
+    await flushLogs();
     assert.match(fs.readFileSync(getLogFilePath('manager'), 'utf8'), /manager-entry/);
     assert.match(fs.readFileSync(getLogFilePath('dailyQuest'), 'utf8'), /daily-entry/);
     assert.match(fs.readFileSync(getLogFilePath('achievement'), 'utf8'), /achievement-entry/);
     assert.match(fs.readFileSync(getLogFilePath('artifact'), 'utf8'), /artifact-entry/);
     assert.equal(new Set(['manager', 'dailyQuest', 'achievement', 'artifact'].map(getLogFilePath)).size, 4);
   } finally {
+    await flushLogs();
     process.chdir(originalDirectory);
     fs.rmSync(directory, { recursive: true, force: true });
   }

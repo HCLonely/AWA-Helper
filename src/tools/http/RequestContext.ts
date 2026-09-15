@@ -12,3 +12,5 @@ export const withRequestSignal = <T extends myAxiosConfig>(options: T): T => {
   }
   return { ...options, ...(signal && { signal }) };
 };
+
+export const getRequestSignal = (): AbortSignal | undefined => requestSignals.getStore();

@@ -9,9 +9,10 @@ import chalk from 'chalk';
 import type { RuntimeMode } from '../../cli/Command';
 import { UnifiedServer } from '../../server';
 import { loadConfig } from '../../tools/config';
+import { flushLogs, logWriter } from '../../tools/logging/LogWriter';
 import { setLogSecrets } from '../../tools/logging/sanitize';
-import { cleanupExpiredLogs } from '../../tools/logging/retention';
-import { cleanupCompletedUpdates } from '../../tools/update/retention';
+import { maintainLogs } from '../../tools/logging/retention';
+import { cleanupCompletedUpdatesAsync } from '../../tools/update/retention';
 import { configureWebUiColors, Logger, time } from '../../tools';
 import { initializeI18n } from '../../tools/i18n';
 import { JobCoordinator } from './JobCoordinator';
@@ -40,6 +41,7 @@ class ManagerRuntime {
   private readonly initialTlsRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
   private stopPromise?: Promise<void>;
   private maintenance?: NodeJS.Timeout;
+  private maintaining?: Promise<void>;
   private shutdownSignalled = false;
   private resolveShutdown!: () => void;
   private readonly shutdownRequested = new Promise<void>((resolve) => {
@@ -63,7 +65,7 @@ class ManagerRuntime {
       () => this.requestShutdown(),
       () => this.reloadConfiguration()
     );
-    this.coordinator.register(new DailyQuestJob());
+    this.coordinator.register(new DailyQuestJob(this.loaded.path));
     this.coordinator.register(new AchievementJob(this.loaded.path));
     this.coordinator.register(new ArtifactJob(this.loaded.path));
     this.coordinator.states.subscribe((states) => this.hooks.onStateChange?.(states));
@@ -229,9 +231,14 @@ class ManagerRuntime {
       try {
         await this.coordinator.stopAll();
       } finally {
-        await this.server.stop();
+        try {
+          await this.maintaining;
+          await this.server.stop();
+          new Logger(`${time()}${__('managerShutdownCompleted')}`);
+        } finally {
+          await flushLogs();
+        }
       }
-      new Logger(`${time()}${__('managerShutdownCompleted')}`);
     });
     return this.stopPromise;
   }
@@ -246,16 +253,27 @@ class ManagerRuntime {
     this.applyRuntimeConfiguration();
     globalThis.log = true;
     globalThis.newVersionNotice = '';
-    cleanupCompletedUpdates();
-    this.maintenance = setInterval(() => {
-      try {
-        cleanupExpiredLogs('logs', this.loaded.raw.logsExpire || 0);
-        cleanupCompletedUpdates();
-      } catch (error) {
-        new Logger(error);
-      }
-    }, 60 * 60 * 1000);
+    this.runMaintenance();
+    this.maintenance = setInterval(() => this.runMaintenance(), 60 * 60 * 1000);
     this.maintenance.unref();
+  }
+
+  private runMaintenance(): void {
+    if (this.maintaining || this.coordinator.isClosing) {
+      return;
+    }
+    this.maintaining = (async () => {
+      const budget = (this.loaded.raw.logsMaxMB ?? 512) * 1024 * 1024;
+      const result = await maintainLogs('logs', this.loaded.raw.logsExpire || 0, budget, (file) => logWriter.isActive(file));
+      if (budget > 0 && result.remainingBytes > budget) {
+        new Logger(__('logStorageBudgetExceeded'));
+      }
+      await cleanupCompletedUpdatesAsync();
+    })().catch((error) => {
+      new Logger(error);
+    }).finally(() => {
+      this.maintaining = undefined;
+    });
   }
 
   /** 将当前已加载配置同步到进程级的动态运行参数。 */
@@ -281,9 +299,6 @@ class ManagerRuntime {
       delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
     } else {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = this.initialTlsRejectUnauthorized;
-    }
-    if (this.loaded.raw.logsExpire) {
-      cleanupExpiredLogs('logs', this.loaded.raw.logsExpire);
     }
   }
 

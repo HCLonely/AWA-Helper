@@ -158,6 +158,57 @@
   let webUIReconnectTimer: number | undefined;
   let webUIReconnectAttempts = 0;
 
+  const pendingLogs = new Map<number, string>();
+  let pendingSize = 0;
+  let logFrame: number | undefined;
+  function flushLogView(): void {
+    logFrame = undefined;
+    if (document.hidden) {
+      return;
+    }
+    const area = document.getElementById('log-area');
+    if (!area) {
+      return;
+    }
+    const follow = area.getBoundingClientRect().bottom <= window.innerHeight + 48;
+    const added = document.createDocumentFragment();
+    for (const [id, html] of pendingLogs) {
+      const existing = document.getElementById(`log-${id}`);
+      if (existing) {
+        dom(existing).html(html);
+      } else {
+        const item = document.createElement('li');
+        item.id = `log-${id}`;
+        item.innerHTML = html;
+        added.append(item);
+      }
+    }
+    // The facade accounts only for these changed nodes, never rescans the log body.
+    dom(area).append(dom(Array.from(added.children)));
+    pendingLogs.clear();
+    pendingSize = 0;
+    if (follow) {
+      area.lastElementChild?.scrollIntoView();
+    }
+  }
+  function queueLog(id: number, html: string): void {
+    pendingSize += html.length - (pendingLogs.get(id)?.length ?? 0);
+    pendingLogs.set(id, html);
+    while (pendingLogs.size > 1000 || pendingSize > 256 * 1024) {
+      const oldest = pendingLogs.keys().next().value!;
+      pendingSize -= pendingLogs.get(oldest)!.length;
+      pendingLogs.delete(oldest);
+    }
+    if (logFrame === undefined && !document.hidden) {
+      logFrame = requestAnimationFrame(flushLogView);
+    }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && logFrame === undefined && pendingLogs.size) {
+      logFrame = requestAnimationFrame(flushLogView);
+    }
+  });
+
   function scheduleWebUIReconnect(ws: WebSocket): void {
     if (ws !== webUISocket || webUIReconnectTimer) {
       return;
@@ -194,7 +245,7 @@
         .replace(/=+$/, '');
       protocols = ['awa-manager', encodedSecret];
     }
-    const wsUrl = `${wsProtocol}://${window.location.host}${wsPort}/ws`;
+    const wsUrl = `${wsProtocol}://${window.location.host}${wsPort}/ws?scope=dailyQuest&replay=chunks`;
     const ws = protocols ? new WebSocket(wsUrl, protocols) : new WebSocket(wsUrl);
     webUISocket = ws;
     ws.onopen = function () {
@@ -203,6 +254,8 @@
       }
       console.log(__('connectWebUISuccess'));
       dom('#log-area').html('');
+      pendingLogs.clear();
+      pendingSize = 0;
       webUIReconnectAttempts = 0;
     };
     ws.onclose = function () {
@@ -217,6 +270,9 @@
       scheduleWebUIReconnect(ws);
     };
     ws.onmessage = function (e) {
+      if (ws !== webUISocket) {
+        return;
+      }
       const data = JSON.parse(String(e.data)) as WebUIMessage;
       if (data.type === 'logs') {
         for (const value of Object.values(data) as WebUIMessage[]) {
@@ -227,24 +283,10 @@
             generateTaskInfo(value.data as QuestData);
             continue;
           }
-          const logEle = dom(`#log-${value.id}`);
-          if (logEle.length > 0) {
-            logEle.html(value.data as string);
-            logEle[0].scrollIntoView();
-            continue;
-          }
-          dom('#log-area').append(`<li id="log-${value.id}">${value.data}</li>`);
-          dom(`#log-${value.id}`)[0].scrollIntoView();
+          queueLog(value.id as number, String(value.data ?? ''));
         }
       } else if (data.type === 'log' && data.scope === 'dailyQuest') {
-        const logEle = dom(`#log-${data.id}`);
-        if (logEle.length > 0) {
-          logEle.html(data.data as string);
-          logEle[0].scrollIntoView();
-        } else {
-          dom('#log-area').append(`<li id="log-${data.id}">${data.data}</li>`);
-          dom(`#log-${data.id}`)[0].scrollIntoView();
-        }
+        queueLog(data.id as number, String(data.data ?? ''));
       } else if (data.type === 'questInfo' && data.scope === 'dailyQuest') {
         generateTaskInfo(data.data as QuestData);
       }

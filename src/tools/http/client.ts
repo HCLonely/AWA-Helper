@@ -14,7 +14,7 @@ export const retryDelayMs = (retryAfter: unknown, fallback: number, now = Date.n
   const value = String(retryAfter ?? '').trim();
   const seconds = value && /^\d+(\.\d+)?$/.test(value) ? Number(value) : NaN;
   const parsed = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(value) - now;
-  return Math.min(30_000, Math.max(0, Number.isFinite(parsed) ? parsed : fallback));
+  return Math.max(0, Number.isFinite(parsed) ? parsed : fallback);
 };
 
 http.interceptors.response.use((response) => response, async (error) => {
@@ -39,6 +39,10 @@ http.interceptors.response.use((response) => response, async (error) => {
   }
   const exponential = Math.min((config.retryDelay ?? 1000) * (2 ** (config.retryCount - 1)), 30 * 1000);
   const delay = retryDelayMs(response?.headers?.['retry-after'], exponential + Math.floor(Math.random() * 250));
+  // A long server-directed wait belongs to the job scheduler, never retry early.
+  if (delay > 30000) {
+    return Promise.reject(error);
+  }
   if (!await sleep(delay / 1000, config.signal)) {
     throw new axios.CanceledError('Request cancelled');
   }

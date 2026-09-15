@@ -49,6 +49,12 @@
       desp: 默认开启。如果使用代理出现网络问题，可尝试更改此项！
       type: boolean
       defaultValue: true
+    logsMaxMB:
+      name: 日志总容量预算
+      desp: "单位 MiB，默认 512；0 为不限制。当天及正在写入的文件不会删除。"
+      type: text
+      inputType: number
+      defaultValue: 512
     logsExpire:
       name: 日志保留时间
       desp: 日志保留时间，单位：天。默认30天，0为不限制。

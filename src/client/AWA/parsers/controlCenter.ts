@@ -2,7 +2,7 @@
  * @file src/client/AWA/parsers/controlCenter.ts
  * @description 解析 AWA 控制中心页面中的任务、签到、积分和用户状态。
  */
-import { load } from 'cheerio';
+import { load, type CheerioAPI } from 'cheerio';
 import type { ControlCenterSnapshot, PromotionalCalendarEntry } from '../types';
 export type { ControlCenterSnapshot } from '../types';
 
@@ -12,8 +12,7 @@ export type { ControlCenterSnapshot } from '../types';
  * @param baseURL - 目标资源或服务的 URL，类型为 `string`。
  * @returns `ControlCenterSnapshot`，parseControlCenter 解析得到的结构化结果。
  */
-export const parseControlCenter = (html: string, baseURL: string): ControlCenterSnapshot => {
-  const $ = load(html);
+export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI = load(html)): ControlCenterSnapshot => {
   const rewardBonusArp = html.match(/bonusCalendarArp.*?=.*?([\d]+?)/)?.[1] || '';
   const signArp: ControlCenterSnapshot['signArp'] = {};
   const consecutive = html.match(/consecutive_logins.*?=.*?({.+?})/)?.[1];

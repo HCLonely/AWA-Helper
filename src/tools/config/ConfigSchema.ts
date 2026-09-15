@@ -110,6 +110,7 @@ const validateHelperConfig = (value: unknown): Array<string> => {
   };
   validateNonNegativeNumber('timeout');
   validateNonNegativeNumber('logsExpire');
+  validateNonNegativeNumber('logsMaxMB');
 
   /**
    * 检查 validate Port 相关数据。

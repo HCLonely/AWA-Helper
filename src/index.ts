@@ -72,12 +72,12 @@ const main = async (): Promise<number> => {
     console.log(version);
     return 0;
   }
+  if (command.kind === 'healthcheck') {
+    return await runHealthcheck() ? 0 : 1;
+  }
   createRuntimeFiles();
   if (command.kind === 'init') {
     return 0;
-  }
-  if (command.kind === 'healthcheck') {
-    return await runHealthcheck() ? 0 : 1;
   }
   if (command.kind === 'update') {
     const updateConfig = (() => {

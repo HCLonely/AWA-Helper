@@ -1,3 +1,4 @@
+import type { TaskOutcome } from '../../TaskOutcome';
 /**
  * @file src/core/DailyQuest/tasks/BattlePassTask.ts
  * @description 领取当前 AWA Battle Pass 中所有可领取奖励并验证最终状态。
@@ -101,6 +102,23 @@ export class BattlePassTask {
       runtime.state.battlePass = { status: 'unknown', claimedCount: 0, rewardTotal: 0, claimed: [], failed: [] };
       return false;
     }
+  }
+
+  static async runDetailed(runtime: DailyQuestRuntime, signal?: AbortSignal): Promise<TaskOutcome> {
+    const ok = await BattlePassTask.run(runtime, signal);
+    if (signal?.aborted) {
+      return { status: 'cancelled' };
+    }
+    if (!runtime.state.battlePassUrl) {
+      return { status: 'skipped' };
+    }
+    if (!ok || runtime.state.battlePass?.status === 'unknown') {
+      return { status: 'failed' };
+    }
+    if (runtime.state.battlePass?.failed.length) {
+      return { status: 'partial', message: __('battlePassPartial') };
+    }
+    return { status: 'completed' };
   }
 
   private static failure(reward: BattlePassReward, reason: string): BattlePassFailedState {

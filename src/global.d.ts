@@ -52,6 +52,7 @@ findLast(
     language: string
     timeout?: number
     logsExpire?: number
+    logsMaxMB?: number
     debug?: {
       http?: boolean
     }

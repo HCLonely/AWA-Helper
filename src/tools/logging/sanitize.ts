@@ -3,6 +3,11 @@
  * @description 递归清理日志对象中的密钥、Cookie、请求头和 ANSI 控制序列。
  */
 import { format } from 'util';
+import { AsyncLocalStorage } from 'async_hooks';
+
+const secretScopes = new AsyncLocalStorage<Set<string>>();
+let configuredSecrets = new Set<string>();
+const errorSecrets = new WeakMap<object, Set<string>>();
 
 const sensitiveKeyPattern = /(authorization|authentication|cookie|password|secret|token|api[-_]?key|proxy[-_]?auth)/i;
 const visibleConfigKeyPattern = /^awaHost$/i;
@@ -12,9 +17,10 @@ const visibleConfigKeyPattern = /^awaHost$/i;
  * @param text - 需要记录、推送或格式化的文本内容，类型为 `string`。
  * @returns `string`，redactKnownSecrets 获取或生成的文本内容。
  */
-const redactKnownSecrets = (text: string): string => {
+const redactKnownSecrets = (text: string, retained?: Set<string>): string => {
   let result = text;
-  for (const secret of globalThis.secrets || []) {
+  const secrets = new Set([...(globalThis.secrets || []), ...configuredSecrets, ...(secretScopes.getStore() || []), ...(retained || [])]);
+  for (const secret of secrets) {
     if (typeof secret === 'string' && secret.length > 5) {
       result = result.replaceAll(secret, '********');
     }
@@ -68,8 +74,40 @@ const collectLogSecrets = (value: unknown): Array<string> => {
  * @returns `void`，该函数仅执行副作用，不返回值。
  */
 const setLogSecrets = (config: unknown): void => {
-  globalThis.secrets = [...new Set([...(globalThis.secrets || []), ...collectLogSecrets(config)])];
+  const scope = secretScopes.getStore();
+  if (scope) {
+    collectLogSecrets(config).forEach((secret) => scope.add(secret));
+  } else {
+    configuredSecrets = new Set(collectLogSecrets(config));
+  }
 };
+
+/** Old values live with their asynchronous work, not a process-wide historical list. */
+const withLogSecrets = async <T>(config: unknown, action: () => Promise<T>): Promise<T> => {
+  const scope = new Set([...configuredSecrets, ...(secretScopes.getStore() || []), ...collectLogSecrets(config)]);
+  return secretScopes.run(scope, async () => {
+    try {
+      return await action();
+    } catch (error) {
+      if (error && typeof error === 'object') {
+        const previous = errorSecrets.get(error);
+        if (previous) {
+          previous.forEach((secret) => scope.add(secret));
+        }
+        errorSecrets.set(error, scope);
+        throw error;
+      }
+      // Do not retain an unstructured rejection that may itself be a credential string.
+      // eslint-disable-next-line preserve-caught-error
+      throw new Error(redactKnownSecrets(String(error)));
+    }
+  });
+};
+
+const safeErrorMessage = (error: unknown): string => redactKnownSecrets(
+  error instanceof Error ? error.message : String(error),
+  error && typeof error === 'object' ? errorSecrets.get(error) : undefined
+);
 
 /**
  * 处理 sanitize Object 相关逻辑。
@@ -86,11 +124,11 @@ const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknow
     };
     return {
       name: error.name,
-      message: redactKnownSecrets(error.message),
+      message: safeErrorMessage(error),
       code: error.code,
       status: error.response?.status,
       method: error.config?.method,
-      url: error.config?.url
+      url: typeof error.config?.url === 'string' ? redactKnownSecrets(error.config.url, errorSecrets.get(error)) : undefined
     };
   }
   if (!value || typeof value !== 'object') {
@@ -118,12 +156,11 @@ const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknow
 const formatLogValue = (value: unknown, stripAnsi = false): string => {
   const safeValue = typeof value === 'string' ? value : sanitizeObject(value);
   let output = typeof safeValue === 'string' ? safeValue : format(safeValue);
-  output = redactKnownSecrets(output);
-  if (stripAnsi) {
-    // eslint-disable-next-line no-control-regex
-    output = output.replace(/\x1B\[[\d;]*?m/g, '');
-  }
-  return output;
+  output = redactKnownSecrets(output, value && typeof value === 'object' ? errorSecrets.get(value) : undefined);
+  return stripAnsi ? stripLogAnsi(output) : output;
 };
 
-export { collectLogSecrets, formatLogValue, setLogSecrets };
+// eslint-disable-next-line no-control-regex
+const stripLogAnsi = (text: string): string => text.replace(/\x1B\[[\d;]*?m/g, '');
+
+export { collectLogSecrets, formatLogValue, setLogSecrets, stripLogAnsi, withLogSecrets, safeErrorMessage };
