@@ -34,7 +34,10 @@ test('tray source and workflows expose status controls and package the executabl
   }
   assert.match(nativeSource, /NIF_TIP \| NIF_SHOWTIP/);
   assert.match(nativeSource, /CurrentVersion\\\\Run/);
+  assert.match(nativeSource, /payload == "UPDATE_REQUEST"[\s\S]*PostMessageW\(windowHandle, kRequestUpdate/);
   assert.match(nativeSource, /payload == "UPDATE"[\s\S]*shutdownRequested = true/);
+  const installerSource = fs.readFileSync(path.join(root, 'src/tools/update/installer.ts'), 'utf8');
+  assert.match(installerSource, /process\.argv\.includes\('--tray-child'\)[\s\S]*delegated: true/);
   const releaseWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'Release.yml'), 'utf8');
   const testWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'Test.yml'), 'utf8');
   assert.match(releaseWorkflow, /Verify Windows tray artifacts/);

@@ -269,6 +269,7 @@ userJsNotInstalled: Cookie 同步脚本未安装！
 userJsInstalled: Cookie 同步脚本已安装(v%s)
 updating: 正在更新...
 updateFailed: 更新失败
+updateDelegated: 已交由托盘 Manager 检查更新，请查看托盘中的进度和结果。
 updateSuccessManager: 更新成功！
 startingAchievement: 正在启动AWA-Achievement...
 achievementStarted: AWA-Achievement启动成功！

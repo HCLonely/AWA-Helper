@@ -53,10 +53,12 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
     - 运行 AWA-Manager: 双击`AWA-Manager.bat`运行 AWA-Manager;
     - 托盘运行 AWA-Manager：双击`AWA-Manager.exe`。悬停图标可查看任务状态，双击可打开管理页面；右键菜单可以查看状态、启动或停止 Helper/Achievement、切换当前用户的开机自启，以及退出 Manager。
 
+> 也可以只下载 [AWA-Manager.exe](https://github.com/HCLonely/AWA-Helper/releases/latest/download/AWA-Manager.exe)，放入可写目录后运行。它会自动下载、校验并安装所需文件；缺少程序文件时优先修复已安装版本。首次安装会创建默认配置，仍需在管理页面填写 Cookie 等个人设置。自动安装需要 Release 提供 `installation.json` 文件清单。
+
 ##### 更新
 
-- 更新检查：程序会提示新版本；启用 `autoUpdate` 后会校验并自动安装 GitHub Release；
-- 手动更新: 双击'update.bat'.
+- 更新检查：程序会提示新版本；启用 `autoUpdate` 后会校验并自动安装；
+- 托盘更新：右键选择“检查更新”。无更新时显示当前版本；有更新时自动下载，正常停止 Helper 后同时更新 Manager 和 Helper，再重新启动。下载期间现有任务继续运行，安装失败会恢复旧程序；配置、Cookie、日志和运行数据保留。
 
 #### Linux
 

@@ -139,6 +139,9 @@ class ManagerRuntime {
         proxy: this.loaded.raw.proxy,
         restart: this.mode === 'persistent'
       });
+      if (update.delegated) {
+        return false;
+      }
       new Logger(`${time()}${__('newVersion', `V${update.version}`)}`);
       new Logger(`${time()}${__('updating')}`);
       return true;

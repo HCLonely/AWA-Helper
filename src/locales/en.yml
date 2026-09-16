@@ -266,6 +266,7 @@ userJsNotInstalled: Cookie sync script is not installed!
 userJsInstalled: Cookie sync script has been installed (v%s)
 updating: Updating...
 updateFailed: Update failed
+updateDelegated: Update check requested. See the Manager tray for progress and the final result.
 updateSuccessManager: Update completed!
 startingAchievement: Starting AWA-Achievement...
 achievementStarted: AWA-Achievement started successfully!

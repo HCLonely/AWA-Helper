@@ -25,6 +25,8 @@
     <OutDir>$(ProjectDir)..\..\output\</OutDir>
     <IntDir>$(ProjectDir)obj\</IntDir>
     <TargetName>AWA-Manager</TargetName>
+    <TargetName Condition="'$(NativeTests)'=='true'">AWA-Updater-tests</TargetName>
+    <IntDir Condition="'$(NativeTests)'=='true'">$(ProjectDir)obj\tests\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -41,14 +43,21 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <SubSystem Condition="'$(NativeTests)'=='true'">Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>Advapi32.lib;Shell32.lib;User32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Advapi32.lib;Shell32.lib;User32.lib;Winhttp.lib;Bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AWA-Manager.cpp" />
+    <ClCompile Include="AWA-Manager.cpp" Condition="'$(NativeTests)'!='true'" />
+    <ClCompile Include="Updater.cpp" Condition="'$(NativeTests)'!='true'" />
+    <ClCompile Include="UpdaterTests.cpp" Condition="'$(NativeTests)'=='true'" />
+    <ClCompile Include="vendor\miniz_tinfl.c">
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PreprocessorDefinitions>MINIZ_NO_ARCHIVE_APIS;MINIZ_NO_DEFLATE_APIS;MINIZ_NO_ZLIB_APIS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
     <ResourceCompile Include="AWA-Manager.rc" />
   </ItemGroup>
   <ItemGroup>

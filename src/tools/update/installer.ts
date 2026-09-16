@@ -9,6 +9,8 @@ import * as tar from 'tar';
 import { http } from '../http';
 import { formatProxy } from '../proxy';
 import { getReleaseCheck, type ReleaseAsset } from './version';
+import { withGitHubFallback } from './github';
+import { ProcessLock } from '../process/ProcessLock';
 
 type UpdateErrorCode = 'ALREADY_SCHEDULED' | 'UP_TO_DATE' | 'UNSUPPORTED_PLATFORM' |
   'ASSET_NOT_FOUND' | 'UNVERIFIED_ASSET' | 'INTEGRITY_MISMATCH' | 'INVALID_ARCHIVE';
@@ -23,6 +25,7 @@ interface ScheduledUpdate {
   version: string
   assetName: string
   releaseUrl: string
+  delegated?: boolean
 }
 
 class UpdateInstallerError extends Error {
@@ -84,12 +87,19 @@ const downloadAsset = async (asset: ReleaseAsset, destination: string, proxy?: p
   if (proxy?.enable?.includes('github') && proxy.host && proxy.port) {
     options.httpsAgent = formatProxy(proxy);
   }
-  const response = await http.get(asset.browserDownloadUrl, options);
-  await pipeline(response.data, fs.createWriteStream(destination, { flags: 'wx' }));
-  const stat = fs.statSync(destination);
-  if (stat.size !== asset.size || await digestFile(destination) !== digest) {
-    throw new UpdateInstallerError('INTEGRITY_MISMATCH', `SHA-256 verification failed for ${asset.name}`);
-  }
+  await withGitHubFallback(asset.browserDownloadUrl, async (url) => {
+    try {
+      const response = await http.get(url, options);
+      await pipeline(response.data, fs.createWriteStream(destination, { flags: 'wx' }));
+      const stat = fs.statSync(destination);
+      if (stat.size !== asset.size || await digestFile(destination) !== digest) {
+        throw new UpdateInstallerError('INTEGRITY_MISMATCH', `SHA-256 verification failed for ${asset.name}`);
+      }
+    } catch (error) {
+      fs.rmSync(destination, { force: true });
+      throw error;
+    }
+  });
 };
 
 const safeRelativePath = (entryPath: string): string => {
@@ -194,6 +204,8 @@ try {
   }
   Set-Content -LiteralPath ${psQuote(path.join(path.dirname(stageRoot), 'last-result.json'))} -Value ('{"status":"failed","error":' + (ConvertTo-Json $_.Exception.Message -Compress) + '}')
   exit 1
+} finally {
+  Remove-Item -LiteralPath ${psQuote(path.join(installRoot, '.update', 'install.lock'))} -Force -ErrorAction SilentlyContinue
 }
 `);
   return scriptPath;
@@ -220,7 +232,7 @@ fi
   return scriptPath;
 };
 
-const launchUpdater = (scriptPath: string): void => {
+const launchUpdater = (scriptPath: string): number => {
   const windowsPowerShell = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
   const command = os.type() === 'Windows_NT' ? windowsPowerShell : '/bin/sh';
   if (!fs.existsSync(command)) {
@@ -233,15 +245,48 @@ const launchUpdater = (scriptPath: string): void => {
     : spawn(command, [scriptPath], { detached: true, stdio: 'ignore' });
   child.once('error', () => { /* The detached updater records failures in .update/last-result.json. */ });
   child.unref();
+  if (!child.pid) {
+    throw new Error('Unable to start the update installer');
+  }
+  return child.pid;
 };
 
 export const scheduleUpdate = async ({ currentVersion, proxy, restart }: ScheduleUpdateOptions): Promise<ScheduledUpdate> => {
+  if (os.type() === 'Windows_NT' && process.argv.includes('--tray-child')) {
+    if (process.stdout.destroyed || !process.stdout.writable) {
+      throw new Error('Unable to coordinate the update with AWA-Manager');
+    }
+    process.stdout.write('@@AWA-TRAY\tUPDATE_REQUEST\n');
+    return { version: currentVersion, assetName: 'AWA-Helper-Win.tar.gz', releaseUrl: 'https://github.com/HCLonely/AWA-Helper/releases/latest', delegated: true };
+  }
   if (scheduled || scheduling) {
     throw new UpdateInstallerError('ALREADY_SCHEDULED', 'An update has already been scheduled');
   }
   scheduling = true;
   let stageRoot: string | undefined;
+  const installLock = os.type() === 'Windows_NT' ? new ProcessLock(path.resolve('.update/install.lock')) : undefined;
   try {
+    if (installLock && !await installLock.acquire()) {
+      throw new UpdateInstallerError('ALREADY_SCHEDULED', 'Another installer is running');
+    }
+    if (os.type() === 'Windows_NT') {
+      const trayPath = path.resolve('.update/tray.json');
+      if (fs.existsSync(trayPath)) {
+        const { pid } = JSON.parse(fs.readFileSync(trayPath, 'utf8')) as { pid?: number };
+        let trayAlive = false;
+        if (Number.isSafeInteger(pid) && (pid || 0) > 0) {
+          try {
+            process.kill(pid!, 0);
+            trayAlive = true;
+          } catch (error) {
+            trayAlive = (error as NodeJS.ErrnoException).code === 'EPERM';
+          }
+        }
+        if (trayAlive) {
+          throw new UpdateInstallerError('ALREADY_SCHEDULED', 'AWA-Manager is running; use its 检查更新 menu');
+        }
+      }
+    }
     const release = await getReleaseCheck(currentVersion, proxy, true);
     if (!release.updateAvailable) {
       throw new UpdateInstallerError('UP_TO_DATE', 'AWA-Helper is already up to date');
@@ -276,13 +321,18 @@ export const scheduleUpdate = async ({ currentVersion, proxy, restart }: Schedul
     if (coordinateTray && (process.stdout.destroyed || !process.stdout.writable)) {
       throw new Error('Unable to coordinate the update with AWA-Manager');
     }
-    launchUpdater(scriptPath);
+    const installerPid = launchUpdater(scriptPath);
+    if (installLock) {
+      // The deferred installer waits for this process and removes the lock in finally.
+      fs.writeFileSync(path.resolve('.update/install.lock'), JSON.stringify({ pid: installerPid, startedAt: new Date().toISOString() }));
+    }
     scheduled = true;
     if (coordinateTray) {
       process.stdout.write('@@AWA-TRAY\tUPDATE\n');
     }
     return { version: release.version, assetName, releaseUrl: release.releaseUrl };
   } catch (error) {
+    await installLock?.release();
     if (stageRoot) {
       fs.rmSync(stageRoot, { recursive: true, force: true });
     }

@@ -5,6 +5,7 @@ import { Cookie, http, netError } from '../http';
 import { formatProxy } from '../proxy';
 import { Logger } from '../logging';
 import { time } from '../common';
+import { withGitHubFallback } from './github';
 
 const LATEST_RELEASE_API = 'https://api.github.com/repos/HCLonely/AWA-Helper/releases/latest';
 const RELEASE_CACHE_TTL_MS = 15 * 60 * 1000;
@@ -150,13 +151,13 @@ export const getLatestRelease = async (proxy?: proxy, force = false): Promise<Re
   if (!force && pendingRelease) {
     return pendingRelease;
   }
-  const request = http.get<GitHubReleaseResponse>(LATEST_RELEASE_API, releaseRequestOptions(proxy))
-    .then((response) => {
-      setLogSecrets(Object.values(Cookie.ToJson(response.headers?.['set-cookie'])).map((cookie) => ({ cookie })));
-      const value = parseRelease(response.data);
-      cachedRelease = { value, expiresAt: Date.now() + RELEASE_CACHE_TTL_MS };
-      return value;
-    })
+  const request = withGitHubFallback(LATEST_RELEASE_API, async (url) => {
+    const response = await http.get<GitHubReleaseResponse>(url, releaseRequestOptions(proxy));
+    setLogSecrets(Object.values(Cookie.ToJson(response.headers?.['set-cookie'])).map((cookie) => ({ cookie })));
+    const value = parseRelease(response.data);
+    cachedRelease = { value, expiresAt: Date.now() + RELEASE_CACHE_TTL_MS };
+    return value;
+  })
     .finally(() => {
       pendingRelease = undefined;
     });

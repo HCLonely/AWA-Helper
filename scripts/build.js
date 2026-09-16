@@ -70,13 +70,13 @@
   fs.copySync('config.example.yml', 'dist/config/config.example.yml');
 
   fs.copySync('dist/config', 'output/config');
-  fs.mkdirSync('output/logs');
+  fs.mkdirSync('output/logs', { recursive: true });
   fs.copySync('dist/README.html', 'output/README.html');
   fs.copySync('dist/README_en.html', 'output/README_en.html');
   // windows
   fs.writeFileSync('output/AWA-Manager.bat', 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --manager"');
   fs.writeFileSync('output/AWA-DailyQuest.bat', 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --daily"');
-  fs.writeFileSync('output/update.bat', '@echo off\ncd "%~dp0"\ntaskkill /f /t /im AWA-Helper.exe\nstart cmd /k "AWA-Helper.exe --update"');
+  fs.writeFileSync('output/update.bat', '@echo off\r\ncd /d "%~dp0"\r\nif exist "AWA-Manager.exe" (\r\n  start "" "AWA-Manager.exe" --check-update\r\n) else (\r\n  "AWA-Helper.exe" --update\r\n)\r\n');
   // linux
   // fs.writeFileSync('output/AWA-Manager.sh', 'awapath=$(dirname $0)\ncd ${awapath}\n./AWA-Helper --manager');
   // DailyQuest uses --daily; --helper remains a deprecated runtime alias only.

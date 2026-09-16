@@ -169,6 +169,9 @@ class UnifiedServer {
       try {
         new Logger(`${time()}${__('updateHelper')}`);
         const update = await scheduleUpdate({ currentVersion: this.version, proxy: raw.proxy, restart: true });
+        if (update.delegated) {
+          return res.status(202).json({ status: 'checking', ...update });
+        }
         this.coordinator.beginShutdown();
         const response = res.status(202).json({ status: 'scheduled', ...update });
         setImmediate(this.requestShutdown);

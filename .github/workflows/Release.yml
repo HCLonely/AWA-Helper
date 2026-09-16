@@ -41,6 +41,9 @@ jobs:
           if ($archiveEntries -notcontains './output/AWA-Manager.exe') {
             throw 'AWA-Manager.exe is missing from AWA-Helper-Win.tar.gz'
           }
+          if ($archiveEntries -notcontains './output/installation.json') {
+            throw 'installation.json is missing from the Windows package'
+          }
       - run: node scripts/md5.js
       - name: Release
         uses: softprops/action-gh-release@v3
@@ -51,6 +54,8 @@ jobs:
           body_path: CHANGELOG.txt
           files: |
             AWA-Helper-Win.tar.gz
+            AWA-Helper-Win.tar.gz.sha256
+            output/AWA-Manager.exe
             output/index.js
             output/sha256.txt
           token: ${{ github.TOKEN }}

@@ -52,10 +52,12 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
     - Run AWA-Manager: Double-click `AWA-Manager.bat` to run AWA-Manager;
     - Run AWA-Manager in the system tray: double-click `AWA-Manager.exe`. Hover over the icon for task status, double-click it to open the WebUI, or use its context menu to inspect status, start or stop Helper/Achievement, toggle startup at sign-in for the current user, and exit Manager.
 
+> Alternatively, download only [AWA-Manager.exe](https://github.com/HCLonely/AWA-Helper/releases/latest/download/AWA-Manager.exe) into a writable directory and run it. Manager downloads and verifies the required files, repairs missing files from the installed release, and creates default configuration on first installation. Configure your cookies and personal settings in the WebUI afterward. Bootstrap installation requires a release containing an `installation.json` manifest.
+
 ##### Update
 
-- Update checks notify you about new releases; enable `autoUpdate` to verify and install GitHub Releases automatically;
-- Manual update: Double-click 'update.bat'.
+- Update checks notify you about new releases; enable `autoUpdate` to verify and install automatically;
+- Tray updates: select “检查更新” (Check for updates). Manager reports when already current, or downloads, verifies, gracefully stops Helper, updates both executables and restarts. Existing tasks continue during download. Installation failures restore old program files; user configuration, cookies, logs and runtime data are preserved.
 
 #### Linux
 

@@ -9,6 +9,7 @@ AWA-Helper.exe
 *.zip
 *.tar
 *.tar.gz
+AWA-Helper-Win.tar.gz.sha256
 *.blob
 !node-v18.17.1-win-x64.zip
 output/
@@ -58,11 +59,7 @@ DailyQuestO.ts
 
 test
 logs/*
-tests/*
-!tests/operations.test.js
-!tests/operations-browser.test.js
-!tests/fixtures/
-!tests/helpers/
+tests/
 
 *05.md
 *06.md

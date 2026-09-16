@@ -114,6 +114,13 @@
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updating')}</li>`);
     dom('#awa-manager-server-logs').text(`${time()}AWA-Manager: ${__('updating')}`);
     axios.post('/api/manager/update', {}, { headers: authorization(secret) }).then(async (response) => {
+      if (response.status === 202 && response.data?.delegated === true) {
+        const message = `${time()}AWA-Manager: ${__('updateDelegated')}`;
+        dom('#log-area').append(`<li>${message}</li>`);
+        dom('#awa-manager-server-logs').text(message);
+        updateButton.prop('disabled', false);
+        return;
+      }
       if (response.status === 200 || response.status === 202) {
         await sleep(10);
         const result = await managerStatusChecker('start');

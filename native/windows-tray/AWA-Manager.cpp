@@ -6,6 +6,9 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
+#include <memory>
+#include "Updater.h"
 
 #include "resource.h"
 
@@ -22,6 +25,14 @@ constexpr UINT kShowStatus = 1004;
 constexpr UINT kToggleHelper = 1005;
 constexpr UINT kToggleAchievement = 1006;
 constexpr UINT kToggleAutoStart = 1007;
+constexpr UINT kCheckUpdate = 1008;
+constexpr UINT kRetryInstall = 1009;
+constexpr UINT kUpdateProgress = WM_APP + 20;
+constexpr UINT kUpdatePrepared = WM_APP + 21;
+constexpr UINT kUpdateFailed = WM_APP + 22;
+constexpr UINT kRequestUpdate = WM_APP + 23;
+constexpr UINT kUpdateSucceeded = WM_APP + 24;
+constexpr UINT_PTR kUpdateStopTimer = 1;
 constexpr wchar_t kWindowClass[] = L"AWAHelperManagerTrayWindow";
 constexpr wchar_t kAutoStartKey[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 constexpr wchar_t kAutoStartValue[] = L"AWA-Manager";
@@ -40,6 +51,12 @@ std::wstring dailyQuestStatus = L"idle";
 std::wstring achievementStatus = L"idle";
 std::wstring artifactStatus = L"idle";
 DWORD childExitCode = 0;
+std::atomic<bool> updateBusy{false};
+bool updateStopping = false;
+bool needsInstall = false;
+std::wstring healthEvent;
+std::wstring updateStatus;
+updater::Prepared pendingUpdate;
 
 std::wstring executableDirectory() {
   std::wstring path(32768, L'\0');
@@ -234,9 +251,12 @@ void handleProtocolLine(const std::string& line) {
     PostMessageW(windowHandle, kChildStatus, 0, 0);
   } else if (payload == "ERROR") {
     PostMessageW(windowHandle, kChildError, 0, 0);
+  } else if (payload == "UPDATE_REQUEST") {
+    PostMessageW(windowHandle, kRequestUpdate, 0, 0);
   } else if (payload == "UPDATE") {
+    // Older Helpers already launched their deferred installer before emitting
+    // UPDATE. Let that installer finish instead of starting a second one.
     shutdownRequested = true;
-    setTooltip(L"AWA-Helper - 正在更新...");
   }
 }
 
@@ -307,6 +327,42 @@ bool launchManager() {
   return true;
 }
 
+void postUpdateText(UINT message, const std::wstring& text) {
+  auto value = std::make_unique<std::wstring>(text);
+  if (PostMessageW(windowHandle, message, 0, reinterpret_cast<LPARAM>(value.get()))) value.release();
+}
+
+void beginUpdate(bool repair) {
+  if (shutdownRequested || !healthEvent.empty() || updateBusy.exchange(true)) return;
+  updateStatus = repair ? L"正在准备安装或修复" : L"正在检查更新";
+  std::thread([repair] {
+    try {
+      auto prepared = std::make_unique<updater::Prepared>(updater::prepare(executableDirectory(), repair, [](const std::wstring& text) {
+        postUpdateText(kUpdateProgress, text);
+      }));
+      if (PostMessageW(windowHandle, kUpdatePrepared, 0, reinterpret_cast<LPARAM>(prepared.get()))) prepared.release();
+    } catch (const std::exception& error) {
+      postUpdateText(kUpdateFailed, utf8ToWide(error.what()));
+    }
+  }).detach();
+}
+
+void startInstaller() {
+  try {
+    updater::apply(executableDirectory(), pendingUpdate, childProcess && childRunning ? GetProcessId(childProcess) : 0);
+    updateStopping = true;
+    setTooltip(L"AWA-Manager - 正在等待程序退出并安装更新");
+    if (!childRunning) DestroyWindow(windowHandle);
+    else if (writeChildCommand("shutdown\n")) SetTimer(windowHandle, kUpdateStopTimer, 125000, nullptr);
+    else throw std::runtime_error("无法通知 Helper 退出，安装将中止");
+  } catch (const std::exception& error) {
+    updater::releaseLock();
+    updateBusy = false;
+    updateStopping = false;
+    showNotification(L"更新失败", utf8ToWide(error.what()).c_str(), NIIF_ERROR);
+  }
+}
+
 void showContextMenu() {
   const HMENU menu = CreatePopupMenu();
   bool webUiReady = false;
@@ -322,10 +378,13 @@ void showContextMenu() {
     helperStopping = dailyQuestStatus == L"stopping";
     achievementStopping = achievementStatus == L"stopping";
   }
-  const bool controlsEnabled = managerReady && childRunning && !shutdownRequested;
+  const bool controlsEnabled = managerReady && childRunning && !shutdownRequested && !updateStopping;
   AppendMenuW(menu, MF_STRING | (webUiReady ? MF_ENABLED : MF_GRAYED), kOpenWebUi, L"打开管理页面");
   AppendMenuW(menu, MF_STRING, kShowStatus, L"查看运行状态");
   AppendMenuW(menu, MF_STRING, kOpenLogs, L"打开日志目录");
+  AppendMenuW(menu, MF_STRING | (updateBusy || !healthEvent.empty() ? MF_GRAYED : MF_ENABLED), kCheckUpdate,
+    updateBusy ? updateStatus.c_str() : L"检查更新");
+  if (needsInstall) AppendMenuW(menu, MF_STRING | (updateBusy ? MF_GRAYED : MF_ENABLED), kRetryInstall, L"重试安装 / 修复");
   const bool autoStart = autoStartEnabled();
   AppendMenuW(menu, MF_STRING | (autoStart ? MF_CHECKED : MF_UNCHECKED), kToggleAutoStart,
     autoStart ? L"开机自启（已启用）" : L"开机自启（未启用）");
@@ -335,7 +394,7 @@ void showContextMenu() {
   AppendMenuW(menu, MF_STRING | (controlsEnabled && !achievementStopping ? MF_ENABLED : MF_GRAYED),
     kToggleAchievement, achievementActive ? L"停止Achievement" : L"启动Achievement");
   AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
-  AppendMenuW(menu, MF_STRING, kExitManager, L"退出AWA-Manager");
+  AppendMenuW(menu, MF_STRING | (updateBusy ? MF_GRAYED : MF_ENABLED), kExitManager, L"退出AWA-Manager");
   POINT cursor{};
   GetCursorPos(&cursor);
   SetForegroundWindow(windowHandle);
@@ -345,6 +404,51 @@ void showContextMenu() {
 
 LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
   switch (message) {
+    case kRequestUpdate:
+      beginUpdate(needsInstall);
+      return 0;
+    case kUpdateProgress: {
+      std::unique_ptr<std::wstring> text(reinterpret_cast<std::wstring*>(lParam));
+      updateStatus = *text;
+      setTooltip(text->c_str());
+      return 0;
+    }
+    case kUpdateFailed: {
+      std::unique_ptr<std::wstring> text(reinterpret_cast<std::wstring*>(lParam));
+      updateBusy = false;
+      updateStatus = L"更新失败";
+      setTooltip(L"AWA-Manager - 更新失败，可重试");
+      showNotification(L"安装 / 更新失败", text->c_str(), NIIF_ERROR);
+      return 0;
+    }
+    case kUpdatePrepared: {
+      std::unique_ptr<updater::Prepared> prepared(reinterpret_cast<updater::Prepared*>(lParam));
+      if (prepared->stage.empty()) {
+        updateBusy = false;
+        showNotification(L"AWA-Manager", prepared->message.c_str());
+        updateStatusTooltip();
+      } else {
+        pendingUpdate = *prepared;
+        updateStatus = prepared->message;
+        startInstaller();
+      }
+      return 0;
+    }
+    case kUpdateSucceeded:
+      healthEvent.clear();
+      showNotification(L"更新成功", (L"已安装 v" + updater::version(executableDirectory())).c_str());
+      return 0;
+    case WM_TIMER:
+      if (wParam == kUpdateStopTimer) {
+        KillTimer(hwnd, kUpdateStopTimer);
+        updateStopping = false;
+        updateBusy = false;
+        showNotification(L"更新中止", L"Helper 未能及时退出，程序文件未替换。请稍后重试。", NIIF_ERROR);
+      }
+      return 0;
+    case WM_CLOSE:
+      if (!updateBusy || !healthEvent.empty()) requestChildShutdown();
+      return 0;
     case kTrayCallback:
       if (LOWORD(lParam) == WM_LBUTTONDBLCLK) {
         openWebUi();
@@ -379,12 +483,19 @@ LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
           toggleAutoStart();
           break;
         case kExitManager:
-          requestChildShutdown();
+          if (!updateBusy) requestChildShutdown();
+          break;
+        case kCheckUpdate:
+          beginUpdate(false);
+          break;
+        case kRetryInstall:
+          beginUpdate(true);
           break;
       }
       return 0;
     case kChildReady: {
       managerReady = true;
+      updater::healthReady(healthEvent);
       std::lock_guard<std::mutex> lock(stateMutex);
       if (webUiUrl.empty()) {
         setTooltip(L"AWA-Helper - 运行中（WebUI 已禁用）");
@@ -396,7 +507,7 @@ LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
       return 0;
     }
     case kChildStatus:
-      if (managerReady && !shutdownRequested) {
+      if (managerReady && !shutdownRequested && !updateBusy) {
         updateStatusTooltip();
       }
       return 0;
@@ -405,7 +516,7 @@ LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
       return 0;
     case kChildExited:
       managerReady = false;
-      if (shutdownRequested) {
+      if (shutdownRequested || updateStopping) {
         DestroyWindow(hwnd);
       } else {
         setTooltip(L"AWA-Helper - 已停止");
@@ -437,7 +548,7 @@ bool createTrayWindow() {
   if (!RegisterClassExW(&windowClass)) {
     return false;
   }
-  windowHandle = CreateWindowExW(0, kWindowClass, L"AWA-Helper Manager", 0, 0, 0, 0, 0,
+  windowHandle = CreateWindowExW(0, kWindowClass, executableDirectory().c_str(), 0, 0, 0, 0, 0,
     HWND_MESSAGE, nullptr, instanceHandle, nullptr);
   if (!windowHandle) {
     return false;
@@ -460,22 +571,51 @@ bool createTrayWindow() {
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
   instanceHandle = instance;
-  const HANDLE singleton = CreateMutexW(nullptr, TRUE, L"Local\\AWAHelperManagerTray");
+  int argc = 0;
+  auto argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+  std::vector<std::wstring> args;
+  if (argv) { for (int i = 0; i < argc; ++i) args.emplace_back(argv[i]); LocalFree(argv); }
+  const int internalResult = updater::internalMode(args);
+  if (internalResult >= 0) return internalResult;
+  const bool checkUpdate = args.size() > 1 && args[1] == L"--check-update";
+  if (args.size() == 3 && args[1] == L"--update-health") healthEvent = args[2];
+  unsigned long long directoryHash = 14695981039346656037ULL;
+  for (wchar_t ch : executableDirectory()) directoryHash = (directoryHash ^ static_cast<unsigned long long>(towlower(ch))) * 1099511628211ULL;
+  const auto singletonName = L"Local\\AWAHelperManagerTray-" + std::to_wstring(directoryHash);
+  const HANDLE singleton = CreateMutexW(nullptr, TRUE, singletonName.c_str());
   if (!singleton || GetLastError() == ERROR_ALREADY_EXISTS) {
-    MessageBoxW(nullptr, L"AWA-Manager 托盘程序已经在运行。", L"AWA-Helper", MB_OK | MB_ICONINFORMATION);
+    if (checkUpdate) {
+      const auto existing = FindWindowExW(HWND_MESSAGE, nullptr, kWindowClass, executableDirectory().c_str());
+      if (existing) PostMessageW(existing, kRequestUpdate, 0, 0);
+    } else MessageBoxW(nullptr, L"AWA-Manager 托盘程序已经在运行。", L"AWA-Helper", MB_OK | MB_ICONINFORMATION);
     if (singleton) {
       CloseHandle(singleton);
     }
     return 0;
+  }
+  try {
+    if (!healthEvent.empty()) updater::validateHealth(executableDirectory(), healthEvent);
+    if (healthEvent.empty() && updater::recover(executableDirectory())) { CloseHandle(singleton); return 0; }
+    updater::markTray(executableDirectory());
+  } catch (const std::exception& error) {
+    MessageBoxW(nullptr, utf8ToWide(error.what()).c_str(), L"AWA-Manager 安装恢复", MB_OK | MB_ICONERROR);
+    CloseHandle(singleton); return 1;
   }
   if (!createTrayWindow()) {
     MessageBoxW(nullptr, L"无法创建任务栏托盘图标。", L"AWA-Helper", MB_OK | MB_ICONERROR);
     CloseHandle(singleton);
     return 1;
   }
-  if (!launchManager()) {
+  needsInstall = !updater::complete(executableDirectory());
+  if (needsInstall) {
+    beginUpdate(true);
+  } else if (!launchManager()) {
     setTooltip(L"AWA-Helper - 启动失败");
     showNotification(L"AWA-Helper", L"无法启动 AWA-Helper.exe，请确认两个程序位于同一目录。", NIIF_ERROR);
+  }
+  if (checkUpdate && !needsInstall) beginUpdate(false);
+  if (args.size() == 3 && args[1] == L"--update-result") {
+    showNotification(L"更新未完成", L"已恢复旧版程序，详情请查看 logs/Updater.log。", NIIF_WARNING);
   }
 
   MSG message{};
@@ -492,6 +632,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
   if (childProcess) {
     CloseHandle(childProcess);
   }
+  updater::unmarkTray(executableDirectory());
   CloseHandle(singleton);
   return 0;
 }

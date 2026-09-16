@@ -30,6 +30,9 @@ jobs:
       - name: Compile Windows tray app
         if: runner.os == 'Windows'
         run: node scripts/build-tray.js
+      - name: Test Windows installer and recovery
+        if: runner.os == 'Windows'
+        run: node scripts/test-tray.js
       - name: Verify Windows tray executable
         if: runner.os == 'Windows'
         shell: pwsh
