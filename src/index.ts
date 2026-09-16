@@ -10,7 +10,7 @@ import { ManagerRuntime } from './core/Manager';
 import { ProcessLock } from './tools/process/ProcessLock';
 import { runHealthcheck } from './tools/process/healthcheck';
 import { TrayBridge } from './tools/process/TrayBridge';
-import { loadConfig } from './tools/config';
+import { ConfigNotFoundError, loadConfig } from './tools/config';
 import { scheduleUpdate, UpdateInstallerError } from './tools/update';
 import { initializeI18n } from './tools/i18n';
 import { Logger } from './tools/logging';
@@ -100,13 +100,7 @@ const main = async (): Promise<number> => {
           language
         };
       } catch (error) {
-        if (!(error instanceof Error)) {
-          throw error;
-        }
-        const {
-          message
-        } = error;
-        if (!message.startsWith('Configuration file not found:')) {
+        if (!(error instanceof ConfigNotFoundError)) {
           throw error;
         }
         return {

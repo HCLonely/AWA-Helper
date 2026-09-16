@@ -441,12 +441,28 @@ class UnifiedServer {
           error: 'cookie is required'
         });
       }
-      updateYamlFieldsSync(configPath, {
+      if (req.body.userAgent !== undefined && typeof req.body.userAgent !== 'string') {
+        return res.status(422).json({
+          error: 'userAgent must be a string'
+        });
+      }
+      const fields = {
         awaCookie: req.body.cookie,
-        ...(req.body.userAgent ? {
+        ...(req.body.userAgent !== undefined ? {
           UA: req.body.userAgent
         } : {})
+      };
+      const candidate = deepMerge(defaultConfig, {
+        ...parseYaml(fs.readFileSync(configPath, 'utf8')),
+        ...fields
       });
+      const errors = validateHelperConfig(candidate);
+      if (errors.length > 0) {
+        return res.status(422).json({
+          errors
+        });
+      }
+      updateYamlFieldsSync(configPath, fields);
       this.reloadConfig();
       new Logger(`${time()}${__('serverAwaCredentialsUpdated')}`);
       return res.json({

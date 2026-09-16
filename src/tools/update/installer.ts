@@ -182,6 +182,8 @@ const copyExistingFiles = (sourceRoot: string, installRoot: string, backupRoot: 
 };
 
 const psQuote = (value: string): string => `'${value.replace(/'/g, '\'\'')}'`;
+// Start-Process 将 ArgumentList 拼成原生命令行，需要保留参数自身的双引号。
+const windowsArgument = (value: string): string => `"${value.replace(/(\\*)"/g, '$1$1\\"').replace(/\\+$/g, '$&$&')}"`;
 const shQuote = (value: string): string => `'${value.replace(/'/g, String.raw`'"'"'`)}'`;
 
 const restartCommand = (): {
@@ -214,7 +216,7 @@ const writeWindowsUpdater = (stageRoot: string, sourceRoot: string, installRoot:
   const scriptPath = path.join(stageRoot, 'apply-update.ps1');
   const restartSpec = restartCommand();
   const restartArguments = restartSpec.args.length > 0
-    ? ` -ArgumentList @(${restartSpec.args.map(psQuote).join(', ')})`
+    ? ` -ArgumentList ${psQuote(restartSpec.args.map(windowsArgument).join(' '))}`
     : '';
   const restartLines = restart
     ? `Start-Process -FilePath ${psQuote(restartSpec.command)}${restartArguments} -WorkingDirectory ${psQuote(installRoot)} -WindowStyle Hidden`

@@ -29,6 +29,16 @@ const defaultConfig: config = {
   asfProtocol: 'http'
 };
 
+/** 配置文件缺失，与配置内容无效等错误明确区分。 */
+class ConfigNotFoundError extends Error {
+  readonly code = 'CONFIG_NOT_FOUND';
+
+  constructor(filename: string) {
+    super(`[CONFIG_NOT_FOUND] Configuration file not found: ${filename}`);
+    this.name = 'ConfigNotFoundError';
+  }
+}
+
 /**
  * 定位配置文件。
  * @returns `string`，locateConfig 获取或生成的文本内容。
@@ -40,7 +50,7 @@ const locateConfig = (): string => {
   }
   const found = candidates.find((candidate) => fs.existsSync(candidate));
   if (!found) {
-    throw new Error(`[CONFIG_NOT_FOUND] Configuration file not found: ${resolve(candidates[1])}`);
+    throw new ConfigNotFoundError(resolve(candidates[1]));
   }
   return found;
 };
@@ -87,4 +97,4 @@ const loadConfig = (configPath?: string): LoadedConfig => {
   };
 };
 
-export { defaultConfig, loadConfig, locateConfig };
+export { ConfigNotFoundError, defaultConfig, loadConfig, locateConfig };
