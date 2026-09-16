@@ -1,4 +1,7 @@
-/** @description Renders DailyQuest state and real-time logs. */
+/**
+ * @file src/webUI/static/js/pages/dailyQuest.ts
+ * @description 展示每日任务状态与实时日志。
+ */
 (() => {
   type QuestField = string | number;
   interface QuestInfo {
@@ -183,7 +186,7 @@
         added.append(item);
       }
     }
-    // The facade accounts only for these changed nodes, never rescans the log body.
+    // 仅统计发生变化的节点，避免重新扫描整个日志区域。
     dom(area).append(dom(Array.from(added.children)));
     pendingLogs.clear();
     pendingSize = 0;

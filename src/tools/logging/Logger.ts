@@ -1,4 +1,7 @@
-/** Scoped file, console, and WebSocket logger shared by Manager-owned jobs. */
+/**
+ * @file src/tools/logging/Logger.ts
+ * @description 为 Manager 作业提供带作用域的文件、控制台及 WebSocket 日志。
+ */
 import chalk from 'chalk';
 import { formatLogValue, stripLogAnsi } from './sanitize';
 import { getLogScope } from './LogContext';
@@ -6,7 +9,9 @@ import { LogCache, type WebLogEntry } from './LogCache';
 import { writeFormattedFileLog } from './LogWriter';
 import { acceptsWebUiScope, sendWebUiMessage } from './WebSocketLimits';
 
-globalThis.logs = { type: 'logs' };
+globalThis.logs = {
+  type: 'logs'
+};
 globalThis.wsClients = new Set();
 globalThis.secrets = [];
 
@@ -98,7 +103,12 @@ export class Logger {
       }
     }
     this.data = (this.data + safeText).slice(-2048);
-    const entry: WebLogEntry = { id: this.id, data: toHtml(this.data), type: 'log', scope: this.scope };
+    const entry: WebLogEntry = {
+      id: this.id,
+      data: toHtml(this.data),
+      type: 'log',
+      scope: this.scope
+    };
     broadcastWebUi(entry);
   }
 

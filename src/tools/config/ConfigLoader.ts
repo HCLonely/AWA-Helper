@@ -15,8 +15,14 @@ const defaultConfig: config = {
   language: 'zh',
   timeout: 86400,
   logsExpire: 30,
-  debug: { http: false },
-  webUI: { enable: true, port: 2345, local: true },
+  debug: {
+    http: false
+  },
+  webUI: {
+    enable: true,
+    port: 2345,
+    local: true
+  },
   awaHost: 'www.alienwarearena.com',
   awaQuests: ['getStarted', 'dailyQuest', 'timeOnSite'],
   awaDailyQuestType: ['click', 'visitLink', 'openLink', 'changeBorder', 'changeAvatar', 'viewNews'],
@@ -24,7 +30,7 @@ const defaultConfig: config = {
 };
 
 /**
- * 处理 locate Config 相关逻辑。
+ * 定位配置文件。
  * @returns `string`，locateConfig 获取或生成的文本内容。
  */
 const locateConfig = (): string => {
@@ -40,7 +46,7 @@ const locateConfig = (): string => {
 };
 
 /**
- * 更新 normalize Manager 相关数据。
+ * 规范化 Manager 配置。
  * @param value - 需要写入或参与计算的值，类型为 `config`。
  * @param configPath - 待读取或写入文件的路径，类型为 `string`。
  * @returns `NormalizedManagerConfig`，补齐默认值并通过校验的标准 Manager 配置。
@@ -51,7 +57,9 @@ const normalizeManager = (value: config, configPath: string): NormalizedManagerC
   let secret = current?.secret || legacy?.secret || '';
   if (!secret) {
     secret = crypto.randomBytes(24).toString('hex');
-    updateYamlFieldsSync(configPath, { 'manager.secret': secret });
+    updateYamlFieldsSync(configPath, {
+      'manager.secret': secret
+    });
   }
   return {
     secret,
@@ -60,7 +68,7 @@ const normalizeManager = (value: config, configPath: string): NormalizedManagerC
 };
 
 /**
- * 加载 load Config 相关数据。
+ * 加载配置。
  * @returns `LoadedConfig`，loadConfig 获取到的数据。
  */
 const loadConfig = (configPath?: string): LoadedConfig => {
@@ -72,7 +80,11 @@ const loadConfig = (configPath?: string): LoadedConfig => {
   if (errors.length > 0) {
     throw createConfigValidationError(source, errors);
   }
-  return { path, raw, manager: normalizeManager(raw, path) };
+  return {
+    path,
+    raw,
+    manager: normalizeManager(raw, path)
+  };
 };
 
 export { defaultConfig, loadConfig, locateConfig };

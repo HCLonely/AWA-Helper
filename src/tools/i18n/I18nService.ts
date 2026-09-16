@@ -5,7 +5,7 @@
 import * as i18n from 'i18n';
 
 /**
- * 初始化 initialize I18n 相关数据。
+ * 初始化国际化服务。
  * @param language - 需要加载的本地化语言代码，类型为 `string`。
  * @param catalogs - 需要遍历或处理的数据集合，类型为 `Record<string, Record<string, string>>`。
  * @returns `void`，该函数仅执行副作用，不返回值。

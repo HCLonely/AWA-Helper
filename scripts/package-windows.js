@@ -1,8 +1,13 @@
-/** Build a deterministic, program-only Windows package and its integrity manifest. */
+/**
+ * @file scripts/package-windows.js
+ * @description 生成内容确定且仅包含程序的 Windows 安装包及完整性清单。
+ */
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { execFileSync } = require('child_process');
+const {
+  execFileSync
+} = require('child_process');
 
 const files = [
   'AWA-Manager.exe', 'AWA-Helper.exe', 'AWA-Manager.bat', 'AWA-DailyQuest.bat',
@@ -23,7 +28,9 @@ const manifest = {
   }))
 };
 fs.writeFileSync('output/installation.json', JSON.stringify(manifest, null, 2));
-// Explicit file list excludes local configuration, cookies, logs and runtime data.
-// ustar avoids platform-dependent PAX extension headers in the bootstrap parser.
-execFileSync('tar', ['--format=ustar', '-zcf', 'AWA-Helper-Win.tar.gz', ...[...files, 'installation.json'].map((name) => `./output/${name}`)], { stdio: 'inherit' });
+// 通过明确的文件列表排除本地配置、Cookie、日志和运行时数据。
+// 使用 ustar，避免引导解析器处理与平台有关的 PAX 扩展头。
+execFileSync('tar', ['--format=ustar', '-zcf', 'AWA-Helper-Win.tar.gz', ...[...files, 'installation.json'].map((name) => `./output/${name}`)], {
+  stdio: 'inherit'
+});
 fs.writeFileSync('AWA-Helper-Win.tar.gz.sha256', `${digest('AWA-Helper-Win.tar.gz')}  AWA-Helper-Win.tar.gz\n`);

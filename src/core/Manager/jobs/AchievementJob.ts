@@ -1,10 +1,10 @@
-import type { TaskOutcome } from '../../TaskOutcome';
-import { withRunConfiguration, getRunConfiguration as loadConfig, createSessionCommit as createCookieCommit } from '../../../tools/config/RunConfiguration';
-import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/Manager/jobs/AchievementJob.ts
  * @description 将成就服务封装为可由 Manager 创建、运行和释放的作业。
  */
+import type { TaskOutcome } from '../../TaskOutcome';
+import { withRunConfiguration, getRunConfiguration as loadConfig, createSessionCommit as createCookieCommit } from '../../../tools/config/RunConfiguration';
+import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 import { AchievementService } from '../../Achievement/AchievementService';
 import type { Job } from '../Job';
 
@@ -13,13 +13,13 @@ class AchievementJob implements Job {
   private service?: AchievementService;
 
   /**
-   * 初始化 Achievement Job 实例。
+   * 初始化 AchievementJob 实例。
    * @param configPath - 配置文件路径；每次运行时重新读取，避免使用 Manager 启动时缓存的 Cookie。
    */
   constructor(private readonly configPath: string) {}
 
   /**
-   * 执行 run 相关数据。
+   * 执行任务。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal`。
    * @returns `Promise<boolean | TaskOutcome>`，表示 run 检查是否通过。
    */
@@ -48,11 +48,13 @@ class AchievementJob implements Job {
       logRequests: appConfig.debug?.http === true
     });
     /**
-     * 处理 abort 相关逻辑。
+     * 取消操作。
      * @returns `void`，该函数仅执行副作用，不返回值。
      */
     const abort = (): void => this.service?.stop();
-    signal.addEventListener('abort', abort, { once: true });
+    signal.addEventListener('abort', abort, {
+      once: true
+    });
     let initialized = false;
     try {
       await this.service.init();
@@ -75,7 +77,7 @@ class AchievementJob implements Job {
   }
 
   /**
-   * 停止 dispose 相关数据。
+   * 释放资源。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   dispose(): void {

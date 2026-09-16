@@ -4,13 +4,20 @@
  */
 import { AWAContext } from '../../AWAContext';
 /**
- * 请求 open Page 相关数据。
+ * 打开目标页面。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
  * @param link - 需要访问或提交的目标页面链接，类型为 `string`。
  * @returns `Promise<string>`，openPage 获取或生成的文本内容。
  */
 export const openPage = async (context: AWAContext, link: string): Promise<string> => {
-  const options: myAxiosConfig = { url: link, method: 'GET', headers: { ...context.headers, referer: `${context.baseURL}/` } };
+  const options: myAxiosConfig = {
+    url: link,
+    method: 'GET',
+    headers: {
+      ...context.headers,
+      referer: `${context.baseURL}/`
+    }
+  };
   if (context.httpsAgent) {
     options.httpsAgent = context.httpsAgent;
   }

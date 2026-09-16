@@ -1,12 +1,12 @@
+/**
+ * @file src/server/UnifiedServer.ts
+ * @description 在同一端口托管 WebUI、管理 API、日志接口和带身份验证的 WebSocket。
+ */
 import { Diagnostics } from '../core/Manager/Diagnostics';
 import { Scheduler } from '../core/Manager/Scheduler';
 import { formatLogValue } from '../tools/logging/sanitize';
 import { readLogPage } from '../tools/logging/LogPage';
 import { startLogReplay } from '../tools/logging/WebSocketReplay';
-/**
- * @file src/server/UnifiedServer.ts
- * @description 在同一端口托管 WebUI、管理 API、日志接口和带身份验证的 WebSocket。
- */
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as http from 'http';
@@ -37,7 +37,7 @@ import dailyQuestHtml from '../webUI/dist/dailyQuest.html';
 import achievementHtml from '../webUI/dist/achievement.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import settingsHtml from '../webUI/dist/settings.html';
-// @ts-ignore inline HTML template
+// @ts-ignore 内联 HTML 模板
 import operationsHtml from '../webUI/dist/operations.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import templateYml from '../webUI/static/templates/config.zh.yml';
@@ -70,7 +70,7 @@ class UnifiedServer {
   }
 
   /**
-   * 初始化 Unified Server 实例。
+   * 初始化 UnifiedServer 实例。
    * @param loaded - 已经加载并通过校验的应用配置，类型为 `LoadedConfig`。
    * @param coordinator - 负责协调作业启动与停止的协调器，类型为 `JobCoordinator`。
    * @param version - 用于比较或展示的应用版本号，类型为 `string`。
@@ -87,19 +87,26 @@ class UnifiedServer {
   ) {}
 
   /**
-   * 执行 start 相关数据。
+   * 启动任务。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async start(): Promise<void> {
-    const { raw, path: configPath } = this.loaded;
+    const {
+      raw, path: configPath
+    } = this.loaded;
     if (raw.webUI?.enable === false) {
       new Logger(`${time()}${__('serverWebUiDisabled')}`);
       return;
     }
     const app = express();
     app.disable('x-powered-by');
-    app.use(express.json({ limit: '64kb' }));
-    app.use(express.urlencoded({ extended: true, limit: '64kb' }));
+    app.use(express.json({
+      limit: '64kb'
+    }));
+    app.use(express.urlencoded({
+      extended: true,
+      limit: '64kb'
+    }));
     app.use((_, res, next) => {
       res.set({
         'Cache-Control': 'no-store',
@@ -115,14 +122,24 @@ class UnifiedServer {
     if (raw.webUI?.ssl?.key && raw.webUI.ssl.cert) {
       const key = fs.readFileSync(path.join(path.dirname(configPath), raw.webUI.ssl.key));
       const cert = fs.readFileSync(path.join(path.dirname(configPath), raw.webUI.ssl.cert));
-      server = https.createServer({ key, cert }, app);
+      server = https.createServer({
+        key,
+        cert
+      }, app);
     } else {
       server = http.createServer(app);
     }
-    expressWs(app, server, { wsOptions: { maxPayload: 64 * 1024 } });
-    const langs = { zh, en };
+    expressWs(app, server, {
+      wsOptions: {
+        maxPayload: 64 * 1024
+      }
+    });
+    const langs = {
+      zh,
+      en
+    };
     /**
-     * 格式化 render 相关数据。
+     * 渲染页面。
      * @param html - 待解析的 HTML 文本，类型为 `string`。
      * @returns `string`，render 获取或生成的文本内容。
      */
@@ -130,7 +147,7 @@ class UnifiedServer {
       .replaceAll('__VERSION__', this.version)
       .replace('__I18N__', JSON.stringify(langs));
     /**
-     * 检查 is Valid Secret 相关数据。
+     * 校验访问密钥。
      * @param candidate - 需要与 Manager 密钥进行安全比较的候选值，类型为 `unknown`。
      * @returns `boolean`，表示 isValidSecret 检查是否通过。
      */
@@ -143,13 +160,13 @@ class UnifiedServer {
       return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
     };
     /**
-     * 请求 request Secret 相关数据。
+     * 获取请求中的密钥。
      * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
      * @returns `unknown`，requestSecret 请求返回的响应结果。
      */
     const requestSecret = (req: express.Request): unknown => req.headers.authorization?.replace(/^Bearer\s+/i, '');
     /**
-     * 处理 authenticate 相关逻辑。
+     * 验证身份。
      * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
      * @param res - 用于返回处理结果的响应对象，类型为 `express.Response<any, Record<string, any>>`。
      * @returns `boolean`，表示 authenticate 检查是否通过。
@@ -159,7 +176,9 @@ class UnifiedServer {
         return true;
       }
       new Logger(`${time()}${__('serverAuthenticationRejected', req.method, req.path)}`);
-      res.status(401).json({ error: 'Authentication required' });
+      res.status(401).json({
+        error: 'Authentication required'
+      });
       return false;
     };
     const updateManager = async (req: express.Request, res: express.Response): Promise<express.Response> => {
@@ -168,12 +187,22 @@ class UnifiedServer {
       }
       try {
         new Logger(`${time()}${__('updateHelper')}`);
-        const update = await scheduleUpdate({ currentVersion: this.version, proxy: raw.proxy, restart: true });
+        const update = await scheduleUpdate({
+          currentVersion: this.version,
+          proxy: raw.proxy,
+          restart: true
+        });
         if (update.delegated) {
-          return res.status(202).json({ status: 'checking', ...update });
+          return res.status(202).json({
+            status: 'checking',
+            ...update
+          });
         }
         this.coordinator.beginShutdown();
-        const response = res.status(202).json({ status: 'scheduled', ...update });
+        const response = res.status(202).json({
+          status: 'scheduled',
+          ...update
+        });
         setImmediate(this.requestShutdown);
         return response;
       } catch (error) {
@@ -188,7 +217,10 @@ class UnifiedServer {
         }
         const message = error instanceof Error ? error.message : String(error);
         new Logger(`${time()}${__('updateFailed')}: ${message}`);
-        return res.status(status).json({ error: message, code: known ? error.code : 'UPDATE_FAILED' });
+        return res.status(status).json({
+          error: message,
+          code: known ? error.code : 'UPDATE_FAILED'
+        });
       }
     };
 
@@ -198,7 +230,10 @@ class UnifiedServer {
     app.get('/operations', (_, res) => res.send(render(operationsHtml)));
     app.get('/settings', (_, res) => res.send(render(settingsHtml)));
     app.get('/js/template.yml', (_, res) => res.type('text/yaml').send(raw.language === 'en' ? templateYmlEN : templateYml));
-    app.get('/api/health/live', (_, res) => res.json({ status: 'live', version: this.version }));
+    app.get('/api/health/live', (_, res) => res.json({
+      status: 'live',
+      version: this.version
+    }));
     app.get('/api/version/latest', async (_, res) => {
       try {
         const release = await getReleaseCheck(this.version, raw.proxy);
@@ -210,23 +245,33 @@ class UnifiedServer {
         });
       } catch (error) {
         new Logger(`${time()}Failed to check the latest version: ${error instanceof Error ? error.message : String(error)}`);
-        return res.status(502).json({ error: 'Unable to check the latest version' });
+        return res.status(502).json({
+          error: 'Unable to check the latest version'
+        });
       }
     });
-    app.get('/api/health/ready', (_, res) => res.json({ status: 'ready', jobs: this.coordinator.states.list() }));
+    app.get('/api/health/ready', (_, res) => res.json({
+      status: 'ready',
+      jobs: this.coordinator.states.list()
+    }));
     app.get('/api/history', (req, res) => {
       if (!authenticate(req, res)) {
         return;
       }
       res.setHeader('Cache-Control', 'no-store');
-      return res.json({ runs: this.coordinator.history.list(), storageError: this.coordinator.history.storageError,
-        failures: Object.fromEntries((['dailyQuest', 'achievement', 'artifact'] as const).map((name) => [name, this.coordinator.history.failures(name)])) });
+      return res.json({
+        runs: this.coordinator.history.list(),
+        storageError: this.coordinator.history.storageError,
+        failures: Object.fromEntries((['dailyQuest', 'achievement', 'artifact'] as const).map((name) => [name, this.coordinator.history.failures(name)]))
+      });
     });
     app.get('/api/schedules', (req, res) => {
       if (!authenticate(req, res)) {
         return;
       }
-      return res.json({ schedules: this.scheduler?.list() || [] });
+      return res.json({
+        schedules: this.scheduler?.list() || []
+      });
     });
     app.post('/api/schedules/preview', (req, res) => {
       if (!authenticate(req, res)) {
@@ -236,9 +281,13 @@ class UnifiedServer {
         if (typeof req.body?.cron !== 'string' || typeof req.body?.timezone !== 'string') {
           throw new Error('Cron and timezone are required');
         }
-        return res.json({ nextRuns: Scheduler.preview(req.body.cron, req.body.timezone) });
+        return res.json({
+          nextRuns: Scheduler.preview(req.body.cron, req.body.timezone)
+        });
       } catch (_error) {
-        return res.status(400).json({ error: 'Invalid cron expression or timezone' });
+        return res.status(400).json({
+          error: 'Invalid cron expression or timezone'
+        });
       }
     });
     app.post('/api/diagnostics', async (req, res) => {
@@ -246,10 +295,14 @@ class UnifiedServer {
         return;
       }
       if (this.coordinator.isClosing) {
-        return res.status(503).json({ error: 'Manager is shutting down' });
+        return res.status(503).json({
+          error: 'Manager is shutting down'
+        });
       }
       res.setHeader('Cache-Control', 'no-store');
-      return res.json({ checks: await this.diagnostics.run(structuredClone(raw)) });
+      return res.json({
+        checks: await this.diagnostics.run(structuredClone(raw))
+      });
     });
     app.get('/api/diagnostics/export', async (req, res) => {
       if (!authenticate(req, res)) {
@@ -258,15 +311,30 @@ class UnifiedServer {
       const logs = await Promise.all((['manager', 'dailyQuest', 'achievement', 'artifact'] as const).map(async (scope) => {
         try {
           const page = await readLogPage(getLogFilePath(scope));
-          return { scope, text: formatLogValue(page.text, true), truncated: !!page.older };
+          return {
+            scope,
+            text: formatLogValue(page.text, true),
+            truncated: !!page.older
+          };
         } catch (_error) {
-          return { scope, text: 'Log unavailable' };
+          return {
+            scope,
+            text: 'Log unavailable'
+          };
         }
       }));
-      // Configuration values and filesystem paths are deliberately not part of the export.
-      const bundle = { version: this.version, createdAt: new Date().toISOString(), node: process.version,
-        platform: process.platform, arch: process.arch, timezone: this.loaded.manager.timezone,
-        checks: this.diagnostics.snapshot(), runs: this.coordinator.history.list(50), logs };
+      // 导出内容不包含配置值和文件系统路径。
+      const bundle = {
+        version: this.version,
+        createdAt: new Date().toISOString(),
+        node: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        timezone: this.loaded.manager.timezone,
+        checks: this.diagnostics.snapshot(),
+        runs: this.coordinator.history.list(50),
+        logs
+      };
       res.setHeader('Cache-Control', 'no-store');
       res.attachment('awa-diagnostics.json').type('application/json').send(formatLogValue(JSON.stringify(bundle, null, 2), true));
     });
@@ -277,7 +345,9 @@ class UnifiedServer {
       }
       const state = this.coordinator.states.get(req.params.name as JobName);
       if (!state) {
-        return res.status(404).json({ error: 'Unknown job' });
+        return res.status(404).json({
+          error: 'Unknown job'
+        });
       }
       return res.json(state);
     });
@@ -288,18 +358,24 @@ class UnifiedServer {
       try {
         const name = req.params.name as JobName;
         if (this.coordinator.isClosing) {
-          return res.status(503).json({ error: 'Manager is shutting down' });
+          return res.status(503).json({
+            error: 'Manager is shutting down'
+          });
         }
         new Logger(`${time()}${__('serverJobStartRequested', name)}`);
         if (name === 'achievement') {
-          fs.mkdirSync(path.join('data', 'achievement'), { recursive: true });
+          fs.mkdirSync(path.join('data', 'achievement'), {
+            recursive: true
+          });
           fs.writeFileSync(path.join('data', 'achievement', 'enabled'), '');
         }
         void this.coordinator.start(name, req.body?.payload);
         res.status(202).json(this.coordinator.states.get(name));
       } catch (error) {
         new Logger(`${time()}${__('serverJobStartRejected', req.params.name)}`);
-        res.status(404).json({ error: error instanceof Error ? error.message : String(error) });
+        res.status(404).json({
+          error: error instanceof Error ? error.message : String(error)
+        });
       }
     });
     app.post('/api/jobs/:name/stop', async (req, res) => {
@@ -310,9 +386,13 @@ class UnifiedServer {
       this.scheduler?.cancelPending(req.params.name as JobName);
       await this.coordinator.stop(req.params.name as JobName);
       if (req.params.name === 'achievement') {
-        fs.rmSync(path.join('data', 'achievement', 'enabled'), { force: true });
+        fs.rmSync(path.join('data', 'achievement', 'enabled'), {
+          force: true
+        });
       }
-      res.json({ status: 'success' });
+      res.json({
+        status: 'success'
+      });
     });
 
     app.get('/api/config', (req, res) => authenticate(req, res) && res.type('text/yaml').send(fs.readFileSync(configPath, 'utf8')));
@@ -322,22 +402,34 @@ class UnifiedServer {
       }
       const source = typeof req.body === 'string' ? req.body : req.body?.config;
       if (typeof source !== 'string' || !source.trim()) {
-        return res.status(400).json({ error: 'config is required' });
+        return res.status(400).json({
+          error: 'config is required'
+        });
       }
       try {
         validateYaml(source);
         const parsed = deepMerge(defaultConfig, parseYaml(source));
         const errors = validateHelperConfig(parsed);
         if (errors.length > 0) {
-          return res.status(422).json({ errors });
+          return res.status(422).json({
+            errors
+          });
         }
         atomicWriteFileSync(configPath, source);
-        const { restartRequired } = this.reloadConfig();
+        const {
+          restartRequired
+        } = this.reloadConfig();
         new Logger(`${time()}${__('serverConfigUpdated')}`);
-        return res.json({ status: 'success', reloaded: true, restartRequired });
+        return res.json({
+          status: 'success',
+          reloaded: true,
+          restartRequired
+        });
       } catch (error) {
         new Logger(`${time()}${__('serverConfigRejected', error instanceof Error ? error.name : __('unknownError'))}`);
-        return res.status(422).json({ error: error instanceof Error ? error.message : String(error) });
+        return res.status(422).json({
+          error: error instanceof Error ? error.message : String(error)
+        });
       }
     });
     app.post('/api/cookies/awa', (req, res) => {
@@ -345,27 +437,42 @@ class UnifiedServer {
         return;
       }
       if (typeof req.body?.cookie !== 'string' || !req.body.cookie.trim()) {
-        return res.status(400).json({ error: 'cookie is required' });
+        return res.status(400).json({
+          error: 'cookie is required'
+        });
       }
-      updateYamlFieldsSync(configPath, { awaCookie: req.body.cookie, ...(req.body.userAgent ? { UA: req.body.userAgent } : {}) });
+      updateYamlFieldsSync(configPath, {
+        awaCookie: req.body.cookie,
+        ...(req.body.userAgent ? {
+          UA: req.body.userAgent
+        } : {})
+      });
       this.reloadConfig();
       new Logger(`${time()}${__('serverAwaCredentialsUpdated')}`);
-      return res.json({ status: 'success' });
+      return res.json({
+        status: 'success'
+      });
     });
     app.post('/api/cookies/twitch', (req, res) => {
       if (!authenticate(req, res)) {
         return;
       }
       if (typeof req.body?.cookie !== 'string' || !req.body.cookie.includes('auth-token=') || !req.body.cookie.includes('unique_id=')) {
-        return res.status(422).json({ error: 'invalid Twitch cookie' });
+        return res.status(422).json({
+          error: 'invalid Twitch cookie'
+        });
       }
-      updateYamlFieldsSync(configPath, { twitchCookie: req.body.cookie });
+      updateYamlFieldsSync(configPath, {
+        twitchCookie: req.body.cookie
+      });
       this.reloadConfig();
       new Logger(`${time()}${__('serverTwitchCredentialsUpdated')}`);
-      return res.json({ status: 'success' });
+      return res.json({
+        status: 'success'
+      });
     });
     /**
-     * 发送 send Logs 相关数据。
+     * 发送日志。
      * @param req - 当前收到或即将发送的请求对象，类型为 `express.Request<ParamsDictionary, any, any, QueryString.ParsedQs, Record<string, any>>`。
      * @param res - 用于返回处理结果的响应对象，类型为 `express.Response<any, Record<string, any>>`。
      * @param requestedJob - 需要注册、调度或查询的作业，类型为 `string | undefined`。
@@ -377,7 +484,9 @@ class UnifiedServer {
       }
       const candidate = requestedJob || req.params.job || 'manager';
       if (!isLogScope(candidate)) {
-        return res.status(404).json({ error: 'Unknown log scope' });
+        return res.status(404).json({
+          error: 'Unknown log scope'
+        });
       }
       const filename = getLogFilePath(candidate);
       const stream = fs.createReadStream(filename);
@@ -403,16 +512,24 @@ class UnifiedServer {
         return;
       }
       if (!isLogScope(req.params.job)) {
-        res.status(400).json({ error: 'Invalid log scope' }); return;
+        res.status(400).json({
+          error: 'Invalid log scope'
+        }); return;
       }
-      const { cursor } = req.query;
+      const {
+        cursor
+      } = req.query;
       if (cursor !== undefined && typeof cursor !== 'string') {
-        res.status(400).json({ error: 'Invalid log cursor' }); return;
+        res.status(400).json({
+          error: 'Invalid log cursor'
+        }); return;
       }
       try {
         res.json(await readLogPage(getLogFilePath(req.params.job), cursor));
       } catch (error) {
-        res.status(error instanceof Error && error.message === 'Invalid log cursor' ? 400 : 500).json({ error: 'Unable to read log page' });
+        res.status(error instanceof Error && error.message === 'Invalid log cursor' ? 400 : 500).json({
+          error: 'Unable to read log page'
+        });
       }
     });
     app.get('/api/logs', (req, res) => sendLogs(req, res));
@@ -423,7 +540,9 @@ class UnifiedServer {
       }
       new Logger(`${time()}${__('serverManagerShutdownRequested')}`);
       this.coordinator.beginShutdown();
-      res.json({ status: 'success' });
+      res.json({
+        status: 'success'
+      });
       setImmediate(this.requestShutdown);
     });
     app.post('/api/manager/update', updateManager);
@@ -496,7 +615,7 @@ class UnifiedServer {
   }
 
   /**
-   * 停止 stop 相关数据。
+   * 停止任务。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async stop(): Promise<void> {
@@ -504,7 +623,9 @@ class UnifiedServer {
     clearInterval(this.heartbeat);
     this.heartbeat = undefined;
     this.revokeWebSocketSessions();
-    const { server } = this;
+    const {
+      server
+    } = this;
     this.server = undefined;
     if (!server?.listening) {
       new Logger(`${time()}${__('serverStopSkipped')}`);
@@ -514,7 +635,7 @@ class UnifiedServer {
     globalThis.wsClients.forEach((client) => {
       try {
         client.close(1001, 'Manager shutting down');
-      } catch (_error) { /* A disconnected client needs no further cleanup. */ }
+      } catch (_error) { /* 客户端已断开，无需进一步清理。 */ }
     });
     globalThis.wsClients.clear();
     await new Promise<void>((resolve) => {

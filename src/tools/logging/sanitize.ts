@@ -13,7 +13,7 @@ const sensitiveKeyPattern = /(authorization|authentication|cookie|password|secre
 const visibleConfigKeyPattern = /^awaHost$/i;
 
 /**
- * 处理 redact Known Secrets 相关逻辑。
+ * 隐藏已知敏感信息。
  * @param text - 需要记录、推送或格式化的文本内容，类型为 `string`。
  * @returns `string`，redactKnownSecrets 获取或生成的文本内容。
  */
@@ -29,7 +29,7 @@ const redactKnownSecrets = (text: string, retained?: Set<string>): string => {
 };
 
 /**
- * 处理 collect Log Secrets 相关逻辑。
+ * 收集日志脱敏所需的敏感值。
  * @param value - 需要写入或参与计算的值，类型为 `unknown`。
  * @returns `string[]`，collectLogSecrets 收集或筛选得到的数据列表。
  */
@@ -37,7 +37,7 @@ const collectLogSecrets = (value: unknown): Array<string> => {
   const secrets = new Set<string>();
   const visited = new WeakSet<object>();
   /**
-   * 处理 visit 相关逻辑。
+   * 访问目标页面。
    * @param item - 需要遍历或处理的数据集合，类型为 `unknown`。
    * @param key - 用于读取或更新目标数据的键，类型为 `string`。
    * @returns `void`，该函数仅执行副作用，不返回值。
@@ -69,7 +69,7 @@ const collectLogSecrets = (value: unknown): Array<string> => {
 };
 
 /**
- * 保存 set Log Secrets 相关数据。
+ * 设置日志脱敏所需的敏感值。
  * @param config - 控制当前操作行为的配置，类型为 `unknown`。
  * @returns `void`，该函数仅执行副作用，不返回值。
  */
@@ -82,7 +82,7 @@ const setLogSecrets = (config: unknown): void => {
   }
 };
 
-/** Old values live with their asynchronous work, not a process-wide historical list. */
+/** 旧值随对应异步任务保留，不存入进程级历史列表。 */
 const withLogSecrets = async <T>(config: unknown, action: () => Promise<T>): Promise<T> => {
   const scope = new Set([...configuredSecrets, ...(secretScopes.getStore() || []), ...collectLogSecrets(config)]);
   return secretScopes.run(scope, async () => {
@@ -97,7 +97,7 @@ const withLogSecrets = async <T>(config: unknown, action: () => Promise<T>): Pro
         errorSecrets.set(error, scope);
         throw error;
       }
-      // Do not retain an unstructured rejection that may itself be a credential string.
+      // 不保留非结构化的拒绝原因，其本身可能就是凭据字符串。
       // eslint-disable-next-line preserve-caught-error
       throw new Error(redactKnownSecrets(String(error)));
     }
@@ -110,7 +110,7 @@ const safeErrorMessage = (error: unknown): string => redactKnownSecrets(
 );
 
 /**
- * 处理 sanitize Object 相关逻辑。
+ * 清理对象中的敏感信息。
  * @param value - 需要写入或参与计算的值，类型为 `unknown`。
  * @param visited - 用于记录已经清理过的对象并避免循环引用，类型为 `WeakSet<object>`。
  * @returns `unknown`，移除敏感字段并处理循环引用后的安全值。
@@ -119,8 +119,13 @@ const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknow
   if (value instanceof Error) {
     const error = value as Error & {
       code?: unknown
-      config?: { method?: unknown, url?: unknown }
-      response?: { status?: unknown }
+      config?: {
+        method?: unknown,
+        url?: unknown
+      }
+      response?: {
+        status?: unknown
+      }
     };
     return {
       name: error.name,
@@ -148,7 +153,7 @@ const sanitizeObject = (value: unknown, visited = new WeakSet<object>()): unknow
 };
 
 /**
- * 格式化 format Log Value 相关数据。
+ * 格式化日志值。
  * @param value - 需要写入或参与计算的值，类型为 `unknown`。
  * @param stripAnsi - 用于决定是否移除文本中的 ANSI 控制序列，类型为 `boolean`。
  * @returns `string`，formatLogValue 获取或生成的文本内容。

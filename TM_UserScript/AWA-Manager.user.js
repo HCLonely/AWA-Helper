@@ -19,8 +19,13 @@
 // @require      https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js
 // @require      https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
 // ==/UserScript==
-/* global window,document,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,GM_info,GM_addStyle,$, dayjs,__ */
+/**
+ * @file TM_UserScript/AWA-Manager.user.js
+ * @description 同步 AWA Cookie，并通过 Manager 接口管理任务。
+ */
 /* eslint-disable max-len */
+/* global window,document,GM_xmlhttpRequest,GM_cookie,GM_getValue,GM_setValue,GM_info,GM_addStyle,$, dayjs,__ */
+
 
 (async function () {
   'use strict';
@@ -205,13 +210,20 @@
   }
 
   function updateCookie(url, secret) {
-    GM_cookie.list({ url: 'https://na.alienwarearena.com/control-center' }, (cookies, error) => {
+    GM_cookie.list({
+      url: 'https://na.alienwarearena.com/control-center'
+    }, (cookies, error) => {
       if (!error) {
         const cookie = cookies.map((e) => `${e.name}=${e.value}`).filter((e) => e).join(';');
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在同步Cookie...`);
         GM_Axios.post(new URL('/api/cookies/awa', url).href, {
-          headers: { Authorization: `Bearer ${secret}` },
-          data: { cookie, userAgent: navigator.userAgent }
+          headers: {
+            Authorization: `Bearer ${secret}`
+          },
+          data: {
+            cookie,
+            userAgent: navigator.userAgent
+          }
         }).then((response) => {
           if (response.status === 200) {
             GM_setValue('time', Date.now());
@@ -243,13 +255,19 @@
     });
   }
   function updateTwitchCookie(url, secret) {
-    GM_cookie.list({ url: 'https://www.twitch.tv/' }, (cookies, error) => {
+    GM_cookie.list({
+      url: 'https://www.twitch.tv/'
+    }, (cookies, error) => {
       if (!error) {
         const cookie = cookies.map((e) => (['auth-token', 'unique_id'].includes(e.name) ? `${e.name}=${e.value}` : null)).filter((e) => e).join(';');
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在同步Twitch Cookie...`);
         GM_Axios.post(new URL('/api/cookies/twitch', url).href, {
-          headers: { Authorization: `Bearer ${secret}` },
-          data: { cookie }
+          headers: {
+            Authorization: `Bearer ${secret}`
+          },
+          data: {
+            cookie
+          }
         }).then((response) => {
           if (response.status === 200) {
             $('#awa-manager-server-logs').text(`${time()}AWA-Manager: Twitch Cookie同步成功！`);
@@ -278,7 +296,9 @@
   function getStatus(url, secret) {
     $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在获取AWA-Helper运行状态...`);
     return GM_Axios.get(new URL('/api/jobs/dailyQuest', url).href, {
-      headers: { Authorization: `Bearer ${secret}` },
+      headers: {
+        Authorization: `Bearer ${secret}`
+      },
       dataType: 'json'
     }).then((response) => {
       console.log(response);
@@ -304,7 +324,11 @@
   function startHelper(url, secret) {
     $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在启动AWA-Helper...`);
     GM_Axios.post(new URL('/api/jobs/dailyQuest/start', url).href, {
-      headers: { Authorization: `Bearer ${secret}` }, data: {}, retry: 0
+      headers: {
+        Authorization: `Bearer ${secret}`
+      },
+      data: {},
+      retry: 0
     }).then(async (response) => {
       if (response.status === 202) {
         const result = await statusChecker(url, secret, 'start');
@@ -329,7 +353,11 @@
   function stopHelper(url, secret) {
     $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 正在终止AWA-Helper...`);
     GM_Axios.post(new URL('/api/jobs/dailyQuest/stop', url).href, {
-      headers: { Authorization: `Bearer ${secret}` }, data: {}, retry: 0
+      headers: {
+        Authorization: `Bearer ${secret}`
+      },
+      data: {},
+      retry: 0
     }).then(async (response) => {
       if (response.status === 200) {
         const result = await statusChecker(url, secret, 'stop');
@@ -394,8 +422,8 @@
           display: none !important;
         }
       `);
-      // $('button.install-user-js').remove();
-      // $('#user-js-not-installed').remove();
+
+
       $('#log-area').append(`<li>${time()}${__('userJsInstalled', GM_info.script?.version)}</li>`);
       $('#log-area li:last')[0].scrollIntoView();
     }
@@ -445,7 +473,9 @@
 </div>`);
 
   try {
-    GM_cookie.list({ url: 'https://na.alienwarearena.com/control-center' }, (cookies, error) => {
+    GM_cookie.list({
+      url: 'https://na.alienwarearena.com/control-center'
+    }, (cookies, error) => {
       if (error) {
         $('#awa-manager-server-logs').text(`${time()}AWA-Manager: 当前Tampermonkey版本不支持cookie读取，请更换BETA版本！`);
       }

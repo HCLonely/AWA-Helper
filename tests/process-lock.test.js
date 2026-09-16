@@ -1,14 +1,23 @@
+/**
+ * @file tests/process-lock.test.js
+ * @description 验证进程锁互斥、释放及过期恢复行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { ProcessLock } = require('../dist/tools/process/ProcessLock');
+const {
+  ProcessLock
+} = require('../dist/tools/process/ProcessLock');
 
 test('only one ProcessLock can own a live lock', async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-lock-'));
   const lockPath = path.join(directory, 'helper.lock');
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(directory, {
+    recursive: true,
+    force: true
+  }));
 
   const first = new ProcessLock(lockPath);
   const second = new ProcessLock(lockPath);
@@ -23,7 +32,10 @@ test('only one ProcessLock can own a live lock', async (t) => {
 test('ProcessLock recovers a malformed stale lock', async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-lock-'));
   const lockPath = path.join(directory, 'helper.lock');
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(directory, {
+    recursive: true,
+    force: true
+  }));
   fs.writeFileSync(lockPath, 'not-json');
   const staleTime = new Date(Date.now() - 60_000);
   fs.utimesSync(lockPath, staleTime, staleTime);
@@ -36,7 +48,10 @@ test('ProcessLock recovers a malformed stale lock', async (t) => {
 test('ProcessLock does not remove a newly-created incomplete lock', async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-lock-'));
   const lockPath = path.join(directory, 'helper.lock');
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(directory, {
+    recursive: true,
+    force: true
+  }));
   fs.writeFileSync(lockPath, '');
 
   const lock = new ProcessLock(lockPath);

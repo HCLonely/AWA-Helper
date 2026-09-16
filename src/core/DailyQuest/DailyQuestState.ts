@@ -4,9 +4,22 @@
  */
 import type { PromotionalCalendarEntry } from '../../client/AWA/types';
 export type { GetStartedItem, PromotionalCalendarEntry } from '../../client/AWA/types';
-export interface SteamCommunityEventState { path?: string; gameId?: string; status: string; playedTime: string; totalTime: string }
-export interface BattlePassClaimedState { name: string; milestoneId: number }
-export interface BattlePassFailedState { name: string; milestoneId: number; reason: string }
+export interface SteamCommunityEventState {
+  path?: string;
+  gameId?: string;
+  status: string;
+  playedTime: string;
+  totalTime: string
+}
+export interface BattlePassClaimedState {
+  name: string;
+  milestoneId: number
+}
+export interface BattlePassFailedState {
+  name: string;
+  milestoneId: number;
+  reason: string
+}
 export interface BattlePassRunState {
   status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
   claimedCount: number;
@@ -22,7 +35,10 @@ export class DailyQuestState {
   battlePassUrl?: string;
   battlePass?: BattlePassRunState;
   additionalTwitchARP = 0;
-  signArp: { daily?: string; monthly?: string } = {};
+  signArp: {
+    daily?: string;
+    monthly?: string
+  } = {};
   promotionalCalendarInfo?: PromotionalCalendarEntry[];
   dailyArp = '0';
   taskType: 'US' | 'New' = 'New';

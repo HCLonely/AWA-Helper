@@ -1,4 +1,7 @@
-/** Configured Axios client with bounded retries for idempotent requests. */
+/**
+ * @file src/tools/http/client.ts
+ * @description 配置 Axios 客户端，并为幂等请求提供次数有限的重试。
+ */
 import axios from 'axios';
 import chalk from 'chalk';
 import { Logger } from '../logging';
@@ -6,7 +9,10 @@ import { time } from '../common';
 import { sleep } from '../common/async';
 import { withRequestSignal } from './RequestContext';
 
-export const http = axios.create({ maxRedirects: 5, timeout: 5 * 60 * 1000 });
+export const http = axios.create({
+  maxRedirects: 5,
+  timeout: 5 * 60 * 1000
+});
 
 http.interceptors.request.use((config) => withRequestSignal(config));
 
@@ -18,7 +24,9 @@ export const retryDelayMs = (retryAfter: unknown, fallback: number, now = Date.n
 };
 
 http.interceptors.response.use((response) => response, async (error) => {
-  const { config, response } = error;
+  const {
+    config, response
+  } = error;
   if (!config || axios.isCancel(error) || config.signal?.aborted) {
     return Promise.reject(error);
   }
@@ -39,7 +47,7 @@ http.interceptors.response.use((response) => response, async (error) => {
   }
   const exponential = Math.min((config.retryDelay ?? 1000) * (2 ** (config.retryCount - 1)), 30 * 1000);
   const delay = retryDelayMs(response?.headers?.['retry-after'], exponential + Math.floor(Math.random() * 250));
-  // A long server-directed wait belongs to the job scheduler, never retry early.
+  // 服务端要求的长时间等待应交由作业调度器处理，不可提前重试。
   if (delay > 30000) {
     return Promise.reject(error);
   }

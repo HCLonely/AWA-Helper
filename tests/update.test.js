@@ -1,8 +1,15 @@
-/** @description Verifies release comparison, platform asset selection and archive boundaries. */
+/**
+ * @file tests/update.test.js
+ * @description 验证版本比较、平台资源选择与归档处理边界。
+ */
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { isNewVersion } = require('../dist/tools/update/version');
-const { getAssetNameForRuntime, isSourceRuntime, safeRelativePath } = require('../dist/tools/update/installer');
+const {
+  isNewVersion
+} = require('../dist/tools/update/version');
+const {
+  getAssetNameForRuntime, isSourceRuntime, safeRelativePath
+} = require('../dist/tools/update/installer');
 
 test('release versions use semantic ordering', () => {
   assert.equal(isNewVersion('v3.4.8', '3.4.9'), true);

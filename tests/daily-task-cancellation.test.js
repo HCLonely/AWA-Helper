@@ -1,12 +1,21 @@
-/** Regression tests for cancellation during sequential DailyQuest operations. */
+/**
+ * @file tests/daily-task-cancellation.test.js
+ * @description 回归验证每日任务顺序执行过程中的取消行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { DailyTask } = require('../dist/core/DailyQuest/tasks/DailyTask');
-const { LegacyDailyTask } = require('../dist/core/DailyQuest/tasks/LegacyDailyTask');
-const { BattlePassTask } = require('../dist/core/DailyQuest/tasks/BattlePassTask');
+const {
+  DailyTask
+} = require('../dist/core/DailyQuest/tasks/DailyTask');
+const {
+  LegacyDailyTask
+} = require('../dist/core/DailyQuest/tasks/LegacyDailyTask');
+const {
+  BattlePassTask
+} = require('../dist/core/DailyQuest/tasks/BattlePassTask');
 
 const originalDirectory = process.cwd();
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-daily-cancellation-'));
@@ -17,13 +26,18 @@ test.before(() => {
   global.__ = (key) => key;
   global.log = false;
   global.webUI = false;
-  global.logs = { type: 'logs' };
+  global.logs = {
+    type: 'logs'
+  };
   global.wsClients = new Set();
 });
 
 test.after(() => {
   process.chdir(originalDirectory);
-  fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  fs.rmSync(temporaryDirectory, {
+    recursive: true,
+    force: true
+  });
 });
 
 test('DailyTask does not refresh or continue after cancellation', async () => {
@@ -31,7 +45,13 @@ test('DailyTask does not refresh or continue after cancellation', async () => {
   let refreshes = 0;
   const runtime = {
     state: {
-      questInfo: { dailyQuest: [{ id: '1', name: 'Quest', status: 'incomplete' }] }
+      questInfo: {
+        dailyQuest: [{
+          id: '1',
+          name: 'Quest',
+          status: 'incomplete'
+        }]
+      }
     },
     async claimQuest() {
       controller.abort();
@@ -48,13 +68,21 @@ test('DailyTask does not refresh or continue after cancellation', async () => {
 test('DailyTask reports failure when the quest remains incomplete', async () => {
   const runtime = {
     state: {
-      questInfo: { dailyQuest: [{ id: '1', name: 'Quest', status: 'incomplete' }] }
+      questInfo: {
+        dailyQuest: [{
+          id: '1',
+          name: 'Quest',
+          status: 'incomplete'
+        }]
+      }
     },
     async claimQuest() {
       return false;
     },
     async updateDailyQuests() {
-      return { ok: true };
+      return {
+        ok: true
+      };
     }
   };
 
@@ -67,9 +95,18 @@ test('LegacyDailyTask stops before recording or refreshing the next action', asy
   let visits = 0;
   const runtime = {
     state: {
-      questInfo: { dailyQuest: [{ name: 'Quest', status: 'incomplete' }] }
+      questInfo: {
+        dailyQuest: [{
+          name: 'Quest',
+          status: 'incomplete'
+        }]
+      }
     },
-    awa: { context: { baseURL: 'https://example.test' } },
+    awa: {
+      context: {
+        baseURL: 'https://example.test'
+      }
+    },
     async visit() {
       visits += 1;
       controller.abort();
@@ -91,14 +128,27 @@ test('LegacyDailyTask stops before recording or refreshing the next action', asy
 test('LegacyDailyTask reports failure after all allowed actions leave the quest incomplete', async () => {
   const runtime = {
     state: {
-      questInfo: { dailyQuest: [{ name: 'Quest', status: 'incomplete' }] }
+      questInfo: {
+        dailyQuest: [{
+          name: 'Quest',
+          status: 'incomplete'
+        }]
+      }
     },
-    awa: { context: { baseURL: 'https://example.test' } },
+    awa: {
+      context: {
+        baseURL: 'https://example.test'
+      }
+    },
     async updateDailyQuests() {
-      return { ok: true };
+      return {
+        ok: true
+      };
     }
   };
-  const task = new LegacyDailyTask(runtime, { awaDailyQuestType: [] });
+  const task = new LegacyDailyTask(runtime, {
+    awaDailyQuestType: []
+  });
   task.matchQuest = () => [];
 
   assert.equal(await task.do(), false);
@@ -109,22 +159,46 @@ test('BattlePassTask stops claiming and does not refresh after cancellation', as
   let claims = 0;
   let pageLoads = 0;
   const rewards = [1, 2].map((milestoneId, index) => ({
-    index, milestoneId, name: `Reward ${milestoneId}`, state: 'unlockable',
-    claim: { path: `/claim/${milestoneId}`, csrfToken: 'token' }
+    index,
+    milestoneId,
+    name: `Reward ${milestoneId}`,
+    state: 'unlockable',
+    claim: {
+      path: `/claim/${milestoneId}`,
+      csrfToken: 'token'
+    }
   }));
   const runtime = {
-    state: { battlePassUrl: 'https://example.test/battle-pass' },
-    awa: { battlePass: {
-      async getPage() {
-        pageLoads += 1;
-        return { status: 'active', claimedCount: 0, rewardTotal: 2, tokenCount: 0, tokenTotal: 10, rewards };
-      },
-      async claim() {
-        claims += 1;
-        controller.abort();
-        return { ok: true, data: { success: true, milestoneId: 1, userMilestoneId: 1 } };
+    state: {
+      battlePassUrl: 'https://example.test/battle-pass'
+    },
+    awa: {
+      battlePass: {
+        async getPage() {
+          pageLoads += 1;
+          return {
+            status: 'active',
+            claimedCount: 0,
+            rewardTotal: 2,
+            tokenCount: 0,
+            tokenTotal: 10,
+            rewards
+          };
+        },
+        async claim() {
+          claims += 1;
+          controller.abort();
+          return {
+            ok: true,
+            data: {
+              success: true,
+              milestoneId: 1,
+              userMilestoneId: 1
+            }
+          };
+        }
       }
-    } }
+    }
   };
 
   assert.equal(await BattlePassTask.run(runtime, controller.signal), false);
@@ -135,18 +209,31 @@ test('BattlePassTask stops claiming and does not refresh after cancellation', as
 test('BattlePassTask inspect publishes claimed reward progress without claiming rewards', async () => {
   let claims = 0;
   const runtime = {
-    state: { battlePassUrl: 'https://example.test/battle-pass' },
-    awa: { battlePass: {
-      async getPage() {
-        return {
-          status: 'active', claimedCount: 0, rewardTotal: 1, tokenCount: 45, tokenTotal: 135,
-          rewards: [{ index: 0, milestoneId: 1, name: 'Reward', state: 'unlockable' }]
-        };
-      },
-      async claim() {
-        claims += 1;
+    state: {
+      battlePassUrl: 'https://example.test/battle-pass'
+    },
+    awa: {
+      battlePass: {
+        async getPage() {
+          return {
+            status: 'active',
+            claimedCount: 0,
+            rewardTotal: 1,
+            tokenCount: 45,
+            tokenTotal: 135,
+            rewards: [{
+              index: 0,
+              milestoneId: 1,
+              name: 'Reward',
+              state: 'unlockable'
+            }]
+          };
+        },
+        async claim() {
+          claims += 1;
+        }
       }
-    } }
+    }
   };
 
   assert.equal(await BattlePassTask.inspect(runtime), true);
@@ -158,34 +245,63 @@ test('BattlePassTask inspect publishes claimed reward progress without claiming 
 test('BattlePassTask reports a claim only after the refreshed page marks it claimed', async () => {
   let pageLoads = 0;
   const reward = {
-    index: 2, milestoneId: 12, name: 'ARP Boost', state: 'unlockable',
-    claim: { path: '/claim/12', csrfToken: 'token' }
+    index: 2,
+    milestoneId: 12,
+    name: 'ARP Boost',
+    state: 'unlockable',
+    claim: {
+      path: '/claim/12',
+      csrfToken: 'token'
+    }
   };
-  const otherRewards = [0, 1].map((index) => ({ index, milestoneId: index + 1, name: `Earlier ${index}`, state: 'claimed' }));
+  const otherRewards = [0, 1].map((index) => ({
+    index,
+    milestoneId: index + 1,
+    name: `Earlier ${index}`,
+    state: 'claimed'
+  }));
   const runtime = {
-    state: { battlePassUrl: 'https://example.test/battle-pass' },
-    awa: { battlePass: {
-      async getPage() {
-        pageLoads += 1;
-        return {
-          status: pageLoads === 1 ? 'active' : 'completed',
-          claimedCount: pageLoads === 1 ? 2 : 3,
-          rewardTotal: 3,
-          tokenCount: 10,
-          tokenTotal: 10,
-          rewards: pageLoads === 1
-            ? [...otherRewards, reward]
-            : [...otherRewards, { ...reward, state: 'claimed', claim: undefined }]
-        };
-      },
-      async claim() {
-        return { ok: true, data: { success: true, milestoneId: 12, userMilestoneId: 42 } };
+    state: {
+      battlePassUrl: 'https://example.test/battle-pass'
+    },
+    awa: {
+      battlePass: {
+        async getPage() {
+          pageLoads += 1;
+          return {
+            status: pageLoads === 1 ? 'active' : 'completed',
+            claimedCount: pageLoads === 1 ? 2 : 3,
+            rewardTotal: 3,
+            tokenCount: 10,
+            tokenTotal: 10,
+            rewards: pageLoads === 1
+              ? [...otherRewards, reward]
+              : [...otherRewards, {
+                ...reward,
+                state: 'claimed',
+                claim: undefined
+              }]
+          };
+        },
+        async claim() {
+          return {
+            ok: true,
+            data: {
+              success: true,
+              milestoneId: 12,
+              userMilestoneId: 42
+            }
+          };
+        }
       }
-    } }
+    }
   };
 
   assert.equal(await BattlePassTask.run(runtime), true);
-  assert.deepEqual(runtime.state.battlePass.claimed, [{ name: 'ARP Boost', milestoneId: 12 }]);
+  assert.deepEqual(runtime.state.battlePass.claimed, [{
+    name: 'ARP Boost',
+    milestoneId: 12
+  }]);
   assert.equal(runtime.state.battlePass.claimedCount, 3);
   assert.equal(runtime.state.battlePass.rewardTotal, 3);
   assert.equal(runtime.state.battlePass.status, 'completed');
@@ -193,29 +309,59 @@ test('BattlePassTask reports a claim only after the refreshed page marks it clai
 
 test('BattlePassTask keeps partial reward failures as success with warning details', async () => {
   const reward = {
-    index: 0, milestoneId: 7, name: 'Reward', state: 'unlockable',
-    claim: { path: '/claim/7', csrfToken: 'token' }
+    index: 0,
+    milestoneId: 7,
+    name: 'Reward',
+    state: 'unlockable',
+    claim: {
+      path: '/claim/7',
+      csrfToken: 'token'
+    }
   };
   const runtime = {
-    state: { battlePassUrl: 'https://example.test/battle-pass' },
-    awa: { battlePass: {
-      async getPage() {
-        return { status: 'active', claimedCount: 0, rewardTotal: 1, tokenCount: 1, tokenTotal: 1, rewards: [reward] };
-      },
-      async claim() {
-        return { ok: false, reason: 'rejected' };
+    state: {
+      battlePassUrl: 'https://example.test/battle-pass'
+    },
+    awa: {
+      battlePass: {
+        async getPage() {
+          return {
+            status: 'active',
+            claimedCount: 0,
+            rewardTotal: 1,
+            tokenCount: 1,
+            tokenTotal: 1,
+            rewards: [reward]
+          };
+        },
+        async claim() {
+          return {
+            ok: false,
+            reason: 'rejected'
+          };
+        }
       }
-    } }
+    }
   };
 
   assert.equal(await BattlePassTask.run(runtime), true);
-  assert.deepEqual(runtime.state.battlePass.failed, [{ name: 'Reward', milestoneId: 7, reason: 'rejected' }]);
+  assert.deepEqual(runtime.state.battlePass.failed, [{
+    name: 'Reward',
+    milestoneId: 7,
+    reason: 'rejected'
+  }]);
 });
 
 test('BattlePassTask reports a failed check when the page cannot be loaded', async () => {
   const runtime = {
-    state: { battlePassUrl: 'https://example.test/battle-pass' },
-    awa: { battlePass: { async getPage() { throw new Error('unavailable'); } } }
+    state: {
+      battlePassUrl: 'https://example.test/battle-pass'
+    },
+    awa: {
+      battlePass: {
+        async getPage() { throw new Error('unavailable'); }
+      }
+    }
   };
 
   assert.equal(await BattlePassTask.run(runtime), false);

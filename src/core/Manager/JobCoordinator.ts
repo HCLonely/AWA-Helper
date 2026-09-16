@@ -1,10 +1,10 @@
-import { RunHistory, withRunHistory, type RunSource } from './RunHistory';
-import { successfulOutcome, type TaskOutcome } from '../TaskOutcome';
-import { safeErrorMessage } from '../../tools/logging/sanitize';
 /**
  * @file src/core/Manager/JobCoordinator.ts
  * @description 注册并协调作业的启动、去重、取消、等待和状态同步。
  */
+import { RunHistory, withRunHistory, type RunSource } from './RunHistory';
+import { successfulOutcome, type TaskOutcome } from '../TaskOutcome';
+import { safeErrorMessage } from '../../tools/logging/sanitize';
 import type { Job, JobName, JobResult } from './Job';
 import { JobStateStore } from './JobStateStore';
 import { Logger, time } from '../../tools';
@@ -33,7 +33,7 @@ class JobCoordinator {
   }
 
   /**
-   * 添加 register 相关数据。
+   * 注册作业。
    * @param job - 需要注册、调度或查询的作业，类型为 `Job`。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
@@ -46,7 +46,7 @@ class JobCoordinator {
   }
 
   /**
-   * 执行 start 相关数据。
+   * 启动任务。
    * @param name - 用于定位目标对象的名称，类型为 `JobName`。
    * @param payload - 当前请求或操作使用的数据内容，类型为 `unknown`。
    * @returns `Promise<JobResult>`，start 执行完成后的结果。
@@ -75,14 +75,18 @@ class JobCoordinator {
       return withRunHistory(this.history, runId, () => runWithRequestSignal(controller.signal, () => job.run(controller.signal, payload)), controller.signal);
     }))
       .then((success) => {
-        const outcome: TaskOutcome = typeof success === 'boolean' ? { status: success ? 'completed' : 'failed' } : success;
+        const outcome: TaskOutcome = typeof success === 'boolean' ? {
+          status: success ? 'completed' : 'failed'
+        } : success;
         const result: JobResult = {
           success: successfulOutcome(outcome) && !controller.signal.aborted,
           message: controller.signal.aborted ? __('jobCancelledMessage') : outcome.message,
           startedAt,
           finishedAt: new Date().toISOString()
         };
-        let { status } = outcome;
+        let {
+          status
+        } = outcome;
         if (controller.signal.aborted) {
           status = 'cancelled';
         }
@@ -109,14 +113,23 @@ class JobCoordinator {
         return result;
       })
       .finally(() => this.active.delete(name));
-    this.active.set(name, { controller, completion });
+    this.active.set(name, {
+      controller,
+      completion
+    });
     new Logger(`${time()}${__('jobDispatching', name)}`);
-    this.states.update(name, 'running', { runId, source, startedAt, finishedAt: undefined, message: undefined });
+    this.states.update(name, 'running', {
+      runId,
+      source,
+      startedAt,
+      finishedAt: undefined,
+      message: undefined
+    });
     return completion;
   }
 
   /**
-   * 停止 stop 相关数据。
+   * 停止任务。
    * @param name - 用于定位目标对象的名称，类型为 `JobName`。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
@@ -134,7 +147,7 @@ class JobCoordinator {
   }
 
   /**
-   * 停止 stop All 相关数据。
+   * 停止所有作业。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   stopAll(): Promise<void> {

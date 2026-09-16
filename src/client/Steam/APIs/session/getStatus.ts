@@ -6,7 +6,7 @@ import { ASFContext } from '../../ASFContext';
 import { executeCommand } from '../commands';
 
 /**
- * 获取 get Status 相关数据。
+ * 获取运行状态。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `ASFContext`。
  * @returns `Promise<string>`，getStatus 获取或生成的文本内容。
  */

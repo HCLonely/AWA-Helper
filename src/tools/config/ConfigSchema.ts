@@ -6,18 +6,18 @@ import * as cron from 'node-cron';
 
 const allowedAwaQuests = new Set(['getStarted', 'dailyQuest', 'dailyQuestOld', 'battlePass', 'timeOnSite', 'watchTwitch', 'steamQuest']);
 const allowedDailyQuestTypes = new Set(['click', 'visitLink', 'openLink', 'changeBorder', 'changeAvatar', 'viewNews', 'sharePost', 'replyPost']);
-// `steam` is retained for one compatibility cycle, but no longer owns a distinct request path.
+// steam 字段保留一个兼容周期，但不再对应独立的请求路径。
 const allowedProxyTargets = new Set(['github', 'twitch', 'awa', 'asf', 'steam', 'pusher']);
 
 /**
- * 检查 is Record 相关数据。
+ * 检查是否为记录对象。
  * @param value - 需要写入或参与计算的值，类型为 `unknown`。
  * @returns `boolean`，表示 isRecord 检查是否通过。
  */
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
- * 处理 deep Merge 相关逻辑。
+ * 深度合并配置。
  * @param defaults - 输入缺失时使用的默认配置值，类型为 `T`。
  * @param input - 需要合并、解析或校验的输入值，类型为 `unknown`。
  * @returns `T`，以默认值补齐输入内容后得到的完整配置对象。
@@ -27,7 +27,9 @@ const deepMerge = <T>(defaults: T, input: unknown): T => {
     return (input === undefined ? defaults : input) as T;
   }
 
-  const result: Record<string, unknown> = { ...defaults };
+  const result: Record<string, unknown> = {
+    ...defaults
+  };
   Object.entries(input).forEach(([key, value]) => {
     const defaultValue = (defaults as Record<string, unknown>)[key];
     result[key] = isRecord(defaultValue) && isRecord(value)
@@ -38,7 +40,7 @@ const deepMerge = <T>(defaults: T, input: unknown): T => {
 };
 
 /**
- * 检查 validate Helper Config 相关数据。
+ * 校验应用配置。
  * @param value - 需要写入或参与计算的值，类型为 `unknown`。
  * @returns `string[]`，validateHelperConfig 收集或筛选得到的数据列表。
  */
@@ -76,7 +78,7 @@ const validateHelperConfig = (value: unknown): Array<string> => {
   }
 
   /**
-   * 检查 validate Boolean 相关数据。
+   * 校验布尔值。
    * @param name - 用于定位目标对象的名称，类型为 `string`。
    * @param field - 需要读取、校验或更新的字段，类型为 `unknown`。
    * @returns `void`，该函数仅执行副作用，不返回值。
@@ -98,7 +100,7 @@ const validateHelperConfig = (value: unknown): Array<string> => {
   }
 
   /**
-   * 检查 validate Non Negative Number 相关数据。
+   * 校验非负数。
    * @param name - 用于定位目标对象的名称，类型为 `string`。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
@@ -113,7 +115,7 @@ const validateHelperConfig = (value: unknown): Array<string> => {
   validateNonNegativeNumber('logsMaxMB');
 
   /**
-   * 检查 validate Port 相关数据。
+   * 校验端口号。
    * @param name - 用于定位目标对象的名称，类型为 `string`。
    * @param port - 目标服务监听的端口号，类型为 `unknown`。
    * @returns `void`，该函数仅执行副作用，不返回值。
@@ -184,7 +186,9 @@ const validateHelperConfig = (value: unknown): Array<string> => {
           if (typeof value.manager.timezone !== 'string' || !value.manager.timezone.trim()) {
             throw new Error('Empty timezone');
           }
-          new Intl.DateTimeFormat('en', { timeZone: value.manager.timezone }).format();
+          new Intl.DateTimeFormat('en', {
+            timeZone: value.manager.timezone
+          }).format();
         } catch (_error) {
           errors.push('manager.timezone must be a valid IANA timezone');
         }

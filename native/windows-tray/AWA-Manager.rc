@@ -1,3 +1,7 @@
+/**
+ * @file native/windows-tray/AWA-Manager.rc
+ * @description 定义 Windows 托盘的图标与版本资源。
+ */
 #include "resource.h"
 #include <winver.h>
 #include "obj/version.h"

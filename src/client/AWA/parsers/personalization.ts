@@ -5,10 +5,13 @@
 import { load } from 'cheerio';
 import type { Id, avatarIds, userAvatarInfo } from '../../../types/achievement';
 
-export interface PersonalizationPage { userId?: string; selection: avatarIds | null }
+export interface PersonalizationPage {
+  userId?: string;
+  selection: avatarIds | null
+}
 
 /**
- * 解析 parse Personalization 相关数据。
+ * 解析个性化配置。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
  * @returns `PersonalizationPage`，parsePersonalization 解析得到的结构化结果。
@@ -21,7 +24,10 @@ export const parsePersonalization = (html: string, type: 'avatar' | 'border'): P
     const id = $(element).attr('data-id');
     const name = $(element).find('.account-personalization__name').text();
     if (id && name) {
-      ids.push({ id, name });
+      ids.push({
+        id,
+        name
+      });
     }
   });
   const entries = $('div.user-avatar').first().find('img')
@@ -45,5 +51,11 @@ export const parsePersonalization = (html: string, type: 'avatar' | 'border'): P
       return [];
     });
   const userAvatarInfo = Object.fromEntries(entries) as userAvatarInfo;
-  return { userId, selection: ids.length && userAvatarInfo[type] ? { ids, userAvatarInfo } : null };
+  return {
+    userId,
+    selection: ids.length && userAvatarInfo[type] ? {
+      ids,
+      userAvatarInfo
+    } : null
+  };
 };

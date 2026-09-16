@@ -1,12 +1,23 @@
-/** Native archive tests use constructed tar records, never an external network. */
+/**
+ * @file scripts/test-tray.js
+ * @description 使用构造的 tar 记录测试原生归档处理，无需访问外部网络。
+ */
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert/strict');
-const { gzipSync } = require('zlib');
-const { createHash } = require('crypto');
-const { execFileSync, spawnSync } = require('child_process');
+const {
+  gzipSync
+} = require('zlib');
+const {
+  createHash
+} = require('crypto');
+const {
+  execFileSync, spawnSync
+} = require('child_process');
 
-execFileSync(process.execPath, ['scripts/build-tray.js', '--test'], { stdio: 'inherit' });
+execFileSync(process.execPath, ['scripts/build-tray.js', '--test'], {
+  stdio: 'inherit'
+});
 const directory = fs.mkdtempSync(path.resolve('native/windows-tray/obj/archive-tests-'));
 const executable = path.resolve('output/AWA-Updater-tests.exe');
 const entry = (name, contents = '', type = '0') => {
@@ -38,7 +49,9 @@ try {
     const archive = path.join(directory, `${name}.tar.gz`);
     const output = path.join(directory, name);
     fs.writeFileSync(archive, gzipSync(Buffer.concat([...entries, Buffer.alloc(1024)])));
-    const result = spawnSync(executable, ['--extract', archive, output], { encoding: 'utf8' });
+    const result = spawnSync(executable, ['--extract', archive, output], {
+      encoding: 'utf8'
+    });
     assert.equal(result.status, valid ? 0 : 1, `${name}: ${result.stderr}`);
     if (valid) {
       assert.equal(fs.readFileSync(path.join(output, 'AWA-Helper.exe'), 'utf8'), 'helper');
@@ -59,7 +72,12 @@ try {
   const manifest = {
     schema: 1,
     version: '9.1.0',
-    files: files.map(([name, data]) => ({ path: name, size: data.length, required: true, sha256: createHash('sha256').update(data).digest('hex') }))
+    files: files.map(([name, data]) => ({
+      path: name,
+      size: data.length,
+      required: true,
+      sha256: createHash('sha256').update(data).digest('hex')
+    }))
   };
   const packageFile = path.join(directory, 'package.tar.gz');
   fs.writeFileSync(packageFile, gzipSync(Buffer.concat([
@@ -67,10 +85,15 @@ try {
     entry('./output/installation.json', JSON.stringify(manifest)), Buffer.alloc(1024)
   ])));
   for (const mode of ['bootstrap', 'repair', 'upgrade', 'current', 'newer', 'checksum']) {
-    const result = spawnSync(executable, ['--prepare', path.join(directory, mode), packageFile, mode], { encoding: 'utf8' });
+    const result = spawnSync(executable, ['--prepare', path.join(directory, mode), packageFile, mode], {
+      encoding: 'utf8'
+    });
     assert.equal(result.status, 0, `${mode}: ${result.stderr}`);
   }
   console.log('PASS bootstrap, same-version repair, upgrade, no update, no downgrade and checksum-file fallback');
 } finally {
-  fs.rmSync(directory, { recursive: true, force: true });
+  fs.rmSync(directory, {
+    recursive: true,
+    force: true
+  });
 }

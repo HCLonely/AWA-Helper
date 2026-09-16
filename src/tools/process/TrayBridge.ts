@@ -1,4 +1,7 @@
-/** @file Internal line protocol used by the Windows tray launcher. */
+/**
+ * @file src/tools/process/TrayBridge.ts
+ * @description 实现 Windows 托盘启动器使用的内部逐行通信协议。
+ */
 import * as readline from 'readline';
 
 const protocolPrefix = '@@AWA-TRAY\t';
@@ -29,7 +32,9 @@ class TrayBridge {
   private closed = false;
 
   constructor(private readonly commands: TrayBridgeCommands) {
-    this.input = readline.createInterface({ input: process.stdin });
+    this.input = readline.createInterface({
+      input: process.stdin
+    });
     this.input.on('line', (line) => {
       const command = parseTrayCommand(line);
       if (command) {
@@ -51,8 +56,13 @@ class TrayBridge {
     this.send('ERROR');
   }
 
-  status(states: ReadonlyArray<{ name: string, status: string }>): void {
-    const fields = states.map(({ name, status }) => `${name}=${status}`);
+  status(states: ReadonlyArray<{
+    name: string,
+    status: string
+  }>): void {
+    const fields = states.map(({
+      name, status
+    }) => `${name}=${status}`);
     this.send(`STATUS\t${fields.join('\t')}`);
   }
 

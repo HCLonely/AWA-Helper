@@ -1,10 +1,15 @@
-/** Scoped logging and WebUI log-route regression tests. */
+/**
+ * @file tests/logging-scope.test.js
+ * @description 回归验证日志作用域与 WebUI 日志路由。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { flushLogs, Logger, getLogFilePath, runWithLogScope, safeRequestTarget } = require('../dist/tools/logging');
+const {
+  flushLogs, Logger, getLogFilePath, runWithLogScope, safeRequestTarget
+} = require('../dist/tools/logging');
 
 test('external request log targets remove query strings and fragments', () => {
   assert.equal(
@@ -34,7 +39,10 @@ test('Logger separates Manager, DailyQuest, Achievement, and Artifact files', as
   } finally {
     await flushLogs();
     process.chdir(originalDirectory);
-    fs.rmSync(directory, { recursive: true, force: true });
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true
+    });
   }
 });
 

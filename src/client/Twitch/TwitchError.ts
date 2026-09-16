@@ -6,7 +6,7 @@ import { PlatformError } from '../shared';
 
 export class TwitchError extends PlatformError {
   /**
-   * 初始化 Twitch Error 实例。
+   * 初始化 TwitchError 实例。
    * @param operation - 发生错误或需要执行的远程操作名称，类型为 `string`。
    * @param message - 需要记录、推送或格式化的文本内容，类型为 `string`。
    * @param retryable - 用于标记失败后是否允许重试，类型为 `boolean`。

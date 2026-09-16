@@ -1,10 +1,15 @@
-/** Behavioral tests for retrying unavailable Twitch streams. */
+/**
+ * @file tests/twitch-quest-task.test.js
+ * @description 验证 Twitch 直播不可用时的重试行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { TwitchQuestTask } = require('../dist/core/DailyQuest/tasks/TwitchQuestTask');
+const {
+  TwitchQuestTask
+} = require('../dist/core/DailyQuest/tasks/TwitchQuestTask');
 
 const originalDirectory = process.cwd();
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-twitch-task-'));
@@ -14,27 +19,46 @@ test.before(() => {
 });
 test.after(() => {
   process.chdir(originalDirectory);
-  fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  fs.rmSync(temporaryDirectory, {
+    recursive: true,
+    force: true
+  });
 });
 
 test('TwitchQuestTask reloads streams after an empty result instead of failing', async () => {
   global.__ = (key) => key;
   global.log = false;
   global.webUI = false;
-  global.logs = { type: 'logs' };
+  global.logs = {
+    type: 'logs'
+  };
   global.wsClients = new Set();
   let streamRequests = 0;
   let channelRequests = 0;
-  const runtime = { state: { questInfo: {}, additionalTwitchARP: 0 } };
+  const runtime = {
+    state: {
+      questInfo: {},
+      additionalTwitchARP: 0
+    }
+  };
   const awa = {
     twitch: {
       async getAvailableStreams() {
         streamRequests += 1;
-        return streamRequests === 1 ? { Hive: [], Nexus: [] } : { Hive: ['streamer'], Nexus: [] };
+        return streamRequests === 1 ? {
+          Hive: [],
+          Nexus: []
+        } : {
+          Hive: ['streamer'],
+          Nexus: []
+        };
       },
       async sendTrack() {
         runtime.state.questInfo.watchTwitch = ['15', '0'];
-        return { success: true, state: 'daily_cap_reached' };
+        return {
+          success: true,
+          state: 'daily_cap_reached'
+        };
       }
     }
   };
@@ -42,7 +66,14 @@ test('TwitchQuestTask reloads streams after an empty result instead of failing',
     channels: {
       async findTracking() {
         channelRequests += 1;
-        return { found: true, value: { channelId: '42', jwt: 'token', streamerName: 'streamer' } };
+        return {
+          found: true,
+          value: {
+            channelId: '42',
+            jwt: 'token',
+            streamerName: 'streamer'
+          }
+        };
       }
     }
   };
@@ -58,16 +89,27 @@ test('TwitchQuestTask treats channels without a tracking extension as retryable 
   global.webUI = false;
   let streamRequests = 0;
   let channelRequests = 0;
-  const runtime = { state: { questInfo: {}, additionalTwitchARP: 0 } };
+  const runtime = {
+    state: {
+      questInfo: {},
+      additionalTwitchARP: 0
+    }
+  };
   const awa = {
     twitch: {
       async getAvailableStreams() {
         streamRequests += 1;
-        return { Hive: ['streamer'], Nexus: [] };
+        return {
+          Hive: ['streamer'],
+          Nexus: []
+        };
       },
       async sendTrack() {
         runtime.state.questInfo.watchTwitch = ['15', '0'];
-        return { success: true, state: 'daily_cap_reached' };
+        return {
+          success: true,
+          state: 'daily_cap_reached'
+        };
       }
     }
   };
@@ -76,8 +118,18 @@ test('TwitchQuestTask treats channels without a tracking extension as retryable 
       async findTracking() {
         channelRequests += 1;
         return channelRequests === 1
-          ? { found: false, reason: 'no-trackable-channel' }
-          : { found: true, value: { channelId: '42', jwt: 'token', streamerName: 'streamer' } };
+          ? {
+            found: false,
+            reason: 'no-trackable-channel'
+          }
+          : {
+            found: true,
+            value: {
+              channelId: '42',
+              jwt: 'token',
+              streamerName: 'streamer'
+            }
+          };
       }
     }
   };
@@ -91,28 +143,46 @@ test('TwitchQuestTask stops tracking after daily_cap_reached and waits for Contr
   global.__ = (key) => key;
   global.log = false;
   global.webUI = false;
-  const runtime = { state: { questInfo: {}, additionalTwitchARP: 2 } };
+  const runtime = {
+    state: {
+      questInfo: {},
+      additionalTwitchARP: 2
+    }
+  };
   let streamRequests = 0;
   let trackRequests = 0;
   const awa = {
     twitch: {
       async getAvailableStreams() {
         streamRequests += 1;
-        return { Hive: ['streamer'], Nexus: [] };
+        return {
+          Hive: ['streamer'],
+          Nexus: []
+        };
       },
       async sendTrack() {
         trackRequests += 1;
         setImmediate(() => {
           runtime.state.questInfo.watchTwitch = ['15', '2'];
         });
-        return { success: true, state: 'daily_cap_reached' };
+        return {
+          success: true,
+          state: 'daily_cap_reached'
+        };
       }
     }
   };
   const twitch = {
     channels: {
       async findTracking() {
-        return { found: true, value: { channelId: '42', jwt: 'token', streamerName: 'streamer' } };
+        return {
+          found: true,
+          value: {
+            channelId: '42',
+            jwt: 'token',
+            streamerName: 'streamer'
+          }
+        };
       }
     }
   };

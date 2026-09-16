@@ -4,7 +4,7 @@
  */
 export class HttpError extends Error {
   /**
-   * 初始化 Http Error 实例。
+   * 初始化 HttpError 实例。
    * @param message - 需要记录、推送或格式化的文本内容，类型为 `string`。
    * @param statusCode - 远程响应携带的 HTTP 状态码，类型为 `number | undefined`。
    * @param retryable - 用于标记失败后是否允许重试，类型为 `boolean`。

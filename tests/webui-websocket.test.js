@@ -1,4 +1,7 @@
-/** Behavioral tests for persistent WebUI WebSocket reconnection. */
+/**
+ * @file tests/webui-websocket.test.js
+ * @description 验证 WebUI WebSocket 持续重连行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -36,7 +39,9 @@ const createHarness = () => {
     show() { return this; },
     text() { return this; }
   };
-  const storage = { getItem: () => null };
+  const storage = {
+    getItem: () => null
+  };
   const window = {
     location: {
       protocol: 'http:',
@@ -45,7 +50,10 @@ const createHarness = () => {
     },
     setTimeout(callback, delay) {
       const id = nextTimerId++;
-      timers.set(id, { callback, delay });
+      timers.set(id, {
+        callback,
+        delay
+      });
       return id;
     }
   };
@@ -55,12 +63,18 @@ const createHarness = () => {
     I18n: {},
     WebSocket: FakeWebSocket,
     btoa: (value) => Buffer.from(value, 'binary').toString('base64'),
-    console: { log() {} },
-    dayjs: () => ({ format: () => 'now' }),
+    console: {
+      log() {}
+    },
+    dayjs: () => ({
+      format: () => 'now'
+    }),
     lang: 'en',
     localStorage: storage,
     sessionStorage: storage,
-    document: { addEventListener() {} },
+    document: {
+      addEventListener() {}
+    },
     TextEncoder,
     window
   };
@@ -73,7 +87,11 @@ const createHarness = () => {
     return timer.delay;
   };
 
-  return { runNextTimer, sockets, timers };
+  return {
+    runNextTimer,
+    sockets,
+    timers
+  };
 };
 
 test('WebUI keeps reconnecting after repeated WebSocket disconnects', () => {

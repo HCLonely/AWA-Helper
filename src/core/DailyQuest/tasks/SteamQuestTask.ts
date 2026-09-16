@@ -1,8 +1,8 @@
-import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/DailyQuest/tasks/SteamQuestTask.ts
  * @description 协调 AWA Steam 任务信息与 ASF 游戏挂时、许可证和进度轮询。
  */
+import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 import chalk from 'chalk';
 import { AWAApiClient } from '../../../client/AWA/AWAApiClient';
 import { SteamClient } from '../../../client/Steam/SteamClient';
@@ -11,7 +11,7 @@ import { Logger, sleep, time } from '../../../tools';
 
 export class SteamQuestTask {
   /**
-   * 初始化 Steam Quest Task 实例。
+   * 初始化 SteamQuestTask 实例。
    * @param awa - 用于调用 Alienware Arena 接口的客户端，类型为 `AWAApiClient`。
    * @param asf - 用于控制 ArchiSteamFarm 的客户端，类型为 `SteamClient`。
    * @param getEventAppId - 动态读取尚未完成的社区活动 Steam 应用标识。
@@ -25,7 +25,7 @@ export class SteamQuestTask {
   ) {}
 
   /**
-   * 执行 run 相关数据。
+   * 执行任务。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
@@ -40,7 +40,9 @@ export class SteamQuestTask {
     const questLogger = new Logger(`${time()}${__('gettingSteamQuestInfo', chalk.yellow('Steam'))}`, false);
     const listings = await this.awa.steam.getSteamQuests().catch((error) => {
       questLogger.log(chalk.red(__('logStatusError')));
-      throw new Error(__('gettingSteamQuestInfo', 'Steam'), { cause: error });
+      throw new Error(__('gettingSteamQuestInfo', 'Steam'), {
+        cause: error
+      });
     });
     if (!listings || signal?.aborted) {
       return false;
@@ -48,7 +50,9 @@ export class SteamQuestTask {
     const quests: PreparedSteamQuest[] = [];
     for (const listing of listings) {
       const prepared = await this.prepareQuest(listing, signal).catch((error) => {
-        throw new Error(`${__('gettingSteamQuestInfo', 'Steam')} [${listing.name}] ${listing.link}`, { cause: error });
+        throw new Error(`${__('gettingSteamQuestInfo', 'Steam')} [${listing.name}] ${listing.link}`, {
+          cause: error
+        });
       });
       if (prepared) {
         quests.push(prepared);
@@ -70,7 +74,9 @@ export class SteamQuestTask {
     const licenseLogger = new Logger(`${time()}${__('addingLicense')}`, false);
     const licenseResult = await this.asf.licenses.add(requestedIds).catch((error) => {
       licenseLogger.log(chalk.red(__('logStatusError')));
-      throw new Error(__('addingLicense'), { cause: error });
+      throw new Error(__('addingLicense'), {
+        cause: error
+      });
     });
     if (signal?.aborted) {
       return false;
@@ -82,7 +88,9 @@ export class SteamQuestTask {
     const matchLogger = new Logger(`${time()}${__('matchingGames', chalk.yellow('Steam'))}`, false);
     const ownedIds = await this.asf.bot.getOwnedGames(requestedIds).catch((error) => {
       matchLogger.log(chalk.red(__('logStatusError')));
-      throw new Error(__('matchingGames', 'Steam'), { cause: error });
+      throw new Error(__('matchingGames', 'Steam'), {
+        cause: error
+      });
     });
     if (!ownedIds || signal?.aborted) {
       return false;
@@ -101,7 +109,9 @@ export class SteamQuestTask {
     try {
       const playResult = await this.asf.bot.playGames(ownedIds).catch((error) => {
         playLogger.log(chalk.red(__('logStatusError')));
-        throw new Error(__('usingASF', 'ASF'), { cause: error });
+        throw new Error(__('usingASF', 'ASF'), {
+          cause: error
+        });
       });
       if (!playResult?.ok) {
         playLogger.log(chalk.red(__('logStatusError')));
@@ -119,7 +129,9 @@ export class SteamQuestTask {
             return false;
           }
           const progressResult = await this.awa.steam.getQuestProgress(quest.link).catch((error) => {
-            throw new Error(__('checkingProgress', quest.link), { cause: error });
+            throw new Error(__('checkingProgress', quest.link), {
+              cause: error
+            });
           });
           const progress = progressResult.found ? progressResult.value : null;
           if (progress === null || progress < 100) {
@@ -146,7 +158,7 @@ export class SteamQuestTask {
   }
 
   /**
-   * 处理 prepare Quest 相关逻辑。
+   * 准备任务。
    * @param listing - 从 AWA 获取的 Steam 任务列表项，类型为 `AWASteamQuestListing`。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<PreparedSteamQuest | null>`，准备完成的 Steam 任务；任务不可执行时返回 `null`。
@@ -158,7 +170,10 @@ export class SteamQuestTask {
         return null;
       }
       if (detail.state === 'ready' && detail.appId) {
-        return { ...listing, id: detail.appId };
+        return {
+          ...listing,
+          id: detail.appId
+        };
       }
       if (detail.state === 'completed' || detail.state === 'unknown') {
         return null;

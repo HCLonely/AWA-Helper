@@ -6,13 +6,16 @@ import { load } from 'cheerio';
 import type { AvailableStreams } from '../../../types/achievement';
 
 /**
- * 解析 parse Available Streams 相关数据。
+ * 解析可用直播列表。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @returns `AvailableStreams`，parseAvailableStreams 解析得到的结构化结果。
  */
 export const parseAvailableStreams = (html: string): AvailableStreams => {
   const $ = load(html);
-  const result: AvailableStreams = { Hive: [], Nexus: [] };
+  const result: AvailableStreams = {
+    Hive: [],
+    Nexus: []
+  };
   let category: keyof AvailableStreams | null = null;
   $('.user-profile__profile-card').filter((_, card) => $(card).find('.user-profile__card-header').text()
     .includes('Watch Twitch'))

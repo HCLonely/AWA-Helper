@@ -3,7 +3,7 @@
  * @description 生成统一 Manager 运行方式、兼容参数和辅助命令的命令行帮助文本。
  */
 /**
- * 格式化 format Help 相关数据。
+ * 格式化命令行帮助文本。
  * @returns `string`，formatHelp 获取或生成的文本内容。
  */
 const formatHelp = (): string => [

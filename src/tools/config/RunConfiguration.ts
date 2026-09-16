@@ -1,3 +1,7 @@
+/**
+ * @file src/tools/config/RunConfiguration.ts
+ * @description 检测配置变更，并统一持久化作业刷新后的配置。
+ */
 import { AsyncLocalStorage } from 'async_hooks';
 import { createHash } from 'crypto';
 import * as fs from 'fs';
@@ -8,9 +12,12 @@ import { withLogSecrets } from '../logging/sanitize';
 import { createCookieCommit } from './YamlConfig';
 
 const runs = new AsyncLocalStorage<LoadedConfig>();
-const snapshots = new Map<string, { digest: string; loaded: LoadedConfig }>();
+const snapshots = new Map<string, {
+  digest: string;
+  loaded: LoadedConfig
+}>();
 
-/** Hash the file to detect even same-size replacements; parse only changed configurations. */
+/** 通过文件哈希检测同大小的替换，仅解析发生变化的配置。 */
 export const getRunConfiguration = (filename?: string): LoadedConfig => {
   const active = runs.getStore();
   if (active && (!filename || path.resolve(filename) === active.path)) {
@@ -21,7 +28,10 @@ export const getRunConfiguration = (filename?: string): LoadedConfig => {
   let snapshot = snapshots.get(target);
   if (!snapshot || snapshot.digest !== digest) {
     const loaded = loadConfig(target);
-    snapshot = { digest, loaded };
+    snapshot = {
+      digest,
+      loaded
+    };
     snapshots.delete(target);
     snapshots.set(target, snapshot);
     while (snapshots.size > 4) {
@@ -36,7 +46,7 @@ export const withRunConfiguration = async <T>(filename: string | undefined, acti
   return runs.run(loaded, () => withLogSecrets(loaded.raw, action));
 };
 
-/** One persistence boundary for all jobs; preserves the existing compare-and-swap contract. */
+/** 所有作业共用一个持久化入口，保留现有的比较后交换契约。 */
 export const createSessionCommit = (filename: string, initialCookie: string): ((cookie: string) => boolean) => {
   const commit = createCookieCommit(filename, initialCookie);
   return (cookie) => {

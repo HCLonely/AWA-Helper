@@ -27,10 +27,12 @@ export class TwitchContext {
   private readonly logRequests: boolean;
 
   /**
-   * 初始化 Twitch Context 实例。
+   * 初始化 TwitchContext 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ cookie: string; proxy?: proxy; userAgent?: string; transport?: HttpTransport; }`。
    */
-  constructor({ cookie, proxy, userAgent, transport, logRequests }: TwitchContextOptions) {
+  constructor({
+    cookie, proxy, userAgent, transport, logRequests
+  }: TwitchContextOptions) {
     this.cookie = new Cookie(cookie);
     this.transport = transport || createHttpTransport(http);
     this.logRequests = logRequests ?? false;
@@ -49,12 +51,18 @@ export class TwitchContext {
   }
 
   /**
-   * 请求 request 相关数据。
+   * 发送请求。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `myAxiosConfig`。
    * @returns `Promise<AxiosResponse<T, any, {}, any>>`，request 请求返回的响应结果。
    */
   request<T = unknown>(options: myAxiosConfig) {
-    const requestOptions: myAxiosConfig = { ...options, headers: { ...this.headers, ...options.headers } };
+    const requestOptions: myAxiosConfig = {
+      ...options,
+      headers: {
+        ...this.headers,
+        ...options.headers
+      }
+    };
     if (this.httpsAgent && !requestOptions.httpsAgent) {
       requestOptions.httpsAgent = this.httpsAgent;
     }

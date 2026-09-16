@@ -1,3 +1,7 @@
+/**
+ * @file src/client/AWA/parsers/verifiedControlCenter.ts
+ * @description 校验控制中心页面并返回可信的任务快照。
+ */
 import { load, type CheerioAPI } from 'cheerio';
 import { PlatformError } from '../../shared/PlatformError';
 import { parseControlCenter } from './controlCenter';
@@ -11,7 +15,7 @@ export class PageParseError extends PlatformError {
   }
 }
 
-/** An empty recognized task list is valid; a login/error/unknown page is not. */
+/** 已识别的空任务列表有效；登录页、错误页或未知页面无效。 */
 export const parseVerifiedControlCenter = (html: string, baseURL: string, $: CheerioAPI = load(html)) => {
   if ($('a.nav-link-login, form[action*="/login"]').length) {
     throw new PlatformError('awa', 'parseControlCenter', 'AWA cookie has expired', false, 602);
@@ -27,8 +31,11 @@ export const parseVerifiedControlCenter = (html: string, baseURL: string, $: Che
   try {
     const data = JSON.parse(raw || 'null');
     for (const [name, value] of Object.entries({
-      timeOnSiteCap: data?.timeOnSiteCap, timeOnSiteArp: data?.timeOnSiteArp, dailyArp: data?.dailyArp,
-      'twitchData.totalPoints': data?.twitchData?.totalPoints, 'twitchData.bonusPoints': data?.twitchData?.bonusPoints
+      timeOnSiteCap: data?.timeOnSiteCap,
+      timeOnSiteArp: data?.timeOnSiteArp,
+      dailyArp: data?.dailyArp,
+      'twitchData.totalPoints': data?.twitchData?.totalPoints,
+      'twitchData.bonusPoints': data?.twitchData?.bonusPoints
     })) {
       if ((typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === '' || !Number.isFinite(Number(value)) || Number(value) < 0) {
         missing.push(`dailyArpData.${name}`);

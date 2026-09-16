@@ -29,7 +29,7 @@ export class AWAContext {
   readonly logRequests: boolean;
   userId?: string;
   username?: string;
-  /** Invalidates shared page reads across other operations, including GET mutations. */
+  /** 使其他操作共享的页面读取失效，包括通过 GET 发起的状态修改。 */
   readRevision = 0;
 
   /**
@@ -77,7 +77,7 @@ export class AWAContext {
   }
 
   /**
-   * 更新 update Cookies 相关数据。
+   * 更新 Cookie。
    * @param setCookie - 用于身份验证和维持会话的 Cookie，类型为 `string[] | undefined`。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
@@ -89,7 +89,7 @@ export class AWAContext {
   }
 
   /**
-   * 请求 request 相关数据。
+   * 发送请求。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `myAxiosConfig`。
    * @returns `Promise<AxiosResponse<T, any, {}, any>>`，request 请求返回的响应结果。
    */
@@ -105,7 +105,7 @@ export class AWAContext {
       baseURL: undefined,
       beforeRedirect: (redirectOptions, responseDetails) => {
         this.assertTrustedURL(`${redirectOptions.protocol}//${redirectOptions.hostname}${redirectOptions.port ? `:${redirectOptions.port}` : ''}${redirectOptions.path || '/'}`);
-        // Authentication cookies may be issued on a 302, before the final HTML response.
+        // 身份验证 Cookie 可能在最终 HTML 响应前的 302 响应中下发。
         const setCookie = responseDetails?.headers['set-cookie'];
         this.updateCookies(typeof setCookie === 'string' ? [setCookie] : setCookie);
         for (const name of Object.keys(redirectOptions.headers)) {
@@ -115,7 +115,11 @@ export class AWAContext {
         }
         redirectOptions.headers.cookie = this.cookie.stringify();
       },
-      headers: { ...this.headers, ...options.headers, cookie: this.cookie.stringify() }
+      headers: {
+        ...this.headers,
+        ...options.headers,
+        cookie: this.cookie.stringify()
+      }
     };
     if (this.httpsAgent && !requestOptions.httpsAgent) {
       requestOptions.httpsAgent = this.httpsAgent;
@@ -132,9 +136,15 @@ export class AWAContext {
         throw error;
       }
       const statusCode = error && typeof error === 'object' && 'response' in error
-        ? (error as { response?: { status?: number } }).response?.status
+        ? (error as {
+          response?: {
+          status?: number
+        }
+        }).response?.status
         : undefined;
-      throw new AWAError('request', `AWA request failed: ${safeRequestTarget(options.url)}`, statusCode === undefined || statusCode >= 500, statusCode, { cause: error });
+      throw new AWAError('request', `AWA request failed: ${safeRequestTarget(options.url)}`, statusCode === undefined || statusCode >= 500, statusCode, {
+        cause: error
+      });
     } finally {
       if (changesReadBoundary) {
         this.readRevision++;

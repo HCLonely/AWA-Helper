@@ -7,7 +7,7 @@ import { join } from 'path';
 import type { NormalizedManagerConfig } from './types';
 
 /**
- * 更新 normalize Manager Config 相关数据。
+ * 规范化 Manager 配置。
  * @param value - 需要写入或参与计算的值，类型为 `config`。
  * @returns `Omit<NormalizedManagerConfig, "secret">`，迁移旧字段并规范化后的 Manager 配置（不含密钥）。
  */

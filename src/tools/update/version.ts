@@ -1,5 +1,8 @@
+/**
+ * @file src/tools/update/version.ts
+ * @description 查询并缓存 GitHub 发布版本，比较语义化版本号。
+ */
 import { withLogSecrets, setLogSecrets } from '../logging/sanitize';
-/** GitHub release discovery, caching and semantic version comparison. */
 import chalk from 'chalk';
 import { Cookie, http, netError } from '../http';
 import { formatProxy } from '../proxy';
@@ -44,7 +47,10 @@ interface ParsedVersion {
   prerelease: Array<string | number>
 }
 
-let cachedRelease: { expiresAt: number; value: ReleaseInfo } | undefined;
+let cachedRelease: {
+  expiresAt: number;
+  value: ReleaseInfo
+} | undefined;
 let pendingRelease: Promise<ReleaseInfo> | undefined;
 
 const parseVersion = (value: string): ParsedVersion | undefined => {
@@ -113,7 +119,10 @@ export const isNewVersion = (currentVersion: string, latestVersion: string): boo
 
 const releaseRequestOptions = (proxy?: proxy): myAxiosConfig => {
   const options: myAxiosConfig = {
-    headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'AWA-Helper' },
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'AWA-Helper'
+    },
     timeout: 10 * 1000,
     retryTimes: 1
   };
@@ -144,7 +153,9 @@ const parseRelease = (data: GitHubReleaseResponse): ReleaseInfo => {
   };
 };
 
-export const getLatestRelease = async (proxy?: proxy, force = false): Promise<ReleaseInfo> => withLogSecrets({ proxy }, async () => {
+export const getLatestRelease = async (proxy?: proxy, force = false): Promise<ReleaseInfo> => withLogSecrets({
+  proxy
+}, async () => {
   if (!force && cachedRelease && cachedRelease.expiresAt > Date.now()) {
     return cachedRelease.value;
   }
@@ -153,9 +164,14 @@ export const getLatestRelease = async (proxy?: proxy, force = false): Promise<Re
   }
   const request = withGitHubFallback(LATEST_RELEASE_API, async (url) => {
     const response = await http.get<GitHubReleaseResponse>(url, releaseRequestOptions(proxy));
-    setLogSecrets(Object.values(Cookie.ToJson(response.headers?.['set-cookie'])).map((cookie) => ({ cookie })));
+    setLogSecrets(Object.values(Cookie.ToJson(response.headers?.['set-cookie'])).map((cookie) => ({
+      cookie
+    })));
     const value = parseRelease(response.data);
-    cachedRelease = { value, expiresAt: Date.now() + RELEASE_CACHE_TTL_MS };
+    cachedRelease = {
+      value,
+      expiresAt: Date.now() + RELEASE_CACHE_TTL_MS
+    };
     return value;
   })
     .finally(() => {
@@ -182,7 +198,9 @@ export const getReleaseCheck = async (currentVersion: string, proxy?: proxy, for
   };
 };
 
-export const checkUpdate = async (version: string, proxy?: proxy): Promise<ReleaseCheckResult | undefined> => withLogSecrets({ proxy }, async () => {
+export const checkUpdate = async (version: string, proxy?: proxy): Promise<ReleaseCheckResult | undefined> => withLogSecrets({
+  proxy
+}, async () => {
   const logger = new Logger(`${time()}${__('checkingUpdating')}`, false);
   try {
     const result = await getReleaseCheck(version, proxy);
@@ -197,7 +215,9 @@ export const checkUpdate = async (version: string, proxy?: proxy): Promise<Relea
   } catch (error) {
     const requestError = error as Parameters<typeof netError>[0];
     logger.log(chalk.red(__('logStatusError')) + netError(requestError));
-    setLogSecrets(Object.values(Cookie.ToJson(requestError.response?.headers?.['set-cookie'])).map((cookie) => ({ cookie })));
+    setLogSecrets(Object.values(Cookie.ToJson(requestError.response?.headers?.['set-cookie'])).map((cookie) => ({
+      cookie
+    })));
     new Logger(error);
     return undefined;
   }

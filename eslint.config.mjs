@@ -1,3 +1,7 @@
+/**
+ * @file eslint.config.mjs
+ * @description 配置项目 JavaScript 与 TypeScript 的代码检查和格式规则。
+ */
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import js from '@eslint/js';
@@ -8,6 +12,21 @@ export default [
     ignores: ['**/*.min.js', 'src/**/dist/**', 'dist/**', 'output/**', 'node_modules/**'],
   },
   js.configs.recommended,
+  {
+    rules: {
+      'object-curly-newline': ['error', {
+        ObjectExpression: {
+          minProperties: 1
+        },
+        ObjectPattern: {
+          minProperties: 1
+        },
+      }],
+      'object-property-newline': ['error', {
+        allowAllPropertiesOnSameLine: false
+      }],
+    },
+  },
   {
     files: ['scripts/**/*.js', 'tests/**/*.js'],
     languageOptions: {
@@ -24,7 +43,10 @@ export default [
       globals: globals.browser,
     },
     rules: {
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
+      }],
     },
   },
   {
@@ -43,14 +65,22 @@ export default [
       '@typescript-eslint': tsPlugin,
     },
     rules: {
-      'indent': ['error', 2, { SwitchCase: 1 }],
+      'indent': ['error', 2, {
+        SwitchCase: 1
+      }],
       'linebreak-style': 'off',
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
-      'prefer-const': ['error', { destructuring: 'any', ignoreReadBeforeAssign: false }],
+      'prefer-const': ['error', {
+        destructuring: 'any',
+        ignoreReadBeforeAssign: false
+      }],
       'no-undef': 'off',
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
+      }],
       'no-var': 'error',
       'no-new-object': 'error',
       'object-shorthand': 'error',
@@ -58,7 +88,10 @@ export default [
       'prefer-object-spread': 'error',
       'no-array-constructor': 'error',
       'array-callback-return': 'error',
-      'prefer-destructuring': ['error', { array: true, object: true }],
+      'prefer-destructuring': ['error', {
+        array: true,
+        object: true
+      }],
       'prefer-template': 'error',
       'template-curly-spacing': ['error', 'never'],
       'no-eval': 'error',
@@ -68,7 +101,11 @@ export default [
       'prefer-rest-params': 'error',
       'default-param-last': 'error',
       'no-new-func': 'error',
-      'space-before-function-paren': ['error', { anonymous: 'always', named: 'never', asyncArrow: 'always' }],
+      'space-before-function-paren': ['error', {
+        anonymous: 'always',
+        named: 'never',
+        asyncArrow: 'always'
+      }],
       'space-before-blocks': 'error',
       'no-param-reassign': 'off',
       'prefer-spread': 'error',
@@ -76,40 +113,55 @@ export default [
       'arrow-spacing': 'error',
       'arrow-parens': 'error',
       'arrow-body-style': 'error',
-      'no-confusing-arrow': ['error', { allowParens: true }],
+      'no-confusing-arrow': ['error', {
+        allowParens: true
+      }],
       'implicit-arrow-linebreak': ['error', 'beside'],
       'no-useless-constructor': 'error',
       'class-methods-use-this': 0,
       'no-duplicate-imports': 'error',
-      'object-curly-newline': ['error', { ObjectPattern: { multiline: true } }],
       'no-iterator': 'error',
       'generator-star-spacing': ['error', 'after'],
       'dot-notation': 'error',
       'one-var': ['error', 'never'],
       'no-multi-assign': 'error',
       'no-plusplus': 'off',
-      'operator-linebreak': ['error', 'after', { overrides: { '?': 'before', ':': 'before' } }],
+      'operator-linebreak': ['error', 'after', {
+        overrides: {
+          '?': 'before',
+          ':': 'before'
+        }
+      }],
       'eqeqeq': 'error',
       'no-nested-ternary': 'error',
       'no-unneeded-ternary': 'error',
       'no-mixed-operators': 'error',
       'nonblock-statement-body-position': ['error', 'beside'],
-      'brace-style': ['error', '1tbs', { allowSingleLine: true }],
+      'brace-style': ['error', '1tbs', {
+        allowSingleLine: true
+      }],
       'no-else-return': 'error',
       'spaced-comment': ['error', 'always'],
       'keyword-spacing': 'error',
       'space-infix-ops': 'error',
       'eol-last': ['error', 'always'],
-      'newline-per-chained-call': [2, { ignoreChainWithDepth: 3 }],
+      'newline-per-chained-call': [2, {
+        ignoreChainWithDepth: 3
+      }],
       'no-whitespace-before-property': 'error',
       'padded-blocks': ['error', 'never'],
-      'no-multiple-empty-lines': ['error', { max: 1 }],
+      'no-multiple-empty-lines': ['error', {
+        max: 1
+      }],
       'space-in-parens': ['error', 'never'],
       'array-bracket-spacing': ['error', 'never'],
       'object-curly-spacing': ['error', 'always'],
       'max-len': 'off',
       'block-spacing': 'error',
-      'comma-spacing': ['error', { before: false, after: true }],
+      'comma-spacing': ['error', {
+        before: false,
+        after: true
+      }],
       'computed-property-spacing': ['error', 'never'],
       'func-call-spacing': ['error', 'never'],
       'key-spacing': 'error',

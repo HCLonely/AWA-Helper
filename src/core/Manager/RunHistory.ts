@@ -1,3 +1,7 @@
+/**
+ * @file src/core/Manager/RunHistory.ts
+ * @description 记录子任务执行结果并保存有容量上限的运行历史。
+ */
 import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
@@ -7,23 +11,53 @@ import { safeErrorMessage } from '../../tools/logging/sanitize';
 import type { JobName, JobStatus } from './Job';
 
 export type RunSource = 'manual' | 'schedule' | 'once';
-export interface RunStep { name: string; status: string; startedAt: string; finishedAt?: string; message?: string }
+export interface RunStep {
+  name: string;
+  status: string;
+  startedAt: string;
+  finishedAt?: string;
+  message?: string
+}
 export interface RunRecord {
-  id: string; name: JobName; source: RunSource; status: JobStatus | 'interrupted';
-  startedAt: string; finishedAt?: string; message?: string; steps: RunStep[];
+  id: string;
+  name: JobName;
+  source: RunSource;
+  status: JobStatus | 'interrupted';
+  startedAt: string;
+  finishedAt?: string;
+  message?: string;
+  steps: RunStep[];
 }
 
-const context = new AsyncLocalStorage<{ history: RunHistory; id: string; signal?: AbortSignal }>();
-export const withRunHistory = <T>(history: RunHistory, id: string, action: () => Promise<T>, signal?: AbortSignal): Promise<T> => context.run({ history, id, signal }, action);
+const context = new AsyncLocalStorage<{
+  history: RunHistory;
+  id: string;
+  signal?: AbortSignal
+}>();
+export const withRunHistory = <T>(history: RunHistory, id: string, action: () => Promise<T>, signal?: AbortSignal): Promise<T> => context.run({
+  history,
+  id,
+  signal
+}, action);
 
-/** Records subtask results without coupling platform clients to Manager. */
+/** 记录子任务结果，避免平台客户端与 Manager 耦合。 */
 export const trackRunStep = async <T>(name: string, action: () => Promise<T>): Promise<T> => {
   const scope = context.getStore();
-  const step: RunStep = { name, status: 'running', startedAt: new Date().toISOString() };
+  const step: RunStep = {
+    name,
+    status: 'running',
+    startedAt: new Date().toISOString()
+  };
   scope?.history.step(scope.id, step);
   try {
     const result = await action();
-    const outcome = result && typeof result === 'object' ? result as { status?: string; ok?: boolean; message?: string; error?: unknown; reason?: string } : undefined;
+    const outcome = result && typeof result === 'object' ? result as {
+      status?: string;
+      ok?: boolean;
+      message?: string;
+      error?: unknown;
+      reason?: string
+    } : undefined;
     step.status = outcome?.status || (result === false || outcome?.ok === false ? 'failed' : 'completed');
     const message = outcome?.message || outcome?.error || (outcome?.ok === false ? outcome.reason : undefined);
     step.message = message ? safeErrorMessage(message).slice(0, 1000) : undefined;
@@ -41,7 +75,7 @@ export const trackRunStep = async <T>(name: string, action: () => Promise<T>): P
   }
 };
 
-/** Bounded atomic snapshots. Only explicitly enabled runtime stores touch disk. */
+/** 以原子方式保存有容量上限的快照，仅显式启用的运行时存储会写入磁盘。 */
 export class RunHistory {
   private records: RunRecord[] = [];
   private file?: string;
@@ -51,7 +85,9 @@ export class RunHistory {
   open(file: string, limit = 200): void {
     this.file = file;
     this.limit = limit;
-    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.mkdirSync(path.dirname(file), {
+      recursive: true
+    });
     if (fs.existsSync(file)) {
       try {
         if (fs.statSync(file).size > 16 * 1024 * 1024) {
@@ -66,7 +102,7 @@ export class RunHistory {
         }
         this.records = data.runs.slice(-limit);
       } catch (error) {
-        // Preserve corrupt evidence instead of overwriting it with an empty history.
+        // 保留损坏的数据以便排查，避免用空历史覆盖。
         this.storageError = safeErrorMessage(error);
         fs.renameSync(file, `${file}.corrupt-${Date.now()}`);
       }
@@ -89,7 +125,14 @@ export class RunHistory {
 
   begin(name: JobName, source: RunSource): string {
     const id = randomUUID();
-    this.records.push({ id, name, source, status: 'running', startedAt: new Date().toISOString(), steps: [] });
+    this.records.push({
+      id,
+      name,
+      source,
+      status: 'running',
+      startedAt: new Date().toISOString(),
+      steps: []
+    });
     this.prune();
     this.save();
     return id;
@@ -100,7 +143,11 @@ export class RunHistory {
     if (!run) {
       return;
     }
-    Object.assign(run, { status, finishedAt: new Date().toISOString(), message: message ? safeErrorMessage(message).slice(0, 1000) : undefined });
+    Object.assign(run, {
+      status,
+      finishedAt: new Date().toISOString(),
+      message: message ? safeErrorMessage(message).slice(0, 1000) : undefined
+    });
     this.prune();
     this.save();
   }
@@ -112,9 +159,13 @@ export class RunHistory {
     }
     const existing = run.steps.findIndex((item) => item.name === step.name && item.startedAt === step.startedAt);
     if (existing >= 0) {
-      run.steps[existing] = { ...step };
+      run.steps[existing] = {
+        ...step
+      };
     } else if (run.steps.length < 100) {
-      run.steps.push({ ...step });
+      run.steps.push({
+        ...step
+      });
     }
     this.save();
   }
@@ -149,14 +200,20 @@ export class RunHistory {
       return;
     }
     try {
-      let content = JSON.stringify({ version: 1, runs: this.records });
+      let content = JSON.stringify({
+        version: 1,
+        runs: this.records
+      });
       while (Buffer.byteLength(content) > 8 * 1024 * 1024) {
         const index = this.records.findIndex((run) => !['running', 'stopping'].includes(run.status));
         if (index < 0) {
           break;
         }
         this.records.splice(index, 1);
-        content = JSON.stringify({ version: 1, runs: this.records });
+        content = JSON.stringify({
+          version: 1,
+          runs: this.records
+        });
       }
       atomicWriteFileSync(this.file, content);
     } catch (error) {

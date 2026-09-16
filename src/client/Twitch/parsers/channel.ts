@@ -4,10 +4,14 @@
  */
 import type { TwitchGqlEnvelope } from '../types';
 
-export interface TwitchChannelQueryData { user?: { id?: string } }
+export interface TwitchChannelQueryData {
+  user?: {
+  id?: string
+}
+}
 
 /**
- * 解析 parse Twitch Channel Id 相关数据。
+ * 解析 Twitch 频道标识。
  * @param payload - 当前请求或操作使用的数据内容，类型为 `TwitchGqlEnvelope<TwitchChannelQueryData>[]`。
  * @returns `string | null`，parseTwitchChannelId 解析得到的结构化结果。
  */

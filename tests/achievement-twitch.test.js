@@ -1,12 +1,21 @@
-/** Behavioral tests for long-running Achievement Twitch heartbeats. */
+/**
+ * @file tests/achievement-twitch.test.js
+ * @description 验证长时间运行的成就任务 Twitch 心跳行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { AchievementService } = require('../dist/core/Achievement/AchievementService');
-const { TwitchClient } = require('../dist/client/Twitch/TwitchClient');
-const { flushLogs } = require('../dist/tools/logging/LogWriter');
+const {
+  AchievementService
+} = require('../dist/core/Achievement/AchievementService');
+const {
+  TwitchClient
+} = require('../dist/client/Twitch/TwitchClient');
+const {
+  flushLogs
+} = require('../dist/tools/logging/LogWriter');
 
 const originalDirectory = process.cwd();
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-achievement-twitch-'));
@@ -17,14 +26,19 @@ test.before(() => {
   global.__ = (key, value) => value ? `${key}: ${value}` : key;
   global.log = false;
   global.webUI = false;
-  global.logs = { type: 'logs' };
+  global.logs = {
+    type: 'logs'
+  };
   global.wsClients = new Set();
 });
 
 test.after(async () => {
   await flushLogs();
   process.chdir(originalDirectory);
-  fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  fs.rmSync(temporaryDirectory, {
+    recursive: true,
+    force: true
+  });
 });
 
 for (const ending of ['completed', 'cancelled', 'unlinked']) {
@@ -37,40 +51,70 @@ for (const ending of ['completed', 'cancelled', 'unlinked']) {
     let goalChecks = 0;
     const heartbeats = [];
     t.mock.method(Date, 'now', () => now);
-    t.mock.getter(TwitchClient.prototype, 'session', () => ({ verify: async () => 'ok' }));
+    t.mock.getter(TwitchClient.prototype, 'session', () => ({
+      verify: async () => 'ok'
+    }));
     t.mock.getter(TwitchClient.prototype, 'extensions', () => ({
-      checkLinked: async () => ({ ok: ending !== 'unlinked' || lookupCount === 0 })
+      checkLinked: async () => ({
+        ok: ending !== 'unlinked' || lookupCount === 0
+      })
     }));
     t.mock.getter(TwitchClient.prototype, 'channels', () => ({
       findTracking: async () => {
         lookupCount++;
-        const payload = Buffer.from(JSON.stringify({ exp: now / 1000 + 330 })).toString('base64url');
-        return { found: true, value: { channelId: '42', jwt: `header.${payload}.signature`, streamerName: 'streamer' } };
+        const payload = Buffer.from(JSON.stringify({
+          exp: now / 1000 + 330
+        })).toString('base64url');
+        return {
+          found: true,
+          value: {
+            channelId: '42',
+            jwt: `header.${payload}.signature`,
+            streamerName: 'streamer'
+          }
+        };
       }
     }));
-    service.watchTwitchStatus = { running: false, type: new Set() };
+    service.watchTwitchStatus = {
+      running: false,
+      type: new Set()
+    };
     service.twitchCookie = 'auth-token=test';
     service.availableAchievements = [description];
-    service.Achievements = [{ description, completed: false }];
+    service.Achievements = [{
+      description,
+      completed: false
+    }];
     service.incompletedAchievements = [];
-    service.achievement2action = { [description]: () => service.addWatchTwitch('hive') };
+    service.achievement2action = {
+      [description]: () => service.addWatchTwitch('hive')
+    };
     service.awa = {
       context: {},
       achievement: {
         getAll: async () => {
           goalChecks++;
-          return [{ description, completed: heartbeats.length >= 10 }];
+          return [{
+            description,
+            completed: heartbeats.length >= 10
+          }];
         }
       },
       twitch: {
-        getAvailableStreams: async () => ({ Hive: ['streamer'], Nexus: [] }),
+        getAvailableStreams: async () => ({
+          Hive: ['streamer'],
+          Nexus: []
+        }),
         sendTrack: async (info) => {
           heartbeats.push(info.jwt);
           now += 60000;
           if (ending === 'cancelled' && heartbeats.length === 6) controller.abort();
-          // Bound the test if completion polling regresses.
+          // 限制测试时长，防止完成状态轮询异常时一直等待。
           if (heartbeats.length > 10) controller.abort();
-          return { success: true, state: 'daily_cap_reached' };
+          return {
+            success: true,
+            state: 'daily_cap_reached'
+          };
         }
       }
     };
@@ -96,18 +140,28 @@ for (const unavailableState of ['streamer_offline', 'no_channel_found']) {
     const service = Object.create(AchievementService.prototype);
     const states = ['daily_cap_reached', unavailableState];
     let heartbeatCount = 0;
-    service.watchTwitchStatus = { running: true, type: new Set(['hive']) };
+    service.watchTwitchStatus = {
+      running: true,
+      type: new Set(['hive'])
+    };
     service.awa = {
       twitch: {
         async sendTrack() {
           const state = states[heartbeatCount++];
-          return { success: state === 'daily_cap_reached', state };
+          return {
+            success: state === 'daily_cap_reached',
+            state
+          };
         }
       }
     };
 
     const result = await service.trackTwitchChannel(
-      { channelId: '42', jwt: 'token', streamerName: 'streamer' },
+      {
+        channelId: '42',
+        jwt: 'token',
+        streamerName: 'streamer'
+      },
       undefined,
       0.001
     );

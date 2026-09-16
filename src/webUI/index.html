@@ -1,4 +1,7 @@
-<!-- Unified Manager dashboard for DailyQuest, Achievement, and Artifact jobs. -->
+<!--
+ @file src/webUI/index.html
+ @description 提供每日任务、成就与遗物的统一管理页面。
+-->
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -26,7 +29,7 @@
     #log-area{height: 300px;overflow-y: auto;}
     #log-area li:last-child {font-weight: bold;}
 
-    /* Button Area Styling */
+    /* 按钮区域样式 */
     .button-section {
       background: rgba(255, 255, 255, 0.9);
       border-radius: 15px;
@@ -99,7 +102,7 @@
       color: #212529;
     }
 
-    /* Status Information Styling */
+    /* 状态信息样式 */
     .status-info-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -177,7 +180,7 @@
       font-size: 0.8rem;
     }
 
-    /* Log Area Styling */
+    /* 日志区域样式 */
     .log-container {
       background: rgba(248, 249, 250, 0.8);
       border-radius: 12px;
@@ -279,7 +282,7 @@
       border-left: 3px solid #007bff;
     }
 
-    /* Modal Styling */
+    /* 弹窗样式 */
     .modal-custom {
       border-radius: 15px;
       border: none;
@@ -483,7 +486,7 @@
 </head>
 <body>
   <h1 class="fw-bold">AWA-Manager <a style="font-size:20px;margin-left: 5px;" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></h1>
-  <!-- Configuration Section -->
+  <!-- 配置区域 -->
   <div class="button-section">
     <div class="section-title">⚙️ <span data-i18n="systemConfig">系统配置</span></div>
     <div class="btn-group-custom">
@@ -515,7 +518,7 @@
     </div>
   </div>
 
-  <!-- DailyQuest Control Section -->
+  <!-- 每日任务控制区域 -->
   <div class="button-section">
     <div class="section-title">🚀 <span data-i18n="dailyQuestControl">DailyQuest 控制</span></div>
     <div class="btn-group-custom">
@@ -534,7 +537,7 @@
     </div>
   </div>
 
-  <!-- AWA-Achievement Control Section -->
+  <!-- AWA 成就控制区域 -->
   <div class="button-section">
     <div class="section-title">🏆 <span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
     <div class="btn-group-custom">
@@ -549,7 +552,7 @@
       </button>
     </div>
   </div>
-  <!-- Status Information Section -->
+  <!-- 状态信息区域 -->
   <div class="button-section">
     <div class="section-title">📊 <span data-i18n="statusInfo">运行状态信息</span></div>
     <div class="status-info-container">
@@ -581,7 +584,7 @@
     </div>
   </div>
 </div>
-  <!-- Log Display Section -->
+  <!-- 日志展示区域 -->
   <div class="button-section">
     <div class="section-title">📋 <span data-i18n="realtimeLogs">实时日志</span></div>
     <div class="log-container">

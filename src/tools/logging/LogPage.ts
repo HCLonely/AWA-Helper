@@ -1,3 +1,7 @@
+/**
+ * @file src/tools/logging/LogPage.ts
+ * @description 通过文件游标按固定大小读取日志分页。
+ */
 import { promises as fs } from 'fs';
 
 export interface LogPage {
@@ -7,9 +11,12 @@ export interface LogPage {
   missing: boolean;
 }
 
-/** Cursor contains file identity and byte offset, never a filesystem path. */
+/** 游标仅包含文件标识和字节偏移，不包含文件系统路径。 */
 export const readLogPage = async (filename: string, cursor?: string): Promise<LogPage> => {
-  let requested: { identity: string; end: number } | undefined;
+  let requested: {
+    identity: string;
+    end: number
+  } | undefined;
   if (cursor) {
     if (cursor.length > 512) {
       throw new Error('Invalid log cursor');
@@ -20,7 +27,9 @@ export const readLogPage = async (filename: string, cursor?: string): Promise<Lo
         throw new Error();
       }
     } catch (_error) {
-      throw new Error('Invalid log cursor', { cause: _error });
+      throw new Error('Invalid log cursor', {
+        cause: _error
+      });
     }
   }
   let handle;
@@ -28,7 +37,11 @@ export const readLogPage = async (filename: string, cursor?: string): Promise<Lo
     handle = await fs.open(filename, 'r');
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return { text: '', missing: true, reset: !!cursor };
+      return {
+        text: '',
+        missing: true,
+        reset: !!cursor
+      };
     }
     throw error;
   }
@@ -41,7 +54,9 @@ export const readLogPage = async (filename: string, cursor?: string): Promise<Lo
     const buffer = Buffer.alloc(end - start);
     let read = 0;
     while (read < buffer.length) {
-      const { bytesRead } = await handle.read(buffer, read, buffer.length - read, start + read);
+      const {
+        bytesRead
+      } = await handle.read(buffer, read, buffer.length - read, start + read);
       if (!bytesRead) {
         break;
       }
@@ -54,10 +69,17 @@ export const readLogPage = async (filename: string, cursor?: string): Promise<Lo
     if (skip < read) {
       start += skip;
     }
-    // Each response is at most 64 KiB. Previous pages replace the preview, not append to it.
+    // 每次响应最多 64 KiB，翻页时替换预览内容，而非追加。
     return {
-      text: buffer.subarray(skip, read).toString('utf8'), reset, missing: false,
-      ...(start > 0 && { older: Buffer.from(JSON.stringify({ identity, end: start })).toString('base64url') })
+      text: buffer.subarray(skip, read).toString('utf8'),
+      reset,
+      missing: false,
+      ...(start > 0 && {
+        older: Buffer.from(JSON.stringify({
+          identity,
+          end: start
+        })).toString('base64url')
+      })
     };
   } finally {
     await handle.close();

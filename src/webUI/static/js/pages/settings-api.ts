@@ -1,8 +1,13 @@
-/** Owns configuration transport, serialization, authentication and server error messages. */
+/**
+ * @file src/webUI/static/js/pages/settings-api.ts
+ * @description 处理配置传输、序列化、身份验证和服务端错误提示。
+ */
 const SettingsApi = (() => {
   function formatRequestError(error: unknown): string {
     if (SettingsModel.isRecord(error)) {
-      const { response } = error;
+      const {
+        response
+      } = error;
       const responseData = SettingsModel.isRecord(response) ? response.data : undefined;
       if (SettingsModel.isRecord(responseData)) {
         if (Array.isArray(responseData.errors)) {
@@ -18,16 +23,24 @@ const SettingsApi = (() => {
     }
     return SettingsI18n.t(error instanceof Error ? error.message : String(error));
   }
-  function authorization(): { Authorization: string } {
+  function authorization(): {
+    Authorization: string
+    } {
     const secret = sessionStorage.getItem('managerServerSecret');
     if (!secret) {
       throw new Error(SettingsI18n.t('Set the Manager secret before editing configuration.'));
     }
-    return { Authorization: `Bearer ${secret}` };
+    return {
+      Authorization: `Bearer ${secret}`
+    };
   }
   async function getConfig(signal?: AbortSignal): Promise<SettingsData> {
-    // Axios also tries to parse JSON served as YAML unless a text response is requested.
-    const response = await axios.get('/api/config', { headers: authorization(), responseType: 'text', signal });
+    // 若不明确请求文本响应，Axios 也会尝试解析以 YAML 类型返回的 JSON。
+    const response = await axios.get('/api/config', {
+      headers: authorization(),
+      responseType: 'text',
+      signal
+    });
     if (response.status !== 200) {
       throw new Error(SettingsI18n.t('Get configuration failed: %s', String(response.status)));
     }
@@ -43,8 +56,15 @@ const SettingsApi = (() => {
     return data;
   }
   async function setConfig(config: SettingsData, type: SettingsTemplate['type']): Promise<boolean> {
-    const data = type === 'json' ? JSON.stringify(config, null, 2) : jsyaml.dump(config, { lineWidth: -1, forceQuotes: true });
-    const response = await axios.put('/api/config', { config: data }, { headers: authorization() });
+    const data = type === 'json' ? JSON.stringify(config, null, 2) : jsyaml.dump(config, {
+      lineWidth: -1,
+      forceQuotes: true
+    });
+    const response = await axios.put('/api/config', {
+      config: data
+    }, {
+      headers: authorization()
+    });
     if (response.status !== 200) {
       throw new Error(SettingsI18n.t('Save configuration failed: %s', String(response.status)));
     }
@@ -65,12 +85,22 @@ const SettingsApi = (() => {
       throw new Error(SettingsI18n.t('Invalid template URL'));
     }
     remote.searchParams.set('time', String(Date.now()));
-    const response = await axios.get(remote.href, { responseType: 'text', signal });
+    const response = await axios.get(remote.href, {
+      responseType: 'text',
+      signal
+    });
     if (response.status !== 200 || typeof response.data !== 'string') {
       throw new Error(SettingsI18n.t('Get template file failed'));
     }
     return response.data;
   }
-  return { getConfig, setConfig, getTemplate, formatRequestError };
+  return {
+    getConfig,
+    setConfig,
+    getTemplate,
+    formatRequestError
+  };
 })();
-Object.assign(globalThis, { SettingsApi });
+Object.assign(globalThis, {
+  SettingsApi
+});

@@ -1,3 +1,7 @@
+/**
+ * @file src/webUI/static/js/pages/browser-globals.d.ts
+ * @description 声明 WebUI 页面使用的浏览器全局变量和外部库类型。
+ */
 declare const axios: typeof import('axios').default;
 declare const dayjs: typeof import('dayjs').default;
 declare const jsyaml: typeof import('js-yaml');

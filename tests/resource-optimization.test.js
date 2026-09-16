@@ -1,53 +1,104 @@
+/**
+ * @file tests/resource-optimization.test.js
+ * @description 验证资源使用上限与优化行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { getEventListeners } = require('node:events');
-const { LogCache } = require('../dist/tools/logging/LogCache');
-const { LogWriter, flushLogs, writeFileLog } = require('../dist/tools/logging/LogWriter');
-const { SharedRead } = require('../dist/tools/http/SharedRead');
-const { maintainLogs } = require('../dist/tools/logging/retention');
-const { cleanupCompletedUpdatesAsync } = require('../dist/tools/update/retention');
-const { trackingExpiry } = require('../dist/core/DailyQuest/tasks/TwitchQuestTask');
-const { getControlCenter } = require('../dist/client/AWA/APIs/quests/getControlCenter');
-const { getAvailableStreams } = require('../dist/client/AWA/APIs/twitch/getAvailableStreams');
-const { runWithRequestSignal } = require('../dist/tools/http/RequestContext');
-const { AWAContext } = require('../dist/client/AWA/AWAContext');
-const { TwitchContext } = require('../dist/client/Twitch/TwitchContext');
-const { getChannelInfo } = require('../dist/client/Twitch/APIs/channels/getChannelInfo');
-const { subscribeWebUiScope, acceptsWebUiScope } = require('../dist/tools/logging/WebSocketLimits');
-const { http } = require('../dist/tools/http/client');
+const {
+  getEventListeners
+} = require('node:events');
+const {
+  LogCache
+} = require('../dist/tools/logging/LogCache');
+const {
+  LogWriter, flushLogs, writeFileLog
+} = require('../dist/tools/logging/LogWriter');
+const {
+  SharedRead
+} = require('../dist/tools/http/SharedRead');
+const {
+  maintainLogs
+} = require('../dist/tools/logging/retention');
+const {
+  cleanupCompletedUpdatesAsync
+} = require('../dist/tools/update/retention');
+const {
+  trackingExpiry
+} = require('../dist/core/DailyQuest/tasks/TwitchQuestTask');
+const {
+  getControlCenter
+} = require('../dist/client/AWA/APIs/quests/getControlCenter');
+const {
+  getAvailableStreams
+} = require('../dist/client/AWA/APIs/twitch/getAvailableStreams');
+const {
+  runWithRequestSignal
+} = require('../dist/tools/http/RequestContext');
+const {
+  AWAContext
+} = require('../dist/client/AWA/AWAContext');
+const {
+  TwitchContext
+} = require('../dist/client/Twitch/TwitchContext');
+const {
+  getChannelInfo
+} = require('../dist/client/Twitch/APIs/channels/getChannelInfo');
+const {
+  subscribeWebUiScope, acceptsWebUiScope
+} = require('../dist/tools/logging/WebSocketLimits');
+const {
+  http
+} = require('../dist/tools/http/client');
 const axios = require('axios');
 
 const temporary = (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-resource-'));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(root, {
+    recursive: true,
+    force: true
+  }));
   return root;
 };
 const deferred = () => {
   let resolve;
   const promise = new Promise((done) => { resolve = done; });
-  return { promise, resolve };
+  return {
+    promise,
+    resolve
+  };
 };
 
 test('log cache updates preserve FIFO order, scope quotas and exact encoded accounting', () => {
-  const entries = { type: 'logs' };
+  const entries = {
+    type: 'logs'
+  };
   const cache = new LogCache(entries, 700, 2);
   const put = (id, data, scope = 'manager', type = 'log') => {
-    const entry = { id, data, scope, type };
+    const entry = {
+      id,
+      data,
+      scope,
+      type
+    };
     cache.put(entry, JSON.stringify(entry));
     const bytes = Object.entries(entries).filter(([key]) => key !== 'type')
       .reduce((sum, [, value]) => sum + Buffer.byteLength(JSON.stringify(value)), 0);
     assert.equal(cache.byteLength, bytes);
     assert.ok(bytes <= 700);
   };
-  put(0, { latest: true }, 'manager', 'questInfo');
+  put(0, {
+    latest: true
+  }, 'manager', 'questInfo');
   put(1, 'first'); put(2, 'second'); put(1, 'updated'); put(3, 'third');
   assert.equal(entries['manager:1'], undefined);
   assert.equal(entries['manager:2'].data, 'second');
   for (let id = 4; id < 30; id++) put(id, '中文'.repeat(25), 'achievement');
-  assert.deepEqual(entries['manager:questInfo'].data, { latest: true });
+  assert.deepEqual(entries['manager:questInfo'].data, {
+    latest: true
+  });
 });
 
 test('writer batches records, rotates at bytes and detects external truncation between batches', async (t) => {
@@ -161,11 +212,20 @@ test('Control Center and stream discovery share a read without sharing caller ca
   const gate = deferred();
   let calls = 0;
   let signal;
-  const context = new AWAContext({ cookie: 'synthetic=1', transport: { request: async (options) => {
-    calls++; signal = options.signal;
-    await gate.promise;
-    return { data: '<html></html>', headers: {}, status: 200 };
-  } } });
+  const context = new AWAContext({
+    cookie: 'synthetic=1',
+    transport: {
+      request: async (options) => {
+        calls++; signal = options.signal;
+        await gate.promise;
+        return {
+          data: '<html></html>',
+          headers: {},
+          status: 200
+        };
+      }
+    }
+  });
   const controller = new AbortController();
   const state = runWithRequestSignal(controller.signal, () => getControlCenter(context));
   const streams = getAvailableStreams(context);
@@ -183,17 +243,34 @@ test('Control Center and stream discovery share a read without sharing caller ca
 test('a completed GET mutation prevents a fresh refresh from joining an older page read', async () => {
   const old = deferred();
   let pages = 0;
-  const context = new AWAContext({ cookie: 'synthetic=1', transport: { request: async (options) => {
-    if (options.url.endsWith('/control-center')) {
-      pages++;
-      if (pages === 1) await old.promise;
-      return { data: String(pages), headers: {}, status: 200 };
+  const context = new AWAContext({
+    cookie: 'synthetic=1',
+    transport: {
+      request: async (options) => {
+        if (options.url.endsWith('/control-center')) {
+          pages++;
+          if (pages === 1) await old.promise;
+          return {
+            data: String(pages),
+            headers: {},
+            status: 200
+          };
+        }
+        return {
+          data: 'claimed',
+          headers: {},
+          status: 200
+        };
+      }
     }
-    return { data: 'claimed', headers: {}, status: 200 };
-  } } });
+  });
   const first = getControlCenter(context);
   await Promise.resolve();
-  await context.request({ url: `${context.baseURL}/claim`, method: 'GET', retryTimes: 0 });
+  await context.request({
+    url: `${context.baseURL}/claim`,
+    method: 'GET',
+    retryTimes: 0
+  });
   assert.equal(await getControlCenter(context), '2');
   old.resolve();
   await first;
@@ -202,7 +279,9 @@ test('a completed GET mutation prevents a fresh refresh from joining an older pa
 
 test('tracking reuse respects expiry and a conservative maximum lifetime', () => {
   const now = 1000000;
-  const jwt = (exp) => `header.${Buffer.from(JSON.stringify({ exp })).toString('base64url')}.signature`;
+  const jwt = (exp) => `header.${Buffer.from(JSON.stringify({
+    exp
+  })).toString('base64url')}.signature`;
   assert.equal(trackingExpiry(jwt(9999999), now), now + 300000);
   assert.equal(trackingExpiry(jwt(1060), now), now + 30000);
   assert.equal(trackingExpiry(jwt(900), now), now);
@@ -211,10 +290,25 @@ test('tracking reuse respects expiry and a conservative maximum lifetime', () =>
 
 test('channel ID cache is bounded, context-local, and still respects cancellation', async () => {
   let calls = 0;
-  const context = new TwitchContext({ cookie: 'auth-token=synthetic', transport: { request: async () => {
-    calls++;
-    return { data: [{ data: { user: { id: '42' } } }], headers: {}, status: 200 };
-  } } });
+  const context = new TwitchContext({
+    cookie: 'auth-token=synthetic',
+    transport: {
+      request: async () => {
+        calls++;
+        return {
+          data: [{
+            data: {
+              user: {
+                id: '42'
+              }
+            }
+          }],
+          headers: {},
+          status: 200
+        };
+      }
+    }
+  });
   context.clientId = 'test';
   await getChannelInfo(context, 'first');
   await getChannelInfo(context, 'first');
@@ -238,10 +332,18 @@ test('scope subscriptions filter new clients and preserve legacy full subscripti
 
 test('long Retry-After is returned to the caller instead of retried prematurely', async () => {
   let attempts = 0;
-  await assert.rejects(http.get('https://synthetic.test', { adapter: async (config) => {
-    attempts++;
-    throw new axios.AxiosError('busy', 'ERR_BAD_RESPONSE', config, {}, { status: 429, headers: { 'retry-after': '3600' }, config });
-  } }));
+  await assert.rejects(http.get('https://synthetic.test', {
+    adapter: async (config) => {
+      attempts++;
+      throw new axios.AxiosError('busy', 'ERR_BAD_RESPONSE', config, {}, {
+        status: 429,
+        headers: {
+          'retry-after': '3600'
+        },
+        config
+      });
+    }
+  }));
   assert.equal(attempts, 1);
 });
 

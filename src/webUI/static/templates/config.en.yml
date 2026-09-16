@@ -205,7 +205,7 @@
       - viewNews
       - sharePost
     # awaDailyQuestNumber1:
-    #   name: When there are multiple daily tasks, whether to only do the first one?
+    #   name: 每日任务有多个时是否只做第一个？
     #   type: boolean
     #   defaultValue: true
     joinSteamCommunityEvent:
@@ -749,4 +749,4 @@
                       - name: id
                         type: text
                         repeat: true
-# English configuration editor template.
+# 英文配置编辑器模板。

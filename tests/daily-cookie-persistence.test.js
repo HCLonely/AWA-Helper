@@ -1,4 +1,7 @@
-/** Regression coverage for persisting the final cookie produced by DailyQuest. */
+/**
+ * @file tests/daily-cookie-persistence.test.js
+ * @description 回归验证每日任务最终生成的 Cookie 会被持久化。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

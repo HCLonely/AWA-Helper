@@ -7,7 +7,7 @@ import type { ControlCenterSnapshot, PromotionalCalendarEntry } from '../types';
 export type { ControlCenterSnapshot } from '../types';
 
 /**
- * 解析 parse Control Center 相关数据。
+ * 解析控制中心任务与用户状态。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @param baseURL - 目标资源或服务的 URL，类型为 `string`。
  * @returns `ControlCenterSnapshot`，parseControlCenter 解析得到的结构化结果。
@@ -23,7 +23,7 @@ export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI 
       if (reward) {
         signArp.daily = `${reward} + ${rewardBonusArp} ARP`;
       }
-    } catch (_error) { /* malformed optional page data */ }
+    } catch (_error) { /* 可选页面数据格式异常，保留默认值。 */ }
   }
   const monthly = html.match(/monthly_logins.*?=.*?({.+?})/)?.[1];
   if (monthly) {
@@ -43,19 +43,29 @@ export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI 
       } else {
         signArp.monthly = `${data.extra_arp} + ${rewardBonusArp} ARP`;
       }
-    } catch (_error) { /* malformed optional page data */ }
+    } catch (_error) { /* 可选页面数据格式异常，保留默认值。 */ }
   }
 
-  const questInfo: questInfo = { timeOnSite: { maxArp: '5', addedArp: '0', addedArpExtra: '0' } };
+  const questInfo: questInfo = {
+    timeOnSite: {
+      maxArp: '5',
+      addedArp: '0',
+      addedArpExtra: '0'
+    }
+  };
   let dailyArp = '0';
   const dailyData = html.match(/dailyArpData.*?=.*?({.+?}})/)?.[1];
   if (dailyData) {
     try {
       const data = JSON.parse(dailyData);
-      questInfo.timeOnSite = { maxArp: `${data.timeOnSiteCap}`, addedArp: `${data.timeOnSiteArp}`, addedArpExtra: '0' };
+      questInfo.timeOnSite = {
+        maxArp: `${data.timeOnSiteCap}`,
+        addedArp: `${data.timeOnSiteArp}`,
+        addedArpExtra: '0'
+      };
       questInfo.watchTwitch = [`${data.twitchData.totalPoints}`, `${data.twitchData.bonusPoints}`];
       dailyArp = `${data.dailyArp}`;
-    } catch (_error) { /* defaults remain valid */ }
+    } catch (_error) { /* 解析失败时仍可使用默认值。 */ }
   }
 
   const bodies = $('div.user-profile__card-body');
@@ -109,18 +119,25 @@ export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI 
   if (claimable.length) {
     promotionalCalendarInfo = claimable.toArray().map((day) => ({
       name: $(day).find('.promotional-calendar__day-info h1').text()
-        .trim(), day: `Day ${$(day).attr('data-day')}`, finished: false
+        .trim(),
+      day: `Day ${$(day).attr('data-day')}`,
+      finished: false
     }));
   } else {
     promotionalCalendarInfo = promoDays.filter((_, day) => $(day).text().includes('My Rewards')).last().toArray()
       .map((day) => ({
         name: $(day).find('.promotional-calendar__day-info h1').text()
-          .trim(), day: `Day ${$(day).attr('data-day')}`, finished: true
+          .trim(),
+        day: `Day ${$(day).attr('data-day')}`,
+        finished: true
       }));
   }
 
   return {
-    questInfo, dailyArp, signArp, promotionalCalendarInfo,
+    questInfo,
+    dailyArp,
+    signArp,
+    promotionalCalendarInfo,
     userProfileUrl: html.match(/user_profile_url.*?=.*?"(.+?)"/)?.[1],
     taskType: html.match(/user_country.*?=.*?"(.+?)"/)?.[1] === 'US' ? 'US' : 'New',
     posts: $('.featured-row-News a[href*="/ucf/show/"]').toArray().flatMap((link) => $(link).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1] || []),
@@ -128,9 +145,12 @@ export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI 
     getStartedItems: $('.onboarding_items .onboarding_item').has('i.fa-square').toArray()
       .map((item) => ({
         name: $(item).find('a.onboarding-link').text()
-          .trim(), link: $(item).find('a.onboarding-link').attr('href') || ''
+          .trim(),
+        link: $(item).find('a.onboarding-link').attr('href') || ''
       }))
-      .filter(({ link }) => !!link),
+      .filter(({
+        link
+      }) => !!link),
     battlePassUrl: $('a.um-nav-link[href*="/control-center/battle-pass/"]').first().attr('href')
       ? new URL($('a.um-nav-link[href*="/control-center/battle-pass/"]').first().attr('href')!, `${baseURL}/`).href
       : undefined

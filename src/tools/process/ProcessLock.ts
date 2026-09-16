@@ -10,7 +10,9 @@ interface LockData {
   startedAt: string
 }
 
-type ErrorWithCode = Error & { code?: string };
+type ErrorWithCode = Error & {
+  code?: string
+};
 
 class ProcessLock {
   private static readonly malformedLockGraceMs = 30_000;
@@ -19,7 +21,7 @@ class ProcessLock {
   private readonly lockPath: string;
 
   /**
-   * 初始化 Process Lock 实例。
+   * 初始化 ProcessLock 实例。
    * @param lockPath - 待读取或写入文件的路径，类型为 `string`。
    */
   constructor(lockPath: string) {
@@ -27,11 +29,13 @@ class ProcessLock {
   }
 
   /**
-   * 获取 acquire 相关数据。
+   * 获取进程锁。
    * @returns `Promise<boolean>`，表示 acquire 检查是否通过。
    */
   async acquire(): Promise<boolean> {
-    await fs.promises.mkdir(path.dirname(this.lockPath), { recursive: true });
+    await fs.promises.mkdir(path.dirname(this.lockPath), {
+      recursive: true
+    });
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -60,7 +64,7 @@ class ProcessLock {
   }
 
   /**
-   * 停止 release 相关数据。
+   * 释放进程锁。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async release(): Promise<void> {
@@ -70,11 +74,13 @@ class ProcessLock {
     this.acquired = false;
     await this.handle?.close().catch(() => undefined);
     this.handle = undefined;
-    await fs.promises.rm(this.lockPath, { force: true }).catch(() => undefined);
+    await fs.promises.rm(this.lockPath, {
+      force: true
+    }).catch(() => undefined);
   }
 
   /**
-   * 停止 release Sync 相关数据。
+   * 同步释放进程锁。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   releaseSync(): void {
@@ -83,14 +89,16 @@ class ProcessLock {
     }
     this.acquired = false;
     try {
-      fs.rmSync(this.lockPath, { force: true });
+      fs.rmSync(this.lockPath, {
+        force: true
+      });
     } catch (_error) {
       // 过期锁将在下次启动时恢复。
     }
   }
 
   /**
-   * 删除 remove Stale Lock 相关数据。
+   * 移除过期进程锁。
    * @returns `Promise<boolean>`，表示 removeStaleLock 检查是否通过。
    */
   private async removeStaleLock(): Promise<boolean> {
@@ -99,7 +107,9 @@ class ProcessLock {
       if (typeof lockData.pid === 'number' && this.isProcessRunning(lockData.pid)) {
         return false;
       }
-      await fs.promises.rm(this.lockPath, { force: true });
+      await fs.promises.rm(this.lockPath, {
+        force: true
+      });
       return true;
     } catch (error) {
       if ((error as ErrorWithCode).code === 'ENOENT') {
@@ -111,13 +121,15 @@ class ProcessLock {
       if (stats && Date.now() - stats.mtimeMs < ProcessLock.malformedLockGraceMs) {
         return false;
       }
-      await fs.promises.rm(this.lockPath, { force: true });
+      await fs.promises.rm(this.lockPath, {
+        force: true
+      });
       return true;
     }
   }
 
   /**
-   * 检查 is Process Running 相关数据。
+   * 检查进程是否运行。
    * @param pid - 需要检查是否仍在运行的进程标识，类型为 `number`。
    * @returns `boolean`，表示 isProcessRunning 检查是否通过。
    */

@@ -4,17 +4,22 @@
  */
 import { load } from 'cheerio';
 
-export interface EquippedArtifact { id: number; perkTextShort: string }
+export interface EquippedArtifact {
+  id: number;
+  perkTextShort: string
+}
 
 /**
- * 解析 parse Equipped Artifacts 相关数据。
+ * 解析已装备遗物。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @returns `EquippedArtifact[]`，parseEquippedArtifacts 收集或筛选得到的数据列表。
  */
 export const parseEquippedArtifacts = (html: string): EquippedArtifact[] => {
   const json = `{${html.match(/artifactsData.*?=.*?{(.+?)};/m)?.[1] || ''}}`;
   try {
-    const active = (JSON.parse(json) as { userActiveArtifacts?: Record<string, EquippedArtifact> }).userActiveArtifacts;
+    const active = (JSON.parse(json) as {
+      userActiveArtifacts?: Record<string, EquippedArtifact>
+    }).userActiveArtifacts;
     return active ? Object.values(active) : [];
   } catch (_error) {
     return [];
@@ -22,7 +27,7 @@ export const parseEquippedArtifacts = (html: string): EquippedArtifact[] => {
 };
 
 /**
- * 解析 parse Twitch Artifact Bonus 相关数据。
+ * 解析 Twitch 遗物加成。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @returns `number`，parseTwitchArtifactBonus 计算或读取到的数值。
  */

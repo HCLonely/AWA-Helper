@@ -1,3 +1,7 @@
+/**
+ * @file tests/manager-lifecycle.test.js
+ * @description 验证 Manager 启停与作业资源管理。
+ */
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const fs = require('node:fs');
@@ -9,11 +13,16 @@ const fixture = (mode = 'persistent') => {
   let release;
   const startup = new Promise((resolve) => { release = resolve; });
   class Coordinator {
-    states = { subscribe() {}, list: () => [] };
+    states = {
+      subscribe() {},
+      list: () => []
+    };
     register() {}
     beginShutdown() { this.isClosing = true; }
     async stopAll() { this.beginShutdown(); events.push('jobs stopped'); }
-    async start() { events.push('job started'); return { success: true }; }
+    async start() { events.push('job started'); return {
+      success: true
+    }; }
   }
   class Scheduler {
     start() { events.push('scheduler started'); }
@@ -25,26 +34,67 @@ const fixture = (mode = 'persistent') => {
   }
   class Logger {}
   const dependencies = {
-    './JobCoordinator': { JobCoordinator: Coordinator }, './Scheduler': { Scheduler },
-    '../../server': { UnifiedServer: Server },
-    '../../tools/config': { loadConfig: () => ({ path: 'synthetic.yml', raw: { webUI: { enable: false } }, manager: { secret: 'synthetic-manager-secret' } }) },
-    '../../tools/logging/LogWriter': { flushLogs: async () => { events.push('logs flushed'); } },
-    '../../tools': { Logger, time: () => '' },
-    './jobs': { DailyQuestJob: class {}, AchievementJob: class {}, ArtifactJob: class {} }
+    './JobCoordinator': {
+      JobCoordinator: Coordinator
+    },
+    './Scheduler': {
+      Scheduler
+    },
+    '../../server': {
+      UnifiedServer: Server
+    },
+    '../../tools/config': {
+      loadConfig: () => ({
+        path: 'synthetic.yml',
+        raw: {
+          webUI: {
+            enable: false
+          }
+        },
+        manager: {
+          secret: 'synthetic-manager-secret'
+        }
+      })
+    },
+    '../../tools/logging/LogWriter': {
+      flushLogs: async () => { events.push('logs flushed'); }
+    },
+    '../../tools': {
+      Logger,
+      time: () => ''
+    },
+    './jobs': {
+      DailyQuestJob: class {},
+      AchievementJob: class {},
+      ArtifactJob: class {}
+    }
   };
-  const sandbox = { exports: {}, require: (name) => dependencies[name] || {}, process: { env: {} },
-    __: (key) => key, clearInterval };
+  const sandbox = {
+    exports: {},
+    require: (name) => dependencies[name] || {},
+    process: {
+      env: {}
+    },
+    __: (key) => key,
+    clearInterval
+  };
   vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, '../dist/core/Manager/ManagerRuntime.js'), 'utf8'), sandbox);
   const runtime = new sandbox.exports.ManagerRuntime(mode, 'test');
   runtime.initializeEnvironment = () => {};
   runtime.printStartupInformation = () => {};
   runtime.scheduleAutomaticUpdate = async () => false;
-  return { events, runtime, release };
+  return {
+    events,
+    runtime,
+    release
+  };
 };
 
 for (const mode of ['persistent', 'once']) {
   test(`shutdown while ${mode} server starts does not launch jobs or cron`, async () => {
-    const { runtime, events, release } = fixture(mode);
+    const {
+      runtime, events, release
+    } = fixture(mode);
     const running = runtime.run();
     runtime.requestShutdown();
     release();
@@ -56,7 +106,9 @@ for (const mode of ['persistent', 'once']) {
 }
 
 test('Manager stop callers await one completion and the server closes even if disposal fails', async () => {
-  const { runtime, events } = fixture();
+  const {
+    runtime, events
+  } = fixture();
   runtime.coordinator.stopAll = async () => { throw new Error('disposal failed'); };
   const first = runtime.stop();
   assert.equal(runtime.stop(), first);

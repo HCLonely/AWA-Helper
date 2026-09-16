@@ -1,5 +1,11 @@
+/**
+ * @file scripts/updateDailyQuestDb.js
+ * @description 更新每日任务数据库。
+ */
 const fs = require('fs');
-const { execSync } = require('child_process');
+const {
+  execSync
+} = require('child_process');
 
 const dailyQuestDbPath = 'src/data/dailyQuestDb.json';
 const dailyQuestDbChanged = execSync(`git status --short -- ${dailyQuestDbPath}`).toString().trim().length > 0;

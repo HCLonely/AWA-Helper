@@ -1,4 +1,7 @@
-/** Template definitions are immutable; drafts contain values and cached conditional branches. */
+/**
+ * @file src/webUI/static/js/pages/settings-model.ts
+ * @description 模板定义保持不变，草稿保存配置值与缓存的条件分支。
+ */
 interface SettingsFieldBase {
   readonly name?: string;
   readonly desp?: string;
@@ -8,12 +11,32 @@ interface SettingsFieldBase {
 }
 type SettingsFields = Readonly<Record<string, SettingsField>>;
 type SettingsField = SettingsFieldBase & (
-  { readonly type: 'text' | 'integer-array'; readonly inputType?: string; readonly placeholder?: string; readonly validation?: string } |
-  { readonly type: 'boolean' } |
-  { readonly type: 'single-select' | 'multi-select'; readonly options: readonly string[]; readonly optionsName?: readonly string[];
-    readonly bindValue?: { readonly body: Readonly<Record<string, SettingsFields>>; readonly isChildren?: boolean } } |
-  { readonly type: 'object'; readonly body: SettingsFields } |
-  { readonly type: 'array'; readonly body: readonly SettingsField[] }
+  {
+    readonly type: 'text' | 'integer-array';
+    readonly inputType?: string;
+    readonly placeholder?: string;
+    readonly validation?: string
+  } |
+  {
+    readonly type: 'boolean'
+  } |
+  {
+    readonly type: 'single-select' | 'multi-select';
+    readonly options: readonly string[];
+    readonly optionsName?: readonly string[];
+    readonly bindValue?: {
+      readonly body: Readonly<Record<string, SettingsFields>>;
+      readonly isChildren?: boolean
+    }
+  } |
+  {
+    readonly type: 'object';
+    readonly body: SettingsFields
+  } |
+  {
+    readonly type: 'array';
+    readonly body: readonly SettingsField[]
+  }
 );
 interface SettingsTemplate {
   readonly name: string;
@@ -59,7 +82,9 @@ const SettingsModel = (() => {
     }
     const owners = new Set<string>();
     for (const [name, schema] of Object.entries(value as SettingsFields)) {
-      const names = ownedNames({ [name]: schema });
+      const names = ownedNames({
+        [name]: schema
+      });
       if (names.slice(1).includes(name)) {
         fail(path, SettingsI18n.t('Conditional field overrides its selector: %s', name));
       }
@@ -227,18 +252,26 @@ const SettingsModel = (() => {
         fail(SettingsI18n.t('Template %s', String(index)), SettingsI18n.t('Missing name'));
       }
       const type = String(value.type || String(value.filename || '').split('.').pop()).toLowerCase();
-      // This page writes to the Manager YAML API; INI is not an accepted server format.
+      // 此页面向 Manager 的 YAML 接口写入数据，服务端不接受 INI 格式。
       if (type !== 'yml' && type !== 'yaml' && type !== 'json') {
         fail(value.name, SettingsI18n.t('Expected YAML or JSON format'));
       }
       checkFields(value.body, value.name, 0);
-      return freeze({ name: value.name, type, body: value.body,
+      return freeze({
+        name: value.name,
+        type,
+        body: value.body,
         quote: typeof value.quote === 'string' ? value.quote : undefined,
-        author: typeof value.author === 'string' ? value.author : undefined });
+        author: typeof value.author === 'string' ? value.author : undefined
+      });
     });
   }
-  function expandItems(schema: Extract<SettingsField, { type: 'array' }>): SettingsField[] {
-    return schema.body.flatMap((item) => Array.from({ length: typeof item.repeat === 'number' ? item.repeat : 1 }, () => item));
+  function expandItems(schema: Extract<SettingsField, {
+    type: 'array'
+  }>): SettingsField[] {
+    return schema.body.flatMap((item) => Array.from({
+      length: typeof item.repeat === 'number' ? item.repeat : 1
+    }, () => item));
   }
   function ownedNames(fields: SettingsFields): string[] {
     return Object.entries(fields).flatMap(([name, schema]) => {
@@ -249,11 +282,21 @@ const SettingsModel = (() => {
     });
   }
   function createScope(fields: SettingsFields, config: SettingsData): SettingsScope {
-    return { base: structuredClone(config), fields: Object.entries(fields).map(([name, schema]) => createNode(name, schema, own(config, name), config)) };
+    return {
+      base: structuredClone(config),
+      fields: Object.entries(fields).map(([name, schema]) => createNode(name, schema, own(config, name), config))
+    };
   }
   function createNode(name: string, schema: SettingsField, source?: unknown, siblings: SettingsData = {}): SettingsNode {
     const value = source === undefined ? schema.defaultValue : source;
-    const node: SettingsNode = { id: `setting-${++nextId}`, name, schema, value, items: [], branches: new Map() };
+    const node: SettingsNode = {
+      id: `setting-${++nextId}`,
+      name,
+      schema,
+      value,
+      items: [],
+      branches: new Map()
+    };
     if (schema.type === 'object') {
       if (value !== undefined && value !== null && !isRecord(value)) {
         fail(name, SettingsI18n.t('Expected object configuration'));
@@ -286,7 +329,7 @@ const SettingsModel = (() => {
         const selected = String(node.value);
         const fields = schema.bindValue.body[selected];
         if (Object.hasOwn(schema.bindValue.body, selected)) {
-          // Other branches are created on first use; only this branch owns persisted sibling values.
+          // 其他分支在首次使用时创建，仅当前分支拥有已持久化的同级字段值。
           const base = Object.fromEntries(ownedNames(fields).filter((field) => Object.hasOwn(siblings, field)).map((field) => [field, siblings[field]]));
           node.branches.set(selected, createScope(fields, base));
         }
@@ -312,7 +355,7 @@ const SettingsModel = (() => {
         if (numeric && !Number.isFinite(Number(numeric))) {
           fail(name, SettingsI18n.t('Expected finite numeric configuration'));
         }
-        // Number inputs discard whitespace and non-decimal notation if assigned verbatim.
+        // 直接赋值时，数字输入框会丢弃空白和非十进制表示。
         node.value = numeric ? String(Number(numeric)) : '';
       }
       if (schema.type === 'integer-array' && Array.isArray(node.value)) {
@@ -343,7 +386,9 @@ const SettingsModel = (() => {
     scope.fields.forEach(visitNode);
   }
   function scalar(node: SettingsNode): unknown {
-    const { schema, value } = node;
+    const {
+      schema, value
+    } = node;
     if (schema.type === 'integer-array') {
       return String(value).split(',').map((part) => part.trim())
         .filter(Boolean)
@@ -355,7 +400,9 @@ const SettingsModel = (() => {
     return value;
   }
   function validate(node: SettingsNode): string {
-    const { schema, value } = node;
+    const {
+      schema, value
+    } = node;
     if (schema.type === 'array') {
       return schema.required && !node.items.length ? SettingsI18n.t('At least one item is required') : '';
     }
@@ -405,9 +452,11 @@ const SettingsModel = (() => {
     return scalar(node);
   }
   function serialize(scope: SettingsScope, baseline = scope.base): SettingsData {
-    const result = { ...baseline };
+    const result = {
+      ...baseline
+    };
     for (const node of scope.fields) {
-      // Drop fields owned by inactive branches, preserving unrelated extension keys.
+      // 删除未启用分支所属的字段，保留无关的扩展键。
       if (node.schema.type === 'single-select' && node.schema.bindValue) {
         for (const fields of Object.values(node.schema.bindValue.body)) {
           for (const name of ownedNames(fields)) {
@@ -415,7 +464,12 @@ const SettingsModel = (() => {
           }
         }
       }
-      Object.defineProperty(result, node.name, { value: serializeNode(node, baseline[node.name]), enumerable: true, writable: true, configurable: true });
+      Object.defineProperty(result, node.name, {
+        value: serializeNode(node, baseline[node.name]),
+        enumerable: true,
+        writable: true,
+        configurable: true
+      });
       const branch = activeBranch(node);
       if (branch) {
         Object.assign(result, serialize(branch));
@@ -446,7 +500,7 @@ const SettingsModel = (() => {
     const b = right as SettingsData;
     return Object.keys(a).length === Object.keys(b).length && Object.keys(a).every((key) => Object.hasOwn(b, key) && equalValue(a[key], b[key], seen));
   }
-  /** A stale form must not overwrite fields successfully saved by another form in this page. */
+  /** 过期表单不得覆盖本页面其他表单已成功保存的字段。 */
   function assertCompatible(scope: SettingsScope, original: SettingsData, latest: SettingsData, edited: SettingsData, path = ''): void {
     if (original === latest) {
       return;
@@ -460,7 +514,7 @@ const SettingsModel = (() => {
         assertCompatible(node.object, record(before), record(current), record(proposed), name);
         continue;
       }
-      // A selector and its dependent fields are one unit, even if branches reuse field names.
+      // 选择器与其依赖字段视为一个整体，即使不同分支复用字段名。
       const names = node.schema.type === 'single-select' && node.schema.bindValue
         ? [node.name, ...Object.values(node.schema.bindValue.body).flatMap(ownedNames)] : [node.name];
       const changed = names.some((key) => !equalValue(own(original, key), own(latest, key)));
@@ -493,7 +547,21 @@ const SettingsModel = (() => {
     }
     node.items.splice(index, 1);
   }
-  return { isRecord, parseTemplates, createScope, activeBranch, walk, scalar, validate, serialize, assertCompatible, addItem, removeItem };
+  return {
+    isRecord,
+    parseTemplates,
+    createScope,
+    activeBranch,
+    walk,
+    scalar,
+    validate,
+    serialize,
+    assertCompatible,
+    addItem,
+    removeItem
+  };
 })();
-Object.assign(globalThis, { SettingsModel });
+Object.assign(globalThis, {
+  SettingsModel
+});
 

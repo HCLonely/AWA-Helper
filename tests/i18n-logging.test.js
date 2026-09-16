@@ -1,14 +1,21 @@
-/** Runtime log internationalization regression tests. */
+/**
+ * @file tests/i18n-logging.test.js
+ * @description 回归验证运行时日志的国际化行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const ts = require('typescript');
-const { parse } = require('yaml');
+const {
+  parse
+} = require('yaml');
 
 const root = path.resolve(__dirname, '..');
 const locale = (name) => parse(fs.readFileSync(path.join(root, 'src/locales', `${name}.yml`), 'utf8'));
-const sourceFiles = (directory) => fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+const sourceFiles = (directory) => fs.readdirSync(directory, {
+  withFileTypes: true
+}).flatMap((entry) => {
   const target = path.join(directory, entry.name);
   if (entry.isDirectory()) return sourceFiles(target);
   return entry.isFile() && entry.name.endsWith('.ts') ? [target] : [];

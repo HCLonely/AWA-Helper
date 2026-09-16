@@ -1,4 +1,7 @@
-/** Abort-aware timing and terminal interaction helpers. */
+/**
+ * @file src/tools/common/async.ts
+ * @description 提供支持取消信号的计时与终端交互辅助函数。
+ */
 import type { Interface } from 'readline';
 
 export const sleep = (seconds: number, signal?: AbortSignal): Promise<boolean> => new Promise((resolve) => {
@@ -17,7 +20,9 @@ export const sleep = (seconds: number, signal?: AbortSignal): Promise<boolean> =
   };
   const onAbort = (): void => finish(false);
   const timeout = setTimeout(() => finish(true), seconds * 1000);
-  signal?.addEventListener('abort', onAbort, { once: true });
+  signal?.addEventListener('abort', onAbort, {
+    once: true
+  });
 });
 
 export const ask = (input: Interface, question: string, answers?: string[]): Promise<string> => new Promise((resolve) => {

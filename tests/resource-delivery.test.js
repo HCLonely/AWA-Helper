@@ -1,7 +1,15 @@
+/**
+ * @file tests/resource-delivery.test.js
+ * @description 验证构建资源交付与页面依赖。
+ */
 const assert = require('node:assert/strict');
-const { EventEmitter } = require('node:events');
+const {
+  EventEmitter
+} = require('node:events');
 const test = require('node:test');
-const { startLogReplay, enqueueReplayMessage, REPLAY_SEND_TIMEOUT_MS } = require('../dist/tools/logging/WebSocketReplay');
+const {
+  startLogReplay, enqueueReplayMessage, REPLAY_SEND_TIMEOUT_MS
+} = require('../dist/tools/logging/WebSocketReplay');
 
 class StalledSocket extends EventEmitter {
   readyState = 1;
@@ -12,7 +20,9 @@ class StalledSocket extends EventEmitter {
 }
 
 test('a stalled send expires even if no additional log fills the queue', (t) => {
-  t.mock.timers.enable({ apis: ['setTimeout'] });
+  t.mock.timers.enable({
+    apis: ['setTimeout']
+  });
   const socket = new StalledSocket();
   startLogReplay(socket, []);
   t.mock.timers.tick(REPLAY_SEND_TIMEOUT_MS - 1);
@@ -24,7 +34,9 @@ test('a stalled send expires even if no additional log fills the queue', (t) => 
 });
 
 test('successful and closed replay sends clear their deadlines', (t) => {
-  t.mock.timers.enable({ apis: ['setTimeout'] });
+  t.mock.timers.enable({
+    apis: ['setTimeout']
+  });
   const socket = new StalledSocket();
   startLogReplay(socket, []);
   socket.callbacks.shift()();

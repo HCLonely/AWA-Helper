@@ -1,3 +1,7 @@
+/**
+ * @file src/webUI/static/css/webui.css
+ * @description 定义 WebUI 公共布局、组件与日志预览样式。
+ */
 :root {
   color-scheme: light;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -359,7 +363,7 @@ a {
   }
 }
 
-/* Authenticated, paginated log reader shared by the dashboard and achievements. */
+/* 仪表盘与成就页面共用的日志分页查看器，需要身份验证。 */
 .log-preview {
   width: min(1100px, calc(100vw - 48px));
   height: min(820px, 85vh);

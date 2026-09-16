@@ -1,4 +1,7 @@
-/** Regression coverage for persisting cookies refreshed by the artifact job. */
+/**
+ * @file tests/artifact-config-refresh.test.js
+ * @description 回归验证遗物任务刷新后的 Cookie 持久化行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

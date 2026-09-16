@@ -45,7 +45,9 @@ export class ASFContext {
       Host: `${options.host}:${options.port}`,
       Origin: baseURL,
       Referer: `${baseURL}/page/commands`,
-      ...(options.password && { Authentication: options.password })
+      ...(options.password && {
+        Authentication: options.password
+      })
     };
     if (options.proxy?.enable?.includes('asf') && options.proxy.host && options.proxy.port) {
       const targetProtocol = options.protocol === 'https' ? 'https' : 'http';
@@ -59,12 +61,18 @@ export class ASFContext {
   }
 
   /**
-   * 请求 request 相关数据。
+   * 发送请求。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `myAxiosConfig`。
    * @returns `Promise<AxiosResponse<T, any, {}, any>>`，request 请求返回的响应结果。
    */
   request<T = unknown>(options: myAxiosConfig) {
-    const requestOptions: myAxiosConfig = { ...options, headers: { ...this.headers, ...options.headers } };
+    const requestOptions: myAxiosConfig = {
+      ...options,
+      headers: {
+        ...this.headers,
+        ...options.headers
+      }
+    };
     if (this.httpsAgent && !requestOptions.httpsAgent) {
       requestOptions.httpsAgent = this.httpsAgent;
     }

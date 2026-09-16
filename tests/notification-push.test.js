@@ -1,7 +1,12 @@
-/** Regression tests for DailyQuest push-message formatting. */
+/**
+ * @file tests/notification-push.test.js
+ * @description 回归验证每日任务推送消息的格式。
+ */
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { pushQuestInfoFormat } = require('../dist/tools/notification');
+const {
+  pushQuestInfoFormat
+} = require('../dist/tools/notification');
 
 test('push formatter does not append ARP twice to daily quest rewards', () => {
   global.__ = (key, value) => value === undefined ? key : `${key}[${value}]`;
@@ -32,17 +37,35 @@ test('push formatter appends Battle Pass results without ARP formatting', () => 
   };
   global.__ = (key, ...args) => typeof messages[key] === 'function' ? messages[key](...args) : (messages[key] || key);
   const message = pushQuestInfoFormat({
-    dailyArp: '0', signArp: {},
-    report: { BattlePass: { status: '进行中', obtainedARP: 4, extraARP: 0, maxAvailableARP: 12 } },
+    dailyArp: '0',
+    signArp: {},
+    report: {
+      BattlePass: {
+        status: '进行中',
+        obtainedARP: 4,
+        extraARP: 0,
+        maxAvailableARP: 12
+      }
+    },
     battlePass: {
       status: 'active',
       claimedCount: 4,
       rewardTotal: 12,
       claimed: [
-        { name: '15 Battle Tokens', milestoneId: 1 },
-        { name: 'ARP Boost', milestoneId: 2 }
+        {
+          name: '15 Battle Tokens',
+          milestoneId: 1
+        },
+        {
+          name: 'ARP Boost',
+          milestoneId: 2
+        }
       ],
-      failed: [{ name: 'Mystery Reward', milestoneId: 3, reason: 'rejected' }]
+      failed: [{
+        name: 'Mystery Reward',
+        milestoneId: 3,
+        reason: 'rejected'
+      }]
     }
   });
   assert.match(message, /BattlePass: 成功领取 15 Battle Tokens、ARP Boost \(4\/12\)/);
@@ -65,8 +88,16 @@ test('push formatter always includes Battle Pass progress except for not-started
   };
   global.__ = (key, ...args) => typeof messages[key] === 'function' ? messages[key](...args) : (messages[key] || key);
   const format = (status, claimedCount, rewardTotal) => pushQuestInfoFormat({
-    dailyArp: '0', signArp: {}, report: {},
-    battlePass: { status, claimedCount, rewardTotal, claimed: [], failed: [] }
+    dailyArp: '0',
+    signArp: {},
+    report: {},
+    battlePass: {
+      status,
+      claimedCount,
+      rewardTotal,
+      claimed: [],
+      failed: []
+    }
   });
 
   assert.match(format('active', 3, 12), /⚠️BattlePass: 奖励领取进度 \(3\/12\)/);
@@ -80,16 +111,37 @@ test('push formatter always includes Battle Pass progress except for not-started
 
 test('push formatter never emits consecutive separators between report sections', () => {
   const messages = {
-    status: 'status', obtainedARP: 'obtainedARP', extraARP: 'extraARP', maxAvailableARP: 'maxAvailableARP',
-    done: 'done', steamCommunityEvent: 'Steam Event', promotionalCalendar: 'Promo',
-    dailyArp: (value) => `Today ${value} ARP`, dailySign: () => 'Daily\n', monthlySign: () => 'Monthly\n'
+    status: 'status',
+    obtainedARP: 'obtainedARP',
+    extraARP: 'extraARP',
+    maxAvailableARP: 'maxAvailableARP',
+    done: 'done',
+    steamCommunityEvent: 'Steam Event',
+    promotionalCalendar: 'Promo',
+    dailyArp: (value) => `Today ${value} ARP`,
+    dailySign: () => 'Daily\n',
+    monthlySign: () => 'Monthly\n'
   };
   global.__ = (key, ...args) => typeof messages[key] === 'function' ? messages[key](...args) : (messages[key] || key);
   const message = pushQuestInfoFormat({
-    dailyArp: '10', signArp: { daily: '1', monthly: '1' },
+    dailyArp: '10',
+    signArp: {
+      daily: '1',
+      monthly: '1'
+    },
     report: {
-      'Steam Event': { status: 'done', obtainedARP: 900, extraARP: 0, maxAvailableARP: 900 },
-      'Promo[Day 5]': { status: 'done', obtainedARP: 10, extraARP: 0, maxAvailableARP: 0 }
+      'Steam Event': {
+        status: 'done',
+        obtainedARP: 900,
+        extraARP: 0,
+        maxAvailableARP: 900
+      },
+      'Promo[Day 5]': {
+        status: 'done',
+        obtainedARP: 10,
+        extraARP: 0,
+        maxAvailableARP: 0
+      }
     }
   });
 

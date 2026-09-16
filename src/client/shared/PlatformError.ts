@@ -4,7 +4,7 @@
  */
 export class PlatformError extends Error {
   /**
-   * 初始化 Platform Error 实例。
+   * 初始化 PlatformError 实例。
    * @param platform - 发生远程调用的目标平台，类型为 `"awa" | "twitch" | "asf"`。
    * @param operation - 发生错误或需要执行的远程操作名称，类型为 `string`。
    * @param message - 需要记录、推送或格式化的文本内容，类型为 `string`。

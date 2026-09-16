@@ -49,7 +49,7 @@ class ManagerRuntime {
   });
 
   /**
-   * 初始化 Manager Runtime 实例。
+   * 初始化 ManagerRuntime 实例。
    * @param mode - 用于选择处理分支的类型，类型为 `RuntimeMode`。
    * @param version - 用于比较或展示的应用版本号，类型为 `string`。
    */
@@ -73,7 +73,7 @@ class ManagerRuntime {
   }
 
   /**
-   * 执行 run 相关数据。
+   * 执行任务。
    * @returns `Promise<number>`，run 计算或读取到的数值。
    */
   async run(): Promise<number> {
@@ -83,7 +83,9 @@ class ManagerRuntime {
       new Logger(`${time()}${__('managerWeakSecretWarning', String(this.loaded.manager.secret.length))}`);
     }
     this.printStartupInformation();
-    const { webUI } = this.loaded.raw;
+    const {
+      webUI
+    } = this.loaded.raw;
     new Logger(`${time()}${webUI?.enable === false
       ? __('managerWebUiDisabled')
       : __('managerWebUiStarting', getManagerListenHost(webUI?.local, process.env.AWA_HELPER_CONTAINER === 'true'), String(webUI?.port || 2345))}`);
@@ -121,7 +123,9 @@ class ManagerRuntime {
   }
 
   private getLocalWebUiUrl(): string | undefined {
-    const { webUI } = this.loaded.raw;
+    const {
+      webUI
+    } = this.loaded.raw;
     if (webUI?.enable === false) {
       return undefined;
     }
@@ -155,7 +159,7 @@ class ManagerRuntime {
   }
 
   /**
-   * 请求 request Shutdown 相关数据。
+   * 请求关闭服务。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   requestShutdown(): void {
@@ -175,7 +179,9 @@ class ManagerRuntime {
       throw new Error('Manager is shutting down');
     }
     if (name === 'achievement') {
-      fs.mkdirSync('data/achievement', { recursive: true });
+      fs.mkdirSync('data/achievement', {
+        recursive: true
+      });
       fs.writeFileSync('data/achievement/enabled', '');
     }
     return this.coordinator.start(name);
@@ -185,7 +191,9 @@ class ManagerRuntime {
     this.scheduler.cancelPending(name);
     await this.coordinator.stop(name);
     if (name === 'achievement') {
-      fs.rmSync('data/achievement/enabled', { force: true });
+      fs.rmSync('data/achievement/enabled', {
+        force: true
+      });
     }
   }
 
@@ -193,7 +201,9 @@ class ManagerRuntime {
    * 从磁盘重新加载配置，并更新无需重启进程即可生效的运行时状态。
    * WebUI 的监听方式由已经创建的 HTTP(S) Server 决定，因此相关变化会提示重启。
    */
-  private reloadConfiguration(): { restartRequired: boolean } {
+  private reloadConfiguration(): {
+    restartRequired: boolean
+    } {
     const next = loadConfig(this.loaded.path);
     const historyLimitChanged = this.loaded.manager.historyLimit !== next.manager.historyLimit;
     const previousWebUi = this.webUiServerSignature(this.loaded.raw.webUI);
@@ -207,7 +217,9 @@ class ManagerRuntime {
     this.replaceObject(this.loaded.manager, next.manager);
     this.applyRuntimeConfiguration();
 
-    return { restartRequired: historyLimitChanged || previousWebUi !== nextWebUi };
+    return {
+      restartRequired: historyLimitChanged || previousWebUi !== nextWebUi
+    };
   }
 
   private webUiServerSignature(webUI: config['webUI']): string {
@@ -225,7 +237,7 @@ class ManagerRuntime {
   }
 
   /**
-   * 停止 stop 相关数据。
+   * 停止任务。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   stop(): Promise<void> {
@@ -250,12 +262,16 @@ class ManagerRuntime {
   }
 
   /**
-   * 初始化 initialize Environment 相关数据。
+   * 初始化运行环境。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   private initializeEnvironment(): void {
-    fs.mkdirSync('logs', { recursive: true });
-    fs.mkdirSync('data', { recursive: true });
+    fs.mkdirSync('logs', {
+      recursive: true
+    });
+    fs.mkdirSync('data', {
+      recursive: true
+    });
     this.applyRuntimeConfiguration();
     this.coordinator.history.open('data/manager/history.json', this.loaded.manager.historyLimit);
     globalThis.log = true;
@@ -285,7 +301,10 @@ class ManagerRuntime {
 
   /** 将当前已加载配置同步到进程级的动态运行参数。 */
   private applyRuntimeConfiguration(): void {
-    initializeI18n(this.loaded.raw.language, { zh, en });
+    initializeI18n(this.loaded.raw.language, {
+      zh,
+      en
+    });
     globalThis.language = this.loaded.raw.language;
     globalThis.version = this.version;
     globalThis.webUI = this.loaded.raw.webUI?.enable !== false;
@@ -310,7 +329,7 @@ class ManagerRuntime {
   }
 
   /**
-   * 处理 print Startup Information 相关逻辑。
+   * 输出启动信息。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   private printStartupInformation(): void {
@@ -326,13 +345,13 @@ class ManagerRuntime {
       if (os.type() === 'Windows_NT') {
         try {
           execSync('attrib -h .version');
-        } catch (_error) { /* File may not exist yet. */ }
+        } catch (_error) { /* 文件可能尚未创建。 */ }
       }
       fs.writeFileSync('.version', displayVersion);
       if (os.type() === 'Windows_NT') {
         try {
           execSync('attrib +h .version');
-        } catch (_error) { /* Hidden attribute is optional. */ }
+        } catch (_error) { /* 隐藏属性为可选设置。 */ }
       }
     }
   }

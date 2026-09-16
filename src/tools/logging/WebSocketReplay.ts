@@ -1,3 +1,7 @@
+/**
+ * @file src/tools/logging/WebSocketReplay.ts
+ * @description 管理 WebSocket 日志回放、确认与重连状态。
+ */
 import type WebSocket from 'ws';
 import type { WebLogEntry } from './LogCache';
 
@@ -53,7 +57,7 @@ const pump = (client: WebSocket, delivery: Delivery): void => {
   }
 };
 
-/** undefined means the client uses the legacy direct-send protocol. */
+/** undefined 表示客户端使用旧版直接发送协议。 */
 export const enqueueReplayMessage = (client: WebSocket, message: string, bytes: number): boolean | undefined => {
   const delivery = deliveries.get(client);
   if (!delivery) {
@@ -69,14 +73,23 @@ export const enqueueReplayMessage = (client: WebSocket, message: string, bytes: 
 };
 
 export const startLogReplay = (client: WebSocket, entries: WebLogEntry[]): void => {
-  const delivery: Delivery = { queue: [], bytes: 0, active: false, closed: false };
-  let chunk: Record<string, WebLogEntry | string> = { type: 'logs' };
+  const delivery: Delivery = {
+    queue: [],
+    bytes: 0,
+    active: false,
+    closed: false
+  };
+  let chunk: Record<string, WebLogEntry | string> = {
+    type: 'logs'
+  };
   let size = 0;
   const append = (): void => {
     const encoded = JSON.stringify(chunk);
     delivery.queue.push(encoded);
     delivery.bytes += Buffer.byteLength(encoded);
-    chunk = { type: 'logs' }; size = 0;
+    chunk = {
+      type: 'logs'
+    }; size = 0;
   };
   for (const entry of entries) {
     const entrySize = Buffer.byteLength(JSON.stringify(entry));

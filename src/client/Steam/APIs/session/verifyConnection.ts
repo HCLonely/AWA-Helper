@@ -7,11 +7,17 @@ import { executeCommand } from '../commands';
 import type { ActionResult } from '../../../shared';
 
 /**
- * 检查 verify Connection 相关数据。
+ * 验证连接。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `ASFContext`。
  * @returns ASF 返回状态时为 `connected`，空响应时为 `empty-response`；连接异常直接抛出 `ASFError`。
  */
 export const verifyConnection = async (context: ASFContext): Promise<ActionResult<'connected', 'empty-response'>> => {
   const output = await executeCommand(context, '!stats');
-  return output.length > 0 ? { ok: true, state: 'connected' } : { ok: false, state: 'empty-response' };
+  return output.length > 0 ? {
+    ok: true,
+    state: 'connected'
+  } : {
+    ok: false,
+    state: 'empty-response'
+  };
 };

@@ -1,8 +1,15 @@
-/** Regression tests for the pure AWA Battle Pass parser. */
+/**
+ * @file tests/battle-pass-parser.test.js
+ * @description 回归验证纯函数形式的 AWA 战斗通行证解析器。
+ */
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { parseBattlePass, isBattlePassEnded, isBattlePassNotStarted } = require('../dist/client/AWA/parsers');
-const { load } = require('cheerio');
+const {
+  parseBattlePass, isBattlePassEnded, isBattlePassNotStarted
+} = require('../dist/client/AWA/parsers');
+const {
+  load
+} = require('cheerio');
 
 test('Battle Pass parser extracts status, tokens, rewards and claim form data', () => {
   const html = `
@@ -33,9 +40,15 @@ test('Battle Pass parser extracts status, tokens, rewards and claim form data', 
   assert.equal(result.claimedCount, 1);
   assert.equal(result.rewardTotal, 3);
   assert.equal(result.endsAt, '2026-08-25T00:00:00+00:00');
-  assert.deepEqual(result.rewards[0].claim, { path: '/battle-pass/claim/251538', csrfToken: 'csrf.token' });
+  assert.deepEqual(result.rewards[0].claim, {
+    path: '/battle-pass/claim/251538',
+    csrfToken: 'csrf.token'
+  });
   assert.equal(result.rewards[0].requiredArp, 25);
-  assert.deepEqual(result.rewards[1].progress, { current: 11, total: 25 });
+  assert.deepEqual(result.rewards[1].progress, {
+    current: 11,
+    total: 25
+  });
   assert.equal(result.rewards[1].claim, undefined);
 });
 

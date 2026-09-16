@@ -1,4 +1,7 @@
-/** Mutable cookie collection with Set-Cookie and request-header conversion helpers. */
+/**
+ * @file src/tools/http/Cookie.ts
+ * @description 提供可变 Cookie 集合，以及 Set-Cookie 与请求头的转换工具。
+ */
 export class Cookie {
   private cookie: cookies;
 
@@ -32,10 +35,18 @@ export class Cookie {
     return Cookie.ToString(this.cookie);
   }
   browserify() {
-    return Object.entries(this.cookie).map(([name, value]) => ({ name, value, domain: '.alienwarearena.com', path: '/' }));
+    return Object.entries(this.cookie).map(([name, value]) => ({
+      name,
+      value,
+      domain: '.alienwarearena.com',
+      path: '/'
+    }));
   }
   update(data: string | string[] | cookies): this {
-    this.cookie = { ...this.cookie, ...(typeof data === 'string' || Array.isArray(data) ? Cookie.ToJson(data) : data) };
+    this.cookie = {
+      ...this.cookie,
+      ...(typeof data === 'string' || Array.isArray(data) ? Cookie.ToJson(data) : data)
+    };
     return this;
   }
   remove(name: string): this {

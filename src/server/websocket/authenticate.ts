@@ -3,7 +3,7 @@
  * @description 从 WebSocket 子协议请求头中解析并规范化 Manager 身份验证密钥。
  */
 /**
- * 解析 decode Manager Web Socket Secret 相关数据。
+ * 解析 Manager WebSocket 密钥。
  * @param header - 携带 WebSocket 身份凭据的请求头值，类型为 `string | string[] | undefined`。
  * @returns `string`，decodeManagerWebSocketSecret 获取或生成的文本内容。
  */

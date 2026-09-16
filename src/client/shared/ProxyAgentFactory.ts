@@ -5,7 +5,7 @@
 import { formatProxy } from '../../tools/proxy';
 
 /**
- * 创建 create Proxy Agent 相关数据。
+ * 创建代理连接器。
  * @param configuration - 控制当前操作行为的配置，类型为 `proxy`。
  * @returns `any`，createProxyAgent 创建的对象或数据。
  */

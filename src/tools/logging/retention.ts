@@ -8,7 +8,7 @@ import * as path from 'path';
 const logDatePattern = /^(?:Manager-|DailyQuest-|Achievement-|Artifact-)?(\d{4})-(\d{2})-(\d{2})(?:\.1)?\.txt$/;
 
 /**
- * 删除 cleanup Expired Logs 相关数据。
+ * 清理过期日志。
  * @param directory - 需要扫描和清理日志文件的目录，类型为 `string`。
  * @param expireDays - 日志文件允许保留的天数，类型为 `number`。
  * @param now - 计算或比较时使用的时间，类型为 `Date`。
@@ -46,21 +46,34 @@ const cleanupExpiredLogs = (directory: string, expireDays: number, now = new Dat
 
 export { cleanupExpiredLogs };
 
-/** Bounded asynchronous maintenance; never follows links or removes active files. */
+/** 执行有资源上限的异步维护，不跟随链接，也不删除活动文件。 */
 export const maintainLogs = async (
   directory: string, expireDays: number, maxBytes: number,
   isActive: (filename: string) => boolean = () => false, now = new Date()
-): Promise<{ removed: number; remainingBytes: number }> => {
+): Promise<{
+  removed: number;
+  remainingBytes: number
+}> => {
   const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const candidates: Array<{ filename: string; bytes: number; date: number; removable: boolean }> = [];
+  const candidates: Array<{
+    filename: string;
+    bytes: number;
+    date: number;
+    removable: boolean
+  }> = [];
   let total = 0;
   let removed = 0;
   const root = path.resolve(directory);
   try {
     if ((await fs.promises.lstat(root)).isSymbolicLink()) {
-      return { removed, remainingBytes: total };
+      return {
+        removed,
+        remainingBytes: total
+      };
     }
-    const entries = await fs.promises.readdir(root, { withFileTypes: true });
+    const entries = await fs.promises.readdir(root, {
+      withFileTypes: true
+    });
     for (const entry of entries) {
       const match = entry.name.match(logDatePattern);
       if (!match || !entry.isFile() || entry.isSymbolicLink()) {
@@ -78,8 +91,13 @@ export const maintainLogs = async (
           continue;
         }
         total += stat.size;
-        candidates.push({ filename, bytes: stat.size, date, removable: date < today });
-      } catch (_error) { /* Rotation may remove an entry while scanning. */ }
+        candidates.push({
+          filename,
+          bytes: stat.size,
+          date,
+          removable: date < today
+        });
+      } catch (_error) { /* 日志轮转可能在扫描期间移除条目。 */ }
     }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
@@ -99,7 +117,10 @@ export const maintainLogs = async (
       await fs.promises.unlink(candidate.filename);
       total -= candidate.bytes;
       removed++;
-    } catch (_error) { /* Busy files are retried on the next maintenance pass. */ }
+    } catch (_error) { /* 被占用的文件留到下次维护时重试。 */ }
   }
-  return { removed, remainingBytes: total };
+  return {
+    removed,
+    remainingBytes: total
+  };
 };

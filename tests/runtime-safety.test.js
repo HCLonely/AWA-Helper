@@ -1,23 +1,49 @@
+/**
+ * @file tests/runtime-safety.test.js
+ * @description 验证运行时异常处理与数据保护行为。
+ */
 const assert = require('node:assert/strict');
-const { getEventListeners } = require('node:events');
+const {
+  getEventListeners
+} = require('node:events');
 const fs = require('node:fs');
 const http = require('node:http');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { cleanupExpiredLogs } = require('../dist/tools/logging/retention');
-const { formatLogValue, setLogSecrets } = require('../dist/tools/logging/sanitize');
-const { requestHealthEndpoint } = require('../dist/tools/process/healthcheck');
+const {
+  cleanupExpiredLogs
+} = require('../dist/tools/logging/retention');
+const {
+  formatLogValue, setLogSecrets
+} = require('../dist/tools/logging/sanitize');
+const {
+  requestHealthEndpoint
+} = require('../dist/tools/process/healthcheck');
 const chalk = require('chalk');
-const { flushLogs, configureWebUiColors, Logger, sleep } = require('../dist/tools');
-const { decodeManagerWebSocketSecret } = require('../dist/server/websocket/authenticate');
+const {
+  flushLogs, configureWebUiColors, Logger, sleep
+} = require('../dist/tools');
+const {
+  decodeManagerWebSocketSecret
+} = require('../dist/server/websocket/authenticate');
 
 test('log formatting removes configured secrets and Axios request headers', () => {
   const secret = 'very-sensitive-cookie-value';
-  setLogSecrets({ awaCookie: `REMEMBERME=${secret}` });
+  setLogSecrets({
+    awaCookie: `REMEMBERME=${secret}`
+  });
   const error = new Error(`request failed for ${secret}`);
-  error.config = { method: 'get', url: 'https://example.test', headers: { cookie: secret } };
-  error.response = { status: 401 };
+  error.config = {
+    method: 'get',
+    url: 'https://example.test',
+    headers: {
+      cookie: secret
+    }
+  };
+  error.response = {
+    status: 401
+  };
   const output = formatLogValue(error);
   assert.equal(output.includes(secret), false);
   assert.equal(output.includes('headers'), false);
@@ -27,8 +53,14 @@ test('log formatting removes configured secrets and Axios request headers', () =
 test('awaHost remains visible in logs while credentials stay redacted', () => {
   const awaHost = 'example.awa-host.test';
   const cookie = 'REMEMBERME=host-visibility-secret';
-  setLogSecrets({ awaHost, awaCookie: cookie });
-  const output = formatLogValue({ awaHost, awaCookie: cookie });
+  setLogSecrets({
+    awaHost,
+    awaCookie: cookie
+  });
+  const output = formatLogValue({
+    awaHost,
+    awaCookie: cookie
+  });
   assert.match(output, new RegExp(awaHost.replaceAll('.', '\\.')));
   assert.equal(output.includes(cookie), false);
 });
@@ -45,7 +77,10 @@ test('WebUI logs preserve object details instead of coercing them to object Obje
     globalThis.webUI = originalWebUI;
     globalThis.log = originalLog;
     globalThis.wsClients.clear();
-    fs.rmSync(directory, { recursive: true, force: true });
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true
+    });
   });
   process.chdir(directory);
   fs.mkdirSync('logs');
@@ -58,7 +93,12 @@ test('WebUI logs preserve object details instead of coercing them to object Obje
     }
   });
 
-  new Logger({ status: 500, data: { message: 'push denied' } });
+  new Logger({
+    status: 500,
+    data: {
+      message: 'push denied'
+    }
+  });
 
   assert.equal(messages.length, 1);
   assert.doesNotMatch(messages[0].data, /\[object Object\]/);
@@ -80,7 +120,10 @@ test('WebUI logs preserve Chalk colors when stdout has no color support', (t) =>
     globalThis.log = originalLog;
     globalThis.wsClients.clear();
     chalk.level = originalColorLevel;
-    fs.rmSync(directory, { recursive: true, force: true });
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true
+    });
   });
   process.chdir(directory);
   fs.mkdirSync('logs');
@@ -110,7 +153,10 @@ test('sleep removes its abort listener after normal completion', async () => {
 
 test('log retention removes old logs even when there are only a few files', (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-helper-logs-'));
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(directory, {
+    recursive: true,
+    force: true
+  }));
   fs.writeFileSync(path.join(directory, '2020-01-01.txt'), 'old');
   fs.writeFileSync(path.join(directory, 'Manager-2099-01-01.txt'), 'new');
   fs.writeFileSync(path.join(directory, 'notes.txt'), 'keep');

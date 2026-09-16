@@ -1,3 +1,7 @@
+/**
+ * @file tests/achievement-config-refresh.test.js
+ * @description 验证成就任务刷新配置与凭据的持久化行为。
+ */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

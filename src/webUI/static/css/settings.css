@@ -1,3 +1,7 @@
+/**
+ * @file src/webUI/static/css/settings.css
+ * @description 定义配置编辑器布局与控件样式。
+ */
 .settings-page {
   --settings-accent: #315cd6;
   --settings-border: #dfe5ee;

@@ -25,7 +25,12 @@ export class BattlePassAPI {
       throw new Error('Battle Pass URL must use the configured AWA origin');
     }
     const options: myAxiosConfig = {
-      url: target.href, method: 'GET', headers: { ...this.context.headers, referer: `${this.context.baseURL}/control-center` }
+      url: target.href,
+      method: 'GET',
+      headers: {
+        ...this.context.headers,
+        referer: `${this.context.baseURL}/control-center`
+      }
     };
     if (this.context.httpsAgent) {
       options.httpsAgent = this.context.httpsAgent;
@@ -45,7 +50,10 @@ export class BattlePassAPI {
     const referer = this.resolveSameOriginUrl(battlePassUrl);
     const target = reward.claim ? this.resolveSameOriginUrl(reward.claim.path) : undefined;
     if (!referer || !target || !reward.claim || reward.state !== 'unlockable' || reward.milestoneId <= 0) {
-      return { ok: false, reason: 'invalid-request' };
+      return {
+        ok: false,
+        reason: 'invalid-request'
+      };
     }
     const form = new FormData();
     form.append('_csrf_token', reward.claim.csrfToken);
@@ -53,7 +61,12 @@ export class BattlePassAPI {
       url: target.href,
       method: 'POST',
       data: form,
-      headers: { ...this.context.headers, ...form.getHeaders(), origin: this.context.baseURL, referer: referer.href }
+      headers: {
+        ...this.context.headers,
+        ...form.getHeaders(),
+        origin: this.context.baseURL,
+        referer: referer.href
+      }
     };
     if (this.context.httpsAgent) {
       options.httpsAgent = this.context.httpsAgent;
@@ -61,12 +74,21 @@ export class BattlePassAPI {
     const response = await this.context.request<Partial<BattlePassClaimSuccess>>(options);
     this.context.updateCookies(response.headers?.['set-cookie']);
     if (response.data?.success !== true) {
-      return { ok: false, reason: 'rejected' };
+      return {
+        ok: false,
+        reason: 'rejected'
+      };
     }
     if (response.data.milestoneId !== reward.milestoneId || typeof response.data.userMilestoneId !== 'number') {
-      return { ok: false, reason: 'milestone-mismatch' };
+      return {
+        ok: false,
+        reason: 'milestone-mismatch'
+      };
     }
-    return { ok: true, data: response.data as BattlePassClaimSuccess };
+    return {
+      ok: true,
+      data: response.data as BattlePassClaimSuccess
+    };
   }
 
   private resolveSameOriginUrl(url: string): URL | undefined {

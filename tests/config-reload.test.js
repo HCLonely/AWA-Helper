@@ -1,7 +1,12 @@
-/** @description Verifies that saved WebUI configuration is applied to the live Manager scheduler. */
+/**
+ * @file tests/config-reload.test.js
+ * @description 验证保存的 WebUI 配置会应用到正在运行的 Manager 调度器。
+ */
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { Scheduler } = require('../dist/core/Manager/Scheduler');
+const {
+  Scheduler
+} = require('../dist/core/Manager/Scheduler');
 
 globalThis.__ = (key) => key;
 globalThis.webUI = false;
@@ -10,7 +15,10 @@ globalThis.log = false;
 const managerConfig = (dailyQuestCron, achievement = false) => ({
   secret: '1234567890123456',
   dailyQuestCron,
-  achievement: { enable: achievement, cron: '0 2 * * *' },
+  achievement: {
+    enable: achievement,
+    cron: '0 2 * * *'
+  },
   artifacts: []
 });
 

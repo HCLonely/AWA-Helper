@@ -1,7 +1,12 @@
-/** Coordinates template loading, editing and the validated Manager config API. */
+/**
+ * @file src/webUI/static/js/pages/settings.ts
+ * @description 协调模板加载、编辑与经过校验的 Manager 配置接口。
+ */
 (() => {
   SettingsI18n.localize();
-  const { element, button } = SettingsView;
+  const {
+    element, button
+  } = SettingsView;
   let baseline: SettingsData | undefined;
   let loading = false;
   let saving = false;
@@ -32,7 +37,10 @@
   function mount(templates: SettingsTemplate[], config: SettingsData): void {
     const forms = document.createDocumentFragment();
     const menu = document.createDocumentFragment();
-    const entries: { form: HTMLFormElement; link: HTMLButtonElement }[] = [];
+    const entries: {
+      form: HTMLFormElement;
+      link: HTMLButtonElement
+    }[] = [];
     const select = (index: number): void => {
       entries.forEach((entry, position) => {
         entry.form.hidden = position !== index;
@@ -94,7 +102,10 @@
       item.append(link);
       menu.append(item);
       forms.append(form);
-      entries.push({ form, link });
+      entries.push({
+        form,
+        link
+      });
     });
     select(0);
     editor.replaceChildren(forms);
@@ -178,7 +189,9 @@
       backVisible = visible;
     }
   };
-  window.addEventListener('scroll', updateBack, { passive: true });
+  window.addEventListener('scroll', updateBack, {
+    passive: true
+  });
   back.addEventListener('click', () => document.body.scrollIntoView());
   updateBack();
   void loadRemoteTemplate('/js/template.yml');

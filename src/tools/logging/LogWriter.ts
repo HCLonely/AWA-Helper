@@ -1,11 +1,18 @@
+/**
+ * @file src/tools/logging/LogWriter.ts
+ * @description 以有容量上限的队列异步批量写入日志。
+ */
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { formatLogValue, stripLogAnsi } from './sanitize';
 import { getLogFilePath, type LogScope } from './LogContext';
 
-interface PendingLog { filename: string; data: Buffer }
+interface PendingLog {
+  filename: string;
+  data: Buffer
+}
 
-/** One consumer, no hidden stream buffer; the budget includes the active batch. */
+/** 仅使用一个消费者且无隐藏流缓冲，容量预算包含正在写入的批次。 */
 export class LogWriter {
   private queue: PendingLog[] = [];
   private bytes = 0;
@@ -14,7 +21,13 @@ export class LogWriter {
   private running?: Promise<void>;
   private lastDiagnostic = 0;
   private readonly active = new Set<string>();
-  readonly stats = { dropped: 0, failed: 0, flushTimeouts: 0, writtenBytes: 0, peakBytes: 0 };
+  readonly stats = {
+    dropped: 0,
+    failed: 0,
+    flushTimeouts: 0,
+    writtenBytes: 0,
+    peakBytes: 0
+  };
 
   constructor(private readonly limit = 1024 * 1024, private readonly fileLimit = 10 * 1024 * 1024) {}
 
@@ -28,7 +41,10 @@ export class LogWriter {
       this.diagnose();
       return false;
     }
-    this.queue.push({ filename: path.resolve(filename), data });
+    this.queue.push({
+      filename: path.resolve(filename),
+      data
+    });
     this.bytes += data.length;
     this.count++;
     this.stats.peakBytes = Math.max(this.stats.peakBytes, this.bytes);
@@ -53,7 +69,7 @@ export class LogWriter {
       return;
     }
     this.lastDiagnostic = Date.now();
-    // Never re-enter Logger, or print raw filesystem errors containing user data.
+    // 避免再次调用 Logger，也不输出可能包含用户数据的原始文件系统错误。
     process.stderr.write(`[log-writer] dropped=${this.stats.dropped} failed=${this.stats.failed} flushTimeouts=${this.stats.flushTimeouts} pendingBytes=${this.bytes}\n`);
   }
 
@@ -73,7 +89,7 @@ export class LogWriter {
 
   private async drain(): Promise<void> {
     while (this.queue.length) {
-      // Detach references before awaiting I/O. Retain byte accounting until it completes.
+      // 等待输入输出前解除引用，但保留字节计数直到操作完成。
       const batch = this.queue;
       this.queue = [];
       for (const entry of batch) {
@@ -87,14 +103,16 @@ export class LogWriter {
       }
       for (const [filename, buffers] of files) {
         try {
-          await fs.mkdir(path.dirname(filename), { recursive: true });
+          await fs.mkdir(path.dirname(filename), {
+            recursive: true
+          });
           let size = await fs.stat(filename).then((stat) => stat.size, (error: NodeJS.ErrnoException) => {
             if (error.code === 'ENOENT') {
               return 0;
             }
             throw error;
           });
-          // Vector writes reuse the queued buffers without a second full-sized concatenation.
+          // 向量写入复用队列中的缓冲区，避免再次拼接同等大小的数据。
           let handle = await fs.open(filename, 'a');
           try {
             let index = 0;
@@ -102,7 +120,9 @@ export class LogWriter {
               if (size + buffers[index].length > this.fileLimit) {
                 await handle.close();
                 const previous = filename.replace(/\.txt$/, '.1.txt');
-                await fs.rm(previous, { force: true });
+                await fs.rm(previous, {
+                  force: true
+                });
                 await fs.rename(filename, previous);
                 handle = await fs.open(filename, 'a');
                 size = 0;
@@ -114,9 +134,11 @@ export class LogWriter {
                 length += buffers[index].length;
                 vectors.push(buffers[index++]);
               }
-              // writev can complete partially; retry only the unwritten suffix.
+              // writev 可能仅完成部分写入，只重试尚未写入的后缀。
               while (vectors.length) {
-                const { bytesWritten } = await handle.writev(vectors);
+                const {
+                  bytesWritten
+                } = await handle.writev(vectors);
                 if (!bytesWritten) {
                   throw new Error('Log write made no progress');
                 }
@@ -172,12 +194,12 @@ export class LogWriter {
 export const logWriter = new LogWriter();
 export const flushLogs = (timeoutMs = 5000): Promise<boolean> => logWriter.flush(timeoutMs);
 
-/** Internal sink for already-sanitized text; callers must sanitize before this boundary. */
+/** 仅接收已脱敏文本的内部写入入口，调用方必须事先脱敏。 */
 export const writeFormattedFileLog = (scope: LogScope, safeText: string, newLine = true, important = false): void => {
   const text = stripLogAnsi(safeText);
   const encoded = Buffer.from(text.slice(0, 64 * 1024));
   let end = Math.min(encoded.length, (64 * 1024) - (newLine ? 1 : 0));
-  // Do not retain an incomplete UTF-8 character at the truncation boundary.
+  // 截断边界不保留不完整的 UTF-8 字符。
   if (end < encoded.length) {
     while (end > 0 && (encoded[end] & 0xc0) === 0x80) {
       end--;

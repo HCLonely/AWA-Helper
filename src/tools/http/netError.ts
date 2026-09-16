@@ -1,4 +1,7 @@
-/** Converts common Axios failures into localized, user-facing suffixes. */
+/**
+ * @file src/tools/http/netError.ts
+ * @description 将常见 Axios 错误转换为面向用户的本地化提示后缀。
+ */
 import type { AxiosError } from 'axios';
 import chalk from 'chalk';
 

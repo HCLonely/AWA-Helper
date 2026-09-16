@@ -1,4 +1,7 @@
-/** Ordered GitHub fallbacks shared by release lookup and asset downloads. */
+/**
+ * @file src/tools/update/github.ts
+ * @description 为版本查询与资源下载提供按顺序尝试的 GitHub 备用地址。
+ */
 const prefixes = ['', 'https://gh-proxy.org/', 'https://cdn.gh-proxy.org/', 'https://axisnow.gh-proxy.org/'];
 
 export const githubSources = (original: string): string[] => {
@@ -15,11 +18,15 @@ export const withGitHubFallback = async <T>(original: string, attempt: (url: str
     try {
       return await attempt(url);
     } catch (error) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
+      const status = (error as {
+        response?: {
+        status?: number
+      }
+      })?.response?.status;
       if (status === 404 || status === 410) {
         throw error;
       }
-      // Do not include request headers, credentials or response bodies in diagnostics.
+      // 诊断信息不包含请求头、凭据或响应体。
       const message = error instanceof Error ? error.message : 'request failed';
       failures.push(`${new URL(url).host}: ${status ? `HTTP ${status}` : message}`);
     }

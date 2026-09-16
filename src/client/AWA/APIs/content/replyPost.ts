@@ -8,7 +8,7 @@ import { AWAContext } from '../../AWAContext';
 import type { ActionResult } from '../../../shared';
 
 /**
- * 处理 reply Post 相关逻辑。
+ * 回复帖子。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
  * @param requestedPostId - 目标资源的唯一标识，类型为 `string | undefined`。
  * @returns 回复成功时返回 `replied`；无可回复主题或请求被拒绝时返回对应失败状态。
@@ -17,8 +17,12 @@ export const replyPost = async (context: AWAContext, requestedPostId?: string): 
   let postId = requestedPostId;
   if (!postId) {
     const listOptions: myAxiosConfig = {
-      url: `${context.baseURL}/forums/board/113/awa-on-topic`, method: 'GET',
-      headers: { ...context.headers, referer: `${context.baseURL}/` }
+      url: `${context.baseURL}/forums/board/113/awa-on-topic`,
+      method: 'GET',
+      headers: {
+        ...context.headers,
+        referer: `${context.baseURL}/`
+      }
     };
     if (context.httpsAgent) {
       listOptions.httpsAgent = context.httpsAgent;
@@ -30,20 +34,38 @@ export const replyPost = async (context: AWAContext, requestedPostId?: string): 
       .flatMap((link) => $(link).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1] || []);
   }
   if (!postId) {
-    return { ok: false, state: 'no-topic' };
+    return {
+      ok: false,
+      state: 'no-topic'
+    };
   }
   const form = new FormData();
   form.append('topic_post[content]', '<p>Thanks!</p>');
   form.append('topic_post[quotedPostIds]', '');
   form.append('topic_post[parentPost]', '');
   const options: myAxiosConfig = {
-    url: `${context.baseURL}/comments/${postId}/new/ucf`, method: 'POST', data: form,
-    headers: { ...context.headers, origin: context.baseURL, referer: `${context.baseURL}/ucf/show/${postId}`, ...form.getHeaders() }
+    url: `${context.baseURL}/comments/${postId}/new/ucf`,
+    method: 'POST',
+    data: form,
+    headers: {
+      ...context.headers,
+      origin: context.baseURL,
+      referer: `${context.baseURL}/ucf/show/${postId}`,
+      ...form.getHeaders()
+    }
   };
   if (context.httpsAgent) {
     options.httpsAgent = context.httpsAgent;
   }
-  return (await context.request<{ success?: boolean }>(options)).data.success === true
-    ? { ok: true, state: 'replied' }
-    : { ok: false, state: 'rejected' };
+  return (await context.request<{
+    success?: boolean
+  }>(options)).data.success === true
+    ? {
+      ok: true,
+      state: 'replied'
+    }
+    : {
+      ok: false,
+      state: 'rejected'
+    };
 };

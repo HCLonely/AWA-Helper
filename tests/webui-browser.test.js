@@ -1,19 +1,47 @@
+/**
+ * @file tests/webui-browser.test.js
+ * @description 验证 WebUI 页面在浏览器中的交互行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
-const { findBrowser, runBrowser } = require('./helpers/browser');
+const {
+  findBrowser, runBrowser
+} = require('./helpers/browser');
 const test = require('node:test');
 const yaml = require('yaml');
 
 const root = path.resolve(__dirname, '..');
 const browser = findBrowser();
 const base = {
-  language: 'zh', awaCookie: 'REMEMBERME=synthetic-cookie', awaQuests: ['dailyQuest'],
-  awaHost: 'www.alienwarearena.com', timeout: 0, webUI: { enable: true, port: 2345, local: true },
-  customExtension: { preserved: true },
-  manager: { secret: 'synthetic-manager-secret', dailyQuest: { cron: '0 14 * * *' },
-    achievement: { enable: false, cron: '0 14 * * *' }, artifacts: [{ cron: '0 15 * * *', ids: [1, 2, 3] }] }
+  language: 'zh',
+  awaCookie: 'REMEMBERME=synthetic-cookie',
+  awaQuests: ['dailyQuest'],
+  awaHost: 'www.alienwarearena.com',
+  timeout: 0,
+  webUI: {
+    enable: true,
+    port: 2345,
+    local: true
+  },
+  customExtension: {
+    preserved: true
+  },
+  manager: {
+    secret: 'synthetic-manager-secret',
+    dailyQuest: {
+      cron: '0 14 * * *'
+    },
+    achievement: {
+      enable: false,
+      cron: '0 14 * * *'
+    },
+    artifacts: [{
+      cron: '0 15 * * *',
+      ids: [1, 2, 3]
+    }]
+  }
 };
 const source = (file) => fs.readFileSync(path.join(root, 'src/webUI', file), 'utf8');
 const script = (code) => `<script>${code.replace(/<\/script/gi, '<\\/script')}</script>`;
@@ -62,7 +90,9 @@ const page = (mode) => {
   const mock = `sessionStorage.managerServerSecret='synthetic-manager-secret';window.saved=[];
     window.axios={get:async(url)=>({status:200,data:url.includes('template.yml')?${JSON.stringify(source('static/templates/config.zh.yml'))}:${JSON.stringify(yaml.stringify(config))}}),
       put:async(_url,body)=>{saved.push(jsyaml.load(body.config));return {status:200,data:{}}}};`;
-  let html = source('settings.html').replace('__LANG__', 'en').replace('__I18N__', JSON.stringify({ en: yaml.parse(fs.readFileSync(path.resolve(__dirname, '../src/locales/en.yml'), 'utf8')) }));
+  let html = source('settings.html').replace('__LANG__', 'en').replace('__I18N__', JSON.stringify({
+    en: yaml.parse(fs.readFileSync(path.resolve(__dirname, '../src/locales/en.yml'), 'utf8'))
+  }));
   html = html.replace(/<link inline href="([^"]+)" rel="stylesheet">/g, (_, file) => `<style>${source(file)}</style>`);
   html = html.replace(/<script inline src="([^"]+)"><\/script>/g, (_, file) => script(file.includes('axios.min') ? mock : source(file)));
   return html.replace('</body>', script(`
@@ -79,16 +109,31 @@ const page = (mode) => {
   `) + '</body>');
 };
 
-test('browser preserves collapsed settings, supports empty artifacts and bounds live logs', { skip: !browser, timeout: 60000 }, async (t) => {
-  const server = http.createServer((req, res) => { res.setHeader('Content-Type', 'text/html; charset=utf-8'); try { res.end(page(req.url.slice(1))); } catch (error) { res.end('<pre id="test-result">' + JSON.stringify({ error: error.message }) + '</pre>'); } });
+test('browser preserves collapsed settings, supports empty artifacts and bounds live logs', {
+  skip: !browser,
+  timeout: 60000
+}, async (t) => {
+  const server = http.createServer((req, res) => { res.setHeader('Content-Type', 'text/html; charset=utf-8'); try { res.end(page(req.url.slice(1))); } catch (error) { res.end('<pre id="test-result">' + JSON.stringify({
+    error: error.message
+  }) + '</pre>'); } });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise((resolve) => { server.closeAllConnections(); server.close(resolve); }));
   for (const mode of ['collapsed', 'empty', 'delete-last', 'logs', 'preview']) {
-    const result = await runBrowser(`http://127.0.0.1:${server.address().port}/${mode}`, { executable: browser });
+    const result = await runBrowser(`http://127.0.0.1:${server.address().port}/${mode}`, {
+      executable: browser
+    });
     assert.equal(result.error, undefined, `${mode}: ${result.error}`);
     if (mode === 'preview') {
-      assert.deepEqual(result, { safe: true, text: 'older page', dialogs: 1, closed: 0, authenticated: true,
-        buttons: ['logOlder','logLatest','logClose'], downloads: [], pagesOnly: true });
+      assert.deepEqual(result, {
+        safe: true,
+        text: 'older page',
+        dialogs: 1,
+        closed: 0,
+        authenticated: true,
+        buttons: ['logOlder','logLatest','logClose'],
+        downloads: [],
+        pagesOnly: true
+      });
     } else if (mode === 'logs') {
       assert.ok(result.rows <= 1000);
       assert.match(result.last, /1500$/);

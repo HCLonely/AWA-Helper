@@ -1,10 +1,10 @@
-import { trackRunStep } from '../Manager/RunHistory';
-import type { TaskOutcome } from '../TaskOutcome';
-import { logWriter } from '../../tools/logging/LogWriter';
 /**
  * @file src/core/DailyQuest/DailyQuestRunner.ts
  * @description 创建每日任务运行环境，依次执行配置加载、任务处理、报告推送和资源清理。
  */
+import { trackRunStep } from '../Manager/RunHistory';
+import type { TaskOutcome } from '../TaskOutcome';
+import { logWriter } from '../../tools/logging/LogWriter';
 /* global config, __ */
 import { DailyQuestRuntime } from './DailyQuestRuntime';
 import { DailyTask } from './tasks/DailyTask';
@@ -40,41 +40,57 @@ interface DailyQuestRunnerOptions {
 type TerminalOutcome = 'timeout' | 'failed' | 'completed';
 
 /**
- * 执行 run Daily Quest 相关数据。
+ * 运行每日任务。
  * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRunnerOptions`。
  * @returns `Promise<boolean>`，明确表示每日任务是否成功完成。
  */
-const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}): Promise<boolean> => {
+const runDailyQuest = async ({
+  signal, onOutcome
+}: DailyQuestRunnerOptions = {}): Promise<boolean> => {
   const managed = hasRunConfiguration();
   if (!managed) {
     globalThis.log = true;
   }
   const shutdownController = new AbortController();
   /**
-   * 处理 abort From Manager 相关逻辑。
+   * 响应 Manager 的取消请求。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   const abortFromManager = (): void => shutdownController.abort(signal?.reason);
   if (signal?.aborted) {
     abortFromManager();
   } else {
-    signal?.addEventListener('abort', abortFromManager, { once: true });
+    signal?.addEventListener('abort', abortFromManager, {
+      once: true
+    });
   }
-  const quests: Array<{ name: string, promise: Promise<PromiseSettledResult<unknown>> }> = [];
+  const quests: Array<{
+    name: string,
+    promise: Promise<PromiseSettledResult<unknown>>
+  }> = [];
   const children: Array<Promise<unknown>> = [];
   const trackChild = (promise: Promise<unknown>): void => {
     children.push(Promise.allSettled([promise]));
   };
   const trackQuest = (name: string, promise: Promise<unknown>): void => {
     const settled = promise.then<PromiseSettledResult<unknown>, PromiseSettledResult<unknown>>(
-      (value) => ({ status: 'fulfilled', value }), (reason: unknown) => {
+      (value) => ({
+        status: 'fulfilled',
+        value
+      }), (reason: unknown) => {
         if (!shutdownController.signal.aborted) {
           new Logger(time() + chalk.red(formatQuestFailure(name, reason)));
         }
-        return { status: 'rejected', reason };
+        return {
+          status: 'rejected',
+          reason
+        };
       }
     );
-    quests.push({ name, promise: settled });
+    quests.push({
+      name,
+      promise: settled
+    });
     children.push(settled);
   };
   let timeoutHandle: NodeJS.Timeout | undefined;
@@ -86,17 +102,21 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
     terminalOutcome = outcome;
     return true;
   };
-  const runtimeHolder: { current?: DailyQuestRuntime } = {};
+  const runtimeHolder: {
+    current?: DailyQuestRuntime
+  } = {};
   let commitCookie: ((cookie: string) => boolean) | undefined;
   let awaInitialized = false;
   let partialOutcome = false;
   /**
-   * 处理 current Push Info 相关逻辑。
+   * 获取当前推送内容。
    * @returns `{ report: QuestReport; dailyArp: string; signArp: { daily?: string; monthly?: string; }; } | undefined`，当前可推送的任务报告与积分信息；尚未生成报告时返回 `undefined`。
    */
   const currentPushInfo = () => (runtimeHolder.current ? {
-    report: formatQuestReport(runtimeHolder.current.state), dailyArp: runtimeHolder.current.state.dailyArp,
-    signArp: runtimeHolder.current.state.signArp, battlePass: runtimeHolder.current.state.battlePass
+    report: formatQuestReport(runtimeHolder.current.state),
+    dailyArp: runtimeHolder.current.state.dailyArp,
+    signArp: runtimeHolder.current.state.signArp,
+    battlePass: runtimeHolder.current.state.battlePass
   } : undefined);
   return runWithRequestSignal(shutdownController.signal, async () => {
     try {
@@ -113,19 +133,27 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
         });
       }
       // Manager 统一管理项目级启动信息和共享服务器的生命周期。
-      const { version } = globalThis;
+      const {
+        version
+      } = globalThis;
 
       let loadedConfig: ReturnType<typeof loadConfig>;
       try {
         loadedConfig = loadConfig();
       } catch (error) {
-        const locatedError = error as Error & { mark?: { line: number } };
+        const locatedError = error as Error & {
+          mark?: {
+          line: number
+        }
+        };
         const errorLine = Number.isInteger(locatedError.mark?.line) ? chalk.blue((locatedError.mark?.line || 0) + 1) : '???';
         new Logger(time() + chalk.red(__('configFileErrorAlter', errorLine, chalk.yellow(__('configFileErrorLocation')))));
         new Logger(locatedError.message);
         return false;
       }
-      const { path: configPath, raw: config } = loadedConfig;
+      const {
+        path: configPath, raw: config
+      } = loadedConfig;
       commitCookie = createCookieCommit(configPath, config.awaCookie || '');
       setLogSecrets(config);
       const {
@@ -260,13 +288,18 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
         if (shutdownController.signal.aborted) {
           return false;
         }
-        new Logger({ type: 'questInfo', data: formatQuestReport(runtime.state) });
+        new Logger({
+          type: 'questInfo',
+          data: formatQuestReport(runtime.state)
+        });
       }
 
       const failedSequentialTasks: string[] = [];
 
       // 每日任务
-      if (awaQuests.includes('dailyQuest') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
+      if (awaQuests.includes('dailyQuest') && (runtime.state.questInfo.dailyQuest || []).filter((e: {
+        status: string;
+      }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
         const dailyQuest = new DailyTask(runtime);
         if (!await trackRunStep('AWA DailyQuest', () => dailyQuest.do(shutdownController.signal))) {
           failedSequentialTasks.push('AWA DailyQuest');
@@ -276,7 +309,9 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
         }
       }
       // 每日任务(旧版)
-      if (awaQuests.includes('dailyQuestOld') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
+      if (awaQuests.includes('dailyQuestOld') && (runtime.state.questInfo.dailyQuest || []).filter((e: {
+        status: string;
+      }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
         const dailyQuestOld = new LegacyDailyTask(runtime, {
           awaDailyQuestType
         });
@@ -297,7 +332,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
       }
 
       // Twitch直播心跳
-      // let twitch: TwitchTrack | null = null;
+
       if (awaQuests.includes('watchTwitch')) {
         await runtime.loadTwitchBonus();
         if (shutdownController.signal.aborted) {
@@ -305,7 +340,11 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
         }
         if (runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
           if (twitchCookie) {
-            const twitch = new TwitchClient({ cookie: twitchCookie, proxy, logRequests: debug?.http === true });
+            const twitch = new TwitchClient({
+              cookie: twitchCookie,
+              proxy,
+              logRequests: debug?.http === true
+            });
             const twitchLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
             let twitchReady = false;
             try {
@@ -339,7 +378,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
       }
 
       // Steam任务
-      // let steamQuest: SteamQuestASF | null = null;
+
       if (!steamUse || steamUse === 'ASF') {
         const missingAsfParams = Object.entries({
           asfProtocol,
@@ -391,7 +430,9 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
       trackChild(runtime.monitor(shutdownController.signal).catch((error) => {
         new Logger(`${time()}${__('awaListenerFailed', error instanceof Error ? error.message : String(error))}`);
       }));
-      const questResults = await Promise.all(quests.map(({ promise }) => promise));
+      const questResults = await Promise.all(quests.map(({
+        promise
+      }) => promise));
       if (shutdownController.signal.aborted) {
         return false;
       }
@@ -405,7 +446,10 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
         if (shutdownController.signal.aborted) {
           return false;
         }
-        new Logger({ type: 'questInfo', data: formatQuestReport(runtime.state) });
+        new Logger({
+          type: 'questInfo',
+          data: formatQuestReport(runtime.state)
+        });
       }
       const failedQuests = [...failedSequentialTasks, ...questResults.flatMap((result, index) => {
         if (result.status === 'rejected' || result.value === false) {
@@ -446,18 +490,27 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
 
 export const runDailyQuestOutcome = async (signal?: AbortSignal): Promise<TaskOutcome> => {
   let partial: TaskOutcome | undefined;
-  const ok = await runDailyQuest({ signal, onOutcome: (outcome) => {
-    if (outcome.status === 'partial') {
-      partial = outcome;
+  const ok = await runDailyQuest({
+    signal,
+    onOutcome: (outcome) => {
+      if (outcome.status === 'partial') {
+        partial = outcome;
+      }
     }
-  } });
+  });
   if (signal?.aborted) {
-    return { status: 'cancelled' };
+    return {
+      status: 'cancelled'
+    };
   }
   if (!ok) {
-    return { status: 'failed' };
+    return {
+      status: 'failed'
+    };
   }
-  return partial ?? { status: 'completed' };
+  return partial ?? {
+    status: 'completed'
+  };
 };
 
 export { runDailyQuest, DailyQuestRunnerOptions };

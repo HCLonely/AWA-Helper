@@ -1,9 +1,17 @@
+/**
+ * @file scripts/build.js
+ * @description 整理构建资源，生成平台启动脚本及输出目录。
+ */
 (async () => {
   const fs = require('fs-extra');
   const path = require('path');
-  // const zipdir = require('zip-dir');
-  const { parse } = require('yaml');
-  const { marked } = await import('marked');
+
+  const {
+    parse
+  } = require('yaml');
+  const {
+    marked
+  } = await import('marked');
   const hljs = require('highlight.js');
 
   fs.writeFileSync('dist/index.js',
@@ -29,7 +37,9 @@
         return `<div class="mermaid">\n${code}\n</div>`;
       }
       const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-      return hljs.highlight(code, { language }).value;
+      return hljs.highlight(code, {
+        language
+      }).value;
     },
     langPrefix: 'hljs language-',
     pedantic: false,
@@ -56,7 +66,9 @@
     return null;
   });
 
-  fs.copySync('src/webUI', 'dist/webUI', { filter: (fileName) => !/\.ts$/.test(fileName) });
+  fs.copySync('src/webUI', 'dist/webUI', {
+    filter: (fileName) => !/\.ts$/.test(fileName)
+  });
   fs.writeFileSync('dist/webUI/static/templates/config.zh.yml',
     fs.readFileSync('dist/webUI/static/templates/config.zh.yml').toString().replace('__VERSION__', fs.readJSONSync('package.json').version));
   fs.writeFileSync('dist/webUI/static/templates/config.en.yml',
@@ -70,15 +82,17 @@
   fs.copySync('config.example.yml', 'dist/config/config.example.yml');
 
   fs.copySync('dist/config', 'output/config');
-  fs.mkdirSync('output/logs', { recursive: true });
+  fs.mkdirSync('output/logs', {
+    recursive: true
+  });
   fs.copySync('dist/README.html', 'output/README.html');
   fs.copySync('dist/README_en.html', 'output/README_en.html');
-  // windows
+  // 生成 Windows 启动脚本。
   fs.writeFileSync('output/AWA-Manager.bat', 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --manager"');
   fs.writeFileSync('output/AWA-DailyQuest.bat', 'cd "%~dp0" && start cmd /k "AWA-Helper.exe --daily"');
   fs.writeFileSync('output/update.bat', '@echo off\r\ncd /d "%~dp0"\r\nif exist "AWA-Manager.exe" (\r\n  start "" "AWA-Manager.exe" --check-update\r\n) else (\r\n  "AWA-Helper.exe" --update\r\n)\r\n');
-  // linux
-  // fs.writeFileSync('output/AWA-Manager.sh', 'awapath=$(dirname $0)\ncd ${awapath}\n./AWA-Helper --manager');
-  // DailyQuest uses --daily; --helper remains a deprecated runtime alias only.
-  // fs.writeFileSync('output/update.sh', '@echo off\ncd "%~dp0"\ntaskkill /f /t /im AWA-Helper.exe\nstart cmd /k "AWA-Helper.exe --update"');
+  // 生成 Linux 启动脚本。
+
+  // 每日任务使用 --daily；--helper 仅保留为已弃用的运行时别名。
+
 })();

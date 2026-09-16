@@ -1,8 +1,8 @@
-import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
  * @file src/core/DailyQuest/tasks/TwitchQuestTask.ts
  * @description 发现可用 Twitch 频道并向 AWA 周期提交直播观看跟踪心跳。
  */
+import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 import chalk from 'chalk';
 import axios from 'axios';
 import { AWAError } from '../../../client/AWA/AWAError';
@@ -14,7 +14,7 @@ import { Logger, sleep, time } from '../../../tools';
 
 export class TwitchQuestTask {
   /**
-   * 初始化 Twitch Quest Task 实例。
+   * 初始化 TwitchQuestTask 实例。
    * @param runtime - 当前任务使用的运行时实例，类型为 `DailyQuestRuntime`。
    * @param awa - 用于调用 Alienware Arena 接口的客户端，类型为 `AWAApiClient`。
    * @param twitch - 用于调用 Twitch 接口的客户端，类型为 `TwitchClient`。
@@ -29,7 +29,7 @@ export class TwitchQuestTask {
   ) {}
 
   /**
-   * 检查 is Complete 相关数据。
+   * 判断任务是否完成。
    * @returns `boolean`，表示 isComplete 检查是否通过。
    */
   private isComplete(): boolean {
@@ -39,7 +39,7 @@ export class TwitchQuestTask {
   }
 
   /**
-   * 执行 run 相关数据。
+   * 执行任务。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<boolean>`，表示 run 检查是否通过。
    */
@@ -125,7 +125,11 @@ export class TwitchQuestTask {
         if (error instanceof AWAError) {
           status = error.statusCode;
         } else if (error && typeof error === 'object' && 'response' in error) {
-          status = (error as { response?: { status?: number } }).response?.status;
+          status = (error as {
+            response?: {
+            status?: number
+          }
+          }).response?.status;
         }
         const retryable = error instanceof AWAError ? error.retryable : axios.isAxiosError(error) && status === undefined;
         if (status !== 403 && (retryable || status === 408 || status === 429 || (status !== undefined && status >= 500))) {
@@ -159,7 +163,7 @@ export class TwitchQuestTask {
   }
 
   /**
-   * 等待 wait For Available Streams 相关数据。
+   * 等待可用直播。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<boolean>`，表示 waitForAvailableStreams 检查是否通过。
    */
@@ -185,13 +189,15 @@ export class TwitchQuestTask {
   }
 }
 
-/** Refresh within five minutes, or earlier than JWT expiry; unknown tokens use one minute. */
+/** 五分钟内或 JWT 过期前刷新；未知令牌使用一分钟有效期。 */
 export const trackingExpiry = (jwt: string, now = Date.now()): number => {
   try {
-    const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8')) as { exp?: number };
+    const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString('utf8')) as {
+      exp?: number
+    };
     if (typeof payload.exp === 'number' && Number.isFinite(payload.exp)) {
       return Math.max(now, Math.min(now + (5 * 60 * 1000), (payload.exp * 1000) - 30000));
     }
-  } catch (_error) { /* Opaque tokens are deliberately short-lived in the local cache. */ }
+  } catch (_error) { /* 不透明令牌在本地缓存中使用较短的有效期。 */ }
   return now + 60000;
 };

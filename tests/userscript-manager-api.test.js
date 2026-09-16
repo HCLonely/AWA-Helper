@@ -1,4 +1,7 @@
-/** Regression coverage for the userscript's Manager API integration. */
+/**
+ * @file tests/userscript-manager-api.test.js
+ * @description 回归验证用户脚本与 Manager 接口的集成。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

@@ -1,29 +1,57 @@
+/**
+ * @file tests/resource-lifecycle.test.js
+ * @description 验证运行资源的创建、复用与释放。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { EventEmitter } = require('node:events');
+const {
+  EventEmitter
+} = require('node:events');
 const test = require('node:test');
-const { readLogPage } = require('../dist/tools/logging/LogPage');
-const { startLogReplay, enqueueReplayMessage } = require('../dist/tools/logging/WebSocketReplay');
-const { setLogSecrets, withLogSecrets, formatLogValue, safeErrorMessage } = require('../dist/tools/logging/sanitize');
-const { getRunConfiguration, withRunConfiguration, createSessionCommit } = require('../dist/tools/config/RunConfiguration');
-const { JobCoordinator } = require('../dist/core/Manager/JobCoordinator');
-const { BattlePassTask } = require('../dist/core/DailyQuest/tasks/BattlePassTask');
-const { AchievementService } = require('../dist/core/Achievement/AchievementService');
-const { flushLogs, LogWriter } = require('../dist/tools/logging/LogWriter');
+const {
+  readLogPage
+} = require('../dist/tools/logging/LogPage');
+const {
+  startLogReplay, enqueueReplayMessage
+} = require('../dist/tools/logging/WebSocketReplay');
+const {
+  setLogSecrets, withLogSecrets, formatLogValue, safeErrorMessage
+} = require('../dist/tools/logging/sanitize');
+const {
+  getRunConfiguration, withRunConfiguration, createSessionCommit
+} = require('../dist/tools/config/RunConfiguration');
+const {
+  JobCoordinator
+} = require('../dist/core/Manager/JobCoordinator');
+const {
+  BattlePassTask
+} = require('../dist/core/DailyQuest/tasks/BattlePassTask');
+const {
+  AchievementService
+} = require('../dist/core/Achievement/AchievementService');
+const {
+  flushLogs, LogWriter
+} = require('../dist/tools/logging/LogWriter');
 
 globalThis.__ = (key) => key;
 globalThis.log = false;
 const temporary = (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-resource-lifecycle-'));
-  t.after(async () => { await flushLogs(); fs.rmSync(root, { recursive: true, force: true }); });
+  t.after(async () => { await flushLogs(); fs.rmSync(root, {
+    recursive: true,
+    force: true
+  }); });
   return root;
 };
 const deferred = () => {
   let resolve;
   const promise = new Promise((done) => { resolve = done; });
-  return { promise, resolve };
+  return {
+    promise,
+    resolve
+  };
 };
 
 test('backward log pages reconstruct UTF-8 content without whole-file buffers', async (t) => {
@@ -76,7 +104,10 @@ test('log page cursor resets on rotation or truncation and rejects malformed inp
   fs.writeFileSync(file, 'short');
   assert.equal((await readLogPage(file, next.older)).reset, true);
   await assert.rejects(readLogPage(file, '../secret'), /Invalid log cursor/);
-  const invalid = Buffer.from(JSON.stringify({ identity: 'test', end: -1 })).toString('base64url');
+  const invalid = Buffer.from(JSON.stringify({
+    identity: 'test',
+    end: -1
+  })).toString('base64url');
   await assert.rejects(readLogPage(file, invalid), /Invalid log cursor/);
   assert.equal((await readLogPage(file + '.missing')).missing, true);
 });
@@ -93,10 +124,22 @@ class Socket extends EventEmitter {
 
 test('chunked replay orders realtime upserts after history and releases on close', () => {
   const socket = new Socket();
-  const entries = Array.from({ length: 400 }, (_, id) => ({ id, type: 'log', scope: 'dailyQuest', data: 'x'.repeat(1000) }));
+  const entries = Array.from({
+    length: 400
+  }, (_, id) => ({
+    id,
+    type: 'log',
+    scope: 'dailyQuest',
+    data: 'x'.repeat(1000)
+  }));
   startLogReplay(socket, entries);
   assert.equal(socket.messages.length, 1);
-  const update = JSON.stringify({ id: 0, type: 'log', scope: 'dailyQuest', data: 'latest' });
+  const update = JSON.stringify({
+    id: 0,
+    type: 'log',
+    scope: 'dailyQuest',
+    data: 'latest'
+  });
   assert.equal(enqueueReplayMessage(socket, update, Buffer.byteLength(update)), true);
   socket.drain();
   const history = socket.messages.slice(0, -1).flatMap((message) => Object.values(JSON.parse(message)).filter((value) => typeof value === 'object'));
@@ -109,23 +152,36 @@ test('chunked replay orders realtime upserts after history and releases on close
 
 test('a stalled replay has a finite queue and tolerates a late send callback', () => {
   const socket = new Socket();
-  startLogReplay(socket, [{ id: 1, type: 'log', scope: 'manager', data: 'old' }]);
+  startLogReplay(socket, [{
+    id: 1,
+    type: 'log',
+    scope: 'manager',
+    data: 'old'
+  }]);
   assert.equal(enqueueReplayMessage(socket, 'x'.repeat(1024 * 1024), 1024 * 1024), false);
   assert.equal(socket.readyState, 3);
   assert.doesNotThrow(() => socket.drain());
 });
 
 test('retired configuration secrets survive in old tasks and delayed errors, not the current default', async () => {
-  setLogSecrets({ password: 'old-credential' });
+  setLogSecrets({
+    password: 'old-credential'
+  });
   const gate = deferred();
-  const old = withLogSecrets({ password: 'task-credential' }, async () => {
+  const old = withLogSecrets({
+    password: 'task-credential'
+  }, async () => {
     await gate.promise;
     assert.equal(formatLogValue('old-credential task-credential'), '******** ********');
     const error = new Error('old-credential task-credential');
-    error.config = { url: 'https://example.test/task-credential' };
+    error.config = {
+      url: 'https://example.test/task-credential'
+    };
     throw error;
   });
-  setLogSecrets({ password: 'new-credential' });
+  setLogSecrets({
+    password: 'new-credential'
+  });
   assert.equal(formatLogValue('old-credential new-credential'), 'old-credential ********');
   gate.resolve();
   let failure;
@@ -137,8 +193,12 @@ test('retired configuration secrets survive in old tasks and delayed errors, not
 test('many configuration rotations do not accumulate a process-wide secret history', async () => {
   globalThis.secrets = [];
   for (let index = 0; index < 500; index++) {
-    setLogSecrets({ password: `credential-${index}` });
-    await withLogSecrets({ password: `run-${index}-secret` }, async () => {
+    setLogSecrets({
+      password: `credential-${index}`
+    });
+    await withLogSecrets({
+      password: `run-${index}-secret`
+    }, async () => {
       assert.equal(formatLogValue(`run-${index}-secret`), '********');
     });
   }
@@ -177,9 +237,23 @@ test('shared session persistence rejects an obsolete job after a browser replace
 
 test('coordinator exposes partial and skipped outcomes while retaining boolean job support', async () => {
   const coordinator = new JobCoordinator();
-  coordinator.register({ name: 'dailyQuest', run: async () => ({ status: 'partial', message: 'one reward failed' }) });
-  coordinator.register({ name: 'achievement', run: async () => ({ status: 'skipped' }) });
-  coordinator.register({ name: 'artifact', run: async () => true });
+  coordinator.register({
+    name: 'dailyQuest',
+    run: async () => ({
+      status: 'partial',
+      message: 'one reward failed'
+    })
+  });
+  coordinator.register({
+    name: 'achievement',
+    run: async () => ({
+      status: 'skipped'
+    })
+  });
+  coordinator.register({
+    name: 'artifact',
+    run: async () => true
+  });
   assert.equal((await coordinator.start('dailyQuest')).success, false);
   assert.equal(coordinator.states.get('dailyQuest').status, 'partial');
   assert.equal((await coordinator.start('achievement')).success, true);
@@ -189,26 +263,66 @@ test('coordinator exposes partial and skipped outcomes while retaining boolean j
 });
 
 test('Battle Pass detailed result distinguishes rejected rewards from completion', async () => {
-  const reward = { index: 0, milestoneId: 1, name: 'Reward', state: 'unlockable', claim: { path: '/claim', csrfToken: 'test' } };
-  const runtime = { state: { battlePassUrl: 'https://example.test/pass' }, awa: { battlePass: {
-    getPage: async () => ({ status: 'active', claimedCount: 0, rewardTotal: 1, rewards: [reward] }),
-    claim: async () => ({ ok: false, reason: 'rejected' })
-  } } };
+  const reward = {
+    index: 0,
+    milestoneId: 1,
+    name: 'Reward',
+    state: 'unlockable',
+    claim: {
+      path: '/claim',
+      csrfToken: 'test'
+    }
+  };
+  const runtime = {
+    state: {
+      battlePassUrl: 'https://example.test/pass'
+    },
+    awa: {
+      battlePass: {
+        getPage: async () => ({
+          status: 'active',
+          claimedCount: 0,
+          rewardTotal: 1,
+          rewards: [reward]
+        }),
+        claim: async () => ({
+          ok: false,
+          reason: 'rejected'
+        })
+      }
+    }
+  };
   assert.equal((await BattlePassTask.runDetailed(runtime)).status, 'partial');
 });
 
 test('achievement lookup failure is not reported as a successful action', async () => {
-  const service = new AchievementService({ awaCookie: 'synthetic=1' });
-  service.awa.personalization.getAvatarItems = async () => ({ found: false });
-  assert.deepEqual(await service.border25(), { status: 'failed' });
+  const service = new AchievementService({
+    awaCookie: 'synthetic=1'
+  });
+  service.awa.personalization.getAvatarItems = async () => ({
+    found: false
+  });
+  assert.deepEqual(await service.border25(), {
+    status: 'failed'
+  });
 });
 
 test('expired achievement tracking authorization backs off instead of spinning discovery', async () => {
   const service = Object.create(AchievementService.prototype);
-  service.watchTwitchStatus = { running: true, type: new Set(['hive']) };
-  service.awa = { twitch: { sendTrack: async () => { throw new Error('Expired token must not be sent'); } } };
+  service.watchTwitchStatus = {
+    running: true,
+    type: new Set(['hive'])
+  };
+  service.awa = {
+    twitch: {
+      sendTrack: async () => { throw new Error('Expired token must not be sent'); }
+    }
+  };
   const jwt = `header.${Buffer.from('{"exp":1}').toString('base64url')}.signature`;
-  assert.equal(await service.trackTwitchChannel({ channelId: '42', jwt }), 'retry');
+  assert.equal(await service.trackTwitchChannel({
+    channelId: '42',
+    jwt
+  }), 'retry');
 });
 
 test('disk-full errors release the writer budget and later batches recover', async (t) => {
@@ -219,7 +333,12 @@ test('disk-full errors release the writer budget and later batches recover', asy
     const handle = await original(...args);
     if (!fail) return handle;
     fail = false;
-    return { close: () => handle.close(), writev: async () => { throw Object.assign(new Error('Synthetic disk full'), { code: 'ENOSPC' }); } };
+    return {
+      close: () => handle.close(),
+      writev: async () => { throw Object.assign(new Error('Synthetic disk full'), {
+        code: 'ENOSPC'
+      }); }
+    };
   });
   const writer = new LogWriter();
   writer.enqueue(file, Buffer.from('failed'));

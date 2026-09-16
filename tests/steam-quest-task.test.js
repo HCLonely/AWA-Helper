@@ -1,14 +1,27 @@
-/** Behavioral tests for Steam quest and community event completion. */
+/**
+ * @file tests/steam-quest-task.test.js
+ * @description 验证 Steam 任务与社区活动的完成行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
-const { DailyQuestRuntime } = require('../dist/core/DailyQuest/DailyQuestRuntime');
-const { SteamQuestTask } = require('../dist/core/DailyQuest/tasks/SteamQuestTask');
-const { formatQuestFailure } = require('../dist/core/DailyQuest/QuestFailure');
-const { ASFError } = require('../dist/client/Steam/ASFError');
-const { setLogSecrets } = require('../dist/tools/logging/sanitize');
+const {
+  DailyQuestRuntime
+} = require('../dist/core/DailyQuest/DailyQuestRuntime');
+const {
+  SteamQuestTask
+} = require('../dist/core/DailyQuest/tasks/SteamQuestTask');
+const {
+  formatQuestFailure
+} = require('../dist/core/DailyQuest/QuestFailure');
+const {
+  ASFError
+} = require('../dist/client/Steam/ASFError');
+const {
+  setLogSecrets
+} = require('../dist/tools/logging/sanitize');
 
 const originalDirectory = process.cwd();
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'awa-steam-task-'));
@@ -18,12 +31,17 @@ test.before(() => {
   global.__ = (key) => key;
   global.log = false;
   global.webUI = false;
-  global.logs = { type: 'logs' };
+  global.logs = {
+    type: 'logs'
+  };
   global.wsClients = new Set();
 });
 test.after(() => {
   process.chdir(originalDirectory);
-  fs.rmSync(temporaryDirectory, { recursive: true, force: true });
+  fs.rmSync(temporaryDirectory, {
+    recursive: true,
+    force: true
+  });
 });
 
 test('SteamQuestTask stops after a running community event becomes complete', async () => {
@@ -33,24 +51,43 @@ test('SteamQuestTask stops after a running community event becomes complete', as
   const awa = {
     steam: {
       async getSteamQuests() {
-        return [{ name: 'Quest', time: 1, arp: 1, link: '/steam/quest' }];
+        return [{
+          name: 'Quest',
+          time: 1,
+          arp: 1,
+          link: '/steam/quest'
+        }];
       },
       async getQuestDetail() {
-        return { state: 'ready', appId: '456' };
+        return {
+          state: 'ready',
+          appId: '456'
+        };
       },
       async getQuestProgress() {
         progressChecks += 1;
         eventAppId = undefined;
-        return { found: true, value: 100 };
+        return {
+          found: true,
+          value: 100
+        };
       }
     }
   };
   const asf = {
-    licenses: { async add() { return { ok: true }; } },
+    licenses: {
+      async add() { return {
+        ok: true
+      }; }
+    },
     bot: {
       async getOwnedGames() { return ['123', '456']; },
-      async playGames() { return { ok: true }; },
-      async stopGames() { stopped = true; return { ok: true }; }
+      async playGames() { return {
+        ok: true
+      }; },
+      async stopGames() { stopped = true; return {
+        ok: true
+      }; }
     }
   };
 
@@ -62,9 +99,17 @@ test('SteamQuestTask stops after a running community event becomes complete', as
 
 test('SteamQuestTask does not start ASF for an already completed community event', async () => {
   let licenseRequests = 0;
-  const awa = { steam: { async getSteamQuests() { return []; } } };
+  const awa = {
+    steam: {
+      async getSteamQuests() { return []; }
+    }
+  };
   const asf = {
-    licenses: { async add() { licenseRequests += 1; return { ok: true }; } },
+    licenses: {
+      async add() { licenseRequests += 1; return {
+        ok: true
+      }; }
+    },
     bot: {}
   };
 
@@ -76,19 +121,42 @@ test('SteamQuestTask does not start ASF for an already completed community event
 for (const stage of ['listing', 'license', 'owned', 'play', 'progress']) {
   test(`Steam failure retains the cause at ${stage} and still cleans up playback`, async () => {
     const failure = new ASFError('executeCommand', 'Connection failed', true, 503, {
-      cause: Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' })
+      cause: Object.assign(new Error('connect ECONNREFUSED'), {
+        code: 'ECONNREFUSED'
+      })
     });
     const at = (name, value) => async () => { if (stage === name) throw failure; return value; };
     let stopped = false;
-    const awa = { steam: {
-      getSteamQuests: at('listing', [{ name: 'Game', link: '/quest' }]),
-      getQuestDetail: async () => ({ state: 'ready', appId: '123' }),
-      getQuestProgress: at('progress', { found: true, value: 100 })
-    } };
-    const asf = { licenses: { add: at('license', { ok: true }) }, bot: {
-      getOwnedGames: at('owned', ['123']), playGames: at('play', { ok: true }),
-      stopGames: async () => { stopped = true; throw new Error('cleanup failed'); }
-    } };
+    const awa = {
+      steam: {
+        getSteamQuests: at('listing', [{
+          name: 'Game',
+          link: '/quest'
+        }]),
+        getQuestDetail: async () => ({
+          state: 'ready',
+          appId: '123'
+        }),
+        getQuestProgress: at('progress', {
+          found: true,
+          value: 100
+        })
+      }
+    };
+    const asf = {
+      licenses: {
+        add: at('license', {
+          ok: true
+        })
+      },
+      bot: {
+        getOwnedGames: at('owned', ['123']),
+        playGames: at('play', {
+          ok: true
+        }),
+        stopGames: async () => { stopped = true; throw new Error('cleanup failed'); }
+      }
+    };
     await assert.rejects(new SteamQuestTask(awa, asf, () => undefined, 0).run(), (error) => {
       assert.equal(error.cause, failure);
       const message = formatQuestFailure('Steam ASF', error);
@@ -103,7 +171,9 @@ for (const stage of ['listing', 'license', 'owned', 'play', 'progress']) {
 }
 
 test('failure summaries redact secrets and handle missing or circular causes', () => {
-  setLogSecrets({ asfPassword: 'private-asf-password' });
+  setLogSecrets({
+    asfPassword: 'private-asf-password'
+  });
   const error = new Error('private-asf-password');
   error.cause = error;
   assert.equal(formatQuestFailure('Steam ASF', error), 'Steam ASF: ********');
@@ -112,15 +182,31 @@ test('failure summaries redact secrets and handle missing or circular causes', (
 });
 
 test('DailyQuestRuntime does not expose a game ID for an already completed community event', async () => {
-  const runtime = new DailyQuestRuntime({ awaCookie: '', host: 'example.com', joinSteamCommunityEvent: true });
-  runtime.awa.communityEvent.findPath = async () => ({ found: true, value: 'event' });
+  const runtime = new DailyQuestRuntime({
+    awaCookie: '',
+    host: 'example.com',
+    joinSteamCommunityEvent: true
+  });
+  runtime.awa.communityEvent.findPath = async () => ({
+    found: true,
+    value: 'event'
+  });
   runtime.awa.communityEvent.getEvent = async () => ({
-    path: 'event', concluded: false, closed: false, gameId: '123', gameName: 'Game',
-    started: true, playedMinutes: 912, totalMinutes: 600
+    path: 'event',
+    concluded: false,
+    closed: false,
+    gameId: '123',
+    gameName: 'Game',
+    started: true,
+    playedMinutes: 912,
+    totalMinutes: 600
   });
 
   await runtime.initializeCommunityEvent();
   assert.deepEqual(runtime.state.communityEvent, {
-    path: 'event', status: 'done', playedTime: '912', totalTime: '600min'
+    path: 'event',
+    status: 'done',
+    playedTime: '912',
+    totalTime: '600min'
   });
 });

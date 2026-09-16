@@ -6,7 +6,7 @@ import { load } from 'cheerio';
 import type { Achievement } from '../../../types/achievement';
 
 /**
- * 解析 parse Achievements 相关数据。
+ * 解析成就列表。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @returns `Achievement[]`，parseAchievements 收集或筛选得到的数据列表。
  */

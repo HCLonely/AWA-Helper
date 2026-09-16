@@ -9,11 +9,17 @@ import * as path from 'path';
 import { parse } from 'yaml';
 
 type HealthConfig = {
-  webUI?: { enable?: boolean, port?: number, ssl?: { cert?: string } }
+  webUI?: {
+    enable?: boolean,
+    port?: number,
+    ssl?: {
+    cert?: string
+  }
+  }
 };
 
 /**
- * 获取 find Config Path 相关数据。
+ * 查找配置路径。
  * @returns `string | undefined`，findConfigPath 获取到的数据。
  */
 const findConfigPath = (): string | undefined => [
@@ -24,7 +30,7 @@ const findConfigPath = (): string | undefined => [
 ].find((candidate) => fs.existsSync(candidate));
 
 /**
- * 请求 request Health Endpoint 相关数据。
+ * 请求健康检查端点。
  * @param port - 目标服务监听的端口号，类型为 `number`。
  * @param useTls - 用于决定健康检查是否通过 TLS 发起，类型为 `boolean`。
  * @returns `Promise<boolean>`，表示 requestHealthEndpoint 检查是否通过。
@@ -46,7 +52,7 @@ const requestHealthEndpoint = (port: number, useTls: boolean): Promise<boolean> 
 });
 
 /**
- * 执行 run Healthcheck 相关数据。
+ * 执行健康检查。
  * @returns `Promise<boolean>`，表示 runHealthcheck 检查是否通过。
  */
 const runHealthcheck = async (): Promise<boolean> => {

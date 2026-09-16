@@ -1,4 +1,7 @@
-/* Manager history, schedule preview and read-only connection diagnostics. */
+/**
+ * @file src/webUI/static/js/pages/operations.ts
+ * @description 展示 Manager 历史、调度预览和只读连接诊断。
+ */
 (() => {
   const root = document.querySelector<HTMLElement>('#operations');
   if (!root) {
@@ -19,14 +22,26 @@
     if (!secret) {
       throw new Error(t('请先配置 Manager 密钥', 'Configure the Manager secret first'));
     }
-    return { Authorization: `Bearer ${secret}` };
+    return {
+      Authorization: `Bearer ${secret}`
+    };
   };
   const displayTime = (value?: string, timezone?: string): string => (value
-    ? new Date(value).toLocaleString(lang === 'en' ? 'en-US' : 'zh-CN', timezone ? { timeZone: timezone } : {}) : '—');
+    ? new Date(value).toLocaleString(lang === 'en' ? 'en-US' : 'zh-CN', timezone ? {
+      timeZone: timezone
+    } : {}) : '—');
   const label = (value: string): string => ({
-    manual: t('手动', 'Manual'), schedule: t('定时', 'Scheduled'), once: t('单次', 'One-shot'),
-    running: t('运行中', 'Running'), stopping: t('停止中', 'Stopping'), completed: t('完成', 'Completed'), failed: t('失败', 'Failed'),
-    interrupted: t('中断', 'Interrupted'), cancelled: t('取消', 'Cancelled'), skipped: t('跳过', 'Skipped'), partial: t('部分完成', 'Partial')
+    manual: t('手动', 'Manual'),
+    schedule: t('定时', 'Scheduled'),
+    once: t('单次', 'One-shot'),
+    running: t('运行中', 'Running'),
+    stopping: t('停止中', 'Stopping'),
+    completed: t('完成', 'Completed'),
+    failed: t('失败', 'Failed'),
+    interrupted: t('中断', 'Interrupted'),
+    cancelled: t('取消', 'Cancelled'),
+    skipped: t('跳过', 'Skipped'),
+    partial: t('部分完成', 'Partial')
   } as Record<string, string>)[value] || value;
 
   function table(container: HTMLElement, titles: string[], rows: string[][]): void {
@@ -55,7 +70,14 @@
 
   function badge(value: string, tone?: string): HTMLElement {
     const element = document.createElement('span'); element.className = 'badge'; element.textContent = value;
-    const tones: Record<string, string> = { [label('completed')]: 'good', [label('failed')]: 'bad', [label('interrupted')]: 'bad', [label('running')]: 'active', [label('stopping')]: 'active', [label('partial')]: 'warn' };
+    const tones: Record<string, string> = {
+      [label('completed')]: 'good',
+      [label('failed')]: 'bad',
+      [label('interrupted')]: 'bad',
+      [label('running')]: 'active',
+      [label('stopping')]: 'active',
+      [label('partial')]: 'warn'
+    };
     element.dataset.tone = tone || tones[value] || 'neutral';
     return element;
   }
@@ -69,21 +91,57 @@
  document.getElementById(id)!.textContent = String(value);
   }
 
-  type Run = { name: string; source: string; status: string; startedAt: string; finishedAt?: string; message?: string;
-    steps: Array<{ name: string; status: string; message?: string }> };
-  type Schedule = { name: string; cron: string; timezone: string; active: boolean; nextRuns: string[] };
-  type Check = { platform: string; code: string; checkedAt: string; retryAt?: string; parser?: string; missingFields?: string[] };
+  type Run = {
+    name: string;
+    source: string;
+    status: string;
+    startedAt: string;
+    finishedAt?: string;
+    message?: string;
+    steps: Array<{
+      name: string;
+      status: string;
+      message?: string
+    }>
+  };
+  type Schedule = {
+    name: string;
+    cron: string;
+    timezone: string;
+    active: boolean;
+    nextRuns: string[]
+  };
+  type Check = {
+    platform: string;
+    code: string;
+    checkedAt: string;
+    retryAt?: string;
+    parser?: string;
+    missingFields?: string[]
+  };
 
   async function refresh(): Promise<void> {
     const auth = headers();
     const results = await Promise.allSettled([
-      axios.get<{ runs: Run[]; failures: Record<string, number>; storageError?: string }>('/api/history', { headers: auth }),
-      axios.get<{ schedules: Schedule[] }>('/api/schedules', { headers: auth })
+      axios.get<{
+        runs: Run[];
+        failures: Record<string, number>;
+        storageError?: string
+      }>('/api/history', {
+        headers: auth
+      }),
+      axios.get<{
+        schedules: Schedule[]
+      }>('/api/schedules', {
+        headers: auth
+      })
     ]);
     const problems: string[] = [];
     const [history, schedules] = results;
     if (history.status === 'fulfilled') {
-      const { runs } = history.value.data;
+      const {
+        runs
+      } = history.value.data;
       metric('metric-total', runs.length);
       metric('metric-running', runs.filter((run) => ['running', 'stopping'].includes(run.status)).length);
       metric('metric-attention', runs.filter((run) => ['failed', 'interrupted', 'partial'].includes(run.status)).length);
@@ -96,7 +154,11 @@
         problems.push(history.value.data.storageError);
       }
     } else {
-      problems.push((history.reason as { response?: { status?: number } }).response?.status === 401 ? t('密钥无效，请在管理首页重新配置', 'Invalid secret; update it on the Manager home page') : t('历史读取失败', 'Unable to load history'));
+      problems.push((history.reason as {
+        response?: {
+        status?: number
+      }
+      }).response?.status === 401 ? t('密钥无效，请在管理首页重新配置', 'Invalid secret; update it on the Manager home page') : t('历史读取失败', 'Unable to load history'));
     }
     if (schedules.status === 'fulfilled') {
       const items = schedules.value.data.schedules;
@@ -135,7 +197,8 @@
   }
 
   const advice: Record<string, string> = {
-    ok: t('连接正常', 'Connection verified'), disabled: t('该任务未启用', 'Task disabled'),
+    ok: t('连接正常', 'Connection verified'),
+    disabled: t('该任务未启用', 'Task disabled'),
     'missing-config': t('补全该平台的 Cookie 或连接参数', 'Complete this platform’s cookies or connection settings'),
     'session-expired': t('重新同步 Cookie；ASF 请检查 IPC 密码', 'Resync cookies; for ASF check the IPC password'),
     'extension-missing': t('为 Twitch 的 Arena Rewards Tracker 扩展授权', 'Authorize the Arena Rewards Tracker Twitch extension'),
@@ -148,20 +211,31 @@
   const actions: Record<string, () => Promise<void>> = {
     refresh,
     diagnose: async () => {
-      const response = await axios.post<{ checks: Check[] }>('/api/diagnostics', {}, { headers: headers(), timeout: 25000 });
+      const response = await axios.post<{
+        checks: Check[]
+      }>('/api/diagnostics', {}, {
+        headers: headers(),
+        timeout: 25000
+      });
       const container = document.querySelector<HTMLElement>('#diagnostic-results')!; container.replaceChildren();
       if (!response.data.checks.length) {
         table(container, [], []);
       }
       response.data.checks.forEach((check) => {
-        const states: Record<string, [string, string]> = { ok: [t('连接正常', 'Connected'), 'good'], disabled: [t('未启用', 'Disabled'), 'neutral'] };
+        const states: Record<string, [string, string]> = {
+          ok: [t('连接正常', 'Connected'), 'good'],
+          disabled: [t('未启用', 'Disabled'), 'neutral']
+        };
         const [state, tone] = states[check.code] || [t('需要处理', 'Needs attention'), 'warn'];
         card(container, check.platform.toUpperCase(), state, tone,
           [advice[check.code] || check.code, check.retryAt ? displayTime(check.retryAt) : '', check.parser, check.missingFields?.join(', '), `${t('检查时间', 'Checked at')}: ${displayTime(check.checkedAt)}`].filter(Boolean).join('\n'));
       });
     },
     export: async () => {
-      const response = await axios.get('/api/diagnostics/export', { headers: headers(), responseType: 'blob' });
+      const response = await axios.get('/api/diagnostics/export', {
+        headers: headers(),
+        responseType: 'blob'
+      });
       const url = URL.createObjectURL(response.data);
       const link = document.createElement('a'); link.href = url; link.download = 'awa-diagnostics.json'; link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -169,7 +243,14 @@
     preview: async () => {
       const cron = document.querySelector<HTMLInputElement>('#schedule-cron')!.value;
       const timezone = document.querySelector<HTMLInputElement>('#schedule-timezone')!.value;
-      const response = await axios.post<{ nextRuns: string[] }>('/api/schedules/preview', { cron, timezone }, { headers: headers() });
+      const response = await axios.post<{
+        nextRuns: string[]
+      }>('/api/schedules/preview', {
+        cron,
+        timezone
+      }, {
+        headers: headers()
+      });
       document.querySelector<HTMLElement>('#schedule-preview')!.textContent = `${describe(cron)} · ${timezone}\n${response.data.nextRuns.map((time) => displayTime(time, timezone)).join('\n')}`;
     }
   };
@@ -179,7 +260,11 @@
       await actions[button.dataset.operation!](); status.dataset.state = 'success'; status.textContent = t('已完成', 'Done');
     } catch (error) {
       status.dataset.state = 'error';
-      const code = (error as { response?: { status?: number } }).response?.status;
+      const code = (error as {
+        response?: {
+        status?: number
+      }
+      }).response?.status;
       if (code === 401) {
         status.textContent = t('密钥无效，请重新配置', 'Invalid secret; update it');
       } else if (code === 400) {

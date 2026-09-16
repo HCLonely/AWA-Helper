@@ -1,4 +1,7 @@
-/** Configured push delivery and DailyQuest report formatting. */
+/**
+ * @file src/tools/notification/push.ts
+ * @description 根据配置发送推送，并格式化每日任务报告。
+ */
 import { PushApi } from 'all-pusher-api';
 import chalk from 'chalk';
 import { Logger } from '../logging';
@@ -11,7 +14,9 @@ export const push = async (message: string): Promise<void> => {
   const logger = new Logger(`${time()}${__('pushing')}`, false);
   const options: pushOptions = {
     name: globalThis.pusher.platform,
-    config: { key: globalThis.pusher.key }
+    config: {
+      key: globalThis.pusher.key
+    }
   };
   if (globalThis.pusher.options) {
     options.config.options = globalThis.pusher.options;
@@ -19,7 +24,11 @@ export const push = async (message: string): Promise<void> => {
   if (globalThis.pusherProxy) {
     options.config.proxy = globalThis.pusherProxy;
   }
-  const [result] = await new PushApi([options]).send({ message, title: __('pushTitle'), type: 'text' });
+  const [result] = await new PushApi([options]).send({
+    message,
+    title: __('pushTitle'),
+    type: 'text'
+  });
   if ((result.result?.status || 0) >= 200 && result.result.status < 300) {
     logger.log(chalk.green(__('pushSuccess')));
     return;
@@ -32,13 +41,23 @@ type ReportValue = Record<string, string | number>;
 interface PushQuestInfo {
   report: Record<string, ReportValue>;
   dailyArp: string;
-  signArp: { daily?: string; monthly?: string };
+  signArp: {
+    daily?: string;
+    monthly?: string
+  };
   battlePass?: {
     status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
     claimedCount: number;
     rewardTotal: number;
-    claimed: Array<{ name: string; milestoneId: number }>;
-    failed: Array<{ name: string; milestoneId: number; reason: string }>;
+    claimed: Array<{
+      name: string;
+      milestoneId: number
+    }>;
+    failed: Array<{
+      name: string;
+      milestoneId: number;
+      reason: string
+    }>;
   };
 }
 

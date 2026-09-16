@@ -1,8 +1,8 @@
-import type { TaskOutcome } from '../../TaskOutcome';
 /**
  * @file src/core/DailyQuest/tasks/BattlePassTask.ts
  * @description 领取当前 AWA Battle Pass 中所有可领取奖励并验证最终状态。
  */
+import type { TaskOutcome } from '../../TaskOutcome';
 /* global __ */
 import chalk from 'chalk';
 import { Logger, time } from '../../../tools';
@@ -31,7 +31,13 @@ export class BattlePassTask {
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
-      runtime.state.battlePass = { status: 'unknown', claimedCount: 0, rewardTotal: 0, claimed: [], failed: [] };
+      runtime.state.battlePass = {
+        status: 'unknown',
+        claimedCount: 0,
+        rewardTotal: 0,
+        claimed: [],
+        failed: []
+      };
       return false;
     }
   }
@@ -99,7 +105,13 @@ export class BattlePassTask {
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
-      runtime.state.battlePass = { status: 'unknown', claimedCount: 0, rewardTotal: 0, claimed: [], failed: [] };
+      runtime.state.battlePass = {
+        status: 'unknown',
+        claimedCount: 0,
+        rewardTotal: 0,
+        claimed: [],
+        failed: []
+      };
       return false;
     }
   }
@@ -107,27 +119,46 @@ export class BattlePassTask {
   static async runDetailed(runtime: DailyQuestRuntime, signal?: AbortSignal): Promise<TaskOutcome> {
     const ok = await BattlePassTask.run(runtime, signal);
     if (signal?.aborted) {
-      return { status: 'cancelled' };
+      return {
+        status: 'cancelled'
+      };
     }
     if (!runtime.state.battlePassUrl) {
-      return { status: 'skipped' };
+      return {
+        status: 'skipped'
+      };
     }
     if (!ok || runtime.state.battlePass?.status === 'unknown') {
-      return { status: 'failed' };
+      return {
+        status: 'failed'
+      };
     }
     if (runtime.state.battlePass?.failed.length) {
-      return { status: 'partial', message: __('battlePassPartial') };
+      return {
+        status: 'partial',
+        message: __('battlePassPartial')
+      };
     }
-    return { status: 'completed' };
+    return {
+      status: 'completed'
+    };
   }
 
   private static failure(reward: BattlePassReward, reason: string): BattlePassFailedState {
-    return { name: reward.name, milestoneId: reward.milestoneId, reason };
+    return {
+      name: reward.name,
+      milestoneId: reward.milestoneId,
+      reason
+    };
   }
 
   private static applySnapshot(runtime: DailyQuestRuntime, snapshot: BattlePassSnapshot): BattlePassRunState {
     const state: BattlePassRunState = {
-      status: snapshot.status, claimedCount: snapshot.claimedCount, rewardTotal: snapshot.rewardTotal, claimed: [], failed: []
+      status: snapshot.status,
+      claimedCount: snapshot.claimedCount,
+      rewardTotal: snapshot.rewardTotal,
+      claimed: [],
+      failed: []
     };
     runtime.state.battlePass = state;
     return state;

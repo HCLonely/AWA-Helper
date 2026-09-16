@@ -6,13 +6,18 @@ import { AWAContext } from '../../AWAContext';
 import { AWAError } from '../../AWAError';
 
 /**
- * 更新 refresh Session 相关数据。
+ * 刷新会话。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
  * @returns `Promise<string>`，refreshSession 获取或生成的文本内容。
  */
 export const refreshSession = async (context: AWAContext, redirects = 0): Promise<string> => {
   const options: myAxiosConfig = {
-    url: `${context.baseURL}/`, method: 'GET', headers: { ...context.headers, cookie: context.cookie.stringify() },
+    url: `${context.baseURL}/`,
+    method: 'GET',
+    headers: {
+      ...context.headers,
+      cookie: context.cookie.stringify()
+    },
     maxRedirects: 0,
     validateStatus: (status) => status === 200 || status === 302
   };
@@ -41,6 +46,8 @@ export const refreshSession = async (context: AWAContext, redirects = 0): Promis
     if (error instanceof AWAError) {
       throw error;
     }
-    throw new AWAError('refreshSession', 'Unable to refresh AWA session', true, undefined, { cause: error });
+    throw new AWAError('refreshSession', 'Unable to refresh AWA session', true, undefined, {
+      cause: error
+    });
   }
 };

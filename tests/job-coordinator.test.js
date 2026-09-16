@@ -1,12 +1,23 @@
-/** @description Verifies Manager job deduplication and cancellation. */
+/**
+ * @file tests/job-coordinator.test.js
+ * @description 验证 Manager 作业去重与取消行为。
+ */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { parse } = require('yaml');
-const { JobCoordinator } = require('../dist/core/Manager/JobCoordinator');
-const { ArtifactJob } = require('../dist/core/Manager/jobs/ArtifactJob');
-const { initializeI18n } = require('../dist/tools/i18n');
+const {
+  parse
+} = require('yaml');
+const {
+  JobCoordinator
+} = require('../dist/core/Manager/JobCoordinator');
+const {
+  ArtifactJob
+} = require('../dist/core/Manager/jobs/ArtifactJob');
+const {
+  initializeI18n
+} = require('../dist/tools/i18n');
 
 initializeI18n('en', {
   en: parse(fs.readFileSync(path.resolve(__dirname, '../src/locales/en.yml'), 'utf8')),
@@ -63,7 +74,9 @@ test('JobCoordinator aborts jobs through Manager', async () => {
   coordinator.register({
     name: 'dailyQuest',
     run(signal) {
-      return new Promise((resolve) => signal.addEventListener('abort', () => resolve(false), { once: true }));
+      return new Promise((resolve) => signal.addEventListener('abort', () => resolve(false), {
+        once: true
+      }));
     }
   });
   const completion = coordinator.start('dailyQuest');

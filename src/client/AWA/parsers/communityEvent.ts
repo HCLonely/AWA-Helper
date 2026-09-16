@@ -6,7 +6,7 @@ import { load } from 'cheerio';
 import type { CommunityEventPage } from '../types';
 
 /**
- * 解析 parse Community Event Path 相关数据。
+ * 解析社区活动路径。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @returns `string | null`，parseCommunityEventPath 解析得到的结构化结果。
  */
@@ -14,7 +14,7 @@ export const parseCommunityEventPath = (html: string): string | null => load(htm
   .at(-1) || null;
 
 /**
- * 解析 parse Community Event 相关数据。
+ * 解析社区活动信息。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @param path - 待读取或写入文件的路径，类型为 `string`。
  * @returns `CommunityEventPage`，parseCommunityEvent 解析得到的结构化结果。

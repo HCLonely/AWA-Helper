@@ -9,20 +9,24 @@ export type { EquippedArtifact } from '../../parsers';
 
 export class ArtifactAPI {
   /**
-   * 初始化 Artifact API 实例。
+   * 初始化 ArtifactAPI 实例。
    * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
    */
   constructor(private readonly context: AWAContext) {}
 
   /**
-   * 获取 get Equipped 相关数据。
+   * 获取已装备的遗物。
    * @param userProfilePath - 待读取或写入文件的路径，类型为 `string`。
    * @returns `Promise<EquippedArtifact[]>`，getEquipped 收集或筛选得到的数据列表。
    */
   async getEquipped(userProfilePath: string): Promise<EquippedArtifact[]> {
     const options: myAxiosConfig = {
-      url: `${this.context.baseURL}${userProfilePath}/artifacts`, method: 'GET',
-      headers: { ...this.context.headers, referer: this.context.baseURL }
+      url: `${this.context.baseURL}${userProfilePath}/artifacts`,
+      method: 'GET',
+      headers: {
+        ...this.context.headers,
+        referer: this.context.baseURL
+      }
     };
     if (this.context.httpsAgent) {
       options.httpsAgent = this.context.httpsAgent;
@@ -32,7 +36,7 @@ export class ArtifactAPI {
   }
 
   /**
-   * 处理 equip 相关逻辑。
+   * 装备遗物。
    * @param userProfilePath - 待读取或写入文件的路径，类型为 `string`。
    * @param artifactId - 目标资源的唯一标识，类型为 `number`。
    * @param position - 目标遗物所在的装备槽位，类型为 `number`。
@@ -40,18 +44,30 @@ export class ArtifactAPI {
    */
   async equip(userProfilePath: string, artifactId: number, position: number): Promise<ActionResult<'equipped', 'rejected'>> {
     const options: myAxiosConfig = {
-      url: `${this.context.baseURL}/change-user-artifacts`, method: 'POST',
+      url: `${this.context.baseURL}/change-user-artifacts`,
+      method: 'POST',
       headers: {
-        ...this.context.headers, 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        origin: this.context.baseURL, referer: `${this.context.baseURL}${userProfilePath}/artifacts`
+        ...this.context.headers,
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        origin: this.context.baseURL,
+        referer: `${this.context.baseURL}${userProfilePath}/artifacts`
       },
-      data: JSON.stringify({ artifactId: String(artifactId), position: String(position) })
+      data: JSON.stringify({
+        artifactId: String(artifactId),
+        position: String(position)
+      })
     };
     if (this.context.httpsAgent) {
       options.httpsAgent = this.context.httpsAgent;
     }
     return (await this.context.request(options)).status === 200
-      ? { ok: true, state: 'equipped' }
-      : { ok: false, state: 'rejected' };
+      ? {
+        ok: true,
+        state: 'equipped'
+      }
+      : {
+        ok: false,
+        state: 'rejected'
+      };
   }
 }

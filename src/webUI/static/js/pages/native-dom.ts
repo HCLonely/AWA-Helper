@@ -1,11 +1,17 @@
-/** Small native DOM facade shared by the WebUI pages. */
+/**
+ * @file src/webUI/static/js/pages/native-dom.ts
+ * @description 提供各 WebUI 页面共用的轻量原生 DOM 封装。
+ */
 (() => {
   type DomInput = string | Element | Document | Window | EventTarget | null | undefined;
   type Listener = EventListenerOrEventListenerObject;
   const listeners = new WeakMap<EventTarget, Map<string, Listener[]>>();
   const storedData = new WeakMap<Element, Map<string, unknown>>();
 
-  const logAreas = new WeakMap<Element, { sizes: Map<Element, number>; size: number }>();
+  const logAreas = new WeakMap<Element, {
+    sizes: Map<Element, number>;
+    size: number
+  }>();
   const boundLogArea = (element: Element, changed?: Element[]): void => {
     const area = element.closest('#log-area');
     if (!area) {
@@ -13,7 +19,10 @@
     }
     let state = logAreas.get(area);
     if (!state || (element === area && !changed)) {
-      state = { sizes: new Map(), size: 0 };
+      state = {
+        sizes: new Map(),
+        size: 0
+      };
       logAreas.set(area, state);
       changed = Array.from(area.children);
     }
@@ -65,7 +74,9 @@
     }
     ready(callback: () => void): this {
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', callback, { once: true });
+        document.addEventListener('DOMContentLoaded', callback, {
+          once: true
+        });
       } else {
         callback();
       }
@@ -305,5 +316,7 @@
       target.closest('.modal')?.classList.remove('open');
     }
   });
-  Object.assign(globalThis, { dom });
+  Object.assign(globalThis, {
+    dom
+  });
 })();

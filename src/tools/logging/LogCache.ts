@@ -1,3 +1,7 @@
+/**
+ * @file src/tools/logging/LogCache.ts
+ * @description 维护有容量上限的日志缓存与增量计数。
+ */
 import type { LogScope } from './LogContext';
 
 export interface WebLogEntry {
@@ -7,7 +11,7 @@ export interface WebLogEntry {
   scope: LogScope;
 }
 
-/** Incremental FIFO accounting; updating an ID preserves its insertion order. */
+/** 以先进先出的方式增量计数，更新已有标识时保留其插入顺序。 */
 export class LogCache {
   private readonly sizes = new Map<string, number>();
   private readonly ordinary = new Map<string, LogScope>();

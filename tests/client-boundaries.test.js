@@ -1,11 +1,16 @@
-/** Architecture contracts for platform API ownership. */
+/**
+ * @file tests/client-boundaries.test.js
+ * @description 验证平台接口职责归属的架构约束。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 
 const root = path.resolve(__dirname, '..');
-const sourceFiles = (directory) => fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+const sourceFiles = (directory) => fs.readdirSync(directory, {
+  withFileTypes: true
+}).flatMap((entry) => {
   const target = path.join(directory, entry.name);
   return entry.isDirectory() ? sourceFiles(target) : entry.name.endsWith('.ts') ? [target] : [];
 });

@@ -1,7 +1,12 @@
-/** Regression tests for the pure AWA control-center parser. */
+/**
+ * @file tests/control-center-parser.test.js
+ * @description 回归验证纯函数形式的 AWA 控制中心解析器。
+ */
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { parseControlCenter } = require('../dist/client/AWA/parsers');
+const {
+  parseControlCenter
+} = require('../dist/client/AWA/parsers');
 
 test('control-center parser returns structured quest state without a client singleton', () => {
   const html = `

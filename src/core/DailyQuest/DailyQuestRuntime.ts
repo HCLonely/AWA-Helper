@@ -18,13 +18,24 @@ import { AWAError } from '../../client/AWA/AWAError';
 import { writeFileLog } from '../../tools/logging';
 
 export interface DailyQuestRuntimeOptions {
-  awaCookie: string; host: string; proxy?: proxy; userAgent?: string;
-  getStarted?: boolean; joinSteamCommunityEvent?: boolean; logRequests?: boolean;
+  awaCookie: string;
+  host: string;
+  proxy?: proxy;
+  userAgent?: string;
+  getStarted?: boolean;
+  joinSteamCommunityEvent?: boolean;
+  logRequests?: boolean;
 }
 
 export type DailyQuestRefreshResult =
-  | { ok: true }
-  | { ok: false; reason: 'network-rejected' | 'session-expired' | 'request-failed'; error?: unknown };
+  | {
+    ok: true
+  }
+  | {
+    ok: false;
+    reason: 'network-rejected' | 'session-expired' | 'request-failed';
+    error?: unknown
+  };
 
 export class DailyQuestRuntime {
   readonly awa: AWAApiClient;
@@ -33,7 +44,7 @@ export class DailyQuestRuntime {
   private readonly joinSteamCommunityEvent: boolean;
 
   /**
-   * 初始化 Daily Quest Runtime 实例。
+   * 初始化 DailyQuestRuntime 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `DailyQuestRuntimeOptions`。
    */
   constructor(options: DailyQuestRuntimeOptions) {
@@ -57,7 +68,7 @@ export class DailyQuestRuntime {
   }
 
   /**
-   * 初始化 init 相关数据。
+   * 初始化任务状态。
    * @returns `Promise<DailyQuestRefreshResult>`，初始化完成后得到的每日任务刷新结果。
    */
   async init(): Promise<DailyQuestRefreshResult> {
@@ -70,17 +81,29 @@ export class DailyQuestRuntime {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       if (error instanceof AWAError && error.statusCode === 610) {
-        return { ok: false, reason: 'network-rejected', error };
+        return {
+          ok: false,
+          reason: 'network-rejected',
+          error
+        };
       }
       if (error instanceof AWAError && error.statusCode === 602) {
-        return { ok: false, reason: 'session-expired', error };
+        return {
+          ok: false,
+          reason: 'session-expired',
+          error
+        };
       }
-      return { ok: false, reason: 'request-failed', error };
+      return {
+        ok: false,
+        reason: 'request-failed',
+        error
+      };
     }
   }
 
   /**
-   * 更新 update Daily Quests 相关数据。
+   * 更新每日任务状态。
    * @param verify - 用于决定是否重新验证任务状态，类型为 `boolean`。
    * @returns `Promise<DailyQuestRefreshResult>`，updateDailyQuests 操作完成后的结果。
    */
@@ -90,12 +113,18 @@ export class DailyQuestRuntime {
       const html = await getControlCenter(this.awa.context);
       if (html.toLowerCase().includes('we have detected an issue with your network')) {
         logger.log(chalk.red(__('ipBanned')));
-        return { ok: false, reason: 'network-rejected' };
+        return {
+          ok: false,
+          reason: 'network-rejected'
+        };
       }
       const page = load(html);
       if (page('a.nav-link-login').length) {
         logger.log(chalk.red(__('tokenExpired')));
-        return { ok: false, reason: 'session-expired' };
+        return {
+          ok: false,
+          reason: 'session-expired'
+        };
       }
       const snapshot = parseControlCenter(html, this.awa.context.baseURL, page);
       this.state.questInfo = snapshot.questInfo;
@@ -115,7 +144,9 @@ export class DailyQuestRuntime {
       if (verify && snapshot.signArp.monthly) {
         new Logger(`${time()}${__('monthlySign', chalk.green(snapshot.signArp.monthly))}`);
       }
-      if (verify && snapshot.promotionalCalendarInfo?.some(({ finished }) => !finished)) {
+      if (verify && snapshot.promotionalCalendarInfo?.some(({
+        finished
+      }) => !finished)) {
         new Logger(`${time()}${chalk.green(__('promotionalAlert'))}`);
       }
 
@@ -143,17 +174,26 @@ export class DailyQuestRuntime {
         Logger.consoleLog(`${time()}${__('taskInfo')}`);
         console.table(report);
       }
-      new Logger({ type: 'questInfo', data: report });
-      return { ok: true };
+      new Logger({
+        type: 'questInfo',
+        data: report
+      });
+      return {
+        ok: true
+      };
     } catch (error) {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
-      return { ok: false, reason: 'request-failed', error };
+      return {
+        ok: false,
+        reason: 'request-failed',
+        error
+      };
     }
   }
 
   /**
-   * 加载 load Twitch Bonus 相关数据。
+   * 加载 Twitch 加成。
    * @returns `Promise<boolean>`，表示 loadTwitchBonus 检查是否通过。
    */
   async loadTwitchBonus(): Promise<boolean> {
@@ -173,7 +213,7 @@ export class DailyQuestRuntime {
   }
 
   /**
-   * 更新 refresh Personalization 相关数据。
+   * 刷新个性化配置。
    * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 refreshPersonalization 检查是否通过。
@@ -190,7 +230,7 @@ export class DailyQuestRuntime {
   }
 
   /**
-   * 完成 claim Quest 相关数据。
+   * 领取任务奖励。
    * @param questId - 目标资源的唯一标识，类型为 `string`。
    * @returns `Promise<boolean>`，表示 claimQuest 检查是否通过。
    */
@@ -207,7 +247,7 @@ export class DailyQuestRuntime {
     }
   }
   /**
-   * 处理 visit 相关逻辑。
+   * 访问目标页面。
    * @param link - 需要访问或提交的目标页面链接，类型为 `string`。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
@@ -226,7 +266,7 @@ export class DailyQuestRuntime {
     }
   }
   /**
-   * 处理 view Post 相关逻辑。
+   * 浏览帖子。
    * @param postId - 目标资源的唯一标识，类型为 `string`。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 viewPost 检查是否通过。
@@ -251,7 +291,7 @@ export class DailyQuestRuntime {
     }
   }
   /**
-   * 处理 view Posts 相关逻辑。
+   * 批量浏览帖子。
    * @param postIds - 需要查看或分享的论坛帖子标识列表，类型为 `string[]`。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 viewPosts 检查是否通过。
@@ -270,7 +310,7 @@ export class DailyQuestRuntime {
     return postIds.length > 0;
   }
   /**
-   * 处理 share Posts 相关逻辑。
+   * 批量分享帖子。
    * @param postIds - 需要查看或分享的论坛帖子标识列表，类型为 `string[]`。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 sharePosts 检查是否通过。
@@ -296,7 +336,7 @@ export class DailyQuestRuntime {
     return postIds.length > 0;
   }
   /**
-   * 处理 reply Post 相关逻辑。
+   * 回复帖子。
    * @param postId - 目标资源的唯一标识，类型为 `string | undefined`。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 replyPost 检查是否通过。
@@ -319,7 +359,7 @@ export class DailyQuestRuntime {
     }
   }
   /**
-   * 处理 view News 相关逻辑。
+   * 浏览新闻。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
@@ -351,7 +391,7 @@ export class DailyQuestRuntime {
     new Logger(`${time()}${__('dailyQuestNewsCompleted')}`);
   }
   /**
-   * 发送 send Time On Site 相关数据。
+   * 上报在线时长。
    * @returns `Promise<boolean>`，表示 sendTimeOnSite 检查是否通过。
    */
   async sendTimeOnSite(): Promise<boolean> {
@@ -373,7 +413,7 @@ export class DailyQuestRuntime {
     }
   }
   /**
-   * 处理 monitor 相关逻辑。
+   * 监控任务进度。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
@@ -389,7 +429,7 @@ export class DailyQuestRuntime {
   }
 
   /**
-   * 初始化 initialize Community Event 相关数据。
+   * 初始化社区活动。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   private async initializeCommunityEvent(): Promise<void> {
@@ -416,7 +456,10 @@ export class DailyQuestRuntime {
     const completed = page.concluded || page.playedMinutes >= page.totalMinutes;
     if (completed) {
       this.state.communityEvent = {
-        path, status: __('done'), playedTime: `${page.playedMinutes}`, totalTime: `${page.totalMinutes}min`
+        path,
+        status: __('done'),
+        playedTime: `${page.playedMinutes}`,
+        totalTime: `${page.totalMinutes}min`
       };
       logger.log(chalk.yellow(__('logStatusFinished')));
       return;
@@ -437,13 +480,16 @@ export class DailyQuestRuntime {
       }
     }
     this.state.communityEvent = {
-      path, gameId: page.gameId, status: joined ? __('joined') : __('notOwnedGame', `[${page.gameName}](${page.gameId})`),
-      playedTime: `${page.playedMinutes}`, totalTime: `${page.totalMinutes}min`
+      path,
+      gameId: page.gameId,
+      status: joined ? __('joined') : __('notOwnedGame', `[${page.gameName}](${page.gameId})`),
+      playedTime: `${page.playedMinutes}`,
+      totalTime: `${page.totalMinutes}min`
     };
     logger.log(joined ? chalk.green('OK') : chalk.yellow(__('notOwned')));
   }
   /**
-   * 更新 refresh Community Event 相关数据。
+   * 刷新社区活动状态。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   private async refreshCommunityEvent(): Promise<void> {

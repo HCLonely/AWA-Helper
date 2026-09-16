@@ -1,10 +1,10 @@
-import { trackRunStep } from '../Manager/RunHistory';
-import type { TaskOutcome } from '../TaskOutcome';
-import { trackingExpiry } from '../DailyQuest/tasks/TwitchQuestTask';
 /**
  * @file src/core/Achievement/AchievementService.ts
  * @description 编排头像、边框和 Twitch 时长等成就任务，并持久化成就操作历史。
  */
+import { trackRunStep } from '../Manager/RunHistory';
+import type { TaskOutcome } from '../TaskOutcome';
+import { trackingExpiry } from '../DailyQuest/tasks/TwitchQuestTask';
 
 /* global __, proxy */
 import { Achievement, ActionHistory, Id, userAvatarInfo } from '../../types/achievement';
@@ -82,11 +82,18 @@ export class AchievementService {
     };
 
   /**
-   * 初始化 Achievement Service 实例。
+   * 初始化 AchievementService 实例。
    * @param options - 创建实例或执行操作所需的配置选项，类型为 `{ awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string; }`。
    */
-  constructor({ awaCookie, proxy, awaHost, twitchCookie, userAgent, logRequests }: {
-    awaCookie: string; proxy?: proxy; awaHost: string; twitchCookie?: string; userAgent?: string; logRequests?: boolean
+  constructor({
+    awaCookie, proxy, awaHost, twitchCookie, userAgent, logRequests
+  }: {
+    awaCookie: string;
+    proxy?: proxy;
+    awaHost: string;
+    twitchCookie?: string;
+    userAgent?: string;
+    logRequests?: boolean
   }) {
     this.proxy = proxy;
     this.awa = new AWAApiClient({
@@ -101,11 +108,20 @@ export class AchievementService {
     }
   }
   /**
-   * 获取 read Action History 相关数据。
+   * 读取操作历史。
    * @returns `ActionHistory`，readActionHistory 获取到的数据。
    */
   private readActionHistory(): ActionHistory {
-    const defaultHistory: ActionHistory = { border: { date: '', used: [] }, avatar: { date: '', used: [] } };
+    const defaultHistory: ActionHistory = {
+      border: {
+        date: '',
+        used: []
+      },
+      avatar: {
+        date: '',
+        used: []
+      }
+    };
     try {
       const parsed = JSON.parse(fs.readFileSync(this.actionHistoryPath, 'utf8')) as Partial<ActionHistory>;
       return {
@@ -123,7 +139,7 @@ export class AchievementService {
     }
   }
   /**
-   * 保存 write Action History 相关数据。
+   * 保存操作历史。
    * @param actionHistory - 记录头像或边框更换情况的操作历史，类型为 `ActionHistory`。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
@@ -131,7 +147,7 @@ export class AchievementService {
     atomicWriteFileSync(this.actionHistoryPath, JSON.stringify(actionHistory));
   }
   /**
-   * 处理 local Date 相关逻辑。
+   * 生成本地日期。
    * @param now - 计算或比较时使用的时间，类型为 `Date`。
    * @returns `string`，localDate 获取或生成的文本内容。
    */
@@ -142,7 +158,7 @@ export class AchievementService {
     return `${year}-${month}-${day}`;
   }
   /**
-   * 初始化 init 相关数据。
+   * 初始化任务状态。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async init(): Promise<void> {
@@ -151,13 +167,24 @@ export class AchievementService {
     await this.awa.session.verify();
     this.Achievements = await this.awa.achievement.getAll();
     new Logger(`${time()}${__('achievementCatalogLoaded', String(this.Achievements.length))}`);
-    fs.mkdirSync('data/achievement', { recursive: true });
+    fs.mkdirSync('data/achievement', {
+      recursive: true
+    });
     if (!fs.existsSync(this.actionHistoryPath)) {
-      atomicWriteFileSync(this.actionHistoryPath, JSON.stringify({ border: { date: '', used: [] }, avatar: { date: '', used: [] } }));
+      atomicWriteFileSync(this.actionHistoryPath, JSON.stringify({
+        border: {
+          date: '',
+          used: []
+        },
+        avatar: {
+          date: '',
+          used: []
+        }
+      }));
     }
   }
   /**
-   * 执行 run 相关数据。
+   * 执行任务。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
@@ -174,7 +201,9 @@ export class AchievementService {
         this.incompletedAchievements.push(availableAchievement);
         new Logger(`${time()}${__('doingAchievement', chalk.yellow(availableAchievement))}`);
         if (signal?.aborted) {
-          return { status: 'cancelled' };
+          return {
+            status: 'cancelled'
+          };
         }
         const outcome = await trackRunStep(availableAchievement, () => this.achievement2action[availableAchievement](signal));
         outcomes.push(outcome);
@@ -185,33 +214,52 @@ export class AchievementService {
     new Logger(`${time()}${__('achievementActionableCount', String(this.incompletedAchievements.length))}`);
     new Logger(`${time()}${__('doneMatch', chalk.yellow('Achievements'))}`);
     if (signal?.aborted) {
-      return { status: 'cancelled' };
+      return {
+        status: 'cancelled'
+      };
     }
     if (outcomes.some((outcome) => outcome.status === 'failed')) {
-      return { status: outcomes.some((outcome) => outcome.status === 'completed') ? 'partial' : 'failed' };
+      return {
+        status: outcomes.some((outcome) => outcome.status === 'completed') ? 'partial' : 'failed'
+      };
     }
     if (this.watchTwitchStatus.type.size) {
-      return { status: 'partial', ...(!this.twitchCookie ? { message: __('achievementTwitchSkippedNoCookie') } : {}) };
+      return {
+        status: 'partial',
+        ...(!this.twitchCookie ? {
+          message: __('achievementTwitchSkippedNoCookie')
+        } : {})
+      };
     }
-    return { status: outcomes.some((outcome) => outcome.status === 'completed') ? 'completed' : 'skipped' };
+    return {
+      status: outcomes.some((outcome) => outcome.status === 'completed') ? 'completed' : 'skipped'
+    };
   }
 
   /**
-   * 处理 border25 相关逻辑。
+   * 执行更换边框成就任务。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async border25(signal?: AbortSignal): Promise<TaskOutcome> {
     const borderLookup = await this.awa.personalization.getAvatarItems('border');
-    const { userAvatarInfo: UAI, ids: borders } = borderLookup.found ? borderLookup.value : {};
+    const {
+      userAvatarInfo: UAI, ids: borders
+    } = borderLookup.found ? borderLookup.value : {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!borders || !existingAvatarInfo) {
-      return { status: 'failed' };
+      return {
+        status: 'failed'
+      };
     }
-    const userAvatarInfo = { ...existingAvatarInfo };
+    const userAvatarInfo = {
+      ...existingAvatarInfo
+    };
     const borderIds = borders.map((border:Id) => border.id);
     if (borderIds.length < 25) {
       new Logger(`${time()}${__('notEnoughBorders', chalk.yellow('25'))}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
     new Logger(`${time()}${__('foundEnoughBorders', chalk.green('25'))}`);
     // addLog('找到足够的边框(25个)', TaskStatus.SUCCESS);
@@ -219,20 +267,26 @@ export class AchievementService {
     for (let i = 0; i < 25; i++) {
       userAvatarInfo.border = borderIds[i];
       if (signal?.aborted || !(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
-        return { status: signal?.aborted ? 'cancelled' : 'failed' };
+        return {
+          status: signal?.aborted ? 'cancelled' : 'failed'
+        };
       }
       this.userAvatarInfo = userAvatarInfo;
-      // new Logger(`${time()}${__('changeBorder', chalk.yellow(borderId))}`, false);
+
       if (!await sleep(5, signal)) {
-        return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+        return {
+          status: signal?.aborted ? 'cancelled' : 'skipped'
+        };
       }
     }
     new Logger(`${time()}${chalk.green(__('doneBorder25'))}`);
-    return { status: 'completed' };
+    return {
+      status: 'completed'
+    };
   }
 
   /**
-   * 处理 once ADay For AWeek 相关逻辑。
+   * 执行连续一周每日登录成就任务。
    * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
    * @returns `Promise<TaskOutcome>`，异步操作完成后兑现，不携带结果值。
    */
@@ -242,7 +296,9 @@ export class AchievementService {
 
     if (currentHour < 13) {
       new Logger(`${time()}${chalk.yellow(__('currentHourNot13'))}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
 
     const today = this.localDate(now);
@@ -250,31 +306,42 @@ export class AchievementService {
 
     if (actionHistory[type]?.date === today) {
       new Logger(`${time()}${__(type === 'border' ? 'todayAlreadyChangedBorder' : 'todayAlreadyChangedAvatar')}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
 
     const itemLookup = await this.awa.personalization.getAvatarItems(type);
-    const { userAvatarInfo: UAI, ids } = itemLookup.found ? itemLookup.value : {};
+    const {
+      userAvatarInfo: UAI, ids
+    } = itemLookup.found ? itemLookup.value : {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
-      return { status: 'failed' };
+      return {
+        status: 'failed'
+      };
     }
-    const userAvatarInfo = { ...existingAvatarInfo } as userAvatarInfo;
+    const userAvatarInfo = {
+      ...existingAvatarInfo
+    } as userAvatarInfo;
 
     const usedIds = actionHistory[type].used || [];
     const availableIds = ids.filter((id: Id) => !usedIds.includes(id.id));
 
     if (availableIds.length === 0) {
       new Logger(`${time()}${__(type === 'border' ? 'noAvailableBorder' : 'noAvailableAvatar')}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
 
     const [selectedId] = availableIds;
     userAvatarInfo[type] = selectedId.id;
-    // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
     if (signal?.aborted || !(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
-      return { status: signal?.aborted ? 'cancelled' : 'failed' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'failed'
+      };
     }
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
@@ -284,22 +351,28 @@ export class AchievementService {
     this.writeActionHistory(actionHistory);
 
     new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
-    return { status: 'completed' };
+    return {
+      status: 'completed'
+    };
   }
 
   /**
-   * 处理 once AMonth For AYear 相关逻辑。
+   * 执行连续一年每月登录成就任务。
    * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
    * @returns `Promise<TaskOutcome>`，异步操作完成后兑现，不携带结果值。
    */
   async onceAMonthForAYear(type: 'border' | 'avatar', signal?: AbortSignal): Promise<TaskOutcome> {
     if (type === 'border' && this.incompletedAchievements.includes('Change your border once a day for a week')) {
       new Logger(`${time()}${__('borderOnceADayForAWeekExist', chalk.blue('Change your border once a day for a week'))}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
     if (type === 'avatar' && this.incompletedAchievements.includes('Change your avatar items every day for a week')) {
       new Logger(`${time()}${__('avatarOnceADayForAYearExist', chalk.blue('Change your avatar items every day for a week'))}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
 
     const now = new Date();
@@ -307,7 +380,9 @@ export class AchievementService {
 
     if (currentDay < 10) {
       new Logger(`${time()}${__('currentDayNot10')}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
 
     const currentMonth = this.localDate(now).slice(0, 7);
@@ -315,31 +390,42 @@ export class AchievementService {
 
     if (actionHistory[type].date === currentMonth) {
       new Logger(`${time()}${__(`${type}OnceAMonthForAYearAlreadyDone`)}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
 
     const itemLookup = await this.awa.personalization.getAvatarItems(type);
-    const { userAvatarInfo: UAI, ids } = itemLookup.found ? itemLookup.value : {};
+    const {
+      userAvatarInfo: UAI, ids
+    } = itemLookup.found ? itemLookup.value : {};
     const existingAvatarInfo = this.userAvatarInfo || UAI;
     if (!ids || !existingAvatarInfo) {
-      return { status: 'failed' };
+      return {
+        status: 'failed'
+      };
     }
-    const userAvatarInfo = { ...existingAvatarInfo } as userAvatarInfo;
+    const userAvatarInfo = {
+      ...existingAvatarInfo
+    } as userAvatarInfo;
 
     const usedIds = actionHistory[type].used || [];
     const availableIds = ids.filter((id: Id) => !usedIds.includes(id.id));
 
     if (availableIds.length === 0) {
       new Logger(`${time()}${__(type === 'border' ? 'noAvailableBorder' : 'noAvailableAvatar')}`);
-      return { status: signal?.aborted ? 'cancelled' : 'skipped' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'skipped'
+      };
     }
 
     const [selectedId] = availableIds;
     userAvatarInfo[type] = selectedId.id;
-    // new Logger(`${time()}${__('changeBorder', chalk.yellow(selectedBorder.id))}`);
 
     if (signal?.aborted || !(await this.awa.personalization.saveAvatar(userAvatarInfo)).ok) {
-      return { status: signal?.aborted ? 'cancelled' : 'failed' };
+      return {
+        status: signal?.aborted ? 'cancelled' : 'failed'
+      };
     }
     this.userAvatarInfo = userAvatarInfo;
     // addLog(`成功切换到边框 ${selectedBorder.name}`, TaskStatus.SUCCESS);
@@ -349,26 +435,32 @@ export class AchievementService {
     this.writeActionHistory(actionHistory);
 
     new Logger(`${time()}${__(`${type}ChangeHistorySaved`)}`);
-    return { status: 'completed' };
+    return {
+      status: 'completed'
+    };
   }
 
   /**
-   * 添加 add Watch Twitch 相关数据。
+   * 添加 Twitch 观看任务。
    * @param type - 用于选择处理分支的类型，类型为 `"hive" | "nexus"`。
    * @returns `Promise<TaskOutcome>`，异步操作完成后兑现，不携带结果值。
    */
   async addWatchTwitch(type: 'hive' | 'nexus'): Promise<TaskOutcome> {
     try {
       this.watchTwitchStatus.type.add(type);
-      return { status: 'completed' };
+      return {
+        status: 'completed'
+      };
     } catch (error) {
       new Logger(`${time()}${__('addWatchTwitchFailed', (error as Error).toString())}`);
-      return { status: 'failed' };
+      return {
+        status: 'failed'
+      };
     }
   }
 
   /**
-   * 处理 watch Twitch 相关逻辑。
+   * 执行 Twitch 观看任务。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<TaskOutcome>`，异步操作完成后兑现，不携带结果值。
    */
@@ -413,7 +505,9 @@ export class AchievementService {
             this.stop(); return;
           }
         }
-        const { Hive, Nexus } = await this.awa.twitch.getAvailableStreams();
+        const {
+          Hive, Nexus
+        } = await this.awa.twitch.getAvailableStreams();
         new Logger(`${time()}${__('foundHiveLive', chalk.yellow(Hive.length))}`);
         new Logger(`${time()}${__('foundNexusLive', chalk.yellow(Nexus.length))}`);
         const candidates = [
@@ -459,7 +553,7 @@ export class AchievementService {
   }
 
   /**
-   * 处理 track Twitch Channel 相关逻辑。
+   * 跟踪 Twitch 频道观看进度。
    * @param info - 提交 Twitch 跟踪请求所需的频道信息，类型为 `TwitchChannelTrackingInfo`。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @param heartbeatIntervalSeconds - 两次心跳之间的等待秒数；生产环境固定使用 60 秒。
@@ -490,7 +584,7 @@ export class AchievementService {
       if (!result.success) {
         throw new Error(`AWA Twitch tracking failed: ${result.state}`);
       }
-      // Achievement watch-time must keep accumulating after the daily ARP cap is reached.
+      // 达到每日 ARP 上限后，仍需继续累计成就观看时长。
       if (!await sleep(heartbeatIntervalSeconds, signal)) {
         return 'stopped';
       }
@@ -499,7 +593,7 @@ export class AchievementService {
   }
 
   /**
-   * 停止 stop 相关数据。
+   * 停止任务。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   stop(): void {
@@ -510,7 +604,7 @@ export class AchievementService {
   }
 
   /**
-   * 处理 destroy 相关逻辑。
+   * 释放任务资源。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   destroy(): void {
@@ -521,7 +615,7 @@ export class AchievementService {
       type: new Set()
     };
 
-    // Clear arrays
+    // 清空数组。
     if (this.availableAchievements) {
       this.availableAchievements.length = 0;
     }

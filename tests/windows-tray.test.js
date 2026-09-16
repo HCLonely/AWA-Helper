@@ -1,11 +1,16 @@
-/** @description Guards the additive Windows tray packaging contract. */
+/**
+ * @file tests/windows-tray.test.js
+ * @description 验证 Windows 托盘打包保持附加组件的集成约束。
+ */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const { parseTrayCommand } = require('../dist/tools/process/TrayBridge');
+const {
+  parseTrayCommand
+} = require('../dist/tools/process/TrayBridge');
 
 test('Windows tray entry is additive and preserves legacy launchers', () => {
   const buildScript = fs.readFileSync(path.join(root, 'scripts', 'build.js'), 'utf8');

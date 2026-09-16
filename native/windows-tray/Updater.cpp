@@ -1,3 +1,7 @@
+/**
+ * @file native/windows-tray/Updater.cpp
+ * @description 下载、校验、安装与回滚 Windows 更新。
+ */
 #include "Updater.h"
 #include <winhttp.h>
 #include <bcrypt.h>
@@ -102,8 +106,8 @@ std::string sha256(const fs::path& path) {
   return result.str();
 }
 bool programFile(const std::string& name) {
-  // User-owned configuration and data can never become update targets, even if
-  // an incorrectly packaged release lists them in its manifest.
+  // 用户配置和数据不得作为更新目标，
+  // 即使打包错误的版本将它们列入清单也不例外。
   static const std::set<std::string> allowed = {
     "AWA-Manager.exe", "AWA-Helper.exe", "AWA-Manager.bat", "AWA-DailyQuest.bat",
     "update.bat", "README.html", "README_en.html", "config/config.example.yml",
@@ -140,17 +144,17 @@ void acquire(const fs::path& root) {
   require(installLock == INVALID_HANDLE_VALUE, "已有安装正在准备");
   plainFile(root / L".update/install.lock");
   fs::create_directories(root / L".update");
-  // Delete-on-close keeps crash recovery automatic; an inherited handle keeps
-  // the same lock alive throughout the installer hand-off.
+  // 关闭时删除可实现自动崩溃恢复；继承的句柄可在
+  // 安装器交接期间持续持有同一个锁。
   const auto lockPath = root / L".update/install.lock";
   if (fs::exists(lockPath)) {
-    // Cooperates with the standalone Helper updater's ProcessLock format.
+    // 兼容独立 Helper 更新器使用的进程锁格式。
     try {
       const auto owner = readJson(lockPath).at("pid").get<DWORD>();
       Handle process(OpenProcess(SYNCHRONIZE, FALSE, owner));
       const bool dead = process.value ? WaitForSingleObject(process.value, 0) == WAIT_OBJECT_0 : GetLastError() == ERROR_INVALID_PARAMETER;
       if (dead) { std::error_code ec; fs::remove(lockPath, ec); }
-    } catch (...) { /* An unreadable or active lock is never stolen. */ }
+    } catch (...) { /* 不抢占无法读取或仍在使用的锁。 */ }
   }
   installLock = CreateFileW(lockPath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
   require(installLock != INVALID_HANDLE_VALUE, "另一个更新正在进行，或安装目录不可写");
@@ -307,7 +311,7 @@ void install(const fs::path& root, Json& journal) {
   }
   journal["changes"] = changes; journal["state"] = "installing";
   writeJson(root / L".update/current.json", journal);
-  // The full rollback list is durable before the first target is modified.
+  // 修改第一个目标前，先持久化完整的回滚清单。
   for (const auto& name : paths) {
     if (replacements.count(name)) copyProgramFile(source / fs::u8path(name), root / fs::u8path(name));
     else fs::remove(root / fs::u8path(name));
@@ -441,7 +445,7 @@ void extract(const fs::path& archive, const fs::path& destination) {
     plainFile(target);
     if (kind == '5') { require(size == 0, "无效目录大小"); fs::create_directories(target); }
     else {
-      // Only known release files are extracted; user data in an old archive is ignored.
+      // 仅提取已知的发布文件，忽略旧归档中的用户数据。
       if (programFile(relative)) {
         fs::create_directories(target.parent_path());
         std::ofstream out(target, std::ios::binary);
@@ -463,7 +467,7 @@ void extract(const fs::path& archive, const fs::path& destination) {
 
 std::wstring version(const fs::path& root) {
   try { return wide(manifest(root, false).at("version").get<std::string>()); } catch (...) {}
-  // Older releases have no installation manifest; .version is written by Helper.
+  // 旧版发布没有安装清单，.version 由 Helper 写入。
   try {
     std::ifstream in(root / L".version"); std::string value; std::getline(in, value);
     if (!value.empty() && value.back() == '\r') value.pop_back();
@@ -473,7 +477,7 @@ std::wstring version(const fs::path& root) {
 bool complete(const fs::path& root) {
   try {
     if (!fs::is_regular_file(root / L"AWA-Helper.exe")) return false;
-    // Backward-compatible first run of an existing installation.
+    // 兼容已有安装首次运行时的旧版数据。
     if (!fs::exists(root / manifestName)) return true;
     const auto data = manifest(root, false);
     for (const auto& file : data["files"]) if (file["required"].get<bool>()) {
@@ -575,7 +579,7 @@ void unmarkTray(const fs::path& root) {
   try {
     const auto path = root / L".update/tray.json";
     if (readJson(path).at("pid").get<DWORD>() == GetCurrentProcessId()) fs::remove(path);
-  } catch (...) { /* A crashed/stale marker is handled by the standalone updater. */ }
+  } catch (...) { /* 崩溃或过期的标记由独立更新器处理。 */ }
 }
 bool recover(const fs::path& root) {
   logRoot = root;
@@ -623,7 +627,7 @@ int internalMode(const std::vector<std::wstring>& args) {
     awaitHandle(helper.value);
     awaitHandle(manager.value);
     install(root, journal);
-    // A new portable install needs a default configuration before Helper can start.
+    // 新的便携式安装需要先生成默认配置，才能启动 Helper。
     if (!fs::exists(root / L"config.yml") && !fs::exists(root / L"config/config.yml")) {
       const auto example = root / L"config/config.example.yml";
       if (fs::exists(example)) copyProgramFile(example, root / L"config/config.yml");
@@ -632,7 +636,7 @@ int internalMode(const std::vector<std::wstring>& args) {
     canRollback = false;
     HANDLE waits[]{healthy.value, process.value};
     if (WaitForMultipleObjects(2, waits, FALSE, 120000) != WAIT_OBJECT_0) {
-      // Ask the newly launched tray to shut down normally. Never overwrite a live EXE.
+      // 请求刚启动的托盘正常退出，不覆盖正在运行的可执行文件。
       const auto window = FindWindowExW(HWND_MESSAGE, nullptr, L"AWAHelperManagerTrayWindow", root.c_str());
       if (window) PostMessageW(window, WM_CLOSE, 0, 0);
       require(WaitForSingleObject(process.value, 120000) == WAIT_OBJECT_0, "新版启动检查失败且未退出；保留恢复记录，下次启动重试");
@@ -643,7 +647,7 @@ int internalMode(const std::vector<std::wstring>& args) {
     committed["state"] = "completed";
     writeJson(root / L".update/current.json", committed);
     journal = committed;
-    // Ancillary diagnostics must not undo an already committed installation.
+    // 辅助诊断不得撤销已提交的安装。
     try {
       writeJson(root / L".update/last-result.json", {{"status", "success"}, {"version", journal["version"]}});
       writeJson(stagePath(root, journal) / L"completed.json", {{"status", "success"}});

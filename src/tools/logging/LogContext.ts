@@ -1,4 +1,7 @@
-/** Async log scope propagation and deterministic per-scope log filenames. */
+/**
+ * @file src/tools/logging/LogContext.ts
+ * @description 传递异步日志作用域，并为各作用域生成确定的日志文件名。
+ */
 import { AsyncLocalStorage } from 'async_hooks';
 import dayjs from 'dayjs';
 import * as path from 'path';

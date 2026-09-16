@@ -7,7 +7,7 @@ import type { DailyQuestState } from './DailyQuestState';
 export type QuestReport = Record<string, Record<string, string | number>>;
 
 /**
- * 格式化 format Quest Report 相关数据。
+ * 格式化任务报告。
  * @param state - 当前对象或任务的状态，类型为 `DailyQuestState`。
  * @returns `QuestReport`，formatQuestReport 生成的格式化结果。
  */
@@ -56,13 +56,16 @@ export const formatQuestReport = (state: DailyQuestState): QuestReport => {
     report[`${__('promotionalCalendar')}[${promo.day}]`] = {
       [__('status')]: promo.finished ? __('done') : __('undone'),
       [__('obtainedARP')]: promo.name,
-      [__('extraARP')]: '0', [__('maxAvailableARP')]: '0'
+      [__('extraARP')]: '0',
+      [__('maxAvailableARP')]: '0'
     };
   });
   if (state.communityEvent) {
     report[__('steamCommunityEvent')] = {
-      [__('status')]: state.communityEvent.status, [__('obtainedARP')]: state.communityEvent.playedTime,
-      [__('extraARP')]: '0', [__('maxAvailableARP')]: state.communityEvent.totalTime
+      [__('status')]: state.communityEvent.status,
+      [__('obtainedARP')]: state.communityEvent.playedTime,
+      [__('extraARP')]: '0',
+      [__('maxAvailableARP')]: state.communityEvent.totalTime
     };
   }
   if (state.battlePass) {

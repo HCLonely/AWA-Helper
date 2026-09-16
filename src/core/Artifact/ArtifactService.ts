@@ -20,12 +20,20 @@ class ArtifactService {
   readonly initialCookie: string;
 
   /**
-   * 初始化 Artifact Service 实例。
+   * 初始化 ArtifactService 实例。
    * @param configPath - 待读取或写入文件的路径，类型为 `string`。
    */
   constructor(configPath: string) {
-    const { awaCookie, awaHost, proxy, UA, debug }: {
-      awaCookie?: string; awaHost?: string; proxy?: proxy; UA?: string; debug?: { http?: boolean }
+    const {
+      awaCookie, awaHost, proxy, UA, debug
+    }: {
+      awaCookie?: string;
+      awaHost?: string;
+      proxy?: proxy;
+      UA?: string;
+      debug?: {
+        http?: boolean
+      }
     } = getRunConfiguration(configPath).raw;
     this.initialCookie = awaCookie || '';
     if (!awaCookie) {
@@ -33,7 +41,13 @@ class ArtifactService {
       this.initted = false;
       return;
     }
-    this.awa = new AWAApiClient({ cookie: awaCookie, host: awaHost, proxy, userAgent: UA, logRequests: debug?.http === true });
+    this.awa = new AWAApiClient({
+      cookie: awaCookie,
+      host: awaHost,
+      proxy,
+      userAgent: UA,
+      logRequests: debug?.http === true
+    });
   }
 
   /**
@@ -45,7 +59,7 @@ class ArtifactService {
   }
 
   /**
-   * 初始化 init 相关数据。
+   * 初始化任务状态。
    * @returns `Promise<boolean>`，表示 init 检查是否通过。
    */
   async init(signal?: AbortSignal): Promise<boolean> {
@@ -74,7 +88,7 @@ class ArtifactService {
   }
 
   /**
-   * 执行 start 相关数据。
+   * 启动任务。
    * @param newArtifacts - 准备装备的新遗物标识列表，类型为 `number[]`。
    * @returns `Promise<boolean>`，表示 start 检查是否通过。
    */
@@ -109,7 +123,7 @@ class ArtifactService {
   }
 
   /**
-   * 获取 get Artifacts Info 相关数据。
+   * 获取遗物信息。
    * @returns `Promise<boolean>`，表示 getArtifactsInfo 检查是否通过。
    */
   async getArtifactsInfo(): Promise<boolean> {
@@ -126,8 +140,12 @@ class ArtifactService {
       new Logger(`${time()}${__('artifactNoEquippedReturned')}`);
       return false;
     }
-    this.oldArtifacts = artifacts.map(({ id }) => id);
-    this.activePerks = artifacts.map(({ perkTextShort }) => {
+    this.oldArtifacts = artifacts.map(({
+      id
+    }) => id);
+    this.activePerks = artifacts.map(({
+      perkTextShort
+    }) => {
       const key = perkTextShort.replace(/\d+/, 's%');
       const value = perkTextShort.match(/\d+/)?.[0] || '';
       return `* ${__(key, value)}`;
@@ -137,7 +155,7 @@ class ArtifactService {
   }
 
   /**
-   * 处理 change Artifact 相关逻辑。
+   * 更换遗物。
    * @param id - 目标资源的唯一标识，类型为 `number`。
    * @param position - 目标遗物所在的装备槽位，类型为 `number`。
    * @returns `Promise<boolean>`，表示 changeArtifact 检查是否通过。

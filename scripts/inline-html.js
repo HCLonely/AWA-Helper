@@ -1,20 +1,48 @@
+/**
+ * @file scripts/inline-html.js
+ * @description 内联 WebUI 页面依赖的脚本和样式资源。
+ */
 const fs = require('fs');
 const path = require('path');
-const { inlineSource } = require('inline-source');
-const { minify } = require('html-minifier-terser');
+const {
+  inlineSource
+} = require('inline-source');
+const {
+  minify
+} = require('html-minifier-terser');
 
 const tasks = [
-  { src: 'src/webUI/operations.html', dest: 'src/webUI/dist/' },
-  { src: 'src/webUI/index.html', dest: 'src/webUI/dist/' },
-  { src: 'src/webUI/dailyQuest.html', dest: 'src/webUI/dist/' },
-  { src: 'src/webUI/achievement.html', dest: 'src/webUI/dist/' },
-  { src: 'src/webUI/settings.html', dest: 'src/webUI/dist/' },
+  {
+    src: 'src/webUI/operations.html',
+    dest: 'src/webUI/dist/'
+  },
+  {
+    src: 'src/webUI/index.html',
+    dest: 'src/webUI/dist/'
+  },
+  {
+    src: 'src/webUI/dailyQuest.html',
+    dest: 'src/webUI/dist/'
+  },
+  {
+    src: 'src/webUI/achievement.html',
+    dest: 'src/webUI/dist/'
+  },
+  {
+    src: 'src/webUI/settings.html',
+    dest: 'src/webUI/dist/'
+  },
 ];
 
-async function processHtml({ src, dest, rename }) {
+async function processHtml({
+  src, dest, rename
+}) {
   const rootpath = path.resolve(path.dirname(src));
   const html = fs.readFileSync(src, 'utf8');
-  const inlined = await inlineSource(html, { compress: false, rootpath });
+  const inlined = await inlineSource(html, {
+    compress: false,
+    rootpath
+  });
   const result = await minify(inlined, {
     removeComments: true,
     collapseWhitespace: true,
@@ -24,7 +52,9 @@ async function processHtml({ src, dest, rename }) {
     minifyCSS: true,
   });
   const outDir = path.resolve(dest);
-  fs.mkdirSync(outDir, { recursive: true });
+  fs.mkdirSync(outDir, {
+    recursive: true
+  });
   const outName = rename || path.basename(src);
   fs.writeFileSync(path.join(outDir, outName), result);
 }

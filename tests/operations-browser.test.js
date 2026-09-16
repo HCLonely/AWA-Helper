@@ -1,9 +1,15 @@
+/**
+ * @file tests/operations-browser.test.js
+ * @description 验证运维页面的浏览器交互行为。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const test = require('node:test');
-const { findBrowser, runBrowser } = require('./helpers/browser');
+const {
+  findBrowser, runBrowser
+} = require('./helpers/browser');
 
 test('operations dashboard renders hostile text safely, previews cron, diagnoses and recovers from API errors', async t => {
   const root = path.resolve(__dirname, '../src/webUI');
@@ -38,7 +44,9 @@ test('operations dashboard renders hostile text safely, previews cron, diagnoses
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => { server.closeAllConnections(); server.close(); });
-  const result = await runBrowser(`http://127.0.0.1:${server.address().port}`, { executable: findBrowser() });
+  const result = await runBrowser(`http://127.0.0.1:${server.address().port}`, {
+    executable: findBrowser()
+  });
   assert.equal(result.total, '1'); assert.equal(result.attention, '1'); assert.equal(result.scheduleCards, 1);
   assert.equal(result.error, undefined); assert.equal(result.safe, true); assert.equal(result.authenticated, true);
   assert.match(result.preview, /UTC|Asia|America|Europe/); assert.match(result.diagnosis, /Cookie/);

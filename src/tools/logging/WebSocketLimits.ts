@@ -1,3 +1,7 @@
+/**
+ * @file src/tools/logging/WebSocketLimits.ts
+ * @description 定义 WebSocket 消息及缓冲区的容量限制。
+ */
 import { enqueueReplayMessage } from './WebSocketReplay';
 import type WebSocket from 'ws';
 import type { LogScope } from './LogContext';

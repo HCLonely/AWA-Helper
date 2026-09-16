@@ -1,5 +1,9 @@
-// Compiles the same implementation with only network I/O and error dialogs
-// substituted. Installation/recovery subprocesses and file operations are real.
+/**
+ * @file native/windows-tray/UpdaterTests.cpp
+ * @description 验证原生更新器的安装、恢复与锁定行为。
+ */
+// 编译相同实现，仅替换网络输入输出和错误对话框；
+// 安装与恢复子进程以及文件操作均真实执行。
 #define AWA_UPDATER_TEST
 #include "Updater.cpp"
 #include <iostream>
@@ -40,7 +44,7 @@ void waitState(const fs::path& root, const std::string& desired) {
   const auto start = GetTickCount64();
   while (GetTickCount64() - start < 30000) {
     try { if (readJson(root / L".update/current.json").value("state", "") == desired) {
-      // The lock also covers process hand-off and final status writes.
+      // 锁同时覆盖进程交接与最终状态写入。
       if (!fs::exists(root / L".update/install.lock")) return;
     } } catch (...) {}
     Sleep(50);
@@ -92,7 +96,7 @@ void transactionTests(const fs::path& base) {
   fs::remove(root / L"README.html");
   install(root, journal); rollback(root, journal);
   check(!fs::exists(root / L"README.html"), "rollback removed newly added file");
-  // A sharing violation halfway through replacement must leave a recoverable journal.
+  // 替换过程中出现共享冲突时，必须留下可恢复的日志。
   Handle occupied(CreateFileW((root / L"AWA-Manager.exe").c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
   rejects([&] { install(root, journal); });
   check(readJson(root / L".update/current.json")["state"] == "installing", "failure journal is durable");
@@ -104,7 +108,7 @@ void transactionTests(const fs::path& base) {
   writeJson(stage / L"payload" / manifestName, bad);
   rejects([&] { manifest(stage / L"payload", true); });
   acquire(root);
-  // A second handle cannot steal the update lock while it is inherited or live.
+  // 更新锁被继承或仍然有效时，第二个句柄不得抢占它。
   Handle second(CreateFileW((root / L".update/install.lock").c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
   check(second.value == INVALID_HANDLE_VALUE, "exclusive installer lock");
   releaseLock(); check(!fs::exists(root / L".update/install.lock"), "lock cleaned on close");
@@ -185,7 +189,7 @@ int wmain(int argc, wchar_t** argv) {
     pureTests(base); std::cout << "PASS versions, paths, ordered network fallback, corrupt downloads\n";
     transactionTests(base); std::cout << "PASS transactional install, user data, file locks and rollback\n";
     subprocessTests(base); std::cout << "PASS real installer hand-off, self update, failure and interrupted recovery\n";
-    // Every deletion is constrained to the newly generated test directory.
+    // 所有删除操作均限制在本次新建的测试目录内。
     plainFile(base); Sleep(1200); fs::remove_all(base);
     return 0;
   } catch (const std::exception& error) {

@@ -28,13 +28,19 @@ const version = 'v__VERSION__';
 let activeTrayBridge: TrayBridge | undefined;
 
 /**
- * 创建 create Runtime Files 相关数据。
+ * 创建运行时文件。
  * @returns `void`，该函数仅执行副作用，不返回值。
  */
 const createRuntimeFiles = (): void => {
-  fs.mkdirSync('logs', { recursive: true });
-  fs.mkdirSync('data', { recursive: true });
-  fs.mkdirSync('config', { recursive: true });
+  fs.mkdirSync('logs', {
+    recursive: true
+  });
+  fs.mkdirSync('data', {
+    recursive: true
+  });
+  fs.mkdirSync('config', {
+    recursive: true
+  });
   if (!fs.existsSync('config/config.example.yml')) {
     fs.writeFileSync('config/config.example.yml', exampleConfig);
   }
@@ -50,16 +56,20 @@ const createRuntimeFiles = (): void => {
     const manager = isMainJs ? '#!/bin/sh\ncd "$(dirname "$0")"\nnode index.js --manager\n' : '#!/bin/sh\ncd "$(dirname "$0")"\n./AWA-Helper --manager\n';
     const daily = isMainJs ? '#!/bin/sh\ncd "$(dirname "$0")"\nnode index.js --daily\n' : '#!/bin/sh\ncd "$(dirname "$0")"\n./AWA-Helper --daily\n';
     if (!fs.existsSync('AWA-Manager.sh')) {
-      fs.writeFileSync('AWA-Manager.sh', manager, { mode: 0o755 });
+      fs.writeFileSync('AWA-Manager.sh', manager, {
+        mode: 0o755
+      });
     }
     if (!fs.existsSync('AWA-DailyQuest.sh')) {
-      fs.writeFileSync('AWA-DailyQuest.sh', daily, { mode: 0o755 });
+      fs.writeFileSync('AWA-DailyQuest.sh', daily, {
+        mode: 0o755
+      });
     }
   }
 };
 
 /**
- * 处理 main 相关逻辑。
+ * 执行程序入口逻辑。
  * @returns `Promise<number>`，main 计算或读取到的数值。
  */
 const main = async (): Promise<number> => {
@@ -82,23 +92,42 @@ const main = async (): Promise<number> => {
   if (command.kind === 'update') {
     const updateConfig = (() => {
       try {
-        const { proxy, language } = loadConfig().raw;
-        return { proxy, language };
+        const {
+          proxy, language
+        } = loadConfig().raw;
+        return {
+          proxy,
+          language
+        };
       } catch (error) {
         if (!(error instanceof Error)) {
           throw error;
         }
-        const { message } = error;
+        const {
+          message
+        } = error;
         if (!message.startsWith('Configuration file not found:')) {
           throw error;
         }
-        return { proxy: undefined, language: 'zh' };
+        return {
+          proxy: undefined,
+          language: 'zh'
+        };
       }
     })();
-    const { proxy: updateProxy, language: updateLanguage } = updateConfig;
-    initializeI18n(updateLanguage, { zh, en });
+    const {
+      proxy: updateProxy, language: updateLanguage
+    } = updateConfig;
+    initializeI18n(updateLanguage, {
+      zh,
+      en
+    });
     try {
-      const update = await scheduleUpdate({ currentVersion: version, proxy: updateProxy, restart: false });
+      const update = await scheduleUpdate({
+        currentVersion: version,
+        proxy: updateProxy,
+        restart: false
+      });
       console.log(__('updatePrepared', `V${update.version}`));
       return 0;
     } catch (error) {
@@ -110,7 +139,9 @@ const main = async (): Promise<number> => {
     }
   }
 
-  const { mode } = command;
+  const {
+    mode
+  } = command;
   if (command.kind === 'run' && command.deprecatedHelper) {
     console.warn('[deprecated] --helper is retained for compatibility; use --daily instead.');
   }
@@ -128,7 +159,7 @@ const main = async (): Promise<number> => {
     onStateChange: (states) => activeTrayBridge?.status(states)
   });
   /**
-   * 停止 stop 相关数据。
+   * 停止任务。
    * @returns `void`，该函数仅执行副作用，不返回值。
    */
   const stop = (): void => runtime.requestShutdown();

@@ -1,4 +1,7 @@
-<!-- DailyQuest progress and real-time log page served by the unified Manager. -->
+<!--
+ @file src/webUI/dailyQuest.html
+ @description 展示每日任务进度与实时日志。
+-->
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -50,7 +53,7 @@
       color: #0056b3;
     }
 
-    /* Quest Table Styling */
+    /* 任务表格样式 */
     .quest-container {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 15px;
@@ -157,7 +160,7 @@
       color: #495057;
     }
 
-    /* Quest Status Indicators */
+    /* 任务状态指示器 */
     .status-unknown {
       color: #6c757d;
       font-style: italic;
@@ -178,7 +181,7 @@
       font-weight: 600;
     }
 
-    /* Log Area Styling */
+    /* 日志区域样式 */
     .log-container {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 15px;
@@ -266,7 +269,7 @@
 </head>
 <body>
   <h1 class="fw-bold">AWA-DailyQuest<a style="font-size:20px;" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></h1>
-  <!-- Quest Information Section -->
+  <!-- 任务信息区域 -->
   <div class="quest-container">
     <div class="quest-title">🎯 任务状态监控</div>
     <div class="table-responsive">
@@ -375,7 +378,7 @@
       </table>
     </div>
   </div>
-  <!-- Log Display Section -->
+  <!-- 日志展示区域 -->
   <div class="log-container">
     <div class="log-title">📋 实时日志</div>
     <div id="log-area"></div>

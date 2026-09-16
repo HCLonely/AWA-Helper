@@ -1,4 +1,7 @@
-/** Ensures tools implementations remain decomposed instead of returning to the facade. */
+/**
+ * @file tests/tools-structure.test.js
+ * @description 确保工具实现按职责拆分，避免重新堆积到导出入口中。
+ */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -18,7 +21,9 @@ test('tools subdirectories own the former monolithic implementations', () => {
     'logging/Logger.ts', 'logging/LogContext.ts', 'notification/push.ts', 'proxy/index.ts', 'update/version.ts'
   ];
   expected.forEach((file) => assert.equal(fs.existsSync(path.join(root, 'src/tools', file)), true, file));
-  const bridgeFiles = fs.readdirSync(path.join(root, 'src/tools'), { recursive: true })
+  const bridgeFiles = fs.readdirSync(path.join(root, 'src/tools'), {
+    recursive: true
+  })
     .filter((file) => String(file).endsWith('.ts'))
     .map((file) => fs.readFileSync(path.join(root, 'src/tools', String(file)), 'utf8'))
     .join('\n');
@@ -28,7 +33,9 @@ test('tools subdirectories own the former monolithic implementations', () => {
 test('source tree contains only correctly spelled Achievement identifiers', () => {
   const sourceRoot = path.join(root, 'src');
   const misspelling = new RegExp(['arch', 'ievement'].join(''), 'i');
-  const files = fs.readdirSync(sourceRoot, { recursive: true })
+  const files = fs.readdirSync(sourceRoot, {
+    recursive: true
+  })
     .map(String)
     .filter((file) => /\.(?:ts|js|html|yml|md)$/.test(file));
   for (const file of files) {

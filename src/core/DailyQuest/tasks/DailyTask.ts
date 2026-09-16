@@ -9,12 +9,12 @@ import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 class DailyTask {
   /**
-   * 初始化 Daily Task 实例。
+   * 初始化 DailyTask 实例。
    * @param runtime - 当前任务使用的运行时实例，类型为 `DailyQuestRuntime`。
    */
   constructor(private readonly runtime: DailyQuestRuntime) {}
   /**
-   * 处理 do 相关逻辑。
+   * 执行任务操作。
    * @param signal - 用于停止后续账户操作的中止信号。
    * @returns `Promise<boolean>`，表示 do 检查是否通过。
    */
@@ -67,11 +67,13 @@ class DailyTask {
     return false;
   }
   /**
-   * 检查 check Daily Quest Completed 相关数据。
+   * 检查每日任务是否完成。
    * @returns `boolean`，表示 checkDailyQuestCompleted 检查是否通过。
    */
   private checkDailyQuestCompleted(): boolean {
-    if ((this.runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length === (this.runtime.state.questInfo.dailyQuest || []).length) {
+    if ((this.runtime.state.questInfo.dailyQuest || []).filter((e: {
+      status: string;
+    }) => e.status === 'complete').length === (this.runtime.state.questInfo.dailyQuest || []).length) {
       if ((this.runtime.state.questInfo.dailyQuest?.length || 0) < 2) {
         new Logger(time() + chalk.green(__('dailyQuestCompleted')));
       }

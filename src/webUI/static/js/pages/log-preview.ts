@@ -1,4 +1,7 @@
-/** Online-only authenticated preview with fixed-size pages for files of any size. */
+/**
+ * @file src/webUI/static/js/pages/log-preview.ts
+ * @description 提供需要在线身份验证的日志预览，按固定大小分页读取任意大小的文件。
+ */
 (() => {
   let active: (() => void) | undefined;
   const openLogPreview = (scope: string, secret: string): void => {
@@ -33,7 +36,9 @@
     let cursor: string | undefined;
     let closed = false;
     let request: AbortController | undefined;
-    const headers = { Authorization: `Bearer ${secret}` };
+    const headers = {
+      Authorization: `Bearer ${secret}`
+    };
     const loadPage = async (older = false): Promise<void> => {
       request?.abort();
       const current = new AbortController(); request = current;
@@ -43,11 +48,19 @@
       status.textContent = __('logLoading');
       try {
         const query = older && cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
-        const response = await fetch(`/api/logs/${scope}/page${query}`, { headers, signal: current.signal });
+        const response = await fetch(`/api/logs/${scope}/page${query}`, {
+          headers,
+          signal: current.signal
+        });
         if (!response.ok) {
           throw new Error();
         }
-        const page = await response.json() as { text: string; older?: string; reset: boolean; missing: boolean };
+        const page = await response.json() as {
+          text: string;
+          older?: string;
+          reset: boolean;
+          missing: boolean
+        };
         if (closed || request !== current) {
           return;
         }
@@ -93,5 +106,7 @@
     dialog.append(header, controls, body, status); document.body.append(dialog);
     active = close; dialog.showModal(); void loadPage();
   };
-  Object.assign(globalThis, { openLogPreview });
+  Object.assign(globalThis, {
+    openLogPreview
+  });
 })();

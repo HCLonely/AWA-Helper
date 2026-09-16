@@ -1,12 +1,7 @@
-/*
- * @Author       : HCLonely
- * @Date         : 2024-09-11 15:27:10
- * @LastEditTime : 2025-08-28 10:43:47
- * @LastEditors  : HCLonely
- * @FilePath     : /AWA-Helper/rollup.config.js
- * @Description  : 打包配置
+/**
+ * @file rollup.config.mjs
+ * @description 配置运行时代码打包、依赖处理与资源内联。
  */
-
 import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import json from '@rollup/plugin-json';
@@ -15,8 +10,8 @@ import terser from '@rollup/plugin-terser';
 
 const application = {
   input: 'dist/index.js',
-  // Undici conditionally uses the Node 22.13+ built-in SQLite cache store.
-  // Keep it external like the other Node built-ins instead of bundling it.
+  // Undici 会按条件使用 Node 22.13 及以上版本内置的 SQLite 缓存存储。
+  // 与其他 Node 内置模块一样，将其标记为外部依赖，避免打入包中。
   external: (id) => id.includes('node:sqlite'),
   output: {
     dir: 'output',
@@ -42,6 +37,12 @@ const application = {
 
 export default [application, {
   input: 'dist/healthcheck.js',
-  output: { file: 'output/healthcheck.js', format: 'cjs' },
-  plugins: [nodeResolve({ preferBuiltins: true, exportConditions: ['node'] }), commonjs(), terser()]
+  output: {
+    file: 'output/healthcheck.js',
+    format: 'cjs'
+  },
+  plugins: [nodeResolve({
+    preferBuiltins: true,
+    exportConditions: ['node']
+  }), commonjs(), terser()]
 }];

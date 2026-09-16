@@ -59,8 +59,14 @@ export const parseBattlePass = (html: string): BattlePassSnapshot => {
       image: popup.find('.bp-popup__image').attr('src') || element.find('.bp-marker__image').attr('src'),
       description: popup.find('.bp-popup__desc').text().trim() || undefined,
       requiredArp: arpMatch ? parseInteger(arpMatch[1]) : undefined,
-      progress: progressMatch ? { current: parseInteger(progressMatch[1]), total: parseInteger(progressMatch[2]) } : undefined,
-      claim: state === 'unlockable' && milestoneId > 0 && path && csrfToken ? { path, csrfToken } : undefined
+      progress: progressMatch ? {
+        current: parseInteger(progressMatch[1]),
+        total: parseInteger(progressMatch[2])
+      } : undefined,
+      claim: state === 'unlockable' && milestoneId > 0 && path && csrfToken ? {
+        path,
+        csrfToken
+      } : undefined
     };
   });
 

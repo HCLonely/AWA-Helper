@@ -14,8 +14,14 @@ export interface BattlePassReward {
   image?: string;
   description?: string;
   requiredArp?: number;
-  progress?: { current: number; total: number };
-  claim?: { path: string; csrfToken: string };
+  progress?: {
+    current: number;
+    total: number
+  };
+  claim?: {
+    path: string;
+    csrfToken: string
+  };
 }
 
 export interface BattlePassSnapshot {
@@ -35,5 +41,12 @@ export interface BattlePassClaimSuccess {
 }
 
 export type BattlePassClaimResult =
-  | { ok: true; data: BattlePassClaimSuccess }
-  | { ok: false; reason: 'invalid-request' | 'rejected' | 'milestone-mismatch'; message?: string };
+  | {
+    ok: true;
+    data: BattlePassClaimSuccess
+  }
+  | {
+    ok: false;
+    reason: 'invalid-request' | 'rejected' | 'milestone-mismatch';
+    message?: string
+  };

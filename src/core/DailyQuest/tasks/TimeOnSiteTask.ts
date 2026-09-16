@@ -9,7 +9,7 @@ import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 class TimeOnSiteTask {
   /**
-   * 处理 do 相关逻辑。
+   * 执行任务操作。
    * @param runtime - 当前任务使用的运行时实例，类型为 `DailyQuestRuntime`。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @returns `Promise<boolean>`，表示 do 检查是否通过。

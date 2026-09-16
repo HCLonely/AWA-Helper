@@ -1,3 +1,7 @@
+/**
+ * @file scripts/md5.js
+ * @description 计算构建产物的 MD5 校验值。
+ */
 const fs = require('fs');
 const crypto = require('crypto');
 

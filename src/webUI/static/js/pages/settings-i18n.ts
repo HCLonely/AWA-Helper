@@ -1,4 +1,7 @@
-/** Uses the same server-injected locale catalog as the other WebUI pages. */
+/**
+ * @file src/webUI/static/js/pages/settings-i18n.ts
+ * @description 复用其他 WebUI 页面使用的服务端注入语言目录。
+ */
 const SettingsI18n = (() => {
   function t(message: string, ...values: string[]): string {
     const locale = typeof lang === 'string' ? lang : 'en';
@@ -18,6 +21,11 @@ const SettingsI18n = (() => {
       });
     }
   }
-  return { t, localize };
+  return {
+    t,
+    localize
+  };
 })();
-Object.assign(globalThis, { SettingsI18n });
+Object.assign(globalThis, {
+  SettingsI18n
+});

@@ -8,7 +8,7 @@ import type { AvailableStreams } from '../../../../types/achievement';
 import { parseAvailableStreams } from '../../parsers';
 
 /**
- * 获取 get Available Streams 相关数据。
+ * 获取可用直播列表。
  * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `AWAContext`。
  * @returns `Promise<AvailableStreams>`，getAvailableStreams 获取到的数据。
  */

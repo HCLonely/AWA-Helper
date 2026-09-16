@@ -1,3 +1,7 @@
+/**
+ * @file native/windows-tray/AWA-Manager.cpp
+ * @description 管理 Windows 托盘界面、Helper 进程及更新交接。
+ */
 #include <windows.h>
 #include <shellapi.h>
 
@@ -254,8 +258,8 @@ void handleProtocolLine(const std::string& line) {
   } else if (payload == "UPDATE_REQUEST") {
     PostMessageW(windowHandle, kRequestUpdate, 0, 0);
   } else if (payload == "UPDATE") {
-    // Older Helpers already launched their deferred installer before emitting
-    // UPDATE. Let that installer finish instead of starting a second one.
+    // 旧版 Helper 在发送更新消息之前已启动延迟安装器。
+    // 等待该安装器完成，避免启动第二个安装器。
     shutdownRequested = true;
   }
 }
@@ -567,7 +571,7 @@ bool createTrayWindow() {
   Shell_NotifyIconW(NIM_SETVERSION, &trayIcon);
   return true;
 }
-} // namespace
+} // 命名空间结束
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
   instanceHandle = instance;

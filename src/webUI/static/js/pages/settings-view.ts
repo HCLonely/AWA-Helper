@@ -1,4 +1,7 @@
-/** Renders drafts with DOM properties. Delegated events also cover newly added fields. */
+/**
+ * @file src/webUI/static/js/pages/settings-view.ts
+ * @description 通过 DOM 属性渲染草稿，委托事件同时覆盖新增字段。
+ */
 const SettingsView = (() => {
   type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
   type Action = () => void;
@@ -13,11 +16,17 @@ const SettingsView = (() => {
     result.type = 'button';
     return result;
   }
-  function render(form: HTMLFormElement, scope: SettingsScope): { validate: () => boolean; sync: () => void } {
+  function render(form: HTMLFormElement, scope: SettingsScope): {
+    validate: () => boolean;
+    sync: () => void
+  } {
     const controls = new WeakMap<SettingsNode, Control>();
     const nodes = new WeakMap<Element, SettingsNode>();
     const actions = new WeakMap<Element, Action>();
-    const branchViews = new WeakMap<SettingsNode, { container: HTMLElement; parentPath: string }>();
+    const branchViews = new WeakMap<SettingsNode, {
+      container: HTMLElement;
+      parentPath: string
+    }>();
     const groups = new WeakMap<SettingsNode, HTMLElement>();
     const feedbacks = new WeakMap<SettingsNode, HTMLElement>();
     const collapsed = new WeakSet<SettingsNode>();
@@ -43,7 +52,7 @@ const SettingsView = (() => {
       const previousBranch = node.branches.get(String(previous));
       read(node, control);
       if (node.schema.type === 'single-select' && node.schema.bindValue && previous !== node.value) {
-        // Read autofilled values before detaching the old branch's controls.
+        // 移除旧分支控件前，先读取自动填充的值。
         if (previousBranch) {
           sync(previousBranch);
         }
@@ -112,7 +121,9 @@ const SettingsView = (() => {
       parent.replaceChildren(fragment);
     }
     function renderNode(node: SettingsNode, path: string, parentPath: string): HTMLElement {
-      const { schema } = node;
+      const {
+        schema
+      } = node;
       const wrapper = element('div', 'mb-3 settings-field');
       wrapper.dataset.fieldPath = path;
       const title = `${SettingsI18n.t(schema.name || node.name || 'Item')}${schema.required ? ' *' : ''}`;
@@ -204,7 +215,10 @@ const SettingsView = (() => {
       }
       if (schema.type === 'single-select' && schema.bindValue) {
         const branches = element('div', 'settings-branch');
-        branchViews.set(node, { container: branches, parentPath });
+        branchViews.set(node, {
+          container: branches,
+          parentPath
+        });
         wrapper.append(branches);
         renderBranch(node);
       }
@@ -272,7 +286,10 @@ const SettingsView = (() => {
           }
           parent = parent.parentElement;
         }
-        first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        first.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
         if (first instanceof HTMLInputElement || first instanceof HTMLSelectElement || first instanceof HTMLTextAreaElement) {
           first.reportValidity();
         }
@@ -280,8 +297,17 @@ const SettingsView = (() => {
       }
       return true;
     }
-    return { validate, sync };
+    return {
+      validate,
+      sync
+    };
   }
-  return { element, button, render };
+  return {
+    element,
+    button,
+    render
+  };
 })();
-Object.assign(globalThis, { SettingsView });
+Object.assign(globalThis, {
+  SettingsView
+});

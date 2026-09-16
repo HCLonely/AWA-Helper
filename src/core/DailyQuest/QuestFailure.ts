@@ -1,3 +1,7 @@
+/**
+ * @file src/core/DailyQuest/QuestFailure.ts
+ * @description 定义每日任务失败信息及异常处理辅助函数。
+ */
 import { formatLogValue } from '../../tools/logging/sanitize';
 
 /** 保留错误链中的操作、状态码及原因，不把请求配置或堆栈放入推送。 */
@@ -8,7 +12,13 @@ export const formatQuestFailure = (name: string, reason: unknown): string => {
   while (current !== undefined && current !== null && !visited.has(current) && parts.length < 5) {
     visited.add(current);
     if (typeof current === 'object') {
-      const error = current as { message?: unknown, operation?: unknown, code?: unknown, statusCode?: unknown, cause?: unknown };
+      const error = current as {
+        message?: unknown,
+        operation?: unknown,
+        code?: unknown,
+        statusCode?: unknown,
+        cause?: unknown
+      };
       const details = [error.operation, error.code, error.statusCode, error.message]
         .filter((value) => typeof value === 'string' || typeof value === 'number');
       parts.push(details.length ? details.join(': ') : formatLogValue(current, true));

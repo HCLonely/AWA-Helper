@@ -1,4 +1,7 @@
-/** Verified release download and deferred in-place installation. */
+/**
+ * @file src/tools/update/installer.ts
+ * @description 校验版本下载内容，并延迟执行原地安装。
+ */
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -90,13 +93,17 @@ const downloadAsset = async (asset: ReleaseAsset, destination: string, proxy?: p
   await withGitHubFallback(asset.browserDownloadUrl, async (url) => {
     try {
       const response = await http.get(url, options);
-      await pipeline(response.data, fs.createWriteStream(destination, { flags: 'wx' }));
+      await pipeline(response.data, fs.createWriteStream(destination, {
+        flags: 'wx'
+      }));
       const stat = fs.statSync(destination);
       if (stat.size !== asset.size || await digestFile(destination) !== digest) {
         throw new UpdateInstallerError('INTEGRITY_MISMATCH', `SHA-256 verification failed for ${asset.name}`);
       }
     } catch (error) {
-      fs.rmSync(destination, { force: true });
+      fs.rmSync(destination, {
+        force: true
+      });
       throw error;
     }
   });
@@ -132,9 +139,16 @@ const extractArchive = async (archivePath: string, destination: string): Promise
       }
     }
   });
-  await tar.x({ file: archivePath, cwd: destination, strict: true, preservePaths: false });
+  await tar.x({
+    file: archivePath,
+    cwd: destination,
+    strict: true,
+    preservePaths: false
+  });
   const packageRoot = path.join(destination, 'output');
-  if (!fs.statSync(packageRoot, { throwIfNoEntry: false })?.isDirectory()) {
+  if (!fs.statSync(packageRoot, {
+    throwIfNoEntry: false
+  })?.isDirectory()) {
     throw new UpdateInstallerError('INVALID_ARCHIVE', 'Release archive does not contain an output directory');
   }
   return packageRoot;
@@ -142,7 +156,9 @@ const extractArchive = async (archivePath: string, destination: string): Promise
 
 const copyExistingFiles = (sourceRoot: string, installRoot: string, backupRoot: string, relative = ''): void => {
   const sourceDirectory = path.join(sourceRoot, relative);
-  for (const entry of fs.readdirSync(sourceDirectory, { withFileTypes: true })) {
+  for (const entry of fs.readdirSync(sourceDirectory, {
+    withFileTypes: true
+  })) {
     const childRelative = path.join(relative, entry.name);
     const target = path.resolve(installRoot, childRelative);
     if (!target.startsWith(`${path.resolve(installRoot)}${path.sep}`)) {
@@ -153,9 +169,13 @@ const copyExistingFiles = (sourceRoot: string, installRoot: string, backupRoot: 
     }
     if (entry.isDirectory()) {
       copyExistingFiles(sourceRoot, installRoot, backupRoot, childRelative);
-    } else if (entry.isFile() && fs.statSync(target, { throwIfNoEntry: false })?.isFile()) {
+    } else if (entry.isFile() && fs.statSync(target, {
+      throwIfNoEntry: false
+    })?.isFile()) {
       const backup = path.join(backupRoot, childRelative);
-      fs.mkdirSync(path.dirname(backup), { recursive: true });
+      fs.mkdirSync(path.dirname(backup), {
+        recursive: true
+      });
       fs.copyFileSync(target, backup);
     }
   }
@@ -164,18 +184,30 @@ const copyExistingFiles = (sourceRoot: string, installRoot: string, backupRoot: 
 const psQuote = (value: string): string => `'${value.replace(/'/g, '\'\'')}'`;
 const shQuote = (value: string): string => `'${value.replace(/'/g, String.raw`'"'"'`)}'`;
 
-const restartCommand = (): { command: string; args: string[] } => {
+const restartCommand = (): {
+  command: string;
+  args: string[]
+} => {
   if (os.type() === 'Windows_NT' && process.argv.includes('--tray-child') && !isSourceRuntime()) {
-    return { command: path.join(path.dirname(process.execPath), 'AWA-Manager.exe'), args: [] };
+    return {
+      command: path.join(path.dirname(process.execPath), 'AWA-Manager.exe'),
+      args: []
+    };
   }
   const args = ['--manager'];
   if (process.argv.includes('--tray-child')) {
     args.push('--tray-child');
   }
   if (isSourceRuntime()) {
-    return { command: process.execPath, args: [path.resolve(process.argv[1]), ...args] };
+    return {
+      command: process.execPath,
+      args: [path.resolve(process.argv[1]), ...args]
+    };
   }
-  return { command: process.execPath, args };
+  return {
+    command: process.execPath,
+    args
+  };
 };
 
 const writeWindowsUpdater = (stageRoot: string, sourceRoot: string, installRoot: string, backupRoot: string, restart: boolean): string => {
@@ -228,7 +260,9 @@ else
   printf '%s' '{"status":"failed"}' > ${shQuote(path.join(path.dirname(stageRoot), 'last-result.json'))}
   exit 1
 fi
-`, { mode: 0o700 });
+`, {
+    mode: 0o700
+  });
   return scriptPath;
 };
 
@@ -240,10 +274,15 @@ const launchUpdater = (scriptPath: string): number => {
   }
   const child = os.type() === 'Windows_NT'
     ? spawn(command, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath], {
-      detached: true, windowsHide: true, stdio: 'ignore'
+      detached: true,
+      windowsHide: true,
+      stdio: 'ignore'
     })
-    : spawn(command, [scriptPath], { detached: true, stdio: 'ignore' });
-  child.once('error', () => { /* The detached updater records failures in .update/last-result.json. */ });
+    : spawn(command, [scriptPath], {
+      detached: true,
+      stdio: 'ignore'
+    });
+  child.once('error', () => { /* 独立更新进程将失败信息记录在 .update/last-result.json 中。 */ });
   child.unref();
   if (!child.pid) {
     throw new Error('Unable to start the update installer');
@@ -251,13 +290,20 @@ const launchUpdater = (scriptPath: string): number => {
   return child.pid;
 };
 
-export const scheduleUpdate = async ({ currentVersion, proxy, restart }: ScheduleUpdateOptions): Promise<ScheduledUpdate> => {
+export const scheduleUpdate = async ({
+  currentVersion, proxy, restart
+}: ScheduleUpdateOptions): Promise<ScheduledUpdate> => {
   if (os.type() === 'Windows_NT' && process.argv.includes('--tray-child')) {
     if (process.stdout.destroyed || !process.stdout.writable) {
       throw new Error('Unable to coordinate the update with AWA-Manager');
     }
     process.stdout.write('@@AWA-TRAY\tUPDATE_REQUEST\n');
-    return { version: currentVersion, assetName: 'AWA-Helper-Win.tar.gz', releaseUrl: 'https://github.com/HCLonely/AWA-Helper/releases/latest', delegated: true };
+    return {
+      version: currentVersion,
+      assetName: 'AWA-Helper-Win.tar.gz',
+      releaseUrl: 'https://github.com/HCLonely/AWA-Helper/releases/latest',
+      delegated: true
+    };
   }
   if (scheduled || scheduling) {
     throw new UpdateInstallerError('ALREADY_SCHEDULED', 'An update has already been scheduled');
@@ -272,7 +318,11 @@ export const scheduleUpdate = async ({ currentVersion, proxy, restart }: Schedul
     if (os.type() === 'Windows_NT') {
       const trayPath = path.resolve('.update/tray.json');
       if (fs.existsSync(trayPath)) {
-        const { pid } = JSON.parse(fs.readFileSync(trayPath, 'utf8')) as { pid?: number };
+        const {
+          pid
+        } = JSON.parse(fs.readFileSync(trayPath, 'utf8')) as {
+          pid?: number
+        };
         let trayAlive = false;
         if (Number.isSafeInteger(pid) && (pid || 0) > 0) {
           try {
@@ -302,8 +352,12 @@ export const scheduleUpdate = async ({ currentVersion, proxy, restart }: Schedul
     const payloadRoot = path.join(stageRoot, 'payload');
     const backupRoot = path.join(stageRoot, 'backup');
     const installRoot = path.resolve('.');
-    fs.mkdirSync(payloadRoot, { recursive: true });
-    fs.mkdirSync(backupRoot, { recursive: true });
+    fs.mkdirSync(payloadRoot, {
+      recursive: true
+    });
+    fs.mkdirSync(backupRoot, {
+      recursive: true
+    });
     const downloadPath = path.join(stageRoot, asset.name);
     await downloadAsset(asset, downloadPath, proxy);
     let sourceRoot: string;
@@ -323,18 +377,28 @@ export const scheduleUpdate = async ({ currentVersion, proxy, restart }: Schedul
     }
     const installerPid = launchUpdater(scriptPath);
     if (installLock) {
-      // The deferred installer waits for this process and removes the lock in finally.
-      fs.writeFileSync(path.resolve('.update/install.lock'), JSON.stringify({ pid: installerPid, startedAt: new Date().toISOString() }));
+      // 延迟安装器等待当前进程退出，并在 finally 中移除锁。
+      fs.writeFileSync(path.resolve('.update/install.lock'), JSON.stringify({
+        pid: installerPid,
+        startedAt: new Date().toISOString()
+      }));
     }
     scheduled = true;
     if (coordinateTray) {
       process.stdout.write('@@AWA-TRAY\tUPDATE\n');
     }
-    return { version: release.version, assetName, releaseUrl: release.releaseUrl };
+    return {
+      version: release.version,
+      assetName,
+      releaseUrl: release.releaseUrl
+    };
   } catch (error) {
     await installLock?.release();
     if (stageRoot) {
-      fs.rmSync(stageRoot, { recursive: true, force: true });
+      fs.rmSync(stageRoot, {
+        recursive: true,
+        force: true
+      });
     }
     throw error;
   } finally {
