@@ -1,3 +1,4 @@
+import { trackRunStep } from '../Manager/RunHistory';
 import type { TaskOutcome } from '../TaskOutcome';
 import { logWriter } from '../../tools/logging/LogWriter';
 /**
@@ -228,7 +229,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
       });
       runtimeHolder.current = runtime;
 
-      const initResult = await runtime.init();
+      const initResult = await trackRunStep('AWA initialization', () => runtime.init());
       if (shutdownController.signal.aborted) {
         return false;
       }
@@ -267,7 +268,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
       // 每日任务
       if (awaQuests.includes('dailyQuest') && (runtime.state.questInfo.dailyQuest || []).filter((e: { status: string; }) => e.status === 'complete').length !== (runtime.state.questInfo.dailyQuest || []).length) {
         const dailyQuest = new DailyTask(runtime);
-        if (!await dailyQuest.do(shutdownController.signal)) {
+        if (!await trackRunStep('AWA DailyQuest', () => dailyQuest.do(shutdownController.signal))) {
           failedSequentialTasks.push('AWA DailyQuest');
         }
         if (shutdownController.signal.aborted) {
@@ -279,7 +280,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
         const dailyQuestOld = new LegacyDailyTask(runtime, {
           awaDailyQuestType
         });
-        if (!await dailyQuestOld.do(shutdownController.signal)) {
+        if (!await trackRunStep('AWA Legacy DailyQuest', () => dailyQuestOld.do(shutdownController.signal))) {
           failedSequentialTasks.push('AWA Legacy DailyQuest');
         }
         if (shutdownController.signal.aborted) {
@@ -289,7 +290,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
 
       // AWA在线时长
       if (awaQuests.includes('timeOnSite') && runtime.state.questInfo.timeOnSite?.addedArp !== runtime.state.questInfo.timeOnSite?.maxArp) {
-        trackQuest('AWA TimeOnSite', TimeOnSiteTask.do(runtime, shutdownController.signal));
+        trackQuest('AWA TimeOnSite', trackRunStep('AWA TimeOnSite', () => TimeOnSiteTask.do(runtime, shutdownController.signal)));
       }
       if (!await sleep(10, shutdownController.signal)) {
         return false;
@@ -308,10 +309,10 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
             const twitchLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
             let twitchReady = false;
             try {
-              await twitch.session.verify();
+              await trackRunStep('Twitch session', () => twitch.session.verify());
               twitchLogger.log(chalk.green(__('logStatusOk')));
               const authorizationLogger = new Logger(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
-              twitchReady = (await twitch.extensions.checkLinked()).ok;
+              twitchReady = (await trackRunStep('Twitch authorization', () => twitch.extensions.checkLinked())).ok;
               authorizationLogger.log(twitchReady ? chalk.green(__('authorized')) : chalk.red(__('notAuthorized')));
             } catch (error) {
               twitchLogger.log(chalk.red(__('logStatusError')));
@@ -322,7 +323,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
             }
             if (twitchReady) {
               const twitchTask = new TwitchQuestTask(runtime, awaAPIs, twitch);
-              trackQuest('Twitch', twitchTask.run(shutdownController.signal));
+              trackQuest('Twitch', trackRunStep('Twitch', () => twitchTask.run(shutdownController.signal)));
               if (!await sleep(10, shutdownController.signal)) {
                 return false;
               }
@@ -362,7 +363,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
             const asfLogger = new Logger(`${time()}${__('initing', chalk.yellow('ASF'))}`, false);
             let asfReady = false;
             try {
-              asfReady = (await steamQuest.session.verify()).ok;
+              asfReady = (await trackRunStep('ASF connection', () => steamQuest.session.verify())).ok;
               asfLogger.log(asfReady ? chalk.green(__('logStatusOk')) : chalk.red(__('logStatusError')));
             } catch (error) {
               asfLogger.log(chalk.red(__('logStatusError')));
@@ -373,7 +374,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
             }
             if (asfReady) {
               const steamTask = new SteamQuestTask(awaAPIs, steamQuest, () => runtime.state.communityEvent?.gameId);
-              trackQuest('Steam ASF', steamTask.run(shutdownController.signal));
+              trackQuest('Steam ASF', trackRunStep('Steam ASF', () => steamTask.run(shutdownController.signal)));
               if (!await sleep(30, shutdownController.signal)) {
                 return false;
               }
@@ -395,7 +396,7 @@ const runDailyQuest = async ({ signal, onOutcome }: DailyQuestRunnerOptions = {}
         return false;
       }
       if (awaQuests.includes('battlePass')) {
-        const outcome = await BattlePassTask.runDetailed(runtime, shutdownController.signal);
+        const outcome = await trackRunStep('Battle Pass', () => BattlePassTask.runDetailed(runtime, shutdownController.signal));
         partialOutcome ||= outcome.status === 'partial';
         onOutcome?.(outcome);
         if (outcome.status === 'failed') {

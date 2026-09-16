@@ -68,9 +68,9 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 1. Download [AWA-Helper-Linux-x64.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
 
     ```bash
-    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/AWA-Helper-Linux-x64.tar.gz # 注意替换版本号和CPU架构x64, armv7, armv8
-    tar -xzvf AWA-Helper-linux-x64.tar.gz
-    sudo mv dist AWA-Helper
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/latest/download/AWA-Helper-Linux-x64.tar.gz # CPU 架构可选 x64、armv7、armv8
+    tar -xzvf AWA-Helper-Linux-x64.tar.gz
+    mv output AWA-Helper
     cd AWA-Helper
     sudo chmod +x AWA-DailyQuest.sh
     sudo chmod +x AWA-Manager.sh
@@ -99,14 +99,14 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 #### Install and run
 
-1. (Only required for first time installation) Install [NodeJs](https://nodejs.org/en/download/package-manager) &gt;= v16.0.0;
+1. (Only required for first time installation) Install [NodeJs](https://nodejs.org/en/download/package-manager) `^22.20.0 || ^24.12.0 || >=26.0.0`;
 
 2. Download [index.js](https://github.com/HCLonely/AWA-Helper/releases/latest) ;
 
     ```bash
     mkdir AWA-Helper
     cd AWA-Helper
-    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/index.js # replace with the latest version
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/latest/download/index.js # download the latest release
     ```
 
 3. (Only required for first time installation) Initialization
@@ -144,16 +144,16 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
 ```
 
-- or AWA-Helper
+- One-shot DailyQuest
 
 ```shell
-docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest --daily
 ```
 
 > ps: There are three mount points in the container:
-> `/usr/src/app/dist/config`: corresponding to the local paths `/data/awa-helper/config`
-> `/usr/src/app/dist/logs`: corresponding to the local paths `/data/awa-helper/logs`
-> `/usr/src/app/dist/data`: corresponding to the local paths `/data/awa-helper/data`
+> `/usr/src/app/output/config`: corresponding to the local paths `/data/awa-helper/config`
+> `/usr/src/app/output/logs`: corresponding to the local paths `/data/awa-helper/logs`
+> `/usr/src/app/output/data`: corresponding to the local paths `/data/awa-helper/data`
 
 ## Achievement
 
@@ -194,6 +194,8 @@ autoUpdate: false # Check for and install updates that pass SHA-256 verification
 
 ```yml
 manager:
+  # timezone: Asia/Shanghai  # Empty or omitted: use the system timezone
+  historyLimit: 200         # 10–1000; restart required
   secret: '' # generated automatically on first startup when empty
   dailyQuest:
     cron: '3 30 14,21 * * *'
@@ -320,81 +322,18 @@ pusher:
     user_id: '******'
 ```
 
-## Function
+## Run history and diagnostics
 
-### Daily tasks (old version)
+The Manager dashboard shows recent runs, subtask results, consecutive failures and the next five scheduled times. Click “Refresh history and schedules” to update it. History uses the browser timezone; each schedule uses its configured timezone.
 
-```mermaid
-flowchart TD
-  A([Start]) --> B{Is the task completed}
-  B --> |Yes| C([Stop])
-  B --> |No| D{"Whether if it's a quest to open a page"}
-  D --> |Yes| E[Perform the task]
-  E --> F{Is the task completed}
-  F --> |Yes| C
-  F --> |No| G{"It's a quest with a task in a page (with a link)"}
-  D --> |No| G
-  G --> |Yes| H[Perform the task]
-  H --> I{Is the task completed}
-  I --> |Yes| C
-  I --> |No| J{Is there/This quest exist in the database}
-  J --> |Yes| K[Perform the task]
-  K --> L{Is the task completed}
-  L --> |Yes| C
-  L & J --> |No| M["Change border/Change badge/Change avatar/Read News/Check Leaderboard/Check Rewards/Check Store page/Check Video page"]
-  M --> N{Is the task completed}
-  N --> |Yes| C
-  N --> |No| O[Reply to post]
-  O --> P{Is the task completed}
-  P --> |Yes| C
-  P --> |No| C
+```yaml
+manager:
 ```
 
-### AWA Online
-
-```mermaid
-flowchart TD
-  A([Start]) --> B{Is the task completed}
-  B --> |Yes| C([Stop])
-  B --> |No| D[Send requests repeatedly]
-  D -.-> E[Is the task completed] -. Finish .-> C
-```
-
-### Twitch Quest
-
-```mermaid
-flowchart TD
-  A([Start]) --> B{Is the task completed}
-  B --> |Yes| C([Stop])
-  B --> |No| D[Get Available Live stream]
-  D --> E{Is there a live stream available}
-  E --> |Yes| F[Get the live stream ID]
-  E --> |No| G[Wait 10 minutes]
-  F --> |Fail| K{There's other live streams available}
-  K --> |Yes| H[Change to another live stream]
-  K --> |No| C
-  H --> F
-  F --> |Success| I[Get ART widget info]
-  I --> |Fail| K
-  I --> |Success| J[Send requests repeatedly]
-  J -.-> L[Is the task completed] -. Finish .-> C
-```
-
-### Steam Quest
-
-```mermaid
-flowchart TD
-  A([Start]) --> B[Get Quest info]
-  B --> C[Get details of each quest]
-  C --> |Not Owned| D["Try again\n(Equivalent to click in the 'Check Games' button)"]
-  D --> |Not Owned| F([Skip this quest])
-  C & D --> |Owned| E["Start this quest\n(Equivalent to click in the 'Start Quest' button)"]
-  E --> F{Request ASF detection whether if there are games available on account from the Steam Quest}
-  C --> |Started| F
-  F --> |Yes| G[ASF will idle]
-  F --> |No| H([Stop])
-  G -.-> I[Is the task completed] -. Finish .-> H
-```
+- Run history is stored in `data/manager/history.json`, retaining 200 runs by default. Unfinished runs become interrupted at the next startup. Corrupt history is preserved and storage errors are shown on the dashboard.
+- “Check connections” checks AWA session/page structure, Twitch extension authorization and ASF IPC status without performing tasks. Results distinguish expired sessions, missing extensions, rate limits, changed pages and connection failures, with suggested actions. Identical configurations share a 30-second result cache.
+- “Export redacted diagnostics” downloads JSON containing the version, runtime environment, latest 50 runs, last diagnostic results and the tail of today's four log scopes (up to 64 KiB each). Export does not run new probes or include full configuration or raw pages.
+- Cron preview does not save configuration. Five fields omit seconds; six include them. Both date and weekday must match when both are restricted. Check the preview for timezone and daylight-saving effects.
 
 ## Example running
 

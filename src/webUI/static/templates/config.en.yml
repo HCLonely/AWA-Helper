@@ -89,6 +89,16 @@
           name: Manager Secret
           desp: A random secret is generated on first startup when empty
           type: text
+        timezone:
+          name: Schedule timezone (IANA name)
+          desp: For example Asia/Shanghai; the system timezone is used if this setting is empty or omitted.
+          type: text
+          defaultValue: ''
+        historyLimit:
+          name: Run history limit (10–1000, restart required)
+          type: text
+          inputType: number
+          defaultValue: 200
         dailyQuest:
           name: DailyQuest scheduling
           type: object

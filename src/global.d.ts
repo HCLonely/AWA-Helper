@@ -61,6 +61,8 @@ findLast(
     UA?: string
     managerServer?: managerServer
     manager?: {
+      timezone?: string
+      historyLimit?: number
       secret?: string
       dailyQuest?: { cron?: string }
       achievement?: { enable?: boolean; cron?: string }

@@ -8,6 +8,8 @@ export interface ArtifactScheduleConfig {
 }
 
 export interface NormalizedManagerConfig {
+  timezone?: string
+  historyLimit?: number
   secret: string
   dailyQuestCron?: string
   achievement: {

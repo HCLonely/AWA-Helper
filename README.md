@@ -69,9 +69,9 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 1. 下载[AWA-Helper-Linux-x64.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest)并解压；
 
     ```bash
-    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/AWA-Helper-Linux-x64.tar.gz # 注意替换版本号和CPU架构x64, armv7, armv8
-    tar -xzvf AWA-Helper-linux-x64.tar.gz
-    sudo mv dist AWA-Helper
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/latest/download/AWA-Helper-Linux-x64.tar.gz # CPU 架构可选 x64、armv7、armv8
+    tar -xzvf AWA-Helper-Linux-x64.tar.gz
+    mv output AWA-Helper
     cd AWA-Helper
     sudo chmod +x AWA-DailyQuest.sh
     sudo chmod +x AWA-Manager.sh
@@ -99,13 +99,13 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 
 #### 安装运行
 
-1. (仅首次安装需要)安装[NodeJs](https://nodejs.org/en/download/package-manager) >= v16.0.0;
+1. (仅首次安装需要)安装[NodeJs](https://nodejs.org/en/download/package-manager) `^22.20.0 || ^24.12.0 || >=26.0.0`;
 2. 下载[index.js](https://github.com/HCLonely/AWA-Helper/releases/latest)；
 
     ```bash
     mkdir AWA-Helper
     cd AWA-Helper
-    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/download/v3.0.2/index.js # 注意替换版本号为最新版
+    curl -O -L https://github.com/HCLonely/AWA-Helper/releases/latest/download/index.js # 下载最新发行版
     ```
 
 3. (仅首次安装需要)初始化
@@ -145,13 +145,13 @@ docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src
 - 单次 DailyQuest 可在容器命令后追加 `--daily`；默认无参数启动常驻 Manager。
 
 ```shell
-docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest --daily
 ```
 
 > ps:容器内有三个挂载点：
-> `/usr/src/app/dist/config`: 对应于本地路径`/data/awa-helper/config`，存放配置文件
-> `/usr/src/app/dist/logs`: 对应于本地路径`/data/awa-helper/logs`，存放日志文件
-> `/usr/src/app/dist/data`: 对应于本地路径`/data/awa-helper/data`，存放数据文件
+> `/usr/src/app/output/config`: 对应于本地路径`/data/awa-helper/config`，存放配置文件
+> `/usr/src/app/output/logs`: 对应于本地路径`/data/awa-helper/logs`，存放日志文件
+> `/usr/src/app/output/data`: 对应于本地路径`/data/awa-helper/data`，存放数据文件
 
 ## 成就助手
 
@@ -192,6 +192,8 @@ autoUpdate: false # 检查并自动安装通过 SHA-256 校验的更新
 
 ```yml
 manager:
+  # timezone: Asia/Shanghai  # 留空或省略时使用系统时区
+  historyLimit: 200         # 10–1000，重启生效
   secret: '' # 为空时首次启动自动生成
   dailyQuest:
     cron: '3 30 14,21 * * *' # 定时运行DailyQuest
@@ -330,81 +332,14 @@ pusher:
     user_id: '******'
 ```
 
-## 功能
+## 运行历史与诊断
 
-### 每日任务（旧版）
+Manager 首页的“运行记录与诊断”提供最近运行、子任务结果、连续失败次数和未来五次计划时间。点击“刷新记录与计划”更新显示；记录时间使用浏览器本地时区，计划时间使用该计划的时区。
 
-```mermaid
-flowchart TD
-  A([Start]) --> B{任务是否完成}
-  B --> |Yes| C([Stop])
-  B --> |No| D{是否为点击浏览任务}
-  D --> |Yes| E[执行此任务]
-  E --> F{任务是否完成}
-  F --> |Yes| C
-  F --> |No| G{"是否为浏览页面\n任务(有链接)"}
-  D --> |No| G
-  G --> |Yes| H[执行此任务]
-  H --> I{任务是否完成}
-  I --> |Yes| C
-  I --> |No| J{数据库中是否\n有此任务}
-  J --> |Yes| K[执行此任务]
-  K --> L{任务是否完成}
-  L --> |Yes| C
-  L & J --> |No| M["更换边框\n更换徽章\n更换头像\n浏览新闻\n分享帖子\n浏览排行榜页面\n浏览奖励页面\n浏览商店页面\n浏览视频页面"]
-  M --> N{任务是否完成}
-  N --> |Yes| C
-  N --> |No| O[回复帖子]
-  O --> P{任务是否完成}
-  P --> |Yes| C
-  P --> |No| C
-```
-
-### AWA 在线
-
-```mermaid
-flowchart TD
-  A([Start]) --> B{任务是否完成}
-  B --> |Yes| C([Stop])
-  B --> |No| D[循环发送在线心跳]
-  D -.-> E[任务是否完成] -. 完成 .-> C
-```
-
-### Twitch 任务
-
-```mermaid
-flowchart TD
-  A([Start]) --> B{任务是否完成}
-  B --> |Yes| C([Stop])
-  B --> |No| D[获取可用直播]
-  D --> E{是否有可用直播}
-  E --> |Yes| F[获取直播间ID]
-  E --> |No| G[等待10分钟]
-  F --> |失败| K{有其他可用直播间}
-  K --> |Yes| H[更换直播间]
-  K --> |No| C
-  H --> F
-  F --> |成功| I[获取直播间扩展信息]
-  I --> |失败| K
-  I --> |成功| J[循环发送在线心跳]
-  J -.-> L[任务是否完成] -. 完成 .-> C
-```
-
-### Steam 任务
-
-```mermaid
-flowchart TD
-  A([Start]) --> B[获取任务信息]
-  B --> C[获取每个任务详细信息]
-  C --> |未拥有| D["重新检测\n(相当于点击\nCheck Games按钮)"]
-  D --> |未拥有| F([跳过此任务])
-  C & D --> |已拥有| E["开始此任务\n(相当于点击\nStart Quest按钮)"]
-  E --> F{调用ASF检测\n游戏库中是否有\n任务游戏}
-  C --> |已开始| F
-  F --> |Yes| G[调用ASF挂时长]
-  F --> |No| H([Stop])
-  G -.-> I[任务是否完成] -. 完成 .-> H
-```
+- 历史保存在运行目录的 `data/manager/history.json`，默认保留最近 200 条。异常退出留下的运行记录在下次启动时标为中断；历史文件损坏时保留原件并在首页显示存储错误。
+- “检查连接”仅检查平台连接及授权，不执行任务：AWA 会话与控制中心结构、Twitch 扩展授权、ASF IPC 状态。结果区分 Cookie 失效、扩展缺失、限流、页面变化和连接失败，并提供下一步。相同配置的诊断结果缓存 30 秒。
+- “导出脱敏诊断”下载 JSON，包含版本、运行环境、最近 50 次运行、上次诊断结果和当天四类日志的末尾片段（每类最多 64 KiB）。导出不主动重新检查连接，也不包含完整配置或原始页面。
+- Cron 预览不会修改配置。五段表达式省略秒，六段包含秒；日期和星期同时指定时需同时匹配。跨时区及夏令时请以预览显示的实际时间为准。
 
 ## 运行示例
 

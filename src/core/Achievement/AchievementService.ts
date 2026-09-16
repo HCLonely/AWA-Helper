@@ -1,3 +1,4 @@
+import { trackRunStep } from '../Manager/RunHistory';
 import type { TaskOutcome } from '../TaskOutcome';
 import { trackingExpiry } from '../DailyQuest/tasks/TwitchQuestTask';
 /**
@@ -175,7 +176,7 @@ export class AchievementService {
         if (signal?.aborted) {
           return { status: 'cancelled' };
         }
-        const outcome = await this.achievement2action[availableAchievement](signal);
+        const outcome = await trackRunStep(availableAchievement, () => this.achievement2action[availableAchievement](signal));
         outcomes.push(outcome);
         new Logger(`${time()}${__('achievementActionResult', availableAchievement, __(`jobStatus_${outcome.status}`))}`);
       }
@@ -189,8 +190,8 @@ export class AchievementService {
     if (outcomes.some((outcome) => outcome.status === 'failed')) {
       return { status: outcomes.some((outcome) => outcome.status === 'completed') ? 'partial' : 'failed' };
     }
-    if (!this.twitchCookie && this.watchTwitchStatus.type.size) {
-      return { status: 'partial', message: __('achievementTwitchSkippedNoCookie') };
+    if (this.watchTwitchStatus.type.size) {
+      return { status: 'partial', ...(!this.twitchCookie ? { message: __('achievementTwitchSkippedNoCookie') } : {}) };
     }
     return { status: outcomes.some((outcome) => outcome.status === 'completed') ? 'completed' : 'skipped' };
   }
@@ -431,6 +432,9 @@ export class AchievementService {
           continue;
         }
         const trackingResult = await this.trackTwitchChannel(trackingLookup.value, signal);
+        if (trackingResult === 'refresh') {
+          continue;
+        }
         if (trackingResult === 'retry') {
           new Logger(`${time()}${__('watchTwitchAfter5min')}`);
           if (!await sleep(5 * 60, signal)) {
@@ -459,7 +463,7 @@ export class AchievementService {
    * @param info - 提交 Twitch 跟踪请求所需的频道信息，类型为 `TwitchChannelTrackingInfo`。
    * @param signal - 用于取消当前异步操作的中止信号，类型为 `AbortSignal | undefined`。
    * @param heartbeatIntervalSeconds - 两次心跳之间的等待秒数；生产环境固定使用 60 秒。
-   * @returns `Promise<'retry' | 'stopped'>`，直播不可用时要求重新选台，任务停止时返回 stopped。
+   * @returns 直播不可用时返回 retry，凭证到期时返回 refresh，任务停止时返回 stopped。
    */
   private async trackTwitchChannel(
     info: TwitchChannelTrackingInfo,

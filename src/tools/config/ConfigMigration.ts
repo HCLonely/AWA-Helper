@@ -29,6 +29,8 @@ const normalizeManagerConfig = (value: config): Omit<NormalizedManagerConfig, 's
     }];
   });
   return {
+    timezone: current?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    historyLimit: current?.historyLimit ?? 200,
     dailyQuestCron: current?.dailyQuest?.cron || legacy?.cron || legacy?.corn,
     achievement: {
       enable: current?.achievement?.enable ?? (

@@ -58,7 +58,11 @@ DailyQuestO.ts
 
 test
 logs/*
-tests/
+tests/*
+!tests/operations.test.js
+!tests/operations-browser.test.js
+!tests/fixtures/
+!tests/helpers/
 
 *05.md
 *06.md

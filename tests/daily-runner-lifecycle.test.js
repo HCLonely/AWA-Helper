@@ -27,6 +27,7 @@ const fixture = ({ cancelDuringSetup = false, failSetup = false, failPush = fals
   }
   class Logger { constructor(message) { events.push(message); } log() {} }
   const dependencies = {
+    '../Manager/RunHistory': require('../dist/core/Manager/RunHistory'),
     './DailyQuestRuntime': { DailyQuestRuntime: Runtime },
     './QuestReporter': { formatQuestReport: () => ({}) },
     './QuestFailure': require('../dist/core/DailyQuest/QuestFailure'),

@@ -57,6 +57,8 @@ For HTTPS, set both `webUI.ssl.key` and `webUI.ssl.cert`; certificate paths are 
 ```yaml
 manager:
   secret: ''
+  # timezone: Asia/Shanghai
+  historyLimit: 200
   dailyQuest:
     cron: '3 30 14,21 * * *'
   achievement:
@@ -141,3 +143,5 @@ pusher:
 Required fields vary by platform. See [all-pusher-api](https://github.com/HCLonely/all-pusher-api) for details. Never commit a `config.yml` containing cookies, secrets, or notification tokens to version control.
 
 When enabled, `platform` must be non-empty and `key` must be a non-empty object. Use the optional `pusher.options` object for additional platform options. DailyQuest reports group daily quests, online tasks, Steam, community events, calendar rewards, and Battle Pass results, including ARP, claim progress, and failed rewards. Notifications use plain text.
+
+See [Run history and diagnostics](/en/guide/webui#run-history-and-diagnostics) for timezone selection and history storage.

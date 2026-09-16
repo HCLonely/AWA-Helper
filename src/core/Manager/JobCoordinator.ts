@@ -1,3 +1,4 @@
+import { RunHistory, withRunHistory, type RunSource } from './RunHistory';
 import { successfulOutcome, type TaskOutcome } from '../TaskOutcome';
 import { safeErrorMessage } from '../../tools/logging/sanitize';
 /**
@@ -17,6 +18,7 @@ interface ActiveJob {
 
 class JobCoordinator {
   readonly states = new JobStateStore();
+  readonly history = new RunHistory();
   private readonly jobs = new Map<JobName, Job>();
   private readonly active = new Map<JobName, ActiveJob>();
   private closing = false;
@@ -49,7 +51,7 @@ class JobCoordinator {
    * @param payload - 当前请求或操作使用的数据内容，类型为 `unknown`。
    * @returns `Promise<JobResult>`，start 执行完成后的结果。
    */
-  start(name: JobName, payload?: unknown): Promise<JobResult> {
+  start(name: JobName, payload?: unknown, source: RunSource = 'manual'): Promise<JobResult> {
     if (this.closing) {
       throw new Error('Manager is shutting down');
     }
@@ -62,6 +64,7 @@ class JobCoordinator {
     if (!job) {
       throw new Error(`Unknown job: ${name}`);
     }
+    const runId = this.history.begin(name, source);
     const controller = new AbortController();
     const startedAt = new Date().toISOString();
     const completion = Promise.resolve().then(() => runWithLogScope(name, async () => {
@@ -69,7 +72,7 @@ class JobCoordinator {
         return false;
       }
       new Logger(`${time()}${__('jobStarted', name)}`);
-      return runWithRequestSignal(controller.signal, () => job.run(controller.signal, payload));
+      return withRunHistory(this.history, runId, () => runWithRequestSignal(controller.signal, () => job.run(controller.signal, payload)), controller.signal);
     }))
       .then((success) => {
         const outcome: TaskOutcome = typeof success === 'boolean' ? { status: success ? 'completed' : 'failed' } : success;
@@ -83,6 +86,7 @@ class JobCoordinator {
         if (controller.signal.aborted) {
           status = 'cancelled';
         }
+        this.history.finish(runId, status, result.message);
         this.states.update(name, status, result);
         const localizedStatus = __(`jobStatus_${status}`);
         runWithLogScope(name, () => new Logger(`${time()}${__('jobFinished', name, localizedStatus)}`));
@@ -97,6 +101,7 @@ class JobCoordinator {
           finishedAt: new Date().toISOString()
         };
         const status = controller.signal.aborted ? 'cancelled' : 'failed';
+        this.history.finish(runId, status, result.message);
         this.states.update(name, status, result);
         const localizedStatus = __(`jobStatus_${status}`);
         runWithLogScope(name, () => new Logger(`${time()}${__('jobFinishedWithMessage', name, localizedStatus, result.message || '')}`));
@@ -106,7 +111,7 @@ class JobCoordinator {
       .finally(() => this.active.delete(name));
     this.active.set(name, { controller, completion });
     new Logger(`${time()}${__('jobDispatching', name)}`);
-    this.states.update(name, 'running', { startedAt, finishedAt: undefined, message: undefined });
+    this.states.update(name, 'running', { runId, source, startedAt, finishedAt: undefined, message: undefined });
     return completion;
   }
 

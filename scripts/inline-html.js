@@ -4,6 +4,7 @@ const { inlineSource } = require('inline-source');
 const { minify } = require('html-minifier-terser');
 
 const tasks = [
+  { src: 'src/webUI/operations.html', dest: 'src/webUI/dist/' },
   { src: 'src/webUI/index.html', dest: 'src/webUI/dist/' },
   { src: 'src/webUI/dailyQuest.html', dest: 'src/webUI/dist/' },
   { src: 'src/webUI/achievement.html', dest: 'src/webUI/dist/' },

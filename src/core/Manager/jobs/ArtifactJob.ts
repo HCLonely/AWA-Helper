@@ -1,3 +1,4 @@
+import { trackRunStep } from '../RunHistory';
 import { withRunConfiguration, createSessionCommit as createCookieCommit } from '../../../tools/config/RunConfiguration';
 import { runWithRequestSignal } from '../../../tools/http/RequestContext';
 /**
@@ -43,14 +44,14 @@ class ArtifactJob implements Job {
       return false;
     }
     const commitCookie = createCookieCommit(this.configPath, service.initialCookie);
-    if (!await service.init(signal)) {
+    if (!await trackRunStep('Artifact initialization', () => service.init(signal))) {
       return false;
     }
     try {
       if (signal.aborted) {
         return false;
       }
-      return await service.start(ids, signal);
+      return await trackRunStep('Reconcile equipped artifacts', () => service.start(ids, signal));
     } finally {
       commitCookie(service.newCookie);
     }

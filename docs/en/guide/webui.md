@@ -48,3 +48,20 @@ The userscript can also synchronize the User-Agent when submitting AWA cookies. 
 | Configuration changes have no effect | Check configuration path precedence and save status; server settings require a restart |
 | Logs exceed `logsMaxMB` | Today's logs and active files are protected; the budget is not a hard file-size limit |
 | An online task encounters a transient network error | When the AWA online heartbeat error count reaches 6, it waits 5 minutes before retrying; retryable Twitch heartbeat errors also wait before retrying. Check the logs to see whether recovery is still in progress |
+
+## Run history and diagnostics
+
+Open **Run history & diagnostics** from the Manager home page (`/operations`). This dedicated dashboard loads records automatically and groups activity, schedules and connection checks into separate panels.
+
+The operations page shows recent runs, subtask results, consecutive failures and the next five scheduled times. Click “Refresh records” to update it. History uses the browser timezone; each schedule uses its configured timezone.
+
+```yaml
+manager:
+  # timezone: Asia/Shanghai  # Empty or omitted: use the system timezone
+  historyLimit: 200         # 10–1000; restart required
+```
+
+- Run history is stored in `data/manager/history.json`, retaining 200 runs by default. Unfinished runs become interrupted at the next startup. Corrupt history is preserved and storage errors are shown on the dashboard.
+- “Check connections” checks AWA session/page structure, Twitch extension authorization and ASF IPC status without performing tasks. Results distinguish expired sessions, missing extensions, rate limits, changed pages and connection failures, with suggested actions. Identical configurations share a 30-second result cache.
+- “Export redacted diagnostics” downloads JSON containing the version, runtime environment, latest 50 runs, last diagnostic results and the tail of today's four log scopes (up to 64 KiB each). Export does not run new probes or include full configuration or raw pages.
+- Cron preview does not save configuration. Five fields omit seconds; six include them. Both date and weekday must match when both are restricted. Check the preview for timezone and daylight-saving effects.

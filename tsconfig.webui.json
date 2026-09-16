@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
-    "moduleResolution": "Node10",
+    "moduleResolution": "Bundler",
     "lib": [
       "ES2022",
       "DOM"
@@ -13,8 +13,7 @@
     "rootDir": "src/webUI/static/js/pages",
     "outDir": "src/webUI/static/js/pages",
     "removeComments": false,
-    "skipLibCheck": true,
-    "ignoreDeprecations": "6.0"
+    "skipLibCheck": true
   },
   "files": [
     "src/webUI/static/js/pages/browser-globals.d.ts",
@@ -27,6 +26,7 @@
     "src/webUI/static/js/pages/settings-model.ts",
     "src/webUI/static/js/pages/settings-view.ts",
     "src/webUI/static/js/pages/settings-api.ts",
-    "src/webUI/static/js/pages/settings.ts"
+    "src/webUI/static/js/pages/settings.ts",
+    "src/webUI/static/js/pages/operations.ts"
   ]
 }

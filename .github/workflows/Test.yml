@@ -5,24 +5,33 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  release:
+  verify:
     permissions:
       contents: read
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        node: [22.20.0, 24, 26]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 22.13.1
+          node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
+      - name: Install browser for integration tests
+        run: npx --yes playwright@1.58.2 install --with-deps chromium
       - name: Verify
         run: npm run verify
       - name: Compile Windows tray app
+        if: runner.os == 'Windows'
         run: node scripts/build-tray.js
       - name: Verify Windows tray executable
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           if (-not (Test-Path -LiteralPath 'output/AWA-Manager.exe')) {

@@ -32,7 +32,7 @@ The example enables a proxy at `127.0.0.1:1080`. Set `proxy.enable` to `[]` if y
 
 ### Run from Source
 
-Running from source requires Node.js `^22.13.0 || >=24.0.0`: version 22.13.0 or later within 22.x, or version 24 and above. Node.js 23.x is excluded.
+Running from source requires Node.js `^22.20.0 || ^24.12.0 || >=26.0.0`: 22.20.0+ within 22.x, 24.12.0+ within 24.x, or 26 and above. Node.js 23.x and 25.x are excluded.
 
 ```bash
 git clone https://github.com/HCLonely/AWA-Helper.git

@@ -2,7 +2,7 @@ name: Release
 on:
   workflow_dispatch:
 env:
-  node_version: 22.13.1
+  node_version: 22.23.2
 jobs:
   release:
     outputs:

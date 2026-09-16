@@ -179,6 +179,20 @@ const validateHelperConfig = (value: unknown): Array<string> => {
     if (!isRecord(value.manager)) {
       errors.push('manager must be an object');
     } else {
+      if (value.manager.timezone !== undefined && value.manager.timezone !== '') {
+        try {
+          if (typeof value.manager.timezone !== 'string' || !value.manager.timezone.trim()) {
+            throw new Error('Empty timezone');
+          }
+          new Intl.DateTimeFormat('en', { timeZone: value.manager.timezone }).format();
+        } catch (_error) {
+          errors.push('manager.timezone must be a valid IANA timezone');
+        }
+      }
+      if (value.manager.historyLimit !== undefined && (!Number.isInteger(value.manager.historyLimit) ||
+        (value.manager.historyLimit as number) < 10 || (value.manager.historyLimit as number) > 1000)) {
+        errors.push('manager.historyLimit must be an integer between 10 and 1000');
+      }
       if (value.manager.secret !== undefined && typeof value.manager.secret !== 'string') {
         errors.push('manager.secret must be a string');
       }

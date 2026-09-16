@@ -88,6 +88,16 @@
           desp: 留空时首次启动自动生成
           type: text
           defaultValue: ''
+        timezone:
+          name: 调度时区（IANA 名称）
+          desp: 例如 Asia/Shanghai；留空或省略时使用系统时区。
+          type: text
+          defaultValue: ''
+        historyLimit:
+          name: 运行历史保留条数（10–1000，重启生效）
+          type: text
+          inputType: number
+          defaultValue: 200
         dailyQuest:
           name: DailyQuest调度
           type: object

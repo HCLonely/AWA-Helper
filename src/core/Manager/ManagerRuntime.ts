@@ -63,7 +63,8 @@ class ManagerRuntime {
       this.coordinator,
       version,
       () => this.requestShutdown(),
-      () => this.reloadConfiguration()
+      () => this.reloadConfiguration(),
+      this.scheduler
     );
     this.coordinator.register(new DailyQuestJob(this.loaded.path));
     this.coordinator.register(new AchievementJob(this.loaded.path));
@@ -108,7 +109,7 @@ class ManagerRuntime {
     }
     if (this.mode === 'once') {
       new Logger(`${time()}${__('managerOneShotSelected')}`);
-      const result = await this.coordinator.start('dailyQuest');
+      const result = await this.coordinator.start('dailyQuest', undefined, 'once');
       await this.stop();
       return result.success ? 0 : 1;
     }
@@ -178,6 +179,7 @@ class ManagerRuntime {
   }
 
   async stopJob(name: JobName): Promise<void> {
+    this.scheduler.cancelPending(name);
     await this.coordinator.stop(name);
     if (name === 'achievement') {
       fs.rmSync('data/achievement/enabled', { force: true });
@@ -190,6 +192,7 @@ class ManagerRuntime {
    */
   private reloadConfiguration(): { restartRequired: boolean } {
     const next = loadConfig(this.loaded.path);
+    const historyLimitChanged = this.loaded.manager.historyLimit !== next.manager.historyLimit;
     const previousWebUi = this.webUiServerSignature(this.loaded.raw.webUI);
     const nextWebUi = this.webUiServerSignature(next.raw.webUI);
     if (this.loaded.manager.secret !== next.manager.secret) {
@@ -201,7 +204,7 @@ class ManagerRuntime {
     this.replaceObject(this.loaded.manager, next.manager);
     this.applyRuntimeConfiguration();
 
-    return { restartRequired: previousWebUi !== nextWebUi };
+    return { restartRequired: historyLimitChanged || previousWebUi !== nextWebUi };
   }
 
   private webUiServerSignature(webUI: config['webUI']): string {
@@ -251,6 +254,7 @@ class ManagerRuntime {
     fs.mkdirSync('logs', { recursive: true });
     fs.mkdirSync('data', { recursive: true });
     this.applyRuntimeConfiguration();
+    this.coordinator.history.open('data/manager/history.json', this.loaded.manager.historyLimit);
     globalThis.log = true;
     globalThis.newVersionNotice = '';
     this.runMaintenance();

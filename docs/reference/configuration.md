@@ -57,6 +57,8 @@ autoUpdate: false
 ```yaml
 manager:
   secret: ''
+  # timezone: Asia/Shanghai
+  historyLimit: 200
   dailyQuest:
     cron: '3 30 14,21 * * *'
   achievement:
@@ -68,11 +70,13 @@ manager:
 ```
 
 - `secret` 是 Manager API 密钥；留空时首次启动会自动生成。少于 16 个字符时程序会记录安全警告，但不会拒绝启动。
-- `dailyQuest.cron` 支持五段（分、时、日、月、周）或六段（开头增加秒）的 Cron 表达式；空字符串关闭 DailyQuest 定时计划（需同时移除旧 `managerServer` 中的 `cron` / `corn`，避免回退到旧计划）。使用进程所在环境的时区。
+- `dailyQuest.cron` 支持五段（分、时、日、月、周）或六段（开头增加秒）的 Cron 表达式；空字符串关闭 DailyQuest 定时计划（需同时移除旧 `managerServer` 中的 `cron` / `corn`，避免回退到旧计划）。使用 `manager.timezone` 指定的 IANA 时区；留空或省略时使用系统时区。
 - `achievement.enable` 控制定时成就任务。
 - `artifacts` 可配置多组遗物 ID 与切换时间；每组 `ids` 必须恰好包含三个互不相同的正整数。两次更换应至少间隔 24 小时。
 
-示例 `3 30 14,21 * * *` 表示每天 `14:30:03` 和 `21:30:03` 执行；`0 14 * * *` 表示每天 `14:00:00`。计划触发时会先停止同名任务再启动新任务，请根据实际运行时长设置间隔和 `timeout`，避免任务未完成就被下一次计划重启。
+示例 `3 30 14,21 * * *` 表示每天 `14:30:03` 和 `21:30:03` 执行；`0 14 * * *` 表示每天 `14:00:00`。计划触发会先停止同名任务再启动新任务，请根据实际运行时长设置间隔和 `timeout`，避免任务未完成就被下一次计划重启。
+
+新增字段的默认值与存储行为见 [运行历史与诊断](/guide/webui#运行历史与诊断)。
 
 ## AWA 任务
 

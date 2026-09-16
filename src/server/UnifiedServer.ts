@@ -1,3 +1,6 @@
+import { Diagnostics } from '../core/Manager/Diagnostics';
+import { Scheduler } from '../core/Manager/Scheduler';
+import { formatLogValue } from '../tools/logging/sanitize';
 import { readLogPage } from '../tools/logging/LogPage';
 import { startLogReplay } from '../tools/logging/WebSocketReplay';
 /**
@@ -34,6 +37,8 @@ import dailyQuestHtml from '../webUI/dist/dailyQuest.html';
 import achievementHtml from '../webUI/dist/achievement.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import settingsHtml from '../webUI/dist/settings.html';
+// @ts-ignore inline HTML template
+import operationsHtml from '../webUI/dist/operations.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import templateYml from '../webUI/static/templates/config.zh.yml';
 // @ts-ignore 由构建流程以内联文本形式提供。
@@ -48,6 +53,7 @@ interface ConfigReloadResult {
 }
 
 class UnifiedServer {
+  private readonly diagnostics = new Diagnostics();
   private server?: Server;
   private heartbeat?: NodeJS.Timeout;
   private readonly clients = new Set<WebSocket>();
@@ -76,7 +82,8 @@ class UnifiedServer {
     private readonly coordinator: JobCoordinator,
     private readonly version: string,
     private readonly requestShutdown: () => void,
-    private readonly reloadConfig: () => ConfigReloadResult
+    private readonly reloadConfig: () => ConfigReloadResult,
+    private readonly scheduler?: Scheduler
   ) {}
 
   /**
@@ -185,6 +192,7 @@ class UnifiedServer {
     app.get('/', (_, res) => res.send(render(managerHtml)));
     app.get('/daily-quest', (_, res) => res.send(render(dailyQuestHtml)));
     app.get('/achievement', (_, res) => res.send(render(achievementHtml)));
+    app.get('/operations', (_, res) => res.send(render(operationsHtml)));
     app.get('/settings', (_, res) => res.send(render(settingsHtml)));
     app.get('/js/template.yml', (_, res) => res.type('text/yaml').send(raw.language === 'en' ? templateYmlEN : templateYml));
     app.get('/api/health/live', (_, res) => res.json({ status: 'live', version: this.version }));
@@ -203,6 +211,62 @@ class UnifiedServer {
       }
     });
     app.get('/api/health/ready', (_, res) => res.json({ status: 'ready', jobs: this.coordinator.states.list() }));
+    app.get('/api/history', (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      res.setHeader('Cache-Control', 'no-store');
+      return res.json({ runs: this.coordinator.history.list(), storageError: this.coordinator.history.storageError,
+        failures: Object.fromEntries((['dailyQuest', 'achievement', 'artifact'] as const).map((name) => [name, this.coordinator.history.failures(name)])) });
+    });
+    app.get('/api/schedules', (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      return res.json({ schedules: this.scheduler?.list() || [] });
+    });
+    app.post('/api/schedules/preview', (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      try {
+        if (typeof req.body?.cron !== 'string' || typeof req.body?.timezone !== 'string') {
+          throw new Error('Cron and timezone are required');
+        }
+        return res.json({ nextRuns: Scheduler.preview(req.body.cron, req.body.timezone) });
+      } catch (_error) {
+        return res.status(400).json({ error: 'Invalid cron expression or timezone' });
+      }
+    });
+    app.post('/api/diagnostics', async (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      if (this.coordinator.isClosing) {
+        return res.status(503).json({ error: 'Manager is shutting down' });
+      }
+      res.setHeader('Cache-Control', 'no-store');
+      return res.json({ checks: await this.diagnostics.run(structuredClone(raw)) });
+    });
+    app.get('/api/diagnostics/export', async (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      const logs = await Promise.all((['manager', 'dailyQuest', 'achievement', 'artifact'] as const).map(async (scope) => {
+        try {
+          const page = await readLogPage(getLogFilePath(scope));
+          return { scope, text: formatLogValue(page.text, true), truncated: !!page.older };
+        } catch (_error) {
+          return { scope, text: 'Log unavailable' };
+        }
+      }));
+      // Configuration values and filesystem paths are deliberately not part of the export.
+      const bundle = { version: this.version, createdAt: new Date().toISOString(), node: process.version,
+        platform: process.platform, arch: process.arch, timezone: this.loaded.manager.timezone,
+        checks: this.diagnostics.snapshot(), runs: this.coordinator.history.list(50), logs };
+      res.setHeader('Cache-Control', 'no-store');
+      res.attachment('awa-diagnostics.json').type('application/json').send(formatLogValue(JSON.stringify(bundle, null, 2), true));
+    });
     app.get('/api/jobs', (req, res) => authenticate(req, res) && res.json(this.coordinator.states.list()));
     app.get('/api/jobs/:name', (req, res) => {
       if (!authenticate(req, res)) {
@@ -240,6 +304,7 @@ class UnifiedServer {
         return;
       }
       new Logger(`${time()}${__('serverJobStopRequested', req.params.name)}`);
+      this.scheduler?.cancelPending(req.params.name as JobName);
       await this.coordinator.stop(req.params.name as JobName);
       if (req.params.name === 'achievement') {
         fs.rmSync(path.join('data', 'achievement', 'enabled'), { force: true });
@@ -432,6 +497,7 @@ class UnifiedServer {
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
   async stop(): Promise<void> {
+    await this.diagnostics.stop();
     clearInterval(this.heartbeat);
     this.heartbeat = undefined;
     this.revokeWebSocketSessions();

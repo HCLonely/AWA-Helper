@@ -10,7 +10,7 @@ import {
   claimQuestAward, completeGetStartedItem, getControlCenter, getTwitchBonus, openPage, recordPostView,
   recordPromotionView, refreshSession, replyPost, sendTimeOnSiteTrack, sharePost
 } from '../../client/AWA/APIs';
-import { parseControlCenter } from '../../client/AWA/parsers';
+import { parseVerifiedControlCenter as parseControlCenter } from '../../client/AWA/parsers/verifiedControlCenter';
 import { Logger, random, sleep, time } from '../../tools';
 import { DailyQuestState } from './DailyQuestState';
 import { formatQuestReport } from './QuestReporter';

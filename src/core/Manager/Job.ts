@@ -30,6 +30,8 @@ dispose?(): Promise<void> | void
 }
 
 export interface JobSnapshot {
+  runId?: string
+  source?: import('./RunHistory').RunSource
   name: JobName
   status: JobStatus
   startedAt?: string
