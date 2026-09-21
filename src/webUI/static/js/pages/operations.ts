@@ -2,7 +2,10 @@
  * @file src/webUI/static/js/pages/operations.ts
  * @description 展示 Manager 历史、调度预览和只读连接诊断。
  */
-(() => {
+(async () => {
+  if (typeof ManagerAuth !== 'undefined' && !await ManagerAuth.ready) {
+    return;
+  }
   const root = document.querySelector<HTMLElement>('#operations');
   if (!root) {
     return;
@@ -20,7 +23,7 @@
     const secret = sessionStorage.getItem('managerServerSecret') || localStorage.getItem('managerServerSecret');
     document.getElementById('auth-hint')!.hidden = Boolean(secret);
     if (!secret) {
-      throw new Error(t('请先配置 Manager 密钥', 'Configure the Manager secret first'));
+      throw new Error(t('请先登录', 'Please sign in first'));
     }
     return {
       Authorization: `Bearer ${secret}`
@@ -158,7 +161,7 @@
         response?: {
         status?: number
       }
-      }).response?.status === 401 ? t('密钥无效，请在管理首页重新配置', 'Invalid secret; update it on the Manager home page') : t('历史读取失败', 'Unable to load history'));
+      }).response?.status === 401 ? t('登录已失效，请重新登录', 'Session expired; please sign in again') : t('历史读取失败', 'Unable to load history'));
     }
     if (schedules.status === 'fulfilled') {
       const items = schedules.value.data.schedules;
@@ -266,7 +269,7 @@
       }
       }).response?.status;
       if (code === 401) {
-        status.textContent = t('密钥无效，请重新配置', 'Invalid secret; update it');
+        status.textContent = t('登录已失效，请重新登录', 'Session expired; please sign in again');
       } else if (code === 400) {
         status.textContent = t('Cron 或时区无效', 'Invalid cron or timezone');
       } else {

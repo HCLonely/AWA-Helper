@@ -27,6 +27,8 @@
     "src/webUI/static/js/pages/settings-view.ts",
     "src/webUI/static/js/pages/settings-api.ts",
     "src/webUI/static/js/pages/settings.ts",
-    "src/webUI/static/js/pages/operations.ts"
+    "src/webUI/static/js/pages/operations.ts",
+    "src/webUI/static/js/pages/auth.ts",
+    "src/webUI/static/js/pages/login.ts"
   ]
 }

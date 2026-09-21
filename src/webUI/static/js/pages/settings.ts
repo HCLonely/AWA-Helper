@@ -2,7 +2,10 @@
  * @file src/webUI/static/js/pages/settings.ts
  * @description 协调模板加载、编辑与经过校验的 Manager 配置接口。
  */
-(() => {
+(async () => {
+  if (typeof ManagerAuth !== 'undefined' && !await ManagerAuth.ready) {
+    return;
+  }
   SettingsI18n.localize();
   const {
     element, button

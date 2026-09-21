@@ -2,7 +2,10 @@
  * @file src/webUI/static/js/pages/achievement.ts
  * @description 控制并展示由 Manager 管理的成就任务。
  */
-(() => {
+(async () => {
+  if (typeof ManagerAuth !== 'undefined' && !await ManagerAuth.ready) {
+    return;
+  }
   interface AchievementState {
     status: string;
     message?: string;

@@ -2,7 +2,10 @@
  * @file src/webUI/static/js/pages/dailyQuest.ts
  * @description 展示每日任务状态与实时日志。
  */
-(() => {
+(async () => {
+  if (typeof ManagerAuth !== 'undefined' && !await ManagerAuth.ready) {
+    return;
+  }
   type QuestField = string | number;
   interface QuestInfo {
     link?: string;
@@ -262,6 +265,9 @@
       webUIReconnectAttempts = 0;
     };
     ws.onclose = function () {
+      if (typeof ManagerAuth !== 'undefined') {
+        void ManagerAuth.verify().catch(() => {});
+      }
       if (ws !== webUISocket) {
         return;
       }

@@ -32,6 +32,8 @@ import { getReleaseCheck, scheduleUpdate, UpdateInstallerError } from '../tools/
 // @ts-ignore 由构建流程以内联文本形式提供。
 import managerHtml from '../webUI/dist/index.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
+import loginHtml from '../webUI/dist/login.html';
+// @ts-ignore 由构建流程以内联文本形式提供。
 import dailyQuestHtml from '../webUI/dist/dailyQuest.html';
 // @ts-ignore 由构建流程以内联文本形式提供。
 import achievementHtml from '../webUI/dist/achievement.html';
@@ -224,6 +226,15 @@ class UnifiedServer {
       }
     };
 
+    app.get('/login', (_, res) => res.set('Cache-Control', 'no-store').send(render(loginHtml)));
+    app.get('/api/auth', (req, res) => {
+      res.setHeader('Cache-Control', 'no-store');
+      if (authenticate(req, res)) {
+        res.json({
+          authenticated: true
+        });
+      }
+    });
     app.get('/', (_, res) => res.send(render(managerHtml)));
     app.get('/daily-quest', (_, res) => res.send(render(dailyQuestHtml)));
     app.get('/achievement', (_, res) => res.send(render(achievementHtml)));

@@ -53,9 +53,10 @@
     document.addEventListener('DOMContentLoaded', initI18n);
   </script>
   <link inline href="static/css/app.css" rel="stylesheet">
+  <link inline href="static/css/auth.css" rel="stylesheet">
 </head>
 <body class="app-page dashboard-page">
-  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-i18n="navHome" aria-current="page">管理首页</a><a href="/daily-quest" data-i18n="navDailyQuest">每日任务</a><a href="/settings" data-i18n="navSettings">配置设置</a><a href="/operations" data-i18n="navDiagnostics">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-i18n="navGuide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a></nav></div></header>
+  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-i18n="navHome" aria-current="page">管理首页</a><a href="/daily-quest" data-i18n="navDailyQuest">每日任务</a><a href="/settings" data-i18n="navSettings">配置设置</a><a href="/operations" data-i18n="navDiagnostics">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-i18n="navGuide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a><button type="button" class="app-signout" data-auth-logout>退出登录</button></nav></div></header>
   <!-- Icons: Font Awesome Free 5.15.4 by Fonticons, Inc. (CC BY 4.0). https://fontawesome.com | static/FontAwesome-LICENSE.txt -->
   <main class="app-main">
   <header class="app-intro"><div><p class="app-eyebrow">WORKSPACE / MANAGER</p><h1 data-i18n="navHome">管理首页</h1><p class="app-subtitle" data-i18n="managerSubtitle">管理每日任务、成就与运行日志。</p></div><a class="version" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></header>
@@ -67,9 +68,6 @@
   <div class="button-section">
     <div class="section-title"><span data-i18n="systemConfig">系统配置</span></div>
     <div class="btn-group-custom">
-      <button type="button" class="btn btn-primary btn-custom manager-server-config" data-ui-toggle="modal" data-ui-target="#staticBackdrop">
-        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"></path></svg> <span data-i18n="configManagerServer">配置ManagerServer</span>
-      </button>
       <button type="button" class="btn btn-primary btn-custom awa-helper-config">
         <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M501.1 395.7L384 278.6c-23.1-23.1-57.6-27.6-85.4-13.9L192 158.1V96L64 0 0 64l96 128h62.1l106.6 106.6c-13.6 27.8-9.2 62.3 13.9 85.4l117.1 117.1c14.6 14.6 38.2 14.6 52.7 0l52.7-52.7c14.5-14.6 14.5-38.2 0-52.7zM331.7 225c28.3 0 54.9 11 74.9 31l19.4 19.4c15.8-6.9 30.8-16.5 43.8-29.5 37.1-37.1 49.7-89.3 37.9-136.7-2.2-9-13.5-12.1-20.1-5.5l-74.4 74.4-67.9-11.3L334 98.9l74.4-74.4c6.6-6.6 3.4-17.9-5.7-20.2-47.4-11.7-99.6.9-136.6 37.9-28.5 28.5-41.9 66.1-41.2 103.6l82.1 82.1c8.1-1.9 16.5-2.9 24.7-2.9zm-103.9 82l-56.7-56.7L18.7 402.8c-25 25-25 65.5 0 90.5s65.5 25 90.5 0l123.6-123.6c-7.6-19.9-9.9-41.6-5-62.7zM64 472c-13.2 0-24-10.8-24-24 0-13.3 10.7-24 24-24s24 10.7 24 24c0 13.2-10.7 24-24 24z"></path></svg> <span data-i18n="configAWAHelper">配置AWA-Helper</span>
       </button>
@@ -169,54 +167,10 @@
 
   </main>
 
-  <div class="modal" id="staticBackdrop" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content modal-custom">
-        <div class="modal-header modal-header-custom">
-          <div class="modal-title-container">
-            <svg class="app-icon modal-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M512 176.001C512 273.203 433.202 352 336 352c-11.22 0-22.19-1.062-32.827-3.069l-24.012 27.014A23.999 23.999 0 0 1 261.223 384H224v40c0 13.255-10.745 24-24 24h-40v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24v-78.059c0-6.365 2.529-12.47 7.029-16.971l161.802-161.802C163.108 213.814 160 195.271 160 176 160 78.798 238.797.001 335.999 0 433.488-.001 512 78.511 512 176.001zM336 128c0 26.51 21.49 48 48 48s48-21.49 48-48-21.49-48-48-48-48 21.49-48 48z"></path></svg>
-            <h1 class="modal-title fs-5" id="staticBackdropLabel"><span data-i18n="configManagerServerSecret">配置Manager Server Secret</span></h1>
-          </div>
-          <button type="button" class="btn-close modal-close-custom" data-ui-dismiss="modal" aria-label="Close">
-          </button>
-        </div>
-        <div class="modal-body modal-body-custom">
-          <div class="input-container">
-            <label class="input-label">
-              <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"></path></svg>
-              <span data-i18n="secretKey">Secret Key</span>
-            </label>
-            <div class="input-group input-group-custom">
-              <span class="input-group-text input-group-text-custom">
-                <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 448 512" fill="currentColor"><path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path></svg>
-              </span>
-              <input id="secret" type="password" class="form-control form-control-custom"
-                     placeholder="" data-i18n-placeholder="enterSecretKey" aria-label="Secret" aria-describedby="basic-addon1">
-            </div>
-            <div class="form-check mt-3">
-              <input id="remember-secret" class="form-check-input" type="checkbox">
-              <label class="form-check-label" for="remember-secret" data-i18n="rememberSecret">
-                记住密钥
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer modal-footer-custom">
-          <button type="button" class="btn btn-secondary btn-custom modal-btn-cancel" data-ui-dismiss="modal">
-            <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 352 512" fill="currentColor"><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg> <span data-i18n="cancel">取消</span>
-          </button>
-          <button type="button" class="btn btn-primary btn-custom modal-btn-save save-secret" data-ui-dismiss="modal">
-            <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg> <span data-i18n="confirm">确定</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <footer><a href="https://github.com/HCLonely/AWA-Helper" target="_blank">AWA-Helper</a> By <a href="https://github.com/HCLonely" target="_blank">HCLonely</a></footer>
   <script src="static/js/pages/native-dom.js" inline></script>
   <script src="static/js/pages/log-preview.js" inline></script>
+  <script inline src="static/js/pages/auth.js"></script>
   <script src="static/js/pages/index.js" inline></script>
 
 </body>

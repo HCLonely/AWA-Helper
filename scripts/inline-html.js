@@ -13,6 +13,10 @@ const {
 
 const tasks = [
   {
+    src: 'src/webUI/login.html',
+    dest: 'src/webUI/dist/'
+  },
+  {
     src: 'src/webUI/operations.html',
     dest: 'src/webUI/dist/'
   },

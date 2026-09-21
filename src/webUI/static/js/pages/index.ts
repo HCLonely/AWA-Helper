@@ -2,7 +2,10 @@
  * @file src/webUI/static/js/pages/index.ts
  * @description 控制 Manager 作业并展示统一的运行状态。
  */
-(() => {
+(async () => {
+  if (typeof ManagerAuth !== 'undefined' && !await ManagerAuth.ready) {
+    return;
+  }
   const time = () => `[${dayjs().format('YYYY-MM-DD HH:mm:ss')}] `;
   type JobStatus = 'idle' | 'running' | 'stopping' | string;
   type CheckStatus = 'start' | 'stop';
@@ -322,15 +325,7 @@
     }
     return 'error';
   }
-  const rememberedManagerServerSecret = localStorage.getItem('managerServerSecret');
-  let managerServerSecret = rememberedManagerServerSecret || sessionStorage.getItem('managerServerSecret');
-  if (managerServerSecret) {
-    dom('#secret').val(managerServerSecret);
-  }
-  if (rememberedManagerServerSecret) {
-    sessionStorage.setItem('managerServerSecret', rememberedManagerServerSecret);
-    dom('#remember-secret').prop('checked', true);
-  }
+  const managerServerSecret = sessionStorage.getItem('managerServerSecret') || localStorage.getItem('managerServerSecret');
   dom('button.awa-helper-config').click(() => {
     window.open('/settings', '_target');
   });
@@ -400,17 +395,6 @@
       return;
     }
     stopDailyQuest(managerServerSecret, true);
-  });
-  dom('button.save-secret').click(() => {
-    managerServerSecret = String(dom('#secret').val() ?? '');
-    sessionStorage.setItem('managerServerSecret', managerServerSecret);
-    if (dom('#remember-secret').prop('checked')) {
-      localStorage.setItem('managerServerSecret', managerServerSecret);
-    } else {
-      localStorage.removeItem('managerServerSecret');
-    }
-    dom('#log-area').append(`<li>${time()}${__('managerSecretSaved')}</li>`);
-    dom('#log-area li:last-child')[0].scrollIntoView();
   });
 
   dom('a.run-logs, button.daily-quest-logs').click(async () => {

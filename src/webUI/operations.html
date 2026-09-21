@@ -11,13 +11,14 @@
   <link inline rel="stylesheet" href="static/css/operations.css">
   <script inline src="static/js/axios.min.js"></script>
   <link inline href="static/css/app.css" rel="stylesheet">
+  <link inline href="static/css/auth.css" rel="stylesheet">
 </head>
 <body class="app-page operations-page">
-  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-en="Home">管理首页</a><a href="/daily-quest" data-en="Daily quests">每日任务</a><a href="/settings" data-en="Settings">配置设置</a><a href="/operations" data-en="Diagnostics" aria-current="page">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-en="User guide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a></nav></div></header>
+  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-en="Home">管理首页</a><a href="/daily-quest" data-en="Daily quests">每日任务</a><a href="/settings" data-en="Settings">配置设置</a><a href="/operations" data-en="Diagnostics" aria-current="page">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-en="User guide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a><button type="button" class="app-signout" data-auth-logout>退出登录</button></nav></div></header>
   <main id="operations">
     <header class="intro"><div><p class="eyebrow">WORKSPACE / OPERATIONS</p><h1 data-en="Run history & diagnostics">运行记录与诊断</h1><p class="muted" data-en="Review recent activity, upcoming schedules and platform connections.">查看任务进展、未来计划与平台连接状态。</p></div><span class="version">__VERSION__</span></header>
     <div class="toolbar"><div class="operations-actions"><button type="button" class="primary" data-operation="refresh" data-en="Refresh records">刷新记录与计划</button><button type="button" data-operation="diagnose" data-en="Check connections">检查连接</button><button type="button" data-operation="export" data-en="Export diagnostics ↓">导出脱敏诊断 ↓</button></div><p id="operations-status" role="status" aria-live="polite" data-en="Ready">准备就绪</p></div>
-    <p id="auth-hint" class="notice" hidden><span data-en="Set your Manager secret on the home page, then return here.">请先在管理首页配置 Manager 密钥，然后返回此页面。</span> <a href="/" data-en="Open Manager →">前往配置 →</a></p>
+    <p id="auth-hint" class="notice" hidden><span data-en="Sign in to access diagnostics.">请先登录以查看运行记录与诊断。</span> <a href="/login?next=%2Foperations" data-en="Sign in →">前往登录 →</a></p>
     <div class="metrics" aria-label="Overview">
       <article class="metric"><span data-en="Retained runs">保留的运行记录</span><strong id="metric-total">—</strong><small data-en="Recent recorded activity">最近记录的任务活动</small></article>
       <article class="metric"><span data-en="In progress">正在执行</span><strong id="metric-running">—</strong><small data-en="Running or stopping">运行中或停止中的任务</small></article>
@@ -34,6 +35,7 @@
     <footer>AWA Helper <span data-en="· Task activity & connection health">· 任务活动与连接状态</span></footer>
   </main>
   <script>var lang = "__LANG__";</script>
+  <script inline src="static/js/pages/auth.js"></script>
   <script inline src="static/js/pages/operations.js"></script>
 </body>
 </html>

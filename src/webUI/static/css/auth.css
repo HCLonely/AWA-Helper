@@ -1,0 +1,5 @@
+.auth-pending body > :not(.auth-notice) { display: none !important; }
+.auth-notice { max-width: 460px; margin: 64px auto; padding: 24px; color: #26334a; background: #fff; border: 1px solid #dfe5ee; border-radius: 14px; font: 16px/1.5 system-ui, sans-serif; }
+.app-nav .app-signout { padding: 9px 12px; border: 0; border-radius: 8px; color: var(--app-muted); background: transparent; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.app-nav .app-signout:hover { color: var(--app-accent); background: var(--app-soft); }
+@media (max-width: 680px) { .app-nav .app-signout { padding: 8px; font-size: 12px; } .auth-notice { margin: 28px 14px; } }
