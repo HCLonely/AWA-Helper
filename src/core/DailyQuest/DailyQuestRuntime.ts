@@ -457,7 +457,7 @@ export class DailyQuestRuntime {
     if (completed) {
       this.state.communityEvent = {
         path,
-        status: __('done'),
+        status: (page.concluded || page.closed) ? __('logStatusFinished') : __('done'),
         playedTime: `${page.playedMinutes}`,
         totalTime: `${page.totalMinutes}min`
       };
@@ -508,8 +508,8 @@ export class DailyQuestRuntime {
     }
     event.playedTime = `${page.playedMinutes}`;
     event.totalTime = `${page.totalMinutes}min`;
-    if (page.concluded || page.playedMinutes >= page.totalMinutes) {
-      event.status = __('done');
+    if (page.concluded || page.closed || page.playedMinutes >= page.totalMinutes) {
+      event.status = (page.concluded || page.closed) ? __('logStatusFinished') : __('done');
       event.gameId = undefined;
     }
     logger.log(`${chalk.green(__('logStatusOk'))}(${chalk.yellow(`${page.playedMinutes}/${page.totalMinutes}min`)})`);

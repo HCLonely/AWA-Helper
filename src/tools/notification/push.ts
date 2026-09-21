@@ -85,6 +85,12 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
     } else if (name === __('battlePass')) {
       return;
     } else if (name === __('steamCommunityEvent')) {
+      const status = value[__('status')];
+      if (status === __('logStatusFinished') || status === __('logStatusClosed') ||
+        status === __('battlePassStatus_ended') || status === __('battlePassStatus_not-started') ||
+        parseInt(String(value[__('maxAvailableARP')]), 10) <= 0) {
+        return;
+      }
       other[0] = [name, value];
     } else {
       daily.push([name, value]);
