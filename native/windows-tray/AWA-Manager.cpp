@@ -520,14 +520,12 @@ LRESULT CALLBACK windowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
       return 0;
     case kChildExited:
       managerReady = false;
-      if (shutdownRequested || updateStopping) {
+      // WebUI 关闭 Manager 时没有托盘侧的退出请求，也应在子进程正常退出后关闭托盘。
+      if (shutdownRequested || updateStopping || childExitCode == 0) {
         DestroyWindow(hwnd);
       } else {
         setTooltip(L"AWA-Helper - 已停止");
-        const wchar_t* messageText = childExitCode == 0
-          ? L"Manager 已停止。"
-          : L"Manager 启动或运行失败，请打开日志目录查看详情。";
-        showNotification(L"AWA-Helper", messageText, childExitCode == 0 ? NIIF_INFO : NIIF_ERROR);
+        showNotification(L"AWA-Helper", L"Manager 启动或运行失败，请打开日志目录查看详情。", NIIF_ERROR);
       }
       return 0;
     case WM_QUERYENDSESSION:

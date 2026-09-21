@@ -66,7 +66,8 @@ Choose “退出AWA-Manager” to stop the entire background service and wait fo
 - Tray application already running: use the existing icon; only one tray instance is allowed per Windows session.
 - Manager already started through a `.bat` file or command line: stop it before launching the tray. The tray does not attach to an existing process.
 - Manager startup or runtime failure: open the logs directory to inspect the cause. If necessary, exit the tray and use `AWA-Manager.bat` to see console errors.
-- Manager stopped but the icon remains: the tray keeps the stopped state available for inspecting logs. After fixing the issue, exit and relaunch `AWA-Manager.exe`; it does not automatically restart Manager after an unexpected exit.
+- Stopping AWA-Manager from the WebUI also closes the tray application and removes its icon after Manager exits normally.
+- Manager exited with an error but the icon remains: the tray keeps the stopped state available for inspecting logs. After fixing the issue, exit and relaunch `AWA-Manager.exe`; it does not automatically restart Manager after an unexpected exit.
 
 ## Linux
 
