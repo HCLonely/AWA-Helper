@@ -351,6 +351,7 @@ lastRunTime: 上次运行时间
 runStatus: 运行状态
 runLogs: 运行日志
 view: 查看
+currentVersionChanges: 当前版本更新内容
 realtimeLogs: 实时日志
 configManagerServerSecret: 配置Manager Server Secret
 secretKey: Secret 密钥

@@ -33,8 +33,8 @@
     .button-section {
       background: rgba(255, 255, 255, 0.9);
       border-radius: 15px;
-      padding: 25px;
-      margin: 20px auto;
+      padding: 18px;
+      margin: 14px auto;
       max-width: 1000px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       backdrop-filter: blur(10px);
@@ -65,19 +65,21 @@
     .btn-group-custom {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 8px;
       justify-content: center;
       align-items: center;
     }
 
     .btn-custom {
       border-radius: 8px;
-      padding: 10px 20px;
+      padding: 6px 12px;
       font-weight: 500;
       transition: all 0.3s ease;
       border: none;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      min-width: 140px;
+      min-width: 0;
+      font-size: 0.85rem;
+      line-height: 1.5;
     }
 
     .btn-custom:hover {
@@ -105,15 +107,15 @@
     /* 状态信息样式 */
     .status-info-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+      gap: 12px;
+      margin-top: 12px;
     }
 
     .status-item {
       background: rgba(248, 249, 250, 0.8);
       border-radius: 10px;
-      padding: 20px;
+      padding: 12px;
       border: 1px solid rgba(0, 0, 0, 0.05);
       transition: all 0.3s ease;
       position: relative;
@@ -158,6 +160,7 @@
       font-weight: 500;
       color: #212529;
       padding-left: 24px;
+      overflow-wrap: anywhere;
     }
 
     .status-link {
@@ -282,6 +285,47 @@
       border-left: 3px solid #007bff;
     }
 
+    .status-heading {
+      text-align: center;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .section-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .section-header .section-title { grid-column: 2; margin: 0; text-align: center; }
+    .section-header .section-title::after { display: none; }
+    .section-header .btn-custom { grid-column: 3; justify-self: end; }
+    @media (max-width: 600px) {
+      .section-header .section-title { grid-column: 1 / -1; }
+      .section-header .btn-custom { grid-column: 1 / -1; }
+    }
+    .release-notes { padding: 12px 18px; }
+    .release-notes summary { cursor: pointer; color: #495057; font-size: 0.9rem; }
+    .release-notes summary span + span { margin-left: 8px; color: #007bff; }
+    .release-notes-content {
+      max-height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: inherit;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin: 12px 0 0;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
     /* 弹窗样式 */
     .modal-custom {
       border-radius: 15px;
@@ -402,7 +446,7 @@
     .modal-btn-cancel {
       background: linear-gradient(135deg, #6c757d, #5a6268);
       border: none;
-      padding: 10px 20px;
+      padding: 6px 12px;
       border-radius: 8px;
       font-weight: 500;
       display: flex;
@@ -413,7 +457,7 @@
     .modal-btn-save {
       background: linear-gradient(135deg, #28a745, #1e7e34);
       border: none;
-      padding: 10px 20px;
+      padding: 6px 12px;
       border-radius: 8px;
       font-weight: 500;
       display: flex;
@@ -423,18 +467,17 @@
 
     @media (max-width: 768px) {
       .btn-group-custom {
-        flex-direction: column;
-        align-items: stretch;
+        justify-content: flex-start;
       }
 
       .btn-custom {
         min-width: auto;
-        width: 100%;
+        max-width: 100%;
       }
 
       .button-section {
         margin: 10px;
-        padding: 20px;
+        padding: 14px;
       }
 
       .status-info-container {
@@ -486,11 +529,14 @@
 </head>
 <body>
   <h1 class="fw-bold">AWA-Manager <a style="font-size:20px;margin-left: 5px;" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></h1>
+  <details class="button-section release-notes">
+    <summary><span data-i18n="currentVersionChanges">当前版本更新内容</span> <span>__VERSION__</span></summary>
+    <pre class="release-notes-content" tabindex="0">__CHANGELOG__</pre>
+  </details>
   <!-- 配置区域 -->
   <div class="button-section">
     <div class="section-title">⚙️ <span data-i18n="systemConfig">系统配置</span></div>
     <div class="btn-group-custom">
-      <a href="/operations" class="btn btn-primary btn-custom"><span data-i18n="operationsTitle">运行记录与诊断</span> ↗</a>
       <button type="button" class="btn btn-primary btn-custom manager-server-config" data-ui-toggle="modal" data-ui-target="#staticBackdrop">
         <i class="fas fa-cog"></i> <span data-i18n="configManagerServer">配置ManagerServer</span>
       </button>
@@ -535,26 +581,7 @@
         <i class="fas fa-file-alt"></i> <span data-i18n="viewLogs">查看日志</span>
       </button>
     </div>
-  </div>
-
-  <!-- AWA 成就控制区域 -->
-  <div class="button-section">
-    <div class="section-title">🏆 <span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
-    <div class="btn-group-custom">
-      <button type="button" class="btn btn-success btn-custom awa-achievement-start">
-        <i class="fas fa-trophy"></i> <span data-i18n="startAWAAchievement">启动AWA-Achievement</span>
-      </button>
-      <button type="button" class="btn btn-primary btn-custom awa-achievement-logs">
-        <i class="fas fa-file-alt"></i> <span data-i18n="viewLogs">查看日志</span>
-      </button>
-      <button type="button" class="btn btn-danger btn-custom awa-achievement-stop disabled">
-        <i class="fas fa-stop-circle"></i> <span data-i18n="stopAWAAchievement">终止AWA-Achievement</span>
-      </button>
-    </div>
-  </div>
-  <!-- 状态信息区域 -->
-  <div class="button-section">
-    <div class="section-title">📊 <span data-i18n="statusInfo">运行状态信息</span></div>
+    <div class="status-heading" data-i18n="statusInfo">运行状态信息</div>
     <div class="status-info-container">
       <div class="status-item">
         <div class="status-label">
@@ -583,10 +610,28 @@
       </div>
     </div>
   </div>
-</div>
+
+  <!-- AWA 成就控制区域 -->
+  <div class="button-section">
+    <div class="section-title">🏆 <span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
+    <div class="btn-group-custom">
+      <button type="button" class="btn btn-success btn-custom awa-achievement-start">
+        <i class="fas fa-trophy"></i> <span data-i18n="startAWAAchievement">启动AWA-Achievement</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom awa-achievement-logs">
+        <i class="fas fa-file-alt"></i> <span data-i18n="viewLogs">查看日志</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-custom awa-achievement-stop disabled">
+        <i class="fas fa-stop-circle"></i> <span data-i18n="stopAWAAchievement">终止AWA-Achievement</span>
+      </button>
+    </div>
+  </div>
   <!-- 日志展示区域 -->
   <div class="button-section">
-    <div class="section-title">📋 <span data-i18n="realtimeLogs">实时日志</span></div>
+    <div class="section-header">
+      <div class="section-title">📋 <span data-i18n="realtimeLogs">实时日志</span></div>
+      <a href="/operations" class="btn btn-primary btn-custom"><span data-i18n="operationsTitle">运行记录与诊断</span> ↗</a>
+    </div>
     <div class="log-container">
       <div id="log-area" class="log-content"></div>
     </div>

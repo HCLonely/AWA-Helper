@@ -38,7 +38,8 @@ async function processHtml({
   src, dest, rename
 }) {
   const rootpath = path.resolve(path.dirname(src));
-  const html = fs.readFileSync(src, 'utf8');
+  const html = fs.readFileSync(src, 'utf8').replace('__CHANGELOG__', () => fs.readFileSync('CHANGELOG.txt', 'utf8')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
   const inlined = await inlineSource(html, {
     compress: false,
     rootpath

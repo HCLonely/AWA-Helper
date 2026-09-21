@@ -343,6 +343,7 @@ lastRunTime: Last Run Time
 runStatus: Run Status
 runLogs: Run Logs
 view: View
+currentVersionChanges: Current version changes
 realtimeLogs: Realtime Logs
 configManagerServerSecret: Configure Manager Server Secret
 secretKey: Secret Key
