@@ -1,0 +1,33 @@
+/* Manager and daily quest cards and logs; shared controls are in app.css. */
+font.green { color: #20764b; }
+font.gray { color: #63748a; }
+font.blue { color: #315cd6; }
+font.yellow { color: #935317; }
+font.red { color: #af453a; }
+.button-section { margin: 0 0 20px; padding: 24px; }
+.section-title { margin-bottom: 16px; font-size: 18px; font-weight: 600; }
+.btn-group-custom { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn-custom { max-width: 100%; }
+.status-heading { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--app-border); font-size: 13px; font-weight: 600; }
+.status-info-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; margin-top: 12px; }
+.status-item { padding: 16px; border: 1px solid var(--app-border); border-radius: 10px; background: var(--app-bg); min-width: 0; }
+.status-label { margin-bottom: 8px; color: var(--app-muted); font-size: 12px; }
+.status-value { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.section-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.section-header .section-title { margin: 0; }
+.log-container { border: 1px solid var(--app-border); border-radius: 10px; overflow: hidden; }
+#log-area { height: 300px; overflow: auto; padding: 16px 20px; background: var(--app-bg); font: 13px/1.8 Consolas, monospace; overflow-wrap: anywhere; }
+#log-area li { margin-bottom: 4px; }
+#log-area li:last-child { font-weight: 600; }
+.release-notes { padding: 16px 24px; }
+.release-notes summary { cursor: pointer; font-size: 13px; color: var(--app-muted); }
+.release-notes summary span + span { margin-left: 8px; color: var(--app-accent); }
+.release-notes-content { max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 13px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--app-border); }
+.modal-title-container { display: flex; align-items: center; gap: 10px; }
+.input-label { display: block; margin-bottom: 10px; font-weight: 600; }
+.input-group-custom { gap: 8px; }
+.input-group-text-custom { display: none; }
+@media (max-width: 680px) {
+  .button-section { padding: 18px 16px; margin-bottom: 14px; }
+  #log-area { padding: 12px; }
+}

@@ -295,6 +295,10 @@
       }
     };
   }
+  document.documentElement.lang = lang === 'zh' ? 'zh' : 'en';
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((element) => {
+    element.textContent = __(element.dataset.i18n!);
+  });
   connectWebUIServer();
   generateTaskInfo();
 })();

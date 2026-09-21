@@ -15,481 +15,7 @@
   <link href="static/css/webui.css" rel="stylesheet" inline>
   <script src="static/js/dayjs.min.js" inline></script>
   <script src="static/js/axios.min.js" inline></script>
-  <style>
-    font.green{color: darkgreen;}
-    font.gray{color: gray;}
-    font.blue{color: blue;}
-    font.yellow{color: darkorange;}
-    font.red{color: red;}
-    h1,h2{text-align: center;}
-    #quest-info *{border: 1px solid #000;}
-    body{margin-top: 20px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;}
-    footer{text-align: center;color: grey;}
-    footer a{text-decoration: none;}
-    #log-area{height: 300px;overflow-y: auto;}
-    #log-area li:last-child {font-weight: bold;}
-
-    /* 按钮区域样式 */
-    .button-section {
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 15px;
-      padding: 18px;
-      margin: 14px auto;
-      max-width: 1000px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .section-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #495057;
-      margin-bottom: 15px;
-      text-align: center;
-      position: relative;
-    }
-
-    .section-title::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50px;
-      height: 2px;
-      background: linear-gradient(90deg, #007bff, #6c757d);
-      border-radius: 1px;
-    }
-
-    .btn-group-custom {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .btn-custom {
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      border: none;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      min-width: 0;
-      font-size: 0.85rem;
-      line-height: 1.5;
-    }
-
-    .btn-custom:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-primary.btn-custom {
-      background: linear-gradient(135deg, #007bff, #0056b3);
-    }
-
-    .btn-success.btn-custom {
-      background: linear-gradient(135deg, #28a745, #1e7e34);
-    }
-
-    .btn-danger.btn-custom {
-      background: linear-gradient(135deg, #dc3545, #c82333);
-    }
-
-    .btn-warning.btn-custom {
-      background: linear-gradient(135deg, #ffc107, #e0a800);
-      color: #212529;
-    }
-
-    /* 状态信息样式 */
-    .status-info-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .status-item {
-      background: rgba(248, 249, 250, 0.8);
-      border-radius: 10px;
-      padding: 12px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .status-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: linear-gradient(135deg, #007bff, #28a745);
-      border-radius: 0 2px 2px 0;
-    }
-
-    .status-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .status-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      color: #495057;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
-    }
-
-    .status-label i {
-      color: #007bff;
-      width: 16px;
-      text-align: center;
-    }
-
-    .status-value {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #212529;
-      padding-left: 24px;
-      overflow-wrap: anywhere;
-    }
-
-    .status-link {
-      color: #007bff;
-      text-decoration: none;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .status-link:hover {
-      color: #0056b3;
-      text-decoration: none;
-      transform: translateX(2px);
-    }
-
-    .status-link i {
-      font-size: 0.8rem;
-    }
-
-    /* 日志区域样式 */
-    .log-container {
-      background: rgba(248, 249, 250, 0.8);
-      border-radius: 12px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .log-header {
-      background: rgba(255, 255, 255, 0.9);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-      padding: 12px 20px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-    }
-
-    .log-controls {
-      display: flex;
-      gap: 8px;
-    }
-
-    .log-control-btn {
-      background: rgba(0, 123, 255, 0.1);
-      border: 1px solid rgba(0, 123, 255, 0.2);
-      border-radius: 6px;
-      padding: 6px 10px;
-      color: #007bff;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 36px;
-      height: 32px;
-    }
-
-    .log-control-btn:hover {
-      background: rgba(0, 123, 255, 0.2);
-      border-color: rgba(0, 123, 255, 0.4);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
-    }
-
-    .log-control-btn:active {
-      transform: translateY(0);
-    }
-
-    .log-content {
-      height: 350px;
-      overflow-y: auto;
-      padding: 15px 25px;
-      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-      font-size: 0.85rem;
-      line-height: 1.4;
-      background: rgba(255, 255, 255, 0.5);
-      color: #212529;
-    }
-
-    .log-content::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .log-content::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 4px;
-    }
-
-    .log-content::-webkit-scrollbar-thumb {
-      background: rgba(0, 123, 255, 0.3);
-      border-radius: 4px;
-      transition: background 0.3s ease;
-    }
-
-    .log-content::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 123, 255, 0.5);
-    }
-
-    .log-content li {
-      margin-bottom: 4px;
-      padding: 2px 0;
-      border-radius: 3px;
-      transition: background 0.2s ease;
-    }
-
-    .log-content li:hover {
-      background: rgba(0, 123, 255, 0.05);
-      padding-left: 8px;
-      margin-left: -8px;
-    }
-
-    .log-content li:last-child {
-      font-weight: 600;
-      color: #007bff;
-      background: rgba(0, 123, 255, 0.1);
-      padding: 4px 8px;
-      border-radius: 4px;
-      border-left: 3px solid #007bff;
-    }
-
-    .status-heading {
-      text-align: center;
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(0, 0, 0, 0.08);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #495057;
-    }
-
-    .section-header {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .section-header .section-title { grid-column: 2; margin: 0; text-align: center; }
-    .section-header .section-title::after { display: none; }
-    .section-header .btn-custom { grid-column: 3; justify-self: end; }
-    @media (max-width: 600px) {
-      .section-header .section-title { grid-column: 1 / -1; }
-      .section-header .btn-custom { grid-column: 1 / -1; }
-    }
-    .release-notes { padding: 12px 18px; }
-    .release-notes summary { cursor: pointer; color: #495057; font-size: 0.9rem; }
-    .release-notes summary span + span { margin-left: 8px; color: #007bff; }
-    .release-notes-content {
-      max-height: 240px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      font: inherit;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      margin: 12px 0 0;
-      padding-top: 12px;
-      border-top: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    /* 弹窗样式 */
-    .modal-custom {
-      border-radius: 15px;
-      border: none;
-      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(10px);
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .modal-header-custom {
-      background: linear-gradient(135deg, #007bff, #0056b3);
-      color: white;
-      border-radius: 15px 15px 0 0;
-      padding: 20px 25px;
-      border-bottom: none;
-    }
-
-    .modal-title-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .modal-icon {
-      font-size: 1.3rem;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .modal-close-custom {
-      border-radius: 8px;
-      padding: 8px;
-      transition: all 0.3s ease;
-      opacity: 0.8;
-    }
-
-    .modal-close-custom:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-
-    .modal-body-custom {
-      padding: 30px 25px;
-      background: rgba(255, 255, 255, 0.9);
-    }
-
-    .input-container {
-      margin-bottom: 20px;
-    }
-
-    .input-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 600;
-      color: #495057;
-      margin-bottom: 12px;
-      font-size: 0.95rem;
-    }
-
-    .input-label i {
-      color: #007bff;
-      width: 16px;
-      text-align: center;
-    }
-
-    .input-group-custom {
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .input-group-text-custom {
-      background: rgba(0, 123, 255, 0.1);
-      border: 1px solid rgba(0, 123, 255, 0.2);
-      color: #007bff;
-      border-right: none;
-    }
-
-    .form-control-custom {
-      border: 1px solid rgba(0, 123, 255, 0.2);
-      border-left: none;
-      border-right: none;
-      padding: 12px 15px;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-    }
-
-    .form-control-custom:focus {
-      border-color: rgba(0, 123, 255, 0.4);
-      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .toggle-password {
-      background: rgba(0, 123, 255, 0.1);
-      border: 1px solid rgba(0, 123, 255, 0.2);
-      color: #007bff;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border-left: none;
-    }
-
-    .toggle-password:hover {
-      background: rgba(0, 123, 255, 0.2);
-      color: #0056b3;
-    }
-
-    .modal-footer-custom {
-      background: rgba(248, 249, 250, 0.8);
-      border-radius: 0 0 15px 15px;
-      padding: 20px 25px;
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-    }
-
-    .modal-btn-cancel {
-      background: linear-gradient(135deg, #6c757d, #5a6268);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .modal-btn-save {
-      background: linear-gradient(135deg, #28a745, #1e7e34);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    @media (max-width: 768px) {
-      .btn-group-custom {
-        justify-content: flex-start;
-      }
-
-      .btn-custom {
-        min-width: auto;
-        max-width: 100%;
-      }
-
-      .button-section {
-        margin: 10px;
-        padding: 14px;
-      }
-
-      .status-info-container {
-        grid-template-columns: 1fr;
-        gap: 15px;
-      }
-
-      .status-item {
-        padding: 15px;
-      }
-    }
-  </style>
+  <link inline href="static/css/dashboard.css" rel="stylesheet">
   <script>
     var lang = "__LANG__";
     var I18n = __I18N__;
@@ -526,85 +52,89 @@
     // Initialize i18n when DOM is loaded
     document.addEventListener('DOMContentLoaded', initI18n);
   </script>
+  <link inline href="static/css/app.css" rel="stylesheet">
 </head>
-<body>
-  <h1 class="fw-bold">AWA-Manager <a style="font-size:20px;margin-left: 5px;" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></h1>
+<body class="app-page dashboard-page">
+  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-i18n="navHome" aria-current="page">管理首页</a><a href="/daily-quest" data-i18n="navDailyQuest">每日任务</a><a href="/settings" data-i18n="navSettings">配置设置</a><a href="/operations" data-i18n="navDiagnostics">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-i18n="navGuide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a></nav></div></header>
+  <!-- Icons: Font Awesome Free 5.15.4 by Fonticons, Inc. (CC BY 4.0). https://fontawesome.com | static/FontAwesome-LICENSE.txt -->
+  <main class="app-main">
+  <header class="app-intro"><div><p class="app-eyebrow">WORKSPACE / MANAGER</p><h1 data-i18n="navHome">管理首页</h1><p class="app-subtitle" data-i18n="managerSubtitle">管理每日任务、成就与运行日志。</p></div><a class="version" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></header>
   <details class="button-section release-notes">
     <summary><span data-i18n="currentVersionChanges">当前版本更新内容</span> <span>__VERSION__</span></summary>
     <pre class="release-notes-content" tabindex="0">__CHANGELOG__</pre>
   </details>
   <!-- 配置区域 -->
   <div class="button-section">
-    <div class="section-title">⚙️ <span data-i18n="systemConfig">系统配置</span></div>
+    <div class="section-title"><span data-i18n="systemConfig">系统配置</span></div>
     <div class="btn-group-custom">
       <button type="button" class="btn btn-primary btn-custom manager-server-config" data-ui-toggle="modal" data-ui-target="#staticBackdrop">
-        <i class="fas fa-cog"></i> <span data-i18n="configManagerServer">配置ManagerServer</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"></path></svg> <span data-i18n="configManagerServer">配置ManagerServer</span>
       </button>
       <button type="button" class="btn btn-primary btn-custom awa-helper-config">
-        <i class="fas fa-tools"></i> <span data-i18n="configAWAHelper">配置AWA-Helper</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M501.1 395.7L384 278.6c-23.1-23.1-57.6-27.6-85.4-13.9L192 158.1V96L64 0 0 64l96 128h62.1l106.6 106.6c-13.6 27.8-9.2 62.3 13.9 85.4l117.1 117.1c14.6 14.6 38.2 14.6 52.7 0l52.7-52.7c14.5-14.6 14.5-38.2 0-52.7zM331.7 225c28.3 0 54.9 11 74.9 31l19.4 19.4c15.8-6.9 30.8-16.5 43.8-29.5 37.1-37.1 49.7-89.3 37.9-136.7-2.2-9-13.5-12.1-20.1-5.5l-74.4 74.4-67.9-11.3L334 98.9l74.4-74.4c6.6-6.6 3.4-17.9-5.7-20.2-47.4-11.7-99.6.9-136.6 37.9-28.5 28.5-41.9 66.1-41.2 103.6l82.1 82.1c8.1-1.9 16.5-2.9 24.7-2.9zm-103.9 82l-56.7-56.7L18.7 402.8c-25 25-25 65.5 0 90.5s65.5 25 90.5 0l123.6-123.6c-7.6-19.9-9.9-41.6-5-62.7zM64 472c-13.2 0-24-10.8-24-24 0-13.3 10.7-24 24-24s24 10.7 24 24c0 13.2-10.7 24-24 24z"></path></svg> <span data-i18n="configAWAHelper">配置AWA-Helper</span>
       </button>
       <button type="button" class="btn btn-primary btn-custom cookie-sync" style="display: none;">
-        <i class="fas fa-cookie-bite"></i> <span data-i18n="syncCookie">同步AWA Cookie</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M510.52 255.82c-69.97-.85-126.47-57.69-126.47-127.86-70.17 0-127-56.49-127.86-126.45-27.26-4.14-55.13.3-79.72 12.82l-69.13 35.22a132.221 132.221 0 0 0-57.79 57.81l-35.1 68.88a132.645 132.645 0 0 0-12.82 80.95l12.08 76.27a132.521 132.521 0 0 0 37.16 72.96l54.77 54.76a132.036 132.036 0 0 0 72.71 37.06l76.71 12.15c27.51 4.36 55.7-.11 80.53-12.76l69.13-35.21a132.273 132.273 0 0 0 57.79-57.81l35.1-68.88c12.56-24.64 17.01-52.58 12.91-79.91zM176 368c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32zm32-160c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32zm160 128c-17.67 0-32-14.33-32-32s14.33-32 32-32 32 14.33 32 32-14.33 32-32 32z"></path></svg> <span data-i18n="syncCookie">同步AWA Cookie</span>
       </button>
       <button type="button" class="btn btn-primary btn-custom twitch-cookie-sync" style="display: none;">
-        <i class="fab fa-twitch"></i> <span data-i18n="syncTwitchCookie">同步Twitch Cookie</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M391.17,103.47H352.54v109.7h38.63ZM285,103H246.37V212.75H285ZM120.83,0,24.31,91.42V420.58H140.14V512l96.53-91.42h77.25L487.69,256V0ZM449.07,237.75l-77.22,73.12H294.61l-67.6,64v-64H140.14V36.58H449.07Z"></path></svg> <span data-i18n="syncTwitchCookie">同步Twitch Cookie</span>
       </button>
       <button type="button" class="btn btn-warning btn-custom awa-helper-update" style="display: none;">
-        <i class="fas fa-download"></i> <span data-i18n="updateAWAHelper">更新AWA-Helper</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M216 0h80c13.3 0 24 10.7 24 24v168h87.7c17.8 0 26.7 21.5 14.1 34.1L269.7 378.3c-7.5 7.5-19.8 7.5-27.3 0L90.1 226.1c-12.6-12.6-3.7-34.1 14.1-34.1H192V24c0-13.3 10.7-24 24-24zm296 376v112c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V376c0-13.3 10.7-24 24-24h146.7l49 49c20.1 20.1 52.5 20.1 72.6 0l49-49H488c13.3 0 24 10.7 24 24zm-124 88c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20zm64 0c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20z"></path></svg> <span data-i18n="updateAWAHelper">更新AWA-Helper</span>
       </button>
       <button type="button" class="btn btn-danger btn-custom awa-manager-stop">
-        <i class="fas fa-power-off"></i> <span data-i18n="stopAWAManager">终止AWA-Manager</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M400 54.1c63 45 104 118.6 104 201.9 0 136.8-110.8 247.7-247.5 248C120 504.3 8.2 393 8 256.4 7.9 173.1 48.9 99.3 111.8 54.2c11.7-8.3 28-4.8 35 7.7L162.6 90c5.9 10.5 3.1 23.8-6.6 31-41.5 30.8-68 79.6-68 134.9-.1 92.3 74.5 168.1 168 168.1 91.6 0 168.6-74.2 168-169.1-.3-51.8-24.7-101.8-68.1-134-9.7-7.2-12.4-20.5-6.5-30.9l15.8-28.1c7-12.4 23.2-16.1 34.8-7.8zM296 264V24c0-13.3-10.7-24-24-24h-32c-13.3 0-24 10.7-24 24v240c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24z"></path></svg> <span data-i18n="stopAWAManager">终止AWA-Manager</span>
       </button>
       <button type="button" class="btn btn-primary btn-custom manager-logs">
-        <i class="fas fa-file-alt"></i> <span data-i18n="viewLogs">查看日志</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 384 512" fill="currentColor"><path d="M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm64 236c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-64c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-72v8c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm96-114.1v6.1H256V0h6.1c6.4 0 12.5 2.5 17 7l97.9 98c4.5 4.5 7 10.6 7 16.9z"></path></svg> <span data-i18n="viewLogs">查看日志</span>
       </button>
       <button type="button" class="btn btn-info btn-custom install-user-js">
-        <i class="fas fa-code"></i> <span data-i18n="installCookieScript">安装Cookie同步脚本</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 640 512" fill="currentColor"><path d="M278.9 511.5l-61-17.7c-6.4-1.8-10-8.5-8.2-14.9L346.2 8.7c1.8-6.4 8.5-10 14.9-8.2l61 17.7c6.4 1.8 10 8.5 8.2 14.9L293.8 503.3c-1.9 6.4-8.5 10.1-14.9 8.2zm-114-112.2l43.5-46.4c4.6-4.9 4.3-12.7-.8-17.2L117 256l90.6-79.7c5.1-4.5 5.5-12.3.8-17.2l-43.5-46.4c-4.5-4.8-12.1-5.1-17-.5L3.8 247.2c-5.1 4.7-5.1 12.8 0 17.5l144.1 135.1c4.9 4.6 12.5 4.4 17-.5zm327.2.6l144.1-135.1c5.1-4.7 5.1-12.8 0-17.5L492.1 112.1c-4.8-4.5-12.4-4.3-17 .5L431.6 159c-4.6 4.9-4.3 12.7.8 17.2L523 256l-90.6 79.7c-5.1 4.5-5.5 12.3-.8 17.2l43.5 46.4c4.5 4.9 12.1 5.1 17 .6z"></path></svg> <span data-i18n="installCookieScript">安装Cookie同步脚本</span>
       </button>
     </div>
   </div>
 
   <!-- 每日任务控制区域 -->
   <div class="button-section">
-    <div class="section-title">🚀 <span data-i18n="dailyQuestControl">DailyQuest 控制</span></div>
+    <div class="section-title"><span data-i18n="dailyQuestControl">DailyQuest 控制</span></div>
     <div class="btn-group-custom">
       <button type="button" class="btn btn-success btn-custom daily-quest-start">
-        <i class="fas fa-play"></i> <span data-i18n="startDailyQuest">启动DailyQuest</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 448 512" fill="currentColor"><path d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"></path></svg> <span data-i18n="startDailyQuest">启动DailyQuest</span>
       </button>
       <button type="button" class="btn btn-danger btn-custom daily-quest-stop">
-        <i class="fas fa-stop"></i> <span data-i18n="stopDailyQuest">终止DailyQuest</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 448 512" fill="currentColor"><path d="M400 32H48C21.5 32 0 53.5 0 80v352c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48z"></path></svg> <span data-i18n="stopDailyQuest">终止DailyQuest</span>
       </button>
       <button type="button" class="btn btn-primary btn-custom refresh-status">
-        <i class="fas fa-sync-alt"></i> <span data-i18n="refreshStatus">刷新运行状态</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M370.72 133.28C339.458 104.008 298.888 87.962 255.848 88c-77.458.068-144.328 53.178-162.791 126.85-1.344 5.363-6.122 9.15-11.651 9.15H24.103c-7.498 0-13.194-6.807-11.807-14.176C33.933 94.924 134.813 8 256 8c66.448 0 126.791 26.136 171.315 68.685L463.03 40.97C478.149 25.851 504 36.559 504 57.941V192c0 13.255-10.745 24-24 24H345.941c-21.382 0-32.09-25.851-16.971-40.971l41.75-41.749zM32 296h134.059c21.382 0 32.09 25.851 16.971 40.971l-41.75 41.75c31.262 29.273 71.835 45.319 114.876 45.28 77.418-.07 144.315-53.144 162.787-126.849 1.344-5.363 6.122-9.15 11.651-9.15h57.304c7.498 0 13.194 6.807 11.807 14.176C478.067 417.076 377.187 504 256 504c-66.448 0-126.791-26.136-171.315-68.685L48.97 471.03C33.851 486.149 8 475.441 8 454.059V320c0-13.255 10.745-24 24-24z"></path></svg> <span data-i18n="refreshStatus">刷新运行状态</span>
       </button>
       <button type="button" class="btn btn-primary btn-custom daily-quest-logs">
-        <i class="fas fa-file-alt"></i> <span data-i18n="viewLogs">查看日志</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 384 512" fill="currentColor"><path d="M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm64 236c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-64c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-72v8c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm96-114.1v6.1H256V0h6.1c6.4 0 12.5 2.5 17 7l97.9 98c4.5 4.5 7 10.6 7 16.9z"></path></svg> <span data-i18n="viewLogs">查看日志</span>
       </button>
     </div>
     <div class="status-heading" data-i18n="statusInfo">运行状态信息</div>
     <div class="status-info-container">
       <div class="status-item">
         <div class="status-label">
-          <i class="fas fa-clock"></i>
+          <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M256,8C119,8,8,119,8,256S119,504,256,504,504,393,504,256,393,8,256,8Zm92.49,313h0l-20,25a16,16,0,0,1-22.49,2.5h0l-67-49.72a40,40,0,0,1-15-31.23V112a16,16,0,0,1,16-16h32a16,16,0,0,1,16,16V256l58,42.5A16,16,0,0,1,348.49,321Z"></path></svg>
           <span data-i18n="lastRunTime">上次运行时间</span>
         </div>
         <div class="status-value last-run-time">-</div>
       </div>
       <div class="status-item">
         <div class="status-label">
-          <i class="fas fa-heartbeat"></i>
+          <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M320.2 243.8l-49.7 99.4c-6 12.1-23.4 11.7-28.9-.6l-56.9-126.3-30 71.7H60.6l182.5 186.5c7.1 7.3 18.6 7.3 25.7 0L451.4 288H342.3l-22.1-44.2zM473.7 73.9l-2.4-2.5c-51.5-52.6-135.8-52.6-187.4 0L256 100l-27.9-28.5c-51.5-52.7-135.9-52.7-187.4 0l-2.4 2.4C-10.4 123.7-12.5 203 31 256h102.4l35.9-86.2c5.4-12.9 23.6-13.2 29.4-.4l58.2 129.3 49-97.9c5.9-11.8 22.7-11.8 28.6 0l27.6 55.2H481c43.5-53 41.4-132.3-7.3-182.1z"></path></svg>
           <span data-i18n="runStatus">运行状态</span>
         </div>
         <div class="status-value run-status">-</div>
       </div>
       <div class="status-item">
         <div class="status-label">
-          <i class="fas fa-file-alt"></i>
+          <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 384 512" fill="currentColor"><path d="M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm64 236c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-64c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-72v8c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm96-114.1v6.1H256V0h6.1c6.4 0 12.5 2.5 17 7l97.9 98c4.5 4.5 7 10.6 7 16.9z"></path></svg>
           <span data-i18n="runLogs">运行日志</span>
         </div>
         <div class="status-value">
           <a class="run-logs status-link" href="javascript:void(0);" target="_self">
-            <i class="fas fa-external-link-alt"></i> <span data-i18n="view">查看</span>
+            <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M432,320H400a16,16,0,0,0-16,16V448H64V128H208a16,16,0,0,0,16-16V80a16,16,0,0,0-16-16H48A48,48,0,0,0,0,112V464a48,48,0,0,0,48,48H400a48,48,0,0,0,48-48V336A16,16,0,0,0,432,320ZM488,0h-128c-21.37,0-32.05,25.91-17,41l35.73,35.73L135,320.37a24,24,0,0,0,0,34L157.67,377a24,24,0,0,0,34,0L435.28,133.32,471,169c15,15,41,4.5,41-17V24A24,24,0,0,0,488,0Z"></path></svg> <span data-i18n="view">查看</span>
           </a>
         </div>
       </div>
@@ -613,23 +143,23 @@
 
   <!-- AWA 成就控制区域 -->
   <div class="button-section">
-    <div class="section-title">🏆 <span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
+    <div class="section-title"><span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
     <div class="btn-group-custom">
       <button type="button" class="btn btn-success btn-custom awa-achievement-start">
-        <i class="fas fa-trophy"></i> <span data-i18n="startAWAAchievement">启动AWA-Achievement</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 576 512" fill="currentColor"><path d="M552 64H448V24c0-13.3-10.7-24-24-24H152c-13.3 0-24 10.7-24 24v40H24C10.7 64 0 74.7 0 88v56c0 35.7 22.5 72.4 61.9 100.7 31.5 22.7 69.8 37.1 110 41.7C203.3 338.5 240 360 240 360v72h-48c-35.3 0-64 20.7-64 56v12c0 6.6 5.4 12 12 12h296c6.6 0 12-5.4 12-12v-12c0-35.3-28.7-56-64-56h-48v-72s36.7-21.5 68.1-73.6c40.3-4.6 78.6-19 110-41.7 39.3-28.3 61.9-65 61.9-100.7V88c0-13.3-10.7-24-24-24zM99.3 192.8C74.9 175.2 64 155.6 64 144v-16h64.2c1 32.6 5.8 61.2 12.8 86.2-15.1-5.2-29.2-12.4-41.7-21.4zM512 144c0 16.1-17.7 36.1-35.3 48.8-12.5 9-26.7 16.2-41.8 21.4 7-25 11.8-53.6 12.8-86.2H512v16z"></path></svg> <span data-i18n="startAWAAchievement">启动AWA-Achievement</span>
       </button>
       <button type="button" class="btn btn-primary btn-custom awa-achievement-logs">
-        <i class="fas fa-file-alt"></i> <span data-i18n="viewLogs">查看日志</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 384 512" fill="currentColor"><path d="M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm64 236c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-64c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-72v8c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm96-114.1v6.1H256V0h6.1c6.4 0 12.5 2.5 17 7l97.9 98c4.5 4.5 7 10.6 7 16.9z"></path></svg> <span data-i18n="viewLogs">查看日志</span>
       </button>
       <button type="button" class="btn btn-danger btn-custom awa-achievement-stop disabled">
-        <i class="fas fa-stop-circle"></i> <span data-i18n="stopAWAAchievement">终止AWA-Achievement</span>
+        <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm96 328c0 8.8-7.2 16-16 16H176c-8.8 0-16-7.2-16-16V176c0-8.8 7.2-16 16-16h160c8.8 0 16 7.2 16 16v160z"></path></svg> <span data-i18n="stopAWAAchievement">终止AWA-Achievement</span>
       </button>
     </div>
   </div>
   <!-- 日志展示区域 -->
   <div class="button-section">
     <div class="section-header">
-      <div class="section-title">📋 <span data-i18n="realtimeLogs">实时日志</span></div>
+      <div class="section-title"><span data-i18n="realtimeLogs">实时日志</span></div>
       <a href="/operations" class="btn btn-primary btn-custom"><span data-i18n="operationsTitle">运行记录与诊断</span> ↗</a>
     </div>
     <div class="log-container">
@@ -637,28 +167,29 @@
     </div>
   </div>
 
+  </main>
+
   <div class="modal" id="staticBackdrop" tabindex="-1"
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content modal-custom">
         <div class="modal-header modal-header-custom">
           <div class="modal-title-container">
-            <i class="fas fa-key modal-icon"></i>
+            <svg class="app-icon modal-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M512 176.001C512 273.203 433.202 352 336 352c-11.22 0-22.19-1.062-32.827-3.069l-24.012 27.014A23.999 23.999 0 0 1 261.223 384H224v40c0 13.255-10.745 24-24 24h-40v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24v-78.059c0-6.365 2.529-12.47 7.029-16.971l161.802-161.802C163.108 213.814 160 195.271 160 176 160 78.798 238.797.001 335.999 0 433.488-.001 512 78.511 512 176.001zM336 128c0 26.51 21.49 48 48 48s48-21.49 48-48-21.49-48-48-48-48 21.49-48 48z"></path></svg>
             <h1 class="modal-title fs-5" id="staticBackdropLabel"><span data-i18n="configManagerServerSecret">配置Manager Server Secret</span></h1>
           </div>
           <button type="button" class="btn-close modal-close-custom" data-ui-dismiss="modal" aria-label="Close">
-            <i class="fas fa-times"></i>
           </button>
         </div>
         <div class="modal-body modal-body-custom">
           <div class="input-container">
             <label class="input-label">
-              <i class="fas fa-shield-alt"></i>
+              <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M466.5 83.7l-192-80a48.15 48.15 0 0 0-36.9 0l-192 80C27.7 91.1 16 108.6 16 128c0 198.5 114.5 335.7 221.5 380.3 11.8 4.9 25.1 4.9 36.9 0C360.1 472.6 496 349.3 496 128c0-19.4-11.7-36.9-29.5-44.3zM256.1 446.3l-.1-381 175.9 73.3c-3.3 151.4-82.1 261.1-175.8 307.7z"></path></svg>
               <span data-i18n="secretKey">Secret Key</span>
             </label>
             <div class="input-group input-group-custom">
               <span class="input-group-text input-group-text-custom">
-                <i class="fas fa-lock"></i>
+                <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 448 512" fill="currentColor"><path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path></svg>
               </span>
               <input id="secret" type="password" class="form-control form-control-custom"
                      placeholder="" data-i18n-placeholder="enterSecretKey" aria-label="Secret" aria-describedby="basic-addon1">
@@ -673,10 +204,10 @@
         </div>
         <div class="modal-footer modal-footer-custom">
           <button type="button" class="btn btn-secondary btn-custom modal-btn-cancel" data-ui-dismiss="modal">
-            <i class="fas fa-times"></i> <span data-i18n="cancel">取消</span>
+            <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 352 512" fill="currentColor"><path d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg> <span data-i18n="cancel">取消</span>
           </button>
           <button type="button" class="btn btn-primary btn-custom modal-btn-save save-secret" data-ui-dismiss="modal">
-            <i class="fas fa-check"></i> <span data-i18n="confirm">确定</span>
+            <svg class="app-icon" aria-hidden="true" focusable="false" viewBox="0 0 512 512" fill="currentColor"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg> <span data-i18n="confirm">确定</span>
           </button>
         </div>
       </div>
