@@ -35,7 +35,7 @@ http.interceptors.response.use((response) => response, async (error) => {
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method) || (status && ![408, 429, 502, 503, 504].includes(status))) {
     return Promise.reject(error);
   }
-  config.retryCount = config.retryCount || 0;
+  config.retryCount = config.retryCount || 3;
   const retryTimes = Number.isFinite(config.retryTimes) ? Math.min(10, Math.max(0, config.retryTimes)) : 3;
   if (config.retryCount >= retryTimes) {
     return Promise.reject(error);

@@ -25,10 +25,10 @@ export const parseCommunityEvent = (html: string, path: string): CommunityEventP
     path,
     concluded: html.includes('concluded'),
     closed: html.includes('EVENT IS CLOSED'),
-    gameId: $('a.btn-steam-community-event[href^="steam://run/"]').attr('href')?.match(/[\d]+/)?.[0],
+    gameId: $('a.btn-steam-community-event[href^="steam://run/"],a.btn-steam-community-event[href^="https://store.steampowered.com/app/"]').attr('href')?.match(/[\d]+/)?.[0],
     gameName: $('h1').first().text()
       .trim(),
-    started: !$('.btn-check-owned-games').length,
+    started: !$('.btn-check-owned-games,#sync-button').length,
     playedMinutes: parseInt(html.match(/personalPlaytime.*?=.*?([\d]+)/)?.[1] || $('.progress-bar.bg-info').eq(-2).attr('aria-valuenow') || '0', 10),
     totalMinutes: parseInt($('.progress-bar.bg-info').eq(-2).attr('aria-valuemax') || '0', 10)
   };

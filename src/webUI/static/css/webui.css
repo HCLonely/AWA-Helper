@@ -482,6 +482,9 @@ a {
   tab-size: 4;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
   scrollbar-color: #50617b #111c2e;
   scrollbar-width: thin;
 }
