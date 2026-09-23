@@ -41,6 +41,8 @@ The tray menu currently uses Chinese labels:
 | 打开管理页面 | Open this Manager's local WebUI address using the configured port and HTTP/HTTPS protocol |
 | 查看运行状态 | Show a system notification with Manager and all three job states |
 | 打开日志目录 | Open the program directory's `logs/` folder in File Explorer |
+| 检查更新 | Check for a stable release, download and verify it, then install and restart the tray and Manager |
+| 重试安装 / 修复 | Shown only for an incomplete installation; retry installing or repairing program files |
 | 开机自启（已启用／未启用） | Toggle automatic tray startup when the current Windows user signs in |
 | 启动Helper／停止Helper | Start a DailyQuest run or stop the active run |
 | 启动Achievement／停止Achievement | Start or stop achievement tasks |
@@ -62,6 +64,7 @@ Choose “退出AWA-Manager” to stop the entire background service and wait fo
 
 ### Startup Troubleshooting
 
+- Required program files are missing or the installation manifest check fails: the tray attempts installation or repair automatically. If it fails, choose “重试安装 / 修复” and check network access, directory write permissions, and `logs/Updater.log`.
 - Cannot start `AWA-Helper.exe`: check that it is in the same directory as `AWA-Manager.exe`.
 - Tray application already running: use the existing icon; only one tray instance is allowed per Windows session.
 - Manager already started through a `.bat` file or command line: stop it before launching the tray. The tray does not attach to an existing process.
@@ -104,6 +107,18 @@ Outside containers, `webUI.local: true` binds only to `127.0.0.1`; set it to `fa
 ## Updates
 
 With `autoUpdate: true`, startup checks download and verify a release, then install it after the current process exits. Persistent mode schedules a restart. The WebUI also provides an update action. `--no-update` skips only automatic startup updates.
+
+### Windows Tray Installation and Updates
+
+While the tray is running, choose “检查更新” (Check for updates). You can also run `AWA-Manager.exe --check-update`; an existing tray instance receives the request. A Manager launched by the tray delegates WebUI and automatic startup updates to the native updater. The standalone Helper updater refuses concurrent updates while the tray is running and directs you to its menu.
+
+If `AWA-Helper.exe` is missing, or a required file in `installation.json` is missing or has the wrong size, startup automatically begins installation or repair. Repair targets the installed version when it can be identified, or the latest stable release otherwise. Older directories with Helper but no manifest can still start. Packages downloaded for native installation or repair must contain `installation.json`; older packages without it are unsupported.
+
+The updater downloads from GitHub, falling back in order to the built-in `gh-proxy.org`, `cdn.gh-proxy.org`, and `axisnow.gh-proxy.org` sources. It uses Windows system proxy settings rather than the YAML `proxy` configuration. It verifies the archive size, SHA-256, and program file manifest, waits for Manager and the tray to exit, replaces program files, then starts the new version and checks that it is ready.
+
+Installation backs up replaced program files and attempts rollback on failure. Interrupted installations are recovered on the next tray launch. Existing configuration, cookies, logs, and runtime data are preserved. If neither root-level `config.yml` nor `config/config.yml` exists, the native installer creates the latter from the example. Unlike `--init`, which only generates the example, this creates an active configuration; check proxy settings and enter account credentials after first installation. Installation and recovery logs are in `logs/Updater.log`.
+
+### Docker Updates
 
 For Docker, keep `autoUpdate: false` and update by pulling the new image and recreating the container with the same mounted directories, so runtime files stay consistent with the image version.
 

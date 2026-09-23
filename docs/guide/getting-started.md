@@ -26,7 +26,7 @@ cp config/config.example.yml config/config.yml
 
 Windows 用户也可以在文件管理器中复制并重命名该文件。如果目录中尚无示例，先运行 `AWA-Helper.exe --init`（Windows）或 `node index.js --init`（Node.js 发行包）。`--init` 只创建目录、示例和启动脚本，不会创建正式的 `config.yml`。
 
-Windows 配置完成后，双击 `AWA-Manager.exe` 即可在系统托盘中后台运行。它需要同目录的 `AWA-Helper.exe`；菜单操作、开机自启和排查方法见[托盘程序说明](/guide/running#awa-manager-exe-托盘程序)。
+Windows 配置完成后，双击 `AWA-Manager.exe` 即可在系统托盘中后台运行。它会启动同目录的 `AWA-Helper.exe`；缺少必需程序文件时会自动尝试安装或修复。菜单操作、开机自启和排查方法见[托盘程序说明](/guide/running#awa-manager-exe-托盘程序)。
 
 示例配置启用了指向 `127.0.0.1:1080` 的代理。如果没有该代理，请先将 `proxy.enable` 改为 `[]`；需要代理时填写实际地址。默认未启用 Twitch 和 Steam 时长任务，配置好对应凭据后再开启。
 
@@ -77,7 +77,7 @@ node index.js
 
 Manager 首次启动时，如果 `manager.secret` 为空，会自动生成密钥并写入配置文件；手动设置为少于 16 个字符时会显示安全警告，但不会阻止启动。
 
-从实际加载的 `config.yml` 读取 `manager.secret`，在 WebUI 中填写同一密钥后即可操作任务和设置。用户脚本应更新到当前版本，以使用 `/api/cookies/awa` 同步接口。同步后的 Cookie 用于下一次任务；若任务正在运行，可先停止再启动，使其读取新配置。
+从实际加载的 `config.yml` 读取 `manager.secret`，在 WebUI 登录页填写同一密钥并通过验证后即可操作任务和设置。用户脚本应更新到当前版本，以使用 `/api/cookies/awa` 同步接口。同步后的 Cookie 用于下一次任务；若任务正在运行，可先停止再启动，使其读取新配置。
 
 ## 下一步
 

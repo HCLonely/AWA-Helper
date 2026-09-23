@@ -58,7 +58,7 @@ upx/
 DailyQuestO.ts
 
 test
-logs/*
+logs/
 tests/
 
 *05.md

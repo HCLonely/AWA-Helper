@@ -6,6 +6,8 @@ Automatically does AWA quests.<br>This document comes from machine translation
 
 > **Please help us improve the translation [here](https://gitlocalize.com/repo/8263)** .
 
+See the full [Getting Started](https://github.com/HCLonely/AWA-Helper/blob/main/docs/en/guide/getting-started.md), [Running AWA-Helper](https://github.com/HCLonely/AWA-Helper/blob/main/docs/en/guide/running.md), and [Configuration](https://github.com/HCLonely/AWA-Helper/blob/main/docs/en/reference/configuration.md) guides.
+
 ## Instructions
 
 ### Instructions before use
@@ -17,7 +19,7 @@ Automatically does AWA quests.<br>This document comes from machine translation
 
 ### AWA-Manager
 
-AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA-Helper on the browser. Its main functions include:
+Manager is the central runtime and scheduler for DailyQuest, Achievement, and Artifact, with one unified WebUI port. Its main functions include:
 
 - Cookie synchronization;
 - Configuration file parameter settings;
@@ -27,12 +29,18 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 > It is recommended that users who do not shut down or mount to the server for a long time use this AWA-Manager.
 
+### Access the WebUI
+
+After starting Manager, open `http://127.0.0.1:2345` (or your configured port). On the `/login` page, enter `manager.secret` from the active `config.yml`. If empty, Manager generates and saves a secret on first startup. “Remember secret” stores it persistently in this browser; otherwise it lasts only for the current tab session. Sign in again after changing the secret. Signing out does not stop background tasks.
+
+Persistent Manager waits for Cron schedules after startup. Start Helper from the home page to run immediately. Do not start a separate one-off run in the same directory while Manager is running.
+
 ### Cookie synchronization
 
 1. Configure `manager` and `webUI` in the configuration file, then run Manager;
 2. Install [the Tampermonkey BETA](https://www.tampermonkey.net/index.php) extension in the browser ( **note that it is the red BETA version, the regular version cannot obtain cookies!!!** );
 3. Install [AWA-Manager](https://github.com/HCLonely/AWA-Helper/raw/main/TM_UserScript/AWA-Manager.user.js) user script;
-4. Open the [https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center) page to configure `ManagerServer` ;
+4. Open the [https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center) page and enter the Manager address and the secret above in `ManagerServer` settings;
 5. Cookies are synchronized every time you open a browser page.
 
 ### Run through compiled executable file
@@ -46,7 +54,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 ##### Install and run
 
 1. Download [AWA-Helper-Win.tar.gz](https://github.com/HCLonely/AWA-Helper/releases/latest) and unzip it;
-2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+2. Edit the configuration file and [view the instructions](#config-file-configuration)
 3. Choose how to run:
     - Run DailyQuest once: double-click `AWA-DailyQuest.bat`;
     - Run AWA-Manager: Double-click `AWA-Manager.bat` to run AWA-Manager;
@@ -58,6 +66,8 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 - Update checks notify you about new releases; enable `autoUpdate` to verify and install automatically;
 - Tray updates: select “检查更新” (Check for updates). Manager reports when already current, or downloads, verifies, gracefully stops Helper, updates both executables and restarts. Existing tasks continue during download. Installation failures restore old program files; user configuration, cookies, logs and runtime data are preserved.
+
+The native tray updater uses Windows system proxy settings, not the YAML `proxy` configuration. If installation or repair fails, retry from the tray menu and check `logs/Updater.log`. Interrupted installations are recovered on the next tray launch.
 
 #### Linux
 
@@ -74,15 +84,15 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
     tar -xzvf AWA-Helper-Linux-x64.tar.gz
     mv output AWA-Helper
     cd AWA-Helper
-    sudo chmod +x AWA-DailyQuest.sh
-    sudo chmod +x AWA-Manager.sh
-    sudo chmod +x update.sh
+    chmod +x AWA-DailyQuest.sh
+    chmod +x AWA-Manager.sh
+    chmod +x update.sh
     ```
 
-2. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+2. Edit the configuration file and [view the instructions](#config-file-configuration)
 
     ```bash
-    sudo cp config/config.example.yml config/config.yml
+    cp config/config.example.yml config/config.yml
     ```
 
 3. Run (choose one of the following two):
@@ -117,7 +127,7 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
     node index.js --init
     ```
 
-4. Edit the configuration file and [view the instructions](#config-%E6%96%87%E4%BB%B6%E9%85%8D%E7%BD%AE)
+4. Edit the configuration file and [view the instructions](#config-file-configuration)
 
     ```bash
     cp config/config.example.yml config/config.yml
@@ -140,22 +150,26 @@ AWA-Manager is a manager of AWA-Helper. After it is turned on, it can manage AWA
 
 > Docker exposes only the unified `webUI.port`, which defaults to 2345. Inside Docker, `webUI.local` is ignored and the server listens on all interfaces so port publishing works.
 
+First copy and edit the repository's `config.example.yml` as `/data/awa-helper/config/config.yml` on the host. Create the `logs` and `data` directories and allow the container's `node` user to read and write all three mounted directories. Startup requires an active configuration file. The port mapping below permits host access only; use `-p 2345:2345` for access from other devices.
+
 - AWA-Manager (recommended)
 
 ```shell
-docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
+docker run -d --name awa-helper -p 127.0.0.1:2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest
 ```
 
-- One-shot DailyQuest
+- One-shot DailyQuest: specify the complete `node index.js --daily` command after the image name.
 
 ```shell
-docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest --daily
+docker run -d --name awa-helper -p 127.0.0.1:2345:2345 -v /data/awa-helper/config:/usr/src/app/output/config -v /data/awa-helper/logs:/usr/src/app/output/logs -v /data/awa-helper/data:/usr/src/app/output/data hclonely/awa-helper:latest node index.js --daily
 ```
 
 > ps: There are three mount points in the container:
 > `/usr/src/app/output/config`: corresponding to the local paths `/data/awa-helper/config`
 > `/usr/src/app/output/logs`: corresponding to the local paths `/data/awa-helper/logs`
 > `/usr/src/app/output/data`: corresponding to the local paths `/data/awa-helper/data`
+
+For Docker updates, keep `autoUpdate: false`, pull the new image, and recreate the container with the same mounted directories.
 
 ## Achievement
 
@@ -168,7 +182,11 @@ docker run -d --name awa-helper -p 2345:2345 -v /data/awa-helper/config:/usr/src
 
 ## config (File configuration)
 
-> **You need to copy the `config.example.yml` file in the `config` folder and rename it to `config.yml` !!!**
+> On first use, if no active configuration exists, copy `config/config.example.yml` to `config/config.yml` and edit it.
+
+Use [config.example.yml](https://github.com/HCLonely/AWA-Helper/blob/main/config.example.yml) as the complete field reference. Edit an existing configuration without copying it again; the Windows native installer may already have created it. The runtime directory's `config.yml` takes precedence over `config/config.yml`, so check which file is active.
+
+The example enables a proxy at `127.0.0.1:1080`; set `proxy.enable: []` if you do not use it. Twitch and Steam tasks are disabled by default; configure their credentials before enabling them.
 
 ### Global configuration (required)
 
@@ -179,12 +197,15 @@ language: zh # 程序显示语言，目前支持中文 (zh) 和 English (en)
 webUI:
   enable: true # 是否启用WebUI
   port: 2345 # WebUI端口
-  local: true # 仅内网访问，false为开启外网访问
-  ssl: # WebUI启用SSL
-    key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
-    cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
-timeout: 0 # 超时设置，单位：秒，0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
-logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
+  local: true # true 仅监听 127.0.0.1；false 监听所有接口，官方容器始终监听所有接口
+  # ssl: # 启用 HTTPS 时同时填写 key 和 cert，路径相对于配置文件所在目录
+  #   key: xxx.yyy-key.pem
+  #   cert: xxx.yyy.pem
+timeout: 86400 # 单次 DailyQuest 超时秒数，0 为不限制；超时停止任务，常驻 Manager 继续运行
+logsExpire: 30 # 日志保留天数，0 为不限制
+logsMaxMB: 512 # 日志容量预算（MiB），0 关闭容量限制；当天及正在写入的文件受保护
+debug:
+  http: false # HTTP 调试日志，过滤请求头、请求体和 URL 查询参数
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
 autoUpdate: false # Check for and install updates that pass SHA-256 verification
@@ -220,16 +241,15 @@ awaQuests:
   - getStarted # 自动做左下角的GET STARTED任务，不需要做此任务删除或注释掉此行
   - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
   # - battlePass # Automatically claim available Battle Pass rewards (disabled by default)
-  # 每日任务(旧版)类型，不需要注释掉即可，如果不需要做此任务请注释上面的`dailyQuestOld`
+  # - dailyQuestOld # Legacy daily quests (disabled by default)
   - timeOnSite # 自动做AWA在线任务，不需要做此任务删除或注释掉此行
-  - watchTwitch # 自动做Twitch直播间在线任务，不需要做此任务删除或注释掉此行
-  - steamQuest # 自动做Steam游戏时长任务，不需要做此任务删除或注释掉此行
-awaDailyQuestType: # 每日任务类型，不需要注释掉即可，全部注释=全部开启，如果不需要做每日任务请注释上面的`dailyQuestOld`
+  # - watchTwitch # 启用前配置 twitchCookie，必须包含 unique_id 和 auth-token
+  # - steamQuest # 启用前配置可访问的 ASF Host、端口和 Botname
+awaDailyQuestType: # 仅控制 dailyQuestOld；删除不需要的类型，[] 表示不执行这些操作
   - click # 浏览页面任务，务标题为任务链接，需点击任务才能完成
   - visitLink # 浏览页面任务，任务标题为任务链接，浏览页面才能完成
   - openLink # 浏览页面任务，任务标题无链接，尝试浏览 排行榜，奖励，商店页面
   - changeBorder # 更换Border
-  - changeBadge # 更换Badge
   - changeAvatar # 更换Avatar
   - viewNews # 浏览新闻
   - sharePost # 分享帖子
@@ -241,7 +261,7 @@ joinSteamCommunityEvent: true # 自动加入Steam社区活动
 
 ##### Automatic update
 
-See [Cookie synchronization](#cookie-%E5%90%8C%E6%AD%A5) .
+See [Cookie synchronization](#cookie-synchronization) .
 
 ##### Get it yourself
 
@@ -284,7 +304,7 @@ steamUse: 'ASF' # 挂时长方式
 ```yml
 asfProtocol: 'http' # ASF使用的协议，一般都是`http`
 asfHost: '127.0.0.1' # ASF使用的Host，本地运行一般是`127.0.0.1`
-asfPort: '1242' # ASF使用的端口，默认是`1242`
+asfPort: 1242 # ASF使用的端口，默认是`1242`
 asfPassword: '' # ASF IPCPassword
 asfBotname: '' # 要挂游戏的ASF Bot名称
 ```
@@ -303,9 +323,9 @@ proxy:
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
     - pusher # 在推送时使用代理，不使用删掉此行
-  protocol: 'http' # 代理协议，'http'或'socks'
+  protocol: 'http' # 支持 http、https、socks4、socks5
   host: '127.0.0.1' # 代理host
-  port: 7890 # 代理端口
+  port: 1080 # 代理端口
   username: '' # 代理用户名，没有可留空
   password: '' # 代理密码，没有可留空
 ```
@@ -324,15 +344,17 @@ pusher:
     user_id: '******'
 ```
 
+## Steam Community Event Game Information
+
+In the home page's **DailyQuest control** section, enter a game ID (required) and game name (optional), or select a source and synchronize remotely. Information is stored in `community-event.json` beside the active `config.yml`; include it in backups and migrations.
+
+Information is valid for the runtime machine's local year and month. With `joinSteamCommunityEvent` enabled, an open event, and unfinished personal playtime, missing or expired information is fetched from the selected source. If valid information remains unavailable, the event is skipped with a prompt to supply it.
+
 ## Run history and diagnostics
 
-The Manager dashboard shows recent runs, subtask results, consecutive failures and the next five scheduled times. Click “Refresh history and schedules” to update it. History uses the browser timezone; each schedule uses its configured timezone.
+Open the dedicated **Run history & diagnostics** page (`/operations`) from the Manager home page to see recent runs, subtask results, consecutive failures and the next five scheduled times. Click “Refresh history and schedules” to update it. History uses the browser timezone; each schedule uses its configured timezone.
 
-```yaml
-manager:
-```
-
-- Run history is stored in `data/manager/history.json`, retaining 200 runs by default. Unfinished runs become interrupted at the next startup. Corrupt history is preserved and storage errors are shown on the dashboard.
+- Run history is stored in `data/manager/history.json`, retaining 200 runs by default. Unfinished runs become interrupted at the next startup. Corrupt history is preserved and storage errors are shown on the operations page.
 - “Check connections” checks AWA session/page structure, Twitch extension authorization and ASF IPC status without performing tasks. Results distinguish expired sessions, missing extensions, rate limits, changed pages and connection failures, with suggested actions. Identical configurations share a 30-second result cache.
 - “Export redacted diagnostics” downloads JSON containing the version, runtime environment, latest 50 runs, last diagnostic results and the tail of today's four log scopes (up to 64 KiB each). Export does not run new probes or include full configuration or raw pages.
 - Cron preview does not save configuration. Five fields omit seconds; six include them. Both date and weekday must match when both are restricted. Check the preview for timezone and daylight-saving effects.
@@ -366,4 +388,4 @@ manager:
 - [marked](https://github.com/markedjs/marked)
 - [rollup](https://github.com/rollup/rollup)
 - [TypeScript](https://github.com/Microsoft/TypeScript)
-- [UglifyJS](https://github.com/mishoo/UglifyJS)
+- [Terser](https://github.com/terser/terser)

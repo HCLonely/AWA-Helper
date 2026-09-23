@@ -26,7 +26,7 @@ cp config/config.example.yml config/config.yml
 
 On Windows, you can also copy and rename the file in File Explorer. If the example is missing, run `AWA-Helper.exe --init` (Windows) or `node index.js --init` (Node.js archive) first. `--init` creates directories, the example, and launch scripts, but does not create `config.yml`.
 
-After configuring Windows, double-click `AWA-Manager.exe` to run in the system tray. It requires `AWA-Helper.exe` in the same directory. See the [tray application guide](/en/guide/running#awa-manager-exe-tray-application) for menu actions, startup at sign-in, and troubleshooting.
+After configuring Windows, double-click `AWA-Manager.exe` to run in the system tray. It launches `AWA-Helper.exe` in the same directory and automatically attempts installation or repair if required program files are missing. See the [tray application guide](/en/guide/running#awa-manager-exe-tray-application) for menu actions, startup at sign-in, and troubleshooting.
 
 The example enables a proxy at `127.0.0.1:1080`. Set `proxy.enable` to `[]` if you do not use that proxy, or enter your actual proxy address. Twitch and Steam playtime tasks are disabled by default; configure their credentials before enabling them.
 
@@ -77,7 +77,7 @@ Persistent Manager waits for scheduled triggers; it does not run DailyQuest imme
 
 If `manager.secret` is empty on first launch, Manager generates a secret and writes it to the configuration file. A manually configured secret shorter than 16 characters produces a security warning but does not prevent startup.
 
-Read `manager.secret` from the active `config.yml` and enter the same secret in the WebUI to control tasks and settings. Update the userscript to the current version, which uses `/api/cookies/awa`. Synchronized cookies apply to the next task run; stop and restart an active task if it needs the new configuration immediately.
+Read `manager.secret` from the active `config.yml` and enter the same secret on the WebUI login page. Once verified, you can control tasks and settings. Update the userscript to the current version, which uses `/api/cookies/awa`. Synchronized cookies apply to the next task run; stop and restart an active task if it needs the new configuration immediately.
 
 ## Next Steps
 
