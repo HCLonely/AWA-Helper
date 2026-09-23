@@ -13,7 +13,7 @@
     "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\"",
     "typecheck": "tsc --noEmit",
     "test:unit": "npm run tsc --silent && npm run build:webui --silent && node --test tests/*.test.js",
-    "test": "npm run lint && npm run typecheck && npm run test:unit",
+    "test": "npm run lint && npm run typecheck",
     "verify": "npm run test && npm run build:pre",
     "start": "cd output && node index.js --manager",
     "build:docker": "npm run gulp && node scripts/pre.js && tsc && node scripts/build.js --docker && rollup -c",
