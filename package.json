@@ -34,7 +34,10 @@
   "author": "HCLonely",
   "license": "MIT",
   "overrides": {
-    "nodemailer": "^9.0.4"
+    "nodemailer": "^9.1.1",
+    "vitepress": {
+      "vite": "^6.4.3"
+    }
   },
   "dependencies": {
     "all-pusher-api": "^1.5.1",
