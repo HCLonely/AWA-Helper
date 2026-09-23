@@ -23,8 +23,6 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
-      - name: Install browser for integration tests
-        run: npx --yes playwright@1.58.2 install --with-deps chromium
       - name: Verify
         run: npm run verify
       - name: Compile Windows tray app

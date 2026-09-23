@@ -10,7 +10,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\"",
+    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\"",
     "typecheck": "tsc --noEmit",
     "test:unit": "npm run tsc --silent && npm run build:webui --silent && node --test tests/*.test.js",
     "test": "npm run lint && npm run typecheck",

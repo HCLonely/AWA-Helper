@@ -6,6 +6,9 @@ const socialLinks = [
 
 export default defineConfig({
   title: 'AWA-Helper',
+  head: [
+    ['link', { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+  ],
   cleanUrls: true,
   lastUpdated: true,
   locales: {
