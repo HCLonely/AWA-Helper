@@ -148,7 +148,7 @@ See [Run history and diagnostics](/en/guide/webui#run-history-and-diagnostics) f
 
 ### Steam CommunityEvent game data
 
-Below **DailyQuest Control** on the home page, enter the required game ID and optional game name, then click **Save game data**. Data is stored in a separate `community-event.json` beside the active `config.yml`, never in YAML configuration. The server timestamps manual saves.
+Within **DailyQuest Control** on the home page, enter the required game ID and optional game name, then click **Save game data**. Data is stored in a separate `community-event.json` beside the active `config.yml`, never in YAML configuration. The server timestamps manual saves.
 
 Remote sources are `github` (default), `https://gh-proxy.org/`, `https://cdn.gh-proxy.org/`, and `https://axisnow.gh-proxy.org/`. The GitHub URL is `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`; proxies prepend their prefix directly to that URL. **Sync from remote** validates and saves `{gameName, gameId, updateTime}` immediately, preserving the remote timestamp. Failures preserve existing data.
 

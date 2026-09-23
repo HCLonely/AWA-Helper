@@ -50,7 +50,8 @@
 .settings-page .form-text { color: #68778d; font-size: 12px; line-height: 1.4; margin-top: 3px; overflow-wrap: anywhere; white-space: pre-line; }
 .settings-page .settings-group { background: #fff; border: 0; border-radius: 0; }
 .settings-page .settings-group-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; padding: 5px 0; min-height: 32px; background: transparent; border: 0; color: #22334e; text-align: left; font-size: 16px; }
-.settings-page .settings-group-toggle:hover { background: transparent; color: var(--settings-accent); }
+.settings-page .settings-group-toggle:is(:hover, :focus-visible):not(:disabled):not(.disabled) { background: #254bbb; color: #fff; }
+.settings-page .settings-group-toggle:is(:hover, :focus-visible):not(:disabled):not(.disabled)::after { border-color: currentColor; }
 .settings-group-toggle::after { content: ''; flex-shrink: 0; width: 7px; height: 7px; border-right: 2px solid #8290a5; border-bottom: 2px solid #8290a5; transform: rotate(45deg); margin: 0 5px 5px; }
 .settings-group-toggle[aria-expanded="false"]::after { transform: rotate(-45deg); margin-bottom: 0; }
 .settings-group > .collapse { margin-top: 4px; padding: 0 14px; border: 1px solid #e7ecf4; border-radius: 10px; background: #f8faff; }

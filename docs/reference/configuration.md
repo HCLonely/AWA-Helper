@@ -148,7 +148,7 @@ pusher:
 
 ### Steam 社区活动游戏信息
 
-在主界面的 **DailyQuest 控制** 下方填写游戏 ID（必填）和游戏名称（可选），点击“保存游戏信息”。数据独立保存在当前 `config.yml` 同目录的 `community-event.json`，不写入 YAML 配置。保存手动数据时，服务器自动记录 `updateTime`。
+在主界面的 **DailyQuest 控制** 区域内填写游戏 ID（必填）和游戏名称（可选），点击“保存游戏信息”。数据独立保存在当前 `config.yml` 同目录的 `community-event.json`，不写入 YAML 配置。保存手动数据时，服务器自动记录 `updateTime`。
 
 “远程来源”内置 `github`、`https://gh-proxy.org/`、`https://cdn.gh-proxy.org/`、`https://axisnow.gh-proxy.org/`，默认 GitHub。GitHub 地址为 `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`，代理地址为代理前缀直接拼接该地址。点击“从远程同步”会校验并直接保存 `{gameName, gameId, updateTime}`，保留远程更新时间；失败时保留已有数据。
 

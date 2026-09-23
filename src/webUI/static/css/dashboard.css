@@ -38,3 +38,7 @@ font.red { color: #af453a; }
 .community-event-grid label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
 .community-event-hint { color: var(--app-muted); font-size: 13px; overflow-wrap: anywhere; }
 #community-event-form button { min-height: 44px; }
+
+.community-event-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--app-border); }
+
+.community-event-notice { margin: 0 0 16px; padding: 12px 16px; border: 1px solid #e5a437; border-left-width: 4px; border-radius: 8px; background: #fff7e6; color: #7a3e00; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
