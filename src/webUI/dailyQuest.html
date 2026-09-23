@@ -1,0 +1,148 @@
+<!--
+ @file src/webUI/dailyQuest.html
+ @description 展示每日任务进度与实时日志。
+-->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWA-DailyQuest</title>
+  <link inline rel="icon" href="static/icons/favicon.ico" type="image/x-icon">
+  <link href="static/css/webui.css" rel="stylesheet" inline>
+  <script src="static/js/dayjs.min.js" inline></script>
+  <link inline href="static/css/dashboard.css" rel="stylesheet">
+  <link inline href="static/css/daily-quest.css" rel="stylesheet">
+  <link inline href="static/css/app.css" rel="stylesheet">
+  <script>
+    var lang = "__LANG__";
+    var I18n = __I18N__;
+  </script>
+  <link inline href="static/css/auth.css" rel="stylesheet">
+</head>
+<body class="app-page daily-quest-page">
+  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-i18n="navHome">管理首页</a><a href="/daily-quest" data-i18n="navDailyQuest" aria-current="page">每日任务</a><a href="/settings" data-i18n="navSettings">配置设置</a><a href="/operations" data-i18n="navDiagnostics">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-i18n="navGuide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a><button type="button" class="app-signout" data-auth-logout>退出登录</button></nav></div></header>
+  <main class="app-main">
+  <header class="app-intro"><div><p class="app-eyebrow">WORKSPACE / DAILY QUESTS</p><h1 data-i18n="navDailyQuest">每日任务</h1><p class="app-subtitle" data-i18n="dailyQuestSubtitle">查看每日任务进度、ARP 收益与实时日志。</p></div><a class="version" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank" rel="noopener noreferrer">__VERSION__</a></header>
+  <!-- 任务信息区域 -->
+  <section class="button-section" aria-labelledby="quest-title">
+    <h2 class="section-title" id="quest-title" data-i18n="questStatusTitle">任务状态监控</h2>
+    <div class="table-responsive quest-table" tabindex="0" aria-labelledby="quest-title">
+      <table id="quest-info" class="table table-hover">
+        <thead>
+          <tr id="table-head">
+            <th scope="col"><span data-i18n="questColumn">任务</span></th>
+            <th scope="col">状态</th>
+            <th scope="col">已获得ARP</th>
+            <th scope="col">最大可获得ARP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="daily-quest-0">
+            <th scope="row">Daily Quest 1</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="daily-quest-1" style="display:none;">
+            <th scope="row">Daily Quest 2</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="daily-quest-2" style="display:none;">
+            <th scope="row">Daily Quest 3</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="daily-quest-3" style="display:none;">
+            <th scope="row">Daily Quest 4</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="daily-quest-4" style="display:none;">
+            <th scope="row">Daily Quest 5</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="daily-quest-5" style="display:none;">
+            <th scope="row">Daily Quest 6</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+
+          <tr id="time-on-site">
+            <th scope="row">Time on Site</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="watch-twitch">
+            <th scope="row">Watch Twitch</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="battle-pass" style="display:none;">
+            <th scope="row">Battle Pass</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown">0</td>
+            <td class="status-unknown">0</td>
+          </tr>
+          <tr id="steam-quest-0">
+            <th scope="row">Steam Quest 1</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="steam-quest-1" style="display:none;">
+            <th scope="row">Steam Quest 2</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="steam-quest-2" style="display:none;">
+            <th scope="row">Steam Quest 3</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="steam-quest-3" style="display:none;">
+            <th scope="row">Steam Quest 4</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="steam-quest-4" style="display:none;">
+            <th scope="row">Steam Quest 5</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+          <tr id="steam-event" style="display:none;">
+            <th scope="row">Steam Event</th>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+            <td class="status-unknown" data-i18n="battlePassStatus_unknown">未知</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <!-- 日志展示区域 -->
+  <section class="button-section" aria-labelledby="daily-log-title">
+    <h2 class="section-title" id="daily-log-title" data-i18n="realtimeLogs">实时日志</h2>
+    <div class="log-container"><div id="log-area" tabindex="0" aria-labelledby="daily-log-title"></div></div>
+  </section>
+  </main>
+  <footer><a href="https://github.com/HCLonely/AWA-Helper" target="_blank">AWA-Helper</a> By <a href="https://github.com/HCLonely" target="_blank">HCLonely</a></footer>
+  <script src="static/js/pages/native-dom.js" inline></script>
+  <script inline src="static/js/pages/auth.js"></script>
+  <script src="static/js/pages/dailyQuest.js" inline></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!--
+ @file src/webUI/achievement.html
+ @description 展示成就状态并提供任务控制。
+-->
+<!doctype html>
+<html lang="__LANG__">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWA Achievement</title>
+  <link href="static/css/webui.css" rel="stylesheet" inline>
+  <link inline href="static/css/auth.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-light">
+  <main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>AWA Achievement <small class="fs-6">__VERSION__</small></h1>
+      <a class="btn btn-outline-light" href="/">Manager</a>
+    </div>
+    <div class="card bg-secondary text-light">
+      <div class="card-body">
+        <h2 class="card-title fs-4">Status: <span id="achievement-status">unknown</span></h2>
+        <p id="achievement-message" class="card-text"></p>
+        <button id="achievement-start" class="btn btn-success">Start</button>
+        <button id="achievement-stop" class="btn btn-danger">Stop</button>
+        <button id="achievement-refresh" class="btn btn-primary">Refresh</button>
+        <button id="achievement-logs" class="btn btn-info">Logs</button>
+      </div>
+    </div>
+  </main>
+  <script>
+    var I18n = __I18N__;
+    function __(key) { return I18n[document.documentElement.lang]?.[key] || key; }
+  </script>
+  <script src="static/js/pages/log-preview.js" inline></script>
+  <script inline src="static/js/pages/auth.js"></script>
+  <script src="static/js/pages/achievement.js" inline></script>
+</body>
+</html>

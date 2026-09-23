@@ -4,27 +4,31 @@
   "description": "外星人论坛自动做任务",
   "main": "dist/index.js",
   "engines": {
-    "node": "^22.13.0 || >=24.0.0"
+    "node": "^22.20.0 || ^24.12.0 || >=26.0.0"
   },
   "scripts": {
-    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\" \"src/manager/configer/index.js\" \"src/manager/static/js/index.js\" \"src/webUI/static/js/index.js\"",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "lint": "yamllint src/locales/*.yml && yamllint config.example.yml && eslint \"src/**/*.ts\" \"scripts/**/*.js\" \"tests/**/*.js\"",
     "typecheck": "tsc --noEmit",
-    "test:unit": "npm run tsc --silent && node --test tests/*.test.js",
+    "test:unit": "npm run tsc --silent && npm run build:webui --silent && node --test tests/*.test.js",
     "test": "npm run lint && npm run typecheck && npm run test:unit",
     "verify": "npm run test && npm run build:pre",
-    "start": "cd output && node main.js --manager",
-    "build:docker": "npm run build:configer && npm run gulp && node scripts/pre.js && tsc && node scripts/build.js --docker && rollup -c",
-    "build:configer": "babel src/manager/configer/index.js --out-file src/manager/configer/babel.index.js && uglifyjs src/manager/configer/babel.index.js --compress --mangle -o src/manager/static/js/configer.min.js",
+    "start": "cd output && node index.js --manager",
+    "build:docker": "npm run gulp && node scripts/pre.js && tsc && node scripts/build.js --docker && rollup -c",
+    "build:webui": "tsc -p tsconfig.webui.json",
     "tsc": "tsc",
-    "gulp": "node scripts/inline-html.js",
+    "gulp": "npm run build:webui && node scripts/inline-html.js",
     "updateDailyQuestDb": "node scripts/updateDailyQuestDb.js",
     "rollup": "node scripts/pre.js && tsc && node scripts/build.js && rollup -c",
     "upx": "upx --brute ./output/AWA-Helper.exe",
-    "build:pre": "npm run build:configer && npm run gulp && npm run rollup",
-    "pack:win": "node --experimental-sea-config AWA-Helper-config.json && node -e \"require('fs').copyFileSync(process.execPath, 'output/AWA-Helper-raw.exe')\" && npx postject output/AWA-Helper-raw.exe NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 && node scripts/icon.js && node -e \"require('fs').rmSync('output/AWA-Helper-raw.exe')\"",
-    "build:win": "npm run pack:win && npm run upx && tar --exclude main.js --exclude sha256.txt -zcvf AWA-Helper-Win.tar.gz ./output",
+    "build:pre": "npm run gulp && npm run rollup",
+    "pack:win": "node --experimental-sea-config AWA-Helper-config.json && node -e \"require('fs').copyFileSync(process.execPath, 'output/AWA-Helper-raw.exe')\" && npx postject output/AWA-Helper-raw.exe NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 && node scripts/icon.js && node scripts/build-tray.js && node -e \"require('fs').rmSync('output/AWA-Helper-raw.exe')\"",
+    "build:win": "npm run pack:win && npm run upx && node scripts/package-windows.js",
     "zip:linux": "node scripts/pre-linux.js && tar -zcvf AWA-Helper-Linux.tar.gz ./output",
-    "build": "npm run build:pre && npm run build:win"
+    "build": "npm run build:pre && npm run build:win",
+    "build:test": "npm run build:pre && npm run pack:win"
   },
   "keywords": [],
   "author": "HCLonely",
@@ -45,16 +49,14 @@
     "http-proxy-middleware": "^4.2.0",
     "i18n": "^0.15.3",
     "lodash": "^4.18.1",
-    "node-cron": "^4.2.1",
+    "node-cron": "^4.6.0",
     "socks-proxy-agent": "^7.0.0",
+    "tar": "^7.5.22",
     "tunnel": "^0.0.6",
     "yaml": "^2.9.0",
     "yaml-lint": "^1.7.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.6",
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.5",
     "@eslint/js": "^10.0.1",
     "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-json": "^6.1.0",
@@ -82,6 +84,6 @@
     "rollup": "^4.60.4",
     "rollup-plugin-string-import": "^1.2.6",
     "typescript": "^6.0.3",
-    "uglify-js": "^3.19.3"
+    "vitepress": "^1.6.4"
   }
 }

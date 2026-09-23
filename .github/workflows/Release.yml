@@ -2,10 +2,11 @@ name: Release
 on:
   workflow_dispatch:
 env:
-  version: 3.4.8
-  node_version: 22.13.1
+  node_version: 22.23.2
 jobs:
   release:
+    outputs:
+      release_version: ${{ steps.package_version.outputs.version }}
     permissions:
       contents: write
     runs-on: windows-latest
@@ -17,23 +18,46 @@ jobs:
         with:
           node-version: ${{ env.node_version }}
           cache: npm
+      - name: Read package version
+        id: package_version
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          "version=$version" >> $env:GITHUB_OUTPUT
       - run: npm ci
       - name: Install UPX
         uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
-      - run: npm run build
+      - name: Build Windows release with AWA-Manager tray app
+        run: npm run build
+      - name: Verify Windows tray artifacts
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath 'output/AWA-Manager.exe')) {
+            throw 'output/AWA-Manager.exe was not built'
+          }
+          $archiveEntries = tar -tf AWA-Helper-Win.tar.gz
+          if ($archiveEntries -notcontains './output/AWA-Manager.exe') {
+            throw 'AWA-Manager.exe is missing from AWA-Helper-Win.tar.gz'
+          }
+          if ($archiveEntries -notcontains './output/installation.json') {
+            throw 'installation.json is missing from the Windows package'
+          }
       - run: node scripts/md5.js
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
           prerelease: false
-          tag_name: v${{ env.version }}
-          name: ${{ env.version }}
+          tag_name: v${{ steps.package_version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.package_version.outputs.version }}
           body_path: CHANGELOG.txt
           files: |
             AWA-Helper-Win.tar.gz
-            output/main.js
+            AWA-Helper-Win.tar.gz.sha256
+            output/AWA-Manager.exe
+            output/index.js
             output/sha256.txt
           token: ${{ github.TOKEN }}
   release-linux:
@@ -55,6 +79,10 @@ jobs:
           install-only: true
       - run: npm ci
       - run: npm run build:pre
+      - name: Prepare Linux launch scripts
+        run: |
+          node scripts/pre-linux.js
+          chmod +x output/AWA-Manager.sh output/AWA-DailyQuest.sh output/update.sh
       - name: build-x64
         run: |
           node --experimental-sea-config AWA-Helper-config.json
@@ -63,7 +91,7 @@ jobs:
           cp node-v${{ env.node_version }}-linux-x64/bin/node output/AWA-Helper
           npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
           # upx --brute ./output/AWA-Helper
-          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-x64.tar.gz ./output
+          tar --exclude index.js --exclude '*.bat' -zcvf AWA-Helper-Linux-x64.tar.gz ./output
           rm -rf output/AWA-Helper
       - name: build-armv7
         run: |
@@ -72,7 +100,7 @@ jobs:
           cp node-v${{ env.node_version }}-linux-armv7l/bin/node output/AWA-Helper
           npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
           # upx --brute ./output/AWA-Helper
-          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-armv7.tar.gz ./output
+          tar --exclude index.js --exclude '*.bat' -zcvf AWA-Helper-Linux-armv7.tar.gz ./output
           rm -rf output/AWA-Helper
       - name: build-armv8
         run: |
@@ -81,17 +109,37 @@ jobs:
           cp node-v${{ env.node_version }}-linux-arm64/bin/node output/AWA-Helper
           npx postject output/AWA-Helper NODE_SEA_BLOB AWA-Helper.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
           # upx --brute ./output/AWA-Helper
-          tar --exclude main.js --exclude *.bat -zcvf AWA-Helper-Linux-armv8.tar.gz ./output
+          tar --exclude index.js --exclude '*.bat' -zcvf AWA-Helper-Linux-armv8.tar.gz ./output
           rm -rf output/AWA-Helper
+      - name: Verify Linux launch scripts in archives
+        run: |
+          for archive in AWA-Helper-Linux-{x64,armv7,armv8}.tar.gz; do
+            entries=$(tar -tzf "$archive")
+            for script in AWA-Manager.sh AWA-DailyQuest.sh update.sh; do
+              if ! grep -Fxq "./output/$script" <<< "$entries"; then
+                echo "Missing $script in $archive" >&2
+                exit 1
+              fi
+            done
+          done
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
           prerelease: false
-          tag_name: v${{ env.version }}
-          name: ${{ env.version }}
+          tag_name: v${{ needs.release.outputs.release_version }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ needs.release.outputs.release_version }}
           body_path: CHANGELOG.txt
           files: |
             AWA-Helper-Linux-x64.tar.gz
             AWA-Helper-Linux-armv7.tar.gz
             AWA-Helper-Linux-armv8.tar.gz
           token: ${{ github.TOKEN }}
+  release-docker:
+    needs: [release, release-linux]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/Docker.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

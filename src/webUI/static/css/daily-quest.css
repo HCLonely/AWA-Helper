@@ -1,0 +1,19 @@
+/* 每日任务进度表；卡片和日志复用管理器组件。 */
+.daily-quest-page .section-title { margin-top: 0; }
+.quest-table { border: 1px solid var(--app-border); border-radius: 10px; }
+#quest-info { margin: 0; table-layout: fixed; min-width: 580px; font-size: 13px; }
+#quest-info th, #quest-info td { padding: 14px 16px; border-bottom: 1px solid var(--app-border); text-align: left; overflow-wrap: anywhere; }
+#quest-info thead { background: var(--app-soft); color: var(--app-muted); }
+#quest-info thead th { font-weight: 600; }
+#quest-info th:first-child { width: 44%; }
+#quest-info th:nth-child(2) { width: 20%; }
+#quest-info th:nth-child(3), #quest-info th:nth-child(4) { width: 18%; }
+#quest-info tbody th { font-weight: 600; }
+#quest-info tbody tr:last-child > * { border-bottom: 0; }
+#quest-info tbody tr:hover { background: var(--app-bg); }
+#quest-info .table-success { background: #eaf6ef !important; }
+#quest-info td { font-variant-numeric: tabular-nums; }
+.status-unknown { color: var(--app-muted); }
+.status-completed { color: #20764b; }
+.status-pending { color: #935317; }
+.status-failed { color: #af453a; }

@@ -1,4 +1,4 @@
-### index.ts ###
+### 程序入口（index.ts） ###
 running: 另一个AWA-Helper程序正在运行中！
 multipleAccountAlert: 如需多开，请将本程序复制到另一个文件夹运行！
 exitAlert: 按任意键退出...
@@ -14,6 +14,8 @@ pushTitle: 'AWA-Helper提醒'
 processWasKilled: 任务进程被终止
 processWasInterrupted: 任务进程被人为终止
 processError: 任务进程异常退出
+taskFailureUnknown: 任务返回失败，但未提供具体原因，请查看此前日志
+steamNoMatchingQuests: ASF 拥有的游戏与待执行的 Steam 任务不匹配
 processInitError: 任务初始化出错
 errorMessage: 错误信息
 processTimeout: 运行超时，强制退出程序
@@ -25,7 +27,7 @@ missingSSLKey: 未找到SSL证书key文件，请将此文件放到与config.yml�
 missingSSLCert: 未找到SSL证书cert文件，请将此文件放到与config.yml同一目录下！
 clearingLogs: 正在清理日志文件...
 
-### DailyQuest.ts ###
+### 每日任务（DailyQuest.ts） ###
 noREMEMBERMEAlert: 检测到 %s 中没有 %s ，可能会导致连续签到天数获取错误，不影响其他功能
 allTaskCompleted: 今日所有任务已完成！
 updatingCookie: 正在更新 %s
@@ -51,7 +53,7 @@ changing: 正在更换 %s...
 sendingViewTrack: 正在发送浏览 %s 心跳...
 noTimeOnSiteInfo: 没有获取到在线任务信息，跳过此任务
 timeOnSiteCompleted: 每日在线任务完成！
-trackError: 发送 %s 在线心跳连续失败超过6次，跳过此任务
+trackError: 发送 %s 在线心跳连续失败6次，等待5分钟后重试
 sendingOnlineTrack: 正在发送 %s 在线心跳...
 sendingViewRecord: 正在发送浏览帖子 %s 记录...
 gettingRelatedPosts: 正在获取每日任务相关帖子...
@@ -113,8 +115,22 @@ gettingPromotionalCalendarItemError: "获取推广奖励失败！"
 promotionalCalendar: "推广奖励"
 dailyArp: "今日共获得 %s ARP"
 doingGetStartedQuest: "正在做GET START任务[%s]..."
+battlePass: BattlePass
+battlePassChecking: 正在检查 Battle Pass...
+battlePassUnknown: Battle Pass 页面状态暂时无法识别
+battlePassPartial: 部分 Battle Pass 奖励领取失败
+battlePassStatus_not-started: 未开始
+battlePassStatus_active: 进行中
+battlePassStatus_completed: 已完成
+battlePassStatus_ended: 已结束
+battlePassStatus_unknown: 未知
+battlePassClaimed: "成功领取 %s (%s/%s)"
+battlePassRewardSeparator: "、"
+battlePassProgress: "奖励领取进度 (%s/%s)"
+battlePassStatusProgress: "%s (%s/%s)"
+battlePassClaimFailed: "领取 %s 失败"
 
-### DailyQuestUS.ts ###
+### 美区每日任务（DailyQuestUS.ts） ###
 doingTaskUS: 正在做美区任务[%s]...
 startingQuest: 正在开始任务...
 waitingIFrame: 正在等待加载任务...
@@ -125,7 +141,7 @@ doTaskUSError: 美区任务执行错误！
 fulfillingGame: 正在完成游戏...
 boundingBox: 正在绑定画布框架...
 
-### TwitchTrack.ts ###
+### Twitch 观看跟踪（TwitchTrack.ts） ###
 initing: 正在初始化 %s...
 checkAuthorization: 正在检测是否授权 %s 扩展...
 authorized: 已授权
@@ -133,14 +149,14 @@ notAuthorized: 未授权(授权方式请参考https://keylol.com/t782079-1-1)
 gettingLiveInfo: 正在获取可用直播信息...
 noLive: 当前没有可用的直播！
 getLiveInfoAlert: '%s 分钟后再次获取可用直播信息'
-gettingChannelInfo: 正在获取直播频道[%s]信息...
+gettingChannelInfo: 正在获取Twitch直播频道信息...
 gettingExtInfo: 正在获取ART扩展信息...
 noExt: 在此频道没有找到扩展！
 getJwtFailed: 获取jwt失败！
 obtainedArp: 今日ARP已获取！
 liveOffline: 此直播间[%s]已停止直播！
 
-### SteamQuestASF.ts ###
+### ASF 方式的 Steam 任务（SteamQuestASF.ts） ###
 gettingSteamQuestInfo: 正在获取 %s 任务信息...
 getSteamQuestInfoSuccess: 获取 %s 任务信息成功
 getSteamQuestInfoFailed: 获取 %s 任务信息失败
@@ -169,7 +185,7 @@ addingLicense: 正在尝试入库Steam游戏...
 syncSteamGamesRequired: 需同步Steam游戏库
 syncingGames: 正在同步Steam游戏库...
 
-### SteamQuestSU.ts ###
+### SU 方式的 Steam 任务（SteamQuestSU.ts） ###
 firstSteamUserAlert: 检测到首次使用此方式[%s]登录Steam, 如果Steam启用了%s，请注意控制台提示输入两步验证码！
 2fa: 两步验证
 loginingSteam: 正在登录 %s...
@@ -178,7 +194,7 @@ playingGames: 正在挂游戏时长...
 lastCodeWrong: 验证码错误，请 %s 秒后重试！
 steamCodeInput: 请输入验证码：
 
-### tool.ts ###
+### 工具函数（tool.ts） ###
 timeout: 连接超时，请尝试更换代理或节点！
 connRefused: 连接被拒绝，请尝试更换代理或节点！
 connReset: 连接被重置，请尝试更换代理或节点！
@@ -196,13 +212,13 @@ pushFailed: 推送失败
 downloading: 正在下载安装包...
 decompressing: 正在解压安装包...
 updateSuccess: 更新成功，下次启动时生效！
-nextRunTime: 下次启动AWA-Helper时间：%s
-nextArchievementRestart: 下次重启AWA-Achievement时间：%s
-downloadingMainJs: 正在下载 main.js ...
+nextRunTime: 下次启动DailyQuest时间：%s
+nextAchievementRestart: 下次重启AWA-Achievement时间：%s
+downloadingMainJs: 正在下载 index.js ...
 autoUpdated: 已自动更新至 %s
 updateLog: 更新内容：
 
-### webUI ###
+### 网页界面 ###
 webUIStart: webUI服务器已启动，请打开 %s 查看
 webUIConnect: webUI已连接
 webUIDisconnect: webUI已断开
@@ -213,31 +229,36 @@ giveUpReconnectWebUI: 多次连接失败，放弃重连
 reconnectingWebUI: 连接出错，正在重新连接...
 log: 日志
 
-### managerServer ###
+### 管理器服务器 ###
 managerServerNotConfig: managerServer未配置!
 managerServerSecretNotSet: managerServer的secret未设置！
 managerServerStart: managerServer启动成功！访问链接 %s
 cookieUpdated: cookie更新成功，来源IP%s
 twitchCookieUpdated: Twitch Cookie更新成功，来源IP%s
 publicNetworkNotice: 如需公网访问，请将 127.0.0.1 更换为你的公网ip，并开放%s端口
-startHelper: 启动AWA-Helper
-stopHelper: 终止AWA-Helper
+startDailyQuest: 启动DailyQuest
+stopDailyQuest: 终止DailyQuest
 stopManager: 终止AWA-Manager
 updateHelper: 更新AWA-Helper
-cornEnabled: 成功配置定时启动AWA-Helper
+cornEnabled: 成功配置定时启动DailyQuest
 cornError: cron格式错误
+invalidCronExpression: '无效的 Cron 表达式：%s'
+managerStarted: 'Manager 已以%s模式启动，端口：%s'
+managerMode_persistent: 常驻
+managerMode_once: 单次
+codSafetyNotice: '* 重要提示：后台挂机可能导致COD封号，游玩COD时请关闭本程序！！！'
 watchLogs: 查看日志
 changeArtifacts: 更换Artifact
 
-### managerWeb ###
-gettingHelperStatus: 正在获取AWA-Helper运行状态...
-getHelperStatusSuccess: 运行状态获取成功！
-getHelperStatusFailed: 运行状态获取失败
+### 管理器网页 ###
+gettingDailyQuestStatus: 正在获取DailyQuest运行状态...
+getDailyQuestStatusSuccess: 运行状态获取成功！
+getDailyQuestStatusFailed: 运行状态获取失败
 gettingManagerStatus: 正在获取AWA-Manager运行状态...
-startingHelper: 正在启动AWA-Helper...
+startingDailyQuest: 正在启动DailyQuest...
 startSuccess: 启动成功！
 startFailed: 启动失败
-stoppingHelper: 正在终止AWA-Helper...
+stoppingDailyQuest: 正在终止DailyQuest...
 stopSuccess: 终止成功！
 stopFailed: 终止失败
 stoppingManager: 正在终止AWA-Manager...
@@ -248,15 +269,16 @@ userJsNotInstalled: Cookie 同步脚本未安装！
 userJsInstalled: Cookie 同步脚本已安装(v%s)
 updating: 正在更新...
 updateFailed: 更新失败
+updateDelegated: 已交由托盘 Manager 检查更新，请查看托盘中的进度和结果。
 updateSuccessManager: 更新成功！
-startingArchievement: 正在启动AWA-Achievement...
-archievementStarted: AWA-Achievement启动成功！
-archievementStartFailed: AWA-Achievement启动失败！
-stoppingArchievement: 正在终止AWA-Achievement...
-archievementStopped: AWA-Achievement终止成功！
-archievementStopFailed: AWA-Achievement终止失败！
+startingAchievement: 正在启动AWA-Achievement...
+achievementStarted: AWA-Achievement启动成功！
+achievementStartFailed: AWA-Achievement启动失败！
+stoppingAchievement: 正在终止AWA-Achievement...
+achievementStopped: AWA-Achievement终止成功！
+achievementStopFailed: AWA-Achievement终止失败！
 
-### Artifacts.ts ###
+### 遗物（Artifacts.ts） ###
 gettingArtifactsInfo: 正在获取遗物信息...
 changingArtifact: '正在更换遗物{id:%s,position:%s}...'
 changeArtifactsSuccess: 遗物更换成功！
@@ -276,7 +298,7 @@ s% additional ARP for each daily calendar claim.: '每日登录额外增加 %s A
 Changes your username color in the forums.: 在论坛中更改您的用户名颜色
 Adds an additional s% ARP to Steam quest completions.: 'Steam任务完成时额外增加 %s ARP'
 
-### Archievement.ts ###
+### 成就（Achievement.ts） ###
 matching: 正在匹配 %s...
 doingAchievement: 正在操作成就[%s]...
 doneAchievement: 完成操作成就[%s]！
@@ -309,16 +331,14 @@ unknownState: '未知状态: %s'
 watchTwitchAfter5min: 'Twitch 运行失败，5分钟后重试...'
 noChannelFound: '频道不存在'
 
-### Manager Web UI ###
+### 管理器网页界面 ###
 systemConfig: 系统配置
 configManagerServer: 配置ManagerServer
 configAWAHelper: 配置AWA-Helper
 refreshStatus: 刷新运行状态
-syncCookie: 同步Cookie
+syncCookie: 同步AWA Cookie
 syncTwitchCookie: 同步Twitch Cookie
-awaHelperControl: AWA-Helper 控制
-startAWAHelper: 启动AWA-Helper
-stopAWAHelper: 终止AWA-Helper
+dailyQuestControl: DailyQuest 控制
 updateAWAHelper: 更新AWA-Helper
 stopAWAManager: 终止AWA-Manager
 installCookieScript: 安装Cookie同步脚本
@@ -331,6 +351,7 @@ lastRunTime: 上次运行时间
 runStatus: 运行状态
 runLogs: 运行日志
 view: 查看
+currentVersionChanges: 当前版本更新内容
 realtimeLogs: 实时日志
 configManagerServerSecret: 配置Manager Server Secret
 secretKey: Secret 密钥
@@ -338,3 +359,252 @@ enterSecretKey: 请输入Secret密钥
 rememberSecret: 记住密钥
 cancel: 取消
 confirm: 确定
+
+### 运行时日志 ###
+httpRequestStarted: '[HTTP:%s] %s %s 请求开始'
+httpRequestCompleted: '[HTTP:%s] %s %s 请求完成（状态码 %s，耗时 %sms）'
+httpRequestFailed: '[HTTP:%s] %s %s 请求失败（%s，耗时 %sms）'
+managerEnvironmentInitialized: '[Manager] 环境初始化完成（模式=%s，版本=%s）'
+managerWebUiDisabled: '[Manager] WebUI 已被配置禁用'
+managerWebUiStarting: '[Manager] WebUI 正在启动：%s:%s'
+managerOneShotSelected: '[Manager] 已选择单次运行模式，DailyQuest 将执行一次'
+managerStartingScheduler: '[Manager] 正在启动调度器'
+managerShutdownRequested: '[Manager] 收到关闭请求'
+managerShutdownStarted: '[Manager] 关闭流程开始'
+managerShutdownCompleted: '[Manager] 关闭流程完成'
+jobDuplicateStart: '[Manager] 忽略 %s 的重复启动请求：任务正在运行'
+jobDispatching: '[Manager] 正在派发任务：%s'
+jobStarted: '[Job] %s 已启动'
+jobFinished: '[Job] %s 状态：%s'
+managerJobFinished: '[Manager] 任务 %s 状态：%s'
+jobFinishedWithMessage: '[Job] %s 状态：%s，信息：%s'
+managerJobFinishedWithMessage: '[Manager] 任务 %s 状态：%s，信息：%s'
+jobStopIgnored: '[Manager] 忽略 %s 的停止请求：任务未运行'
+jobStopRequested: '[Manager] 正在请求停止任务：%s'
+jobCancellationRequested: '[Job] Manager 已请求取消任务'
+jobStoppingAll: '[Manager] 正在停止 %s 个运行中的任务'
+jobAllDisposed: '[Manager] 所有任务资源均已释放'
+jobStatus_completed: 已完成
+jobStatus_failed: 失败
+jobStatus_cancelled: 已取消
+jobCancelledMessage: 任务已取消
+jobStoppedByManager: 任务已被 Manager 停止
+schedulerStarted: '[Scheduler] 已启动，共 %s 个计划任务'
+schedulerStopping: '[Scheduler] 正在停止 %s 个计划任务'
+schedulerTriggered: '[Scheduler] 已触发：%s'
+schedulerTriggerCompleted: '[Scheduler] 触发执行完成：%s'
+schedulerTriggerFailed: '[Scheduler] 触发执行失败：%s，错误：%s'
+schedulerRegistered: '[Scheduler] 已注册 %s：%s'
+schedulerRestarting: '[Scheduler] 正在重启任务：%s'
+serverWebUiDisabled: '[Server] WebUI 服务已被配置禁用'
+serverAuthenticationRejected: '[Server] 已拒绝未认证请求：%s %s'
+serverJobStartRequested: '[Server] API 请求启动任务：%s'
+serverJobStartRejected: '[Server] 任务启动请求被拒绝：%s'
+serverJobStopRequested: '[Server] API 请求停止任务：%s'
+serverConfigUpdated: '[Server] 配置已更新，需要重启后生效'
+serverConfigRejected: '[Server] 配置更新被拒绝：%s'
+serverAwaCredentialsUpdated: '[Server] AWA 凭据已更新'
+serverTwitchCredentialsUpdated: '[Server] Twitch 凭据已更新'
+serverManagerShutdownRequested: '[Server] API 请求关闭 Manager'
+serverListening: '[Server] 正在监听 %s://%s:%s'
+serverStopSkipped: '[Server] 服务未监听，跳过停止操作'
+serverStopping: '[Server] 正在停止 WebUI 服务'
+serverStopped: '[Server] WebUI 服务已停止'
+achievementInitializing: '[Achievement] 正在初始化 AWA 会话和成就列表'
+achievementCatalogLoaded: '[Achievement] 已加载 %s 个成就'
+achievementActionableCount: '[Achievement] 可操作的未完成成就：%s 个'
+achievementTwitchSkippedNoCookie: '[Achievement] 未配置 Twitch Cookie，跳过 Twitch 跟踪'
+achievementTwitchSkippedNoMatch: '[Achievement] 没有匹配的未完成成就，跳过 Twitch 跟踪'
+achievementTwitchSkippedCancelled: '[Achievement] 任务已取消，跳过 Twitch 跟踪'
+achievementTwitchStarted: '[Achievement] Twitch 跟踪已启动，类型：%s'
+achievementTwitchStopRequested: '[Achievement] 已请求停止 Twitch 跟踪'
+achievementReleasingState: '[Achievement] 正在释放服务状态'
+artifactInitializing: '[Artifact] 正在初始化 AWA 会话'
+artifactSessionExpired: '[Artifact] 初始化失败：AWA 会话已过期'
+artifactInitialized: '[Artifact] 初始化完成'
+artifactProfileUrlMissing: '[Artifact] 初始化失败：未找到用户资料地址'
+artifactRequestedSet: '[Artifact] 请求的遗物组合：[%s]'
+artifactReplacementCount: '[Artifact] 需要替换 %s 个遗物'
+artifactNotInitialized: '[Artifact] 初始化完成前无法读取遗物'
+artifactLoadingEquipped: '[Artifact] 正在读取已装备遗物'
+artifactLoadFailed: '[Artifact] 读取已装备遗物失败：%s'
+artifactNoEquippedReturned: '[Artifact] 未返回任何已装备遗物'
+artifactEquippedSet: '[Artifact] 当前已装备遗物：[%s]'
+artifactInvalidReplacement: '[Artifact] 槽位 %s 的替换请求无效'
+artifactEquipping: '[Artifact] 正在将遗物 %s 装备到槽位 %s...'
+artifactEquipFailed: '[Artifact] 装备请求失败：%s'
+personalizationType_avatar: 头像
+personalizationType_border: 边框
+dailyQuestRefreshingPersonalization: '[DailyQuest] 正在刷新%s个性化设置...'
+dailyQuestViewingPosts: '[DailyQuest] 将从 %s 个候选帖子中最多浏览 3 个'
+dailyQuestSharingPosts: '[DailyQuest] 将从 %s 个候选帖子中最多分享 2 个'
+dailyQuestProcessingNews: '[DailyQuest] 正在处理推广新闻帖子 %s'
+dailyQuestNewsCompleted: '[DailyQuest] 推广新闻处理完成'
+dailyQuestMonitorStarted: '[DailyQuest] 任务状态监控已启动（间隔=%s分钟）'
+dailyQuestMonitorStopped: '[DailyQuest] 任务状态监控已停止'
+awaListenerFailed: 'AWA 监听失败：%s'
+twitchAuthorizationExpiredRetrying: Twitch 授权已过期，正在重试
+updatePrepared: AWA-Helper %s 已下载并通过校验，将在当前进程退出后安装。
+managerWeakSecretWarning: '警告：manager.secret 当前长度为 %s，建议至少使用 16 个字符。'
+deprecatedSteamProxyTarget: '警告：proxy.enable 中的 steam 已弃用且不会控制独立请求；请按目标改用 awa 或 asf。'
+logStatusOk: 成功
+logStatusError: 错误
+logStatusFailed: 失败
+logStatusClosed: 已关闭
+logStatusFinished: 已结束
+
+logStorageBudgetExceeded: 日志容量超过预算；已保留当天或正在使用的文件。
+
+logPreview: 日志预览
+logLoading: 正在读取…
+logRotated: 日志已轮转或截断，显示最新内容。
+logEmpty: 暂无日志。
+logPageLimit: 每页最多显示 64 KiB。
+logReadFailed: 读取失败，请检查连接与认证。
+logOlder: 较早内容
+logLatest: 最新内容
+logClose: 关闭
+
+jobStatus_partial: "部分完成"
+jobStatus_skipped: "已跳过"
+achievementActionResult: "成就操作 %s：%s"
+
+taskPartiallyCompleted: 任务已结束，但有部分操作未完成。
+
+# 设置页面
+"settings.Settings · AWA Helper": "设置 · AWA Helper"
+"settings.WORKSPACE / PREFERENCES": "工作空间 / 偏好设置"
+"settings.Settings": "设置"
+"settings.Make AWA Helper work your way.": "按你的习惯配置 AWA Helper。"
+"settings.Configuration": "配置"
+"settings.Config": "配置"
+"settings.Back to top": "返回顶部"
+"settings.Click to return on the top page": "点击返回页面顶部"
+"settings.Load a configuration template": "加载配置模板"
+"settings.Choose a YAML file or drag it here to get started.": "选择 YAML 文件，或将文件拖到这里。"
+"settings.Or load a template from a URL": "或通过链接加载模板"
+"settings.Load": "加载"
+"settings.Info": "提示"
+"settings.Error": "错误"
+"settings.Message": "消息"
+"settings.Close": "关闭"
+"settings.Loading": "加载中"
+"settings.Loading...": "正在加载…"
+"settings.Retry loading configuration": "重新加载配置"
+"settings.Save": "保存"
+"settings.Saving...": "正在保存…"
+"settings.Changes are applied when you save.": "保存后应用更改。"
+"settings.Saved. Restart required for the changed server settings.": "已保存。修改的服务器设置需要重启后生效。"
+"settings.Success": "保存成功"
+"settings.Item": "项目"
+"settings.Add %s": "添加%s"
+"settings.Delete %s": "删除%s"
+"settings.Set the Manager secret before editing configuration.": "请先设置 Manager 密钥，再编辑配置。"
+"settings.Get configuration failed: %s": "获取配置失败：%s"
+"settings.Save configuration failed: %s": "保存配置失败：%s"
+"settings.Configuration must be a mapping.": "配置必须为键值映射。"
+"settings.Get template file failed": "获取模板文件失败"
+"settings.Expected field definitions": "需要字段定义"
+"settings.Unsupported field name": "不支持的字段名"
+"settings.Conditional field overrides its selector: %s": "条件字段覆盖了选择器：%s"
+"settings.Conflicting conditional field: %s": "条件字段冲突：%s"
+"settings.Invalid or excessively nested field": "字段无效或嵌套层级过深"
+"settings.%s must be a string": "%s 必须为字符串"
+"settings.required must be boolean": "required 必须为布尔值"
+"settings.Invalid repeat count": "重复数量无效"
+"settings.Unsupported input type": "不支持的输入类型"
+"settings.Array needs an item definition": "数组需要项目定义"
+"settings.Expected string options": "选项必须为字符串"
+"settings.Expected string option labels": "选项标签必须为字符串"
+"settings.Invalid conditional fields": "条件字段无效"
+"settings.Unsupported field type: %s": "不支持的字段类型：%s"
+"settings.Expected object default": "默认值必须为对象"
+"settings.Expected array default": "默认值必须为数组"
+"settings.No definition for default array item": "默认数组项目缺少定义"
+"settings.Expected boolean default": "默认值必须为布尔值"
+"settings.Expected text or numeric default": "默认值必须为文本或数字"
+"settings.Expected finite numeric default": "默认值必须为有限数值"
+"settings.Expected integer array or comma-separated default": "默认值必须为整数数组或逗号分隔的整数"
+"settings.Expected integer array default": "默认值必须为整数数组"
+"settings.Unsupported default option": "不支持的默认选项"
+"settings.Unsupported default options": "默认选项包含不支持的值"
+"settings.Expected a non-empty array": "需要非空数组"
+"settings.Template": "模板"
+"settings.Template %s": "模板 %s"
+"settings.Missing name": "缺少名称"
+"settings.Expected YAML or JSON format": "需要 YAML 或 JSON 格式"
+"settings.Expected object configuration": "配置值必须为对象"
+"settings.Expected array configuration": "配置值必须为数组"
+"settings.No definition for array item": "数组项目缺少定义"
+"settings.Expected selected option": "需要单个选项值"
+"settings.Expected selected options": "需要选项数组"
+"settings.Expected boolean configuration": "配置值必须为布尔值"
+"settings.Expected text or numeric configuration": "配置值必须为文本或数字"
+"settings.Expected finite numeric configuration": "配置值必须为有限数值"
+"settings.At least one item is required": "至少需要一个项目"
+"settings.Required": "此项必填"
+"settings.Expected comma-separated integers": "请输入以逗号分隔的整数"
+"settings.Expected a finite number": "请输入有限数值"
+"settings.Invalid format": "格式无效"
+"settings.Select a supported option": "请选择有效选项"
+"settings.Select supported options": "请选择有效选项"
+"settings.Changed in another form. Reload this page before saving, or enter the latest values.": "此项已在其他表单中修改。请重新加载页面或输入最新值后再保存。"
+"settings.Expected array": "需要数组"
+"settings.Cannot extend this array item": "无法添加此数组项目"
+"settings.Array cannot be extended": "此数组不支持添加项目"
+"settings.Cannot remove this array item": "无法删除此数组项目"
+"settings.Invalid template URL": "模板链接无效"
+"settings.Invalid template YAML": "模板 YAML 格式无效"
+"settings.Invalid configuration YAML": "配置 YAML 格式无效"
+"settings.Invalid regular expression": "校验表达式无效"
+
+operationsTitle: "运行记录与诊断"
+operationsRefresh: "刷新记录与计划"
+operationsDiagnose: "检查连接"
+operationsExport: "导出脱敏诊断"
+operationsHistory: "最近运行"
+operationsSchedules: "任务计划"
+operationsPreview: "预览 Cron 执行时间"
+operationsTimezone: "时区"
+operationsPreviewButton: "预览"
+operationsPreviewHint: "预览不会保存配置。时区及调度策略可在配置页面的 Manager 设置中修改。"
+operationsConnections: "连接诊断"
+operationsDiagnosticHint: "检查已启用的平台，不执行任务。诊断导出包含最近运行和日志片段。"
+
+# 网页界面共用导航
+"navHome": "管理首页"
+"navSettings": "配置设置"
+"navDiagnostics": "运行记录与诊断"
+"managerSubtitle": "管理每日任务、成就与运行日志。"
+"settings.Home": "管理首页"
+"settings.Diagnostics": "运行记录与诊断"
+"settings.Navigation settings": "配置设置"
+"navGuide": "使用说明 ↗"
+"settings.User guide": "使用说明 ↗"
+"navDailyQuest": "每日任务"
+"settings.Daily quests": "每日任务"
+"dailyQuestSubtitle": "查看每日任务进度、ARP 收益与实时日志。"
+"questStatusTitle": "任务状态监控"
+"questColumn": "任务"
+
+communityEventDataRequired: 社区活动游戏信息缺失或已过期，请在WebUI同步或填写游戏ID。
+communityEventTitle: "Steam 社区活动"
+communityEventHint: "游戏信息仅当年当月有效，过期后请重新同步或填写。仅在活动开放期间使用。"
+communityEventSource: "远程来源"
+communityEventGameId: "游戏 ID（必填）"
+communityEventGameName: "游戏名称（可选）"
+communityEventUpdateTime: "更新时间"
+communityEventSave: "保存游戏信息"
+communityEventSync: "从远程同步"
+communityEventReload: "重新加载"
+communityEventDisabled: "自动加入社区活动未启用，可保存游戏信息；请在配置中开启后重新加载以同步。"
+communityEventNotActive: "社区活动未开放或已结束，未获取游戏信息。"
+communityEventInvalidSource: "请选择内置的 GitHub 或代理来源。"
+communityEventReadFailed: "无法读取社区活动数据，请检查独立数据文件后重试。"
+communityEventLoading: "正在加载游戏信息…"
+communityEventSaving: "正在保存…"
+communityEventSyncing: "正在检查活动并同步…"
+communityEventCurrent: "当前游戏信息在本月有效。"
+communityEventSaved: "游戏信息已保存。"
+communityEventSynced: "远程游戏信息已同步并保存。"
+communityEventExplanation: "由于Steam 社区活动新版界面识别不到游戏Id,所以需要从远程同步或手动输入！"

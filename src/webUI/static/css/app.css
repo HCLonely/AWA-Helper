@@ -1,0 +1,82 @@
+/* 管理器、设置和诊断页面共用的视觉样式。 */
+:root {
+  --app-bg: #f5f7fb;
+  --app-surface: #fff;
+  --app-ink: #26334a;
+  --app-muted: #63748a;
+  --app-border: #dfe5ee;
+  --app-accent: #315cd6;
+  --app-soft: #edf2fc;
+  --app-radius: 14px;
+  --app-width: 1120px;
+  --settings-accent: var(--app-accent);
+  --settings-border: var(--app-border);
+  --ink: var(--app-ink);
+  --muted: var(--app-muted);
+  --line: var(--app-border);
+  --blue: var(--app-accent);
+  --soft: var(--app-soft);
+}
+.app-page {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--app-bg);
+  color: var(--app-ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.app-page [hidden] { display: none !important; }
+:where(.app-page) a { color: var(--app-accent); text-decoration: none; }
+:where(.app-page) a:hover { text-decoration: underline; }
+.app-icon { display: inline-block; width: 1em; height: 1em; flex: 0 0 auto; vertical-align: -.125em; fill: currentColor; }
+.app-page :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid #8eaaf0; outline-offset: 3px; }
+.app-header { background: var(--app-surface); border-bottom: 1px solid var(--app-border); }
+.app-header-inner { width: min(100% - 48px, var(--app-width)); min-height: 72px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.app-page .app-brand { display: flex; align-items: center; gap: 12px; color: var(--app-ink); font-size: 17px; font-weight: 750; white-space: nowrap; text-decoration: none; }
+.app-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: #fff; background: var(--app-accent); }
+.app-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.app-page .app-nav a { padding: 9px 12px; border-radius: 8px; color: var(--app-muted); font-size: 13px; font-weight: 600; }
+.app-page .app-nav a:hover, .app-page .app-nav [aria-current="page"] { color: var(--app-accent); background: var(--app-soft); text-decoration: none; }
+.app-page .container, .app-page .app-main, .app-page #operations { width: min(100% - 48px, var(--app-width)); max-width: none; margin-inline: auto; padding: 0; }
+.app-intro, .app-page .settings-intro, .app-page .intro { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 0 24px; }
+.app-intro h1, .app-page .settings-intro h1, .app-page .intro h1 { margin: 0 0 8px; color: var(--app-ink); font-size: 28px; font-weight: 700; line-height: 1.25; letter-spacing: -.7px; }
+.app-eyebrow, .app-page .settings-eyebrow, .app-page .eyebrow { margin: 0 0 8px; color: var(--app-muted); font-size: 10px; font-weight: 700; letter-spacing: 1.7px; }
+.app-subtitle, .app-page .settings-subtitle, .app-page .intro .muted { margin: 0; color: var(--app-muted); font-size: 14px; }
+.app-page .version { padding: 5px 9px; border: 1px solid #dce5f7; border-radius: 6px; color: var(--app-accent); background: var(--app-soft); font-size: 12px; white-space: nowrap; }
+:where(.app-page) :is(.btn, .log-preview__button), .operations-page button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 38px; padding: 8px 14px; border: 1px solid var(--app-border); border-radius: 8px;
+  background: var(--app-surface); color: var(--app-ink); font: inherit; font-size: 13px; font-weight: 600;
+  text-decoration: none; cursor: pointer; transition: background-color .15s, border-color .15s;
+}
+:where(.app-page) :is(.btn, .log-preview__button):hover:not(:disabled):not(.disabled), .operations-page button:hover:not(:disabled) { background: var(--app-soft); border-color: #b9c9e9; text-decoration: none; }
+:where(.app-page) :is(.btn-primary, .log-preview__button--primary), .operations-page button.primary { background: var(--app-accent); border-color: var(--app-accent); color: #fff; }
+:where(.app-page) :is(.btn-primary, .log-preview__button--primary):hover:not(:disabled):not(.disabled), .operations-page button.primary:hover:not(:disabled) { background: #254bbb; border-color: #254bbb; }
+.app-page .dropdown-toggle { justify-content: space-between; width: 100%; background: var(--app-surface); border-color: var(--app-border); color: var(--app-ink); }
+.app-page .dropdown-toggle:hover:not(:disabled) { background: var(--app-soft); border-color: var(--app-border); }
+.app-page .btn-success { background: #eaf6ef; border-color: #c7e5d4; color: #20764b; }
+.app-page .btn-danger { background: #fcecea; border-color: #edceca; color: #af453a; }
+.app-page .btn-warning { background: #fff2e5; border-color: #edd6b8; color: #935317; }
+.app-page :is(.btn-info, .btn-outline-primary) { color: var(--app-accent); }
+.app-page :is(button, .btn):disabled, .app-page .btn.disabled { opacity: .55; cursor: not-allowed; }
+.app-page :is(.form-control, .form-select), .operations-page input { min-width: 0; min-height: 38px; padding: 7px 10px; border: 1px solid var(--app-border); border-radius: 8px; background: #fcfdff; color: var(--app-ink); font: inherit; }
+.app-page :is(.form-control, .form-select):focus, .operations-page input:focus { border-color: #7d9be8; background: #fff; }
+.app-page .is-invalid { border-color: #dc3545; }
+.app-page :is(.button-section, .settings-fields, .panel, .metric) { background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius); box-shadow: 0 4px 16px #16284103; }
+.app-page .settings-import, .app-page .settings-remote, .app-page .settings-remote-label { width: min(100% - 48px, var(--app-width)); }
+.app-page .modal-content { max-height: calc(100dvh - 32px); overflow: auto; border: 1px solid var(--app-border); border-radius: var(--app-radius); background: var(--app-surface); }
+.app-page .modal-header, .app-page .modal-footer { padding: 18px 24px; border-color: var(--app-border); }
+.app-page .modal-header { background: var(--app-surface); color: var(--app-ink); }
+.app-page .modal-body { padding: 24px; }
+.app-page .modal-title { margin: 0; }
+.app-page footer { margin: 24px auto 0; padding: 20px 14px; color: var(--app-muted); font-size: 12px; text-align: center; }
+@media (max-width: 680px) {
+  .app-header-inner { width: calc(100% - 28px); padding: 14px 0; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .app-nav { width: 100%; gap: 4px; }
+  .app-page .app-nav a { padding: 8px; font-size: 12px; }
+  .app-page .container, .app-page .app-main, .app-page #operations, .app-page .settings-import, .app-page .settings-remote, .app-page .settings-remote-label { width: calc(100% - 28px); }
+  .app-intro, .app-page .intro, .app-page .settings-intro { padding: 22px 0 20px; gap: 14px; flex-wrap: wrap; }
+  .app-intro h1, .app-page .intro h1, .app-page .settings-intro h1 { font-size: 25px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-page *, .app-page *::before { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

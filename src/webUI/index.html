@@ -1,362 +1,205 @@
+<!--
+ @file src/webUI/index.html
+ @description 提供每日任务、成就与遗物的统一管理页面。
+-->
 <!DOCTYPE html>
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AWA-Helper</title>
-  <link rel="shortcut icon" href="data:image/x-icon;base64,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" type="image/x-icon">
-  <link href="static/css/bootstrap.min.css" rel="stylesheet" inline>
-  <script src="static/js/jquery.slim.min.js" inline></script>
-  <script src="static/js/bootstrap.bundle.min.js" inline></script>
+  <title>AWA-Manager</title>
+  <link inline rel="icon" href="static/icons/favicon.ico" type="image/x-icon">
+  <link href="static/css/webui.css" rel="stylesheet" inline>
   <script src="static/js/dayjs.min.js" inline></script>
-  <style>
-    font.green{color: darkgreen;}
-    font.gray{color: gray;}
-    font.blue{color: blue;}
-    font.yellow{color: darkorange;}
-    font.red{color: red;}
-
-    body {
-      margin-top: 20px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      min-height: 100vh;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    h1 {
-      color: #2c3e50;
-      margin-bottom: 30px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    footer {
-      text-align: center;
-      color: grey;
-      margin-top: 40px;
-      padding: 20px;
-    }
-
-    footer a {
-      text-decoration: none;
-      color: #007bff;
-      transition: color 0.3s ease;
-    }
-
-    footer a:hover {
-      color: #0056b3;
-    }
-
-    /* Quest Table Styling */
-    .quest-container {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 15px;
-      padding: 25px;
-      margin: 20px auto;
-      max-width: 900px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .quest-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #495057;
-      margin-bottom: 20px;
-      text-align: center;
-      position: relative;
-    }
-
-    .quest-title::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 3px;
-      background: linear-gradient(90deg, #007bff, #28a745);
-      border-radius: 2px;
-    }
-
-    #quest-info {
-      border: none;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      background: white;
-    }
-
-    #quest-info thead {
-      background: linear-gradient(135deg, #007bff, #0056b3);
-      color: white;
-    }
-
-    #quest-info thead th {
-      border: none;
-      padding: 15px 12px;
-      font-weight: 600;
-      text-align: center;
-      font-size: 0.95rem;
-      letter-spacing: 0.5px;
-    }
-
-    #quest-info tbody tr {
-      transition: all 0.3s ease;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    #quest-info tbody tr:hover {
-      background: rgba(0, 123, 255, 0.05);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
-    }
-
-    #quest-info tbody tr:last-child {
-      border-bottom: none;
-    }
-
-    #quest-info tbody th {
-      background: rgba(0, 123, 255, 0.1);
-      border: none;
-      padding: 12px;
-      font-weight: 600;
-      color: #007bff;
-      text-align: center;
-      border-right: 3px solid #007bff;
-    }
-
-    #quest-info tbody td {
-      border: none;
-      padding: 12px;
-      text-align: center;
-      font-weight: 500;
-      color: #495057;
-    }
-
-    /* Quest Status Indicators */
-    .status-unknown {
-      color: #6c757d;
-      font-style: italic;
-    }
-
-    .status-completed {
-      color: #28a745;
-      font-weight: 600;
-    }
-
-    .status-pending {
-      color: #ffc107;
-      font-weight: 600;
-    }
-
-    .status-failed {
-      color: #dc3545;
-      font-weight: 600;
-    }
-
-    /* Log Area Styling */
-    .log-container {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 15px;
-      padding: 25px;
-      margin: 20px auto;
-      max-width: 900px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .log-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: #495057;
-      margin-bottom: 15px;
-      text-align: center;
-      position: relative;
-    }
-
-    .log-title::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 2px;
-      background: linear-gradient(90deg, #007bff, #6c757d);
-      border-radius: 1px;
-    }
-
-    #log-area {
-      height: 400px;
-      overflow-y: auto;
-      background: rgba(248, 249, 250, 0.8);
-      border-radius: 8px;
-      padding: 15px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-      font-size: 0.85rem;
-      line-height: 1.4;
-    }
-
-    #log-area::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    #log-area::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 4px;
-    }
-
-    #log-area::-webkit-scrollbar-thumb {
-      background: rgba(0, 123, 255, 0.3);
-      border-radius: 4px;
-      transition: background 0.3s ease;
-    }
-
-    #log-area::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 123, 255, 0.5);
-    }
-
-    @media (max-width: 768px) {
-      .quest-container, .log-container {
-        margin: 10px;
-        padding: 20px;
-      }
-
-      #quest-info {
-        font-size: 0.9rem;
-      }
-
-      #quest-info thead th,
-      #quest-info tbody th,
-      #quest-info tbody td {
-        padding: 10px 8px;
-      }
-    }
-  </style>
+  <script src="static/js/axios.min.js" inline></script>
+  <link inline href="static/css/dashboard.css" rel="stylesheet">
   <script>
     var lang = "__LANG__";
     var I18n = __I18N__;
-  </script>
-</head>
-<body>
-  <h1 class="fw-bold">AWA-Helper<a style="font-size:20px;" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></h1>
-  <!-- Quest Information Section -->
-  <div class="quest-container">
-    <div class="quest-title">🎯 任务状态监控</div>
-    <div class="table-responsive">
-      <table id="quest-info" class="table table-hover">
-        <thead>
-          <tr id="table-head">
-            <th scope="col">📋 Quest</th>
-            <th scope="col">📊 Status</th>
-            <th scope="col">🎯 Progress</th>
-            <th scope="col">⏰ Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr id="daily-quest-0">
-            <th scope="row">Daily Quest 1</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="daily-quest-1" style="display:none;">
-            <th scope="row">Daily Quest 2</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="daily-quest-2" style="display:none;">
-            <th scope="row">Daily Quest 3</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="daily-quest-3" style="display:none;">
-            <th scope="row">Daily Quest 4</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="daily-quest-4" style="display:none;">
-            <th scope="row">Daily Quest 5</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="daily-quest-5" style="display:none;">
-            <th scope="row">Daily Quest 6</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
 
-          <tr id="time-on-site">
-            <th scope="row">⏱️ Time on Site</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="watch-twitch">
-            <th scope="row">📺 Watch Twitch</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="steam-quest-0">
-            <th scope="row">🎮 Steam Quest 1</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="steam-quest-1" style="display:none;">
-            <th scope="row">🎮 Steam Quest 2</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="steam-quest-2" style="display:none;">
-            <th scope="row">🎮 Steam Quest 3</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="steam-quest-3" style="display:none;">
-            <th scope="row">🎮 Steam Quest 4</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="steam-quest-4" style="display:none;">
-            <th scope="row">🎮 Steam Quest 5</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-          <tr id="steam-event" style="display:none;">
-            <th scope="row">🎉 Steam Event</th>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-            <td class="status-unknown">Unknown</td>
-          </tr>
-        </tbody>
-      </table>
+    // 国际化函数
+    function __(text, ...argv) {
+      let result = text;
+      if (I18n[lang]?.[text]) {
+        result = I18n[lang][text];
+        if (argv.length > 0) {
+          argv.forEach((s) => {
+            result = result.replace(/%s/, s);
+          });
+        }
+      }
+      return result;
+    }
+
+    // 页面加载时初始化国际化
+    function initI18n() {
+      // 替换带有 data-i18n 属性的元素的文本内容
+      document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        element.textContent = __(key);
+      });
+
+      // 替换带有 data-i18n-placeholder 属性的元素的占位文本
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-i18n-placeholder');
+        element.placeholder = __(key);
+      });
+    }
+
+    // DOM 加载完成后初始化国际化
+    document.addEventListener('DOMContentLoaded', initI18n);
+  </script>
+  <link inline href="static/css/app.css" rel="stylesheet">
+  <link inline href="static/css/auth.css" rel="stylesheet">
+</head>
+<body class="app-page dashboard-page">
+  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-i18n="navHome" aria-current="page">管理首页</a><a href="/daily-quest" data-i18n="navDailyQuest">每日任务</a><a href="/settings" data-i18n="navSettings">配置设置</a><a href="/operations" data-i18n="navDiagnostics">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-i18n="navGuide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a><button type="button" class="app-signout" data-auth-logout>退出登录</button></nav></div></header>
+  <!-- 图标：由 Fonticons, Inc. 提供的 Font Awesome Free 5.15.4（CC BY 4.0）。 https://fontawesome.com | static/FontAwesome-LICENSE.txt -->
+  <main class="app-main">
+  <header class="app-intro"><div><p class="app-eyebrow">WORKSPACE / MANAGER</p><h1 data-i18n="navHome">管理首页</h1><p class="app-subtitle" data-i18n="managerSubtitle">管理每日任务、成就与运行日志。</p></div><a class="version" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></header>
+  <details class="button-section release-notes">
+    <summary><span data-i18n="currentVersionChanges">当前版本更新内容</span> <span>__VERSION__</span></summary>
+    <pre class="release-notes-content" tabindex="0">__CHANGELOG__</pre>
+  </details>
+  <!-- 配置区域 -->
+  <div class="button-section">
+    <div class="section-title"><span data-i18n="systemConfig">系统配置</span></div>
+    <div class="btn-group-custom">
+      <button type="button" class="btn btn-primary btn-custom awa-helper-config">
+        <img inline src="static/icons/tools.svg" alt=""> <span data-i18n="configAWAHelper">配置AWA-Helper</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom cookie-sync" style="display: none;">
+        <img inline src="static/icons/cookie-bite.svg" alt=""> <span data-i18n="syncCookie">同步AWA Cookie</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom twitch-cookie-sync" style="display: none;">
+        <img inline src="static/icons/twitch.svg" alt=""> <span data-i18n="syncTwitchCookie">同步Twitch Cookie</span>
+      </button>
+      <button type="button" class="btn btn-warning btn-custom awa-helper-update" style="display: none;">
+        <img inline src="static/icons/download.svg" alt=""> <span data-i18n="updateAWAHelper">更新AWA-Helper</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-custom awa-manager-stop">
+        <img inline src="static/icons/power-off.svg" alt=""> <span data-i18n="stopAWAManager">终止AWA-Manager</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom manager-logs">
+        <img inline src="static/icons/file-alt.svg" alt=""> <span data-i18n="viewLogs">查看日志</span>
+      </button>
+      <button type="button" class="btn btn-info btn-custom install-user-js">
+        <img inline src="static/icons/code.svg" alt=""> <span data-i18n="installCookieScript">安装Cookie同步脚本</span>
+      </button>
     </div>
   </div>
-  <!-- Log Display Section -->
-  <div class="log-container">
-    <div class="log-title">📋 实时日志</div>
-    <div id="log-area"></div>
+
+  <!-- 每日任务控制区域 -->
+  <div class="button-section">
+    <div class="section-title"><span data-i18n="dailyQuestControl">DailyQuest 控制</span></div>
+    <div class="btn-group-custom">
+      <button type="button" class="btn btn-success btn-custom daily-quest-start">
+        <img inline src="static/icons/play.svg" alt=""> <span data-i18n="startDailyQuest">启动DailyQuest</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-custom daily-quest-stop">
+        <img inline src="static/icons/stop.svg" alt=""> <span data-i18n="stopDailyQuest">终止DailyQuest</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom refresh-status">
+        <img inline src="static/icons/sync-alt.svg" alt=""> <span data-i18n="refreshStatus">刷新运行状态</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom daily-quest-logs">
+        <img inline src="static/icons/file-alt.svg" alt=""> <span data-i18n="viewLogs">查看日志</span>
+      </button>
+    </div>
+    <div class="status-heading" data-i18n="statusInfo">运行状态信息</div>
+    <div class="status-info-container">
+      <div class="status-item">
+        <div class="status-label">
+          <img inline src="static/icons/clock.svg" alt="">
+          <span data-i18n="lastRunTime">上次运行时间</span>
+        </div>
+        <div class="status-value last-run-time">-</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">
+          <img inline src="static/icons/heartbeat.svg" alt="">
+          <span data-i18n="runStatus">运行状态</span>
+        </div>
+        <div class="status-value run-status">-</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">
+          <img inline src="static/icons/file-alt.svg" alt="">
+          <span data-i18n="runLogs">运行日志</span>
+        </div>
+        <div class="status-value">
+          <a class="run-logs status-link" href="javascript:void(0);" target="_self">
+            <img inline src="static/icons/external-link-alt.svg" alt=""> <span data-i18n="view">查看</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <section class="community-event-section" aria-labelledby="community-event-title">
+      <h2 class="section-title" id="community-event-title" data-i18n="communityEventTitle">Steam 社区活动</h2>
+      <p class="community-event-notice"><strong data-i18n="communityEventExplanation">由于Steam 社区活动新版界面识别不到游戏Id,所以需要从远程同步或手动输入！</strong></p>
+      <p class="community-event-hint" data-i18n="communityEventHint">游戏信息仅当年当月有效，过期后请重新同步或填写。</p>
+      <form id="community-event-form">
+        <fieldset id="community-event-fields" disabled>
+          <div class="community-event-grid">
+            <div><label for="community-event-source" data-i18n="communityEventSource">远程来源</label>
+              <select id="community-event-source" class="form-select">
+                <option value="github">GitHub</option>
+                <option value="https://gh-proxy.org/">https://gh-proxy.org/</option>
+                <option value="https://cdn.gh-proxy.org/">https://cdn.gh-proxy.org/</option>
+                <option value="https://axisnow.gh-proxy.org/">https://axisnow.gh-proxy.org/</option>
+              </select>
+            </div>
+            <div><label for="community-event-id" data-i18n="communityEventGameId">游戏 ID（必填）</label><input id="community-event-id" class="form-control" type="text" inputmode="numeric" pattern="[1-9][0-9]*" required></div>
+            <div><label for="community-event-name" data-i18n="communityEventGameName">游戏名称（可选）</label><input id="community-event-name" class="form-control" type="text"></div>
+          </div>
+          <p class="community-event-hint"><span data-i18n="communityEventUpdateTime">更新时间</span>：<output id="community-event-updated">—</output></p>
+          <div class="btn-group-custom">
+            <button type="submit" class="btn btn-primary" data-i18n="communityEventSave">保存游戏信息</button>
+            <button type="button" id="community-event-sync" class="btn btn-outline-primary" data-i18n="communityEventSync">从远程同步</button>
+          </div>
+        </fieldset>
+        <p id="community-event-status" class="community-event-hint" role="status" aria-live="polite"></p>
+        <button type="button" id="community-event-reload" class="btn btn-outline-primary" data-i18n="communityEventReload">重新加载</button>
+      </form>
+    </section>
   </div>
+
+  <!-- AWA 成就控制区域 -->
+  <div class="button-section">
+    <div class="section-title"><span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
+    <div class="btn-group-custom">
+      <button type="button" class="btn btn-success btn-custom awa-achievement-start">
+        <img inline src="static/icons/trophy.svg" alt=""> <span data-i18n="startAWAAchievement">启动AWA-Achievement</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-custom awa-achievement-logs">
+        <img inline src="static/icons/file-alt.svg" alt=""> <span data-i18n="viewLogs">查看日志</span>
+      </button>
+      <button type="button" class="btn btn-danger btn-custom awa-achievement-stop disabled">
+        <img inline src="static/icons/stop-circle.svg" alt=""> <span data-i18n="stopAWAAchievement">终止AWA-Achievement</span>
+      </button>
+    </div>
+  </div>
+  <!-- 日志展示区域 -->
+  <div class="button-section">
+    <div class="section-header">
+      <div class="section-title"><span data-i18n="realtimeLogs">实时日志</span></div>
+      <a href="/operations" class="btn btn-primary btn-custom"><span data-i18n="operationsTitle">运行记录与诊断</span> ↗</a>
+    </div>
+    <div class="log-container">
+      <div id="log-area" class="log-content"></div>
+    </div>
+  </div>
+
+  </main>
+
   <footer><a href="https://github.com/HCLonely/AWA-Helper" target="_blank">AWA-Helper</a> By <a href="https://github.com/HCLonely" target="_blank">HCLonely</a></footer>
-  <script src="static/js/index.js" inline></script>
+  <script src="static/js/pages/native-dom.js" inline></script>
+  <script src="static/js/pages/log-preview.js" inline></script>
+  <script inline src="static/js/pages/auth.js"></script>
+  <script src="static/js/pages/index.js" inline></script>
+  <script src="static/js/pages/community-event.js" inline></script>
+
 </body>
 </html>

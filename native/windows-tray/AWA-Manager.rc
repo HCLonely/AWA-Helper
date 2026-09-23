@@ -1,0 +1,31 @@
+/**
+ * @file native/windows-tray/AWA-Manager.rc
+ * @description 定义 Windows 托盘的图标与版本资源。
+ */
+#include "resource.h"
+#include <winver.h>
+#include "obj/version.h"
+
+IDI_AWA_MANAGER ICON "../../static/icon.ico"
+
+1 VERSIONINFO
+ FILEVERSION AWA_FILE_VERSION
+ PRODUCTVERSION AWA_FILE_VERSION
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+BEGIN
+ BLOCK "StringFileInfo"
+ BEGIN
+  BLOCK "040904b0"
+  BEGIN
+   VALUE "FileDescription", "AWA-Manager\0"
+   VALUE "FileVersion", AWA_VERSION "\0"
+   VALUE "ProductVersion", AWA_VERSION "\0"
+   VALUE "ProductName", "AWA-Helper\0"
+  END
+ END
+ BLOCK "VarFileInfo"
+ BEGIN
+  VALUE "Translation", 0x0409, 1200
+ END
+END

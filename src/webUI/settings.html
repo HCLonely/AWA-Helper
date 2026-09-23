@@ -1,0 +1,100 @@
+<!--
+ @file src/webUI/settings.html
+ @description 提供 YAML 配置编辑界面。
+-->
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="Settings · AWA Helper">Settings · AWA Helper</title>
+  <link inline rel="icon" href="static/icons/favicon.ico" type="image/x-icon">
+  <link inline href="static/css/webui.css" rel="stylesheet">
+  <script inline src="static/js/js-yaml.min.js"></script>
+  <script inline src="static/js/axios.min.js"></script>
+  <link inline href="static/css/settings.css" rel="stylesheet">
+  <link inline href="static/css/app.css" rel="stylesheet">
+  <link inline href="static/css/auth.css" rel="stylesheet">
+</head>
+
+<body class="app-page settings-page">
+  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="Main navigation"><a href="/" data-i18n="Home">管理首页</a><a href="/daily-quest" data-i18n="Daily quests">每日任务</a><a href="/settings" data-i18n="Navigation settings" aria-current="page">配置设置</a><a href="/operations" data-i18n="Diagnostics">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-i18n="User guide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a><button type="button" class="app-signout" data-auth-logout>退出登录</button></nav></div></header>
+  <a id="back2top" class="btn btn-outline-primary back2top" href="#top" aria-label="Back to top" data-i18n-aria-label="Back to top"
+    title="Click to return on the top page" data-i18n-title="Click to return on the top page">
+    <img inline src="static/icons/arrow-up-circle.svg" alt="">
+  </a>
+  <div class="container">
+    <header class="settings-intro">
+      <div><p class="settings-eyebrow" data-i18n="WORKSPACE / PREFERENCES">WORKSPACE / PREFERENCES</p><h1 data-i18n="Settings">Settings</h1>
+        <p class="settings-subtitle" data-i18n="Make AWA Helper work your way.">Make AWA Helper work your way.</p></div>
+      <div class="settings-picker"><span class="settings-picker-label" data-i18n="Configuration">Configuration</span>
+      <div class="btn-group" id="single-config-name">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-ui-toggle="dropdown" aria-expanded="false"
+          data-name="default" data-i18n="Config">
+          Config
+        </button>
+        <ul class="dropdown-menu">
+        </ul>
+      </div>
+      </div>
+    </header>
+  </div>
+  <label class="card settings-import" id="file-selector">
+    <span class="settings-upload-icon" aria-hidden="true">↑</span>
+    <strong data-i18n="Load a configuration template">Load a configuration template</strong>
+    <span data-i18n="Choose a YAML file or drag it here to get started.">Choose a YAML file or drag it here to get started.</span>
+    <input id="readTemplateFile" class="visually-hidden" type="file" name="file" accept=".yml,.yaml">
+  </label>
+  <label for="remote-url" id="loadRemoteFileLabel" class="form-label settings-remote-label" data-i18n="Or load a template from a URL">Or load a template from a URL</label>
+  <div id="loadRemoteFileInput" class="input-group mb-3 settings-remote">
+    <input type="url" class="form-control" id="remote-url" placeholder="https://example.com/template.yml">
+    <button class="btn btn-outline-primary" type="button" id="loadRemoteFile" data-i18n="Load">Load</button>
+  </div>
+  <!-- 弹窗 -->
+  <div class="modal" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="modalLabel" data-i18n="Info">Info</h1>
+          <button type="button" class="btn-close" data-ui-dismiss="modal" aria-label="Close" data-i18n-aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <textarea class="form-control" aria-label="Message" data-i18n-aria-label="Message" readonly rows="5"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-ui-dismiss="modal" data-i18n="Close">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="modal-loading" tabindex="-1" aria-labelledby="modalLabel-loading" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="modalLabel-loading" data-i18n="Loading">Loading</h1>
+        </div>
+        <div class="modal-body" id="modalBody-loading">
+          <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden" data-i18n="Loading...">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-ui-dismiss="modal" data-i18n="Close">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script inline src="static/js/pages/native-dom.js"></script>
+  <script>var lang = "__LANG__"; var I18n = __I18N__;</script>
+  <script inline src="static/js/pages/settings-i18n.js"></script>
+  <script inline src="static/js/pages/settings-model.js"></script>
+  <script inline src="static/js/pages/settings-view.js"></script>
+  <script inline src="static/js/pages/settings-api.js"></script>
+  <script inline src="static/js/pages/auth.js"></script>
+  <script inline src="static/js/pages/settings.js"></script>
+</body>
+
+</html>

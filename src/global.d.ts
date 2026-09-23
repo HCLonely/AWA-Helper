@@ -1,13 +1,23 @@
-/* eslint-disable no-underscore-dangle, no-unused-vars */
+/**
+ * @file src/global.d.ts
+ * @description 声明配置、日志、国际化、推送和服务器等由应用运行环境注入的全局类型。
+ */
+/* eslint-disable no-underscore-dangle */
+
 import { AxiosRequestConfig } from 'axios';
 import type { I18n } from 'i18n';
 import type WebSocket from 'ws';
-import type { AWA } from './AWA';
-import { Logger } from './tool';
+import { Logger } from './tools';
 
 declare global {
   interface Array<T> {
-    findLast(
+        /**
+         * 查找最后一条匹配记录。
+         * @param predicate - 用于判断数组元素是否匹配的回调函数，类型为 `(value: T, index: number, obj: T[]) => unknown`。
+         * @param thisArg - 执行回调函数时绑定的 this 值，类型为 `any`。
+         * @returns `T`，findLast 获取到的数据。
+         */
+findLast(
       predicate: (value: T, index: number, obj: T[]) => unknown,
       thisArg?: any
     ): T
@@ -25,26 +35,53 @@ declare global {
   interface managerServer {
     enable: boolean
     secret: string
+    local?: boolean
     port?: number
     ssl?: {
       key?: string
       cert?: string
     }
     corn?: string
+    cron?: string
+    artifacts?: Array<{
+      corn?: string
+      cron?: string
+      ids: string | number[]
+    }>
   }
   interface config {
     language: string
     timeout?: number
     logsExpire?: number
+    logsMaxMB?: number
+    debug?: {
+      http?: boolean
+    }
     TLSRejectUnauthorized?: boolean
     autoUpdate?: boolean
+    UA?: string
     managerServer?: managerServer
+    manager?: {
+      timezone?: string
+      historyLimit?: number
+      secret?: string
+      dailyQuest?: {
+        cron?: string
+      }
+      achievement?: {
+        enable?: boolean;
+        cron?: string
+      }
+      artifacts?: Array<{
+        cron: string;
+        ids: number[]
+      }>
+    }
     awaCookie?: string
     awaHost: string
     awaBoosterNotice?: boolean
-    awaQuests: Array<string>
-    awaDailyQuestType: Array<string>
-    // awaDailyQuestNumber1?: boolean
+    awaQuests: Array<'getStarted' | 'dailyQuest' | 'dailyQuestOld' | 'battlePass' | 'timeOnSite' | 'watchTwitch' | 'steamQuest'>
+    awaDailyQuestType: Array<'click' | 'visitLink' | 'openLink' | 'changeBorder' | 'changeAvatar' | 'viewNews' | 'sharePost' | 'replyPost'>
     awaSafeReply?: boolean,
     joinSteamCommunityEvent?: boolean
     twitchCookie?: string
@@ -68,7 +105,7 @@ declare global {
     pusher?: pusher
   }
   interface proxy {
-    enable: Array<string>
+    enable: Array<'github' | 'twitch' | 'awa' | 'asf' | 'steam' | 'pusher'>
     host: string
     port: number
     protocol?: string
@@ -103,14 +140,6 @@ declare global {
       maxAvailableARP: string
     }>
   }
-  interface steamGameInfo {
-    id: string
-    time: number
-    arp: number
-    link: string
-    progress?: string
-  }
-
   interface questStatus {
     dailyQuest?: 'complete' | 'incomplete' | 'skip'
     timeOnSite?: 'complete' | 'incomplete'
@@ -147,8 +176,15 @@ declare global {
     retryDelay?: number
     Logger?: Logger
   }
+  interface webLogEntry {
+    id: number
+    data: unknown
+    type: 'log' | 'questInfo'
+    scope: 'manager' | 'dailyQuest' | 'achievement' | 'artifact'
+  }
   interface logs {
-    [name: string]: any
+    type: 'logs'
+    [name: string]: webLogEntry | 'logs'
   }
   interface pushOptions {
     name: string
@@ -173,19 +209,15 @@ declare global {
     rewardedTime: string
   }
   var secrets: Array<string>;
-  var userAgent: string;
   var wsClients: Set<WebSocket>;
   var webUI: boolean;
   var logs: logs;
   var language: string;
   var pusher: pusher | undefined;
   var pusherProxy: proxy;
-  var quest: AWA;
   var initError: string;
-  var awaHost: string;
   var __: I18n['__'];
   var newVersionNotice: string;
-  var steamEventGameId: string;
   var log: boolean;
   var version: string;
 }

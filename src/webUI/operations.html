@@ -1,0 +1,41 @@
+<!--
+ @file src/webUI/operations.html
+ @description 展示运行历史、调度预览和连接诊断。
+-->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>运行记录与诊断 · AWA Helper</title>
+  <link inline rel="stylesheet" href="static/css/operations.css">
+  <script inline src="static/js/axios.min.js"></script>
+  <link inline href="static/css/app.css" rel="stylesheet">
+  <link inline href="static/css/auth.css" rel="stylesheet">
+</head>
+<body class="app-page operations-page">
+  <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-en="Home">管理首页</a><a href="/daily-quest" data-en="Daily quests">每日任务</a><a href="/settings" data-en="Settings">配置设置</a><a href="/operations" data-en="Diagnostics" aria-current="page">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-en="User guide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a><button type="button" class="app-signout" data-auth-logout>退出登录</button></nav></div></header>
+  <main id="operations">
+    <header class="intro"><div><p class="eyebrow">WORKSPACE / OPERATIONS</p><h1 data-en="Run history & diagnostics">运行记录与诊断</h1><p class="muted" data-en="Review recent activity, upcoming schedules and platform connections.">查看任务进展、未来计划与平台连接状态。</p></div><span class="version">__VERSION__</span></header>
+    <div class="toolbar"><div class="operations-actions"><button type="button" class="primary" data-operation="refresh" data-en="Refresh records">刷新记录与计划</button><button type="button" data-operation="diagnose" data-en="Check connections">检查连接</button><button type="button" data-operation="export" data-en="Export diagnostics ↓">导出脱敏诊断 ↓</button></div><p id="operations-status" role="status" aria-live="polite" data-en="Ready">准备就绪</p></div>
+    <p id="auth-hint" class="notice" hidden><span data-en="Sign in to access diagnostics.">请先登录以查看运行记录与诊断。</span> <a href="/login?next=%2Foperations" data-en="Sign in →">前往登录 →</a></p>
+    <div class="metrics" aria-label="Overview">
+      <article class="metric"><span data-en="Retained runs">保留的运行记录</span><strong id="metric-total">—</strong><small data-en="Recent recorded activity">最近记录的任务活动</small></article>
+      <article class="metric"><span data-en="In progress">正在执行</span><strong id="metric-running">—</strong><small data-en="Running or stopping">运行中或停止中的任务</small></article>
+      <article class="metric"><span data-en="Needs attention">需要关注</span><strong id="metric-attention">—</strong><small data-en="Failed, interrupted or partially completed runs">失败、中断或部分完成的记录</small></article>
+      <article class="metric"><span data-en="Active schedules">已启用计划</span><strong id="metric-schedules">—</strong><small data-en="Currently enabled schedules">当前启用的定时任务</small></article>
+    </div>
+    <section class="panel" aria-labelledby="history-title"><div class="panel-heading"><div><p class="eyebrow">ACTIVITY</p><h2 id="history-title" data-en="Recent runs">最近运行</h2></div><span class="caption" data-en="Times in your local timezone">时间使用浏览器本地时区</span></div><p id="run-failures" class="muted"></p><div id="run-history" class="operations-table" tabindex="0" aria-labelledby="history-title"><p class="empty" data-en="Refresh to load recent runs.">刷新后显示最近运行记录。</p></div></section>
+    <div class="detail-grid">
+      <section class="panel" aria-labelledby="schedule-title"><div class="panel-heading"><div><p class="eyebrow">SCHEDULE</p><h2 id="schedule-title" data-en="Task schedules">任务计划</h2></div><a href="/settings" data-en="Configure ↗">修改配置 ↗</a></div><div id="schedule-list" class="card-list"><p class="empty" data-en="Refresh to load schedules.">刷新后显示任务计划。</p></div>
+        <details class="preview"><summary data-en="Preview Cron execution times">预览 Cron 执行时间</summary><div class="preview-form"><label for="schedule-cron">Cron<input id="schedule-cron" value="0 14 * * *" maxlength="200" spellcheck="false"></label><label for="schedule-timezone"><span data-en="Timezone">时区</span><input id="schedule-timezone" maxlength="100" spellcheck="false"></label><button type="button" data-operation="preview" data-en="Preview">预览</button></div><p class="caption" data-en="Preview only. Save timezone and scheduling policies in Manager settings.">预览不会保存配置。时区及调度策略可在配置页面的 Manager 设置中修改。</p><pre id="schedule-preview" aria-live="polite"></pre></details>
+      </section>
+      <section class="panel" aria-labelledby="diagnostic-title"><div class="panel-heading"><div><p class="eyebrow">CONNECTIONS</p><h2 id="diagnostic-title" data-en="Connection diagnostics">连接诊断</h2></div><span class="pill" data-en="Read-only">只读检查</span></div><p class="muted" data-en="Checks enabled platforms without running tasks. Exports include recent runs and redacted log excerpts.">检查已启用的平台，不执行任务。诊断导出包含最近运行和脱敏日志片段。</p><div id="diagnostic-results" class="card-list"><div class="empty"><span class="empty-icon" aria-hidden="true">◎</span><strong data-en="No checks yet">尚未检查连接</strong><p data-en="Select “Check connections” to see platform status and suggested next steps.">点击上方“检查连接”，查看各平台状态与处理建议。</p></div></div></section>
+    </div>
+    <footer>AWA Helper <span data-en="· Task activity & connection health">· 任务活动与连接状态</span></footer>
+  </main>
+  <script>var lang = "__LANG__";</script>
+  <script inline src="static/js/pages/auth.js"></script>
+  <script inline src="static/js/pages/operations.js"></script>
+</body>
+</html>

@@ -1,0 +1,576 @@
+/**
+ * @file src/webUI/static/css/webui.css
+ * @description 定义 WebUI 公共布局、组件与日志预览样式。
+ */
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: #212529;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: #0d6efd;
+}
+
+.container {
+  width: min(100% - 1.5rem, 1140px);
+  margin-inline: auto;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.py-3 {
+  padding-block: 1rem;
+}
+
+.py-4 {
+  padding-block: 1.5rem;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.fs-4 {
+  font-size: 1.5rem;
+}
+
+.fs-5 {
+  font-size: 1.25rem;
+}
+
+.fs-6 {
+  font-size: 1rem;
+}
+
+.fw-bold {
+  font-weight: 700;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-light {
+  color: #f8f9fa;
+}
+
+.bg-dark {
+  background: #212529;
+}
+
+.bg-secondary {
+  background: #6c757d;
+}
+
+.card {
+  display: block;
+  border: 1px solid #ced4da;
+  border-radius: .5rem;
+  background: #fff;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: .45rem .75rem;
+  border: 1px solid transparent;
+  border-radius: .375rem;
+  color: #fff;
+  background: #6c757d;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn:disabled,
+.btn.disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.btn-primary {
+  background: #0d6efd;
+}
+
+.btn-secondary {
+  background: #6c757d;
+}
+
+.btn-success {
+  background: #198754;
+}
+
+.btn-danger {
+  background: #dc3545;
+}
+
+.btn-warning {
+  color: #212529;
+  background: #ffc107;
+}
+
+.btn-info {
+  color: #212529;
+  background: #0dcaf0;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+  background: transparent;
+}
+
+.btn-outline-light {
+  color: #f8f9fa;
+  border-color: #f8f9fa;
+  background: transparent;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: .5rem;
+}
+
+.form-control,
+.form-select {
+  display: block;
+  width: 100%;
+  padding: .45rem .75rem;
+  color: #212529;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: .375rem;
+}
+
+.form-check {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+
+.input-group {
+  display: flex;
+  width: 100%;
+}
+
+.input-group>.form-control {
+  min-width: 0;
+  flex: 1;
+  border-radius: 0;
+}
+
+.input-group-text {
+  display: flex;
+  align-items: center;
+  padding: .45rem .75rem;
+  background: #e9ecef;
+  border: 1px solid #ced4da;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: .5rem;
+}
+
+.table-success {
+  background: #d1e7dd !important;
+}
+
+.dropdown-menu {
+  position: absolute;
+  z-index: 20;
+  display: none;
+  min-width: 10rem;
+  margin: .25rem 0 0;
+  padding: .5rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: .375rem;
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+}
+
+.dropdown-menu.open {
+  display: block;
+}
+
+.dropdown-item {
+  display: block;
+  padding: .35rem 1rem;
+  color: #212529;
+  text-decoration: none;
+}
+
+.dropdown-item.active {
+  color: #fff;
+  background: #0d6efd;
+}
+
+.btn-group {
+  position: relative;
+}
+
+.collapse:not(.show) {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: none;
+  padding: 1rem;
+  background: rgba(0, 0, 0, .5);
+}
+
+.modal.open {
+  display: grid;
+  place-items: center;
+}
+
+.modal-dialog {
+  width: min(100%, 500px);
+}
+
+.modal-content {
+  overflow: hidden;
+  background: #fff;
+  border-radius: .5rem;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, .35);
+}
+
+.modal-header,
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: 1rem;
+}
+
+.modal-body {
+  padding: 1rem;
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+  justify-content: flex-end;
+  border-top: 1px solid #dee2e6;
+}
+
+.btn-close {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  background: transparent;
+}
+
+.btn-close::after {
+  content: "×";
+  font-size: 1.5rem;
+}
+
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+  border: .25rem solid #ced4da;
+  border-right-color: #0d6efd;
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.is-invalid {
+  border-color: #dc3545;
+}
+
+.invalid-feedback {
+  display: none;
+  color: #dc3545;
+}
+
+.is-invalid+.invalid-feedback {
+  display: block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 仪表盘与成就页面共用的日志分页查看器，需要身份验证。 */
+.log-preview {
+  width: min(1100px, calc(100vw - 48px));
+  height: min(820px, 85vh);
+  height: min(820px, 85dvh);
+  max-width: none;
+  max-height: calc(100% - 32px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #dbe3ef;
+  border-radius: 18px;
+  color: #25334a;
+  background: #f8fafc;
+  box-shadow: 0 24px 80px #0f172a40;
+}
+
+.log-preview[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.log-preview::backdrop {
+  background: #0f172a80;
+  backdrop-filter: blur(5px);
+}
+
+.log-preview__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(120deg, #fff, #eef4ff);
+}
+
+.log-preview__header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+
+.log-preview__scope {
+  min-width: 0;
+  padding: 3px 10px;
+  border: 1px solid #dbe5fa;
+  border-radius: 6px;
+  color: #385ba1;
+  background: #eaf0fc;
+  font: 500 .8rem / 1.5 Consolas, "SFMono-Regular", monospace;
+  overflow-wrap: anywhere;
+}
+
+.log-preview__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 24px;
+}
+
+.log-preview__button {
+  min-height: 40px;
+  padding: 8px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #334155;
+  background: #fff;
+  font-size: .875rem;
+  font-weight: 600;
+  transition: background-color .15s, border-color .15s;
+}
+
+.log-preview__button:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #eaf0f7;
+}
+
+.log-preview__button--primary {
+  border-color: #2563eb;
+  color: #fff;
+  background: #2563eb;
+}
+
+.log-preview__button--primary:hover:not(:disabled) {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.log-preview__button--close {
+  margin-inline-start: auto;
+}
+
+.log-preview__button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.log-preview__button:focus-visible,
+.log-preview__body:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+.log-preview__body {
+  flex: 1;
+  min-height: 0;
+  margin: 0 24px;
+  padding: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #263449;
+  border-radius: 10px;
+  color: #dbe5f3;
+  background: #111c2e;
+  font: .8125rem / 1.85 Consolas, "SFMono-Regular", "Liberation Mono", monospace;
+  tab-size: 4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+  scrollbar-color: #50617b #111c2e;
+  scrollbar-width: thin;
+}
+
+.log-preview__body::selection {
+  color: #fff;
+  background: #315ca0;
+}
+
+.log-preview__status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 14px 24px 18px;
+  color: #64748b;
+  font-size: .8125rem;
+}
+
+.log-preview__status::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.log-preview[data-state="ready"] .log-preview__status::before {
+  background: #16a34a;
+}
+
+.log-preview[data-state="loading"] .log-preview__status::before {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #cbd5e1;
+  border-top-color: #2563eb;
+  background: transparent;
+  animation: spin .8s linear infinite;
+}
+
+.log-preview[data-state="error"] .log-preview__status {
+  color: #b91c1c;
+}
+
+.log-preview[data-state="error"] .log-preview__status::before {
+  background: #dc2626;
+}
+
+@media (max-width: 600px) {
+  .log-preview {
+    width: calc(100vw - 20px);
+    height: 90vh;
+    height: 90dvh;
+    border-radius: 12px;
+  }
+
+  .log-preview__header {
+    padding: 16px;
+  }
+
+  .log-preview__controls {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .log-preview__button {
+    padding-inline: 12px;
+  }
+
+  .log-preview__body {
+    margin-inline: 12px;
+    padding: 12px;
+  }
+
+  .log-preview__status {
+    padding: 12px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .log-preview__button {
+    transition: none;
+  }
+
+  .log-preview[data-state="loading"] .log-preview__status::before {
+    animation: none;
+  }
+}

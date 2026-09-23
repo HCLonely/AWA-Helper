@@ -16,6 +16,8 @@ pushTitle: 'AWA-Helper Reminder'
 processWasKilled: Task process terminated
 processWasInterrupted: The task process was manually terminated
 processError: The task process exited abnormally
+taskFailureUnknown: Task returned failure without a specific reason; check earlier logs
+steamNoMatchingQuests: Games owned by ASF do not match the pending Steam quests
 processInitError: Task initialization error
 errorMessage: Error message
 processTimeout: Run timeout. Force quit the program
@@ -57,8 +59,7 @@ changing: Changing %s...
 sendingViewTrack: Sending requests for browsing %s...
 noTimeOnSiteInfo: No information about Daily Online quest obtained, skip this quest
 timeOnSiteCompleted: Daily Online quest completed!
-trackError: Failed to send %s online requests more than 6 times in a row, skip this
-  quest
+trackError: Failed to send %s online requests 6 times in a row, retry in 5 minutes
 sendingOnlineTrack: Sending %s requests...
 sendingViewRecord: Sending browsing view post %s record...
 gettingRelatedPosts: Fetching posts related to the daily quest...
@@ -123,6 +124,20 @@ gettingPromotionalCalendarItemError: Failed to get promotional calendar item!
 promotionalCalendar: Promotional calendar
 dailyArp: "%s ARP was earned today"
 doingGetStartedQuest: Doing GET START task[%s]...
+battlePass: BattlePass
+battlePassChecking: Checking Battle Pass...
+battlePassUnknown: The Battle Pass page status could not be identified
+battlePassPartial: Some Battle Pass rewards could not be claimed
+battlePassStatus_not-started: Not started
+battlePassStatus_active: In progress
+battlePassStatus_completed: Completed
+battlePassStatus_ended: Ended
+battlePassStatus_unknown: Unknown
+battlePassClaimed: "Successfully claimed %s (%s/%s)"
+battlePassRewardSeparator: ", "
+battlePassProgress: "Reward claim progress (%s/%s)"
+battlePassStatusProgress: "%s (%s/%s)"
+battlePassClaimFailed: "Failed to claim %s"
 doingTaskUS: Doing the task(US) [%s] ...
 startingQuest: Starting task...
 waitingIFrame: Waiting to load tasks...
@@ -199,9 +214,9 @@ downloading: Downloading installation package...
 decompressing: Unzipping the installation package...
 updateSuccess: The update is successful and will take effect the next time you start
   it!
-nextRunTime: 'Next time to start AWA-Helper: %s'
-nextArchievementRestart: 'Next time to restart AWA-Achievement: %s'
-downloadingMainJs: Downloading main.js...
+nextRunTime: 'Next time to start DailyQuest: %s'
+nextAchievementRestart: 'Next time to restart AWA-Achievement: %s'
+downloadingMainJs: Downloading index.js...
 autoUpdated: Automatically updated to %s
 updateLog: 'Update content:'
 webUIStart: webUI server started, Please open %s to view
@@ -220,22 +235,27 @@ cookieUpdated: Cookie updated successfully, source IP %s
 twitchCookieUpdated: Twitch cookie updated successfully, source IP %s
 publicNetworkNotice: If you need public network access, please replace 127.0.0.1 with
   your public network IP and open the %s port
-startHelper: Start AWA-Helper
-stopHelper: Terminate AWA-Helper
+startDailyQuest: Start DailyQuest
+stopDailyQuest: Terminate DailyQuest
 stopManager: Terminate AWA-Manager
 updateHelper: Update AWA-Helper
-cornEnabled: Successfully configured scheduled start of AWA-Helper
+cornEnabled: Successfully configured scheduled start of DailyQuest
 cornError: cron format error
+invalidCronExpression: 'Invalid Cron expression: %s'
+managerStarted: 'Manager started in %s mode on port %s'
+managerMode_persistent: persistent
+managerMode_once: one-shot
+codSafetyNotice: '* Important: Running this program at the same time as COD may result in a COD account ban. Please close this program when playing COD!'
 watchLogs: View log
 changeArtifacts: Change Artifacts
-gettingHelperStatus: Obtaining AWA-Helper running status...
-getHelperStatusSuccess: The running status was obtained successfully!
-getHelperStatusFailed: Failed to obtain running status
+gettingDailyQuestStatus: Obtaining DailyQuest running status...
+getDailyQuestStatusSuccess: The running status was obtained successfully!
+getDailyQuestStatusFailed: Failed to obtain running status
 gettingManagerStatus: Obtaining AWA-Manager running status...
-startingHelper: Starting AWA-Helper...
+startingDailyQuest: Starting DailyQuest...
 startSuccess: Started successfully!
 startFailed: Startup failed
-stoppingHelper: Terminating AWA-Helper...
+stoppingDailyQuest: Terminating DailyQuest...
 stopSuccess: Termination successful!
 stopFailed: Termination failed
 stoppingManager: Terminating AWA-Manager...
@@ -246,13 +266,14 @@ userJsNotInstalled: Cookie sync script is not installed!
 userJsInstalled: Cookie sync script has been installed (v%s)
 updating: Updating...
 updateFailed: Update failed
+updateDelegated: Update check requested. See the Manager tray for progress and the final result.
 updateSuccessManager: Update completed!
-startingArchievement: Starting AWA-Achievement...
-archievementStarted: AWA-Achievement started successfully!
-archievementStartFailed: AWA-Achievement start failed!
-stoppingArchievement: Stopping AWA-Achievement...
-archievementStopped: AWA-Achievement stopped successfully!
-archievementStopFailed: AWA-Achievement stop failed!
+startingAchievement: Starting AWA-Achievement...
+achievementStarted: AWA-Achievement started successfully!
+achievementStartFailed: AWA-Achievement start failed!
+stoppingAchievement: Stopping AWA-Achievement...
+achievementStopped: AWA-Achievement stopped successfully!
+achievementStopFailed: AWA-Achievement stop failed!
 gettingArtifactsInfo: Getting artifacts information...
 changingArtifact: Changing artifacts {id:%s,position:%s}...
 changeArtifactsSuccess: Artifacts replacement successful!
@@ -302,16 +323,14 @@ allChannelsFailed: 'Failed to get all channel information!'
 unknownState: 'Unknown state: %s'
 watchTwitchAfter5min: 'Twitch start failed, retry in 5 minutes...'
 noChannelFound: 'No channel found'
-### Manager Web UI ###
+### 管理器网页界面 ###
 systemConfig: System Configuration
 configManagerServer: Configure ManagerServer
 configAWAHelper: Configure AWA-Helper
 refreshStatus: Refresh Status
-syncCookie: Sync Cookie
+syncCookie: Sync AWA Cookie
 syncTwitchCookie: Sync Twitch Cookie
-awaHelperControl: AWA-Helper Control
-startAWAHelper: Start AWA-Helper
-stopAWAHelper: Stop AWA-Helper
+dailyQuestControl: DailyQuest Control
 updateAWAHelper: Update AWA-Helper
 stopAWAManager: Stop AWA-Manager
 installCookieScript: Install Cookie Sync Script
@@ -324,6 +343,7 @@ lastRunTime: Last Run Time
 runStatus: Run Status
 runLogs: Run Logs
 view: View
+currentVersionChanges: Current version changes
 realtimeLogs: Realtime Logs
 configManagerServerSecret: Configure Manager Server Secret
 secretKey: Secret Key
@@ -331,3 +351,252 @@ enterSecretKey: Please enter Secret key
 rememberSecret: Remember secret
 cancel: Cancel
 confirm: Confirm
+
+### 运行时日志 ###
+httpRequestStarted: '[HTTP:%s] %s %s request started'
+httpRequestCompleted: '[HTTP:%s] %s %s request completed (status %s, %sms)'
+httpRequestFailed: '[HTTP:%s] %s %s request failed (%s, %sms)'
+managerEnvironmentInitialized: '[Manager] Environment initialized (mode=%s, version=%s)'
+managerWebUiDisabled: '[Manager] WebUI is disabled by configuration'
+managerWebUiStarting: '[Manager] WebUI is starting on %s:%s'
+managerOneShotSelected: '[Manager] One-shot mode selected; DailyQuest will run once'
+managerStartingScheduler: '[Manager] Starting scheduler'
+managerShutdownRequested: '[Manager] Shutdown requested'
+managerShutdownStarted: '[Manager] Shutdown sequence started'
+managerShutdownCompleted: '[Manager] Shutdown sequence completed'
+jobDuplicateStart: '[Manager] Ignored duplicate start request for %s; the job is already running'
+jobDispatching: '[Manager] Dispatching job: %s'
+jobStarted: '[Job] %s started'
+jobFinished: '[Job] %s status: %s'
+managerJobFinished: '[Manager] Job %s status: %s'
+jobFinishedWithMessage: '[Job] %s status: %s; message: %s'
+managerJobFinishedWithMessage: '[Manager] Job %s status: %s; message: %s'
+jobStopIgnored: '[Manager] Stop request ignored for %s; the job is not running'
+jobStopRequested: '[Manager] Requesting job stop: %s'
+jobCancellationRequested: '[Job] Cancellation requested by Manager'
+jobStoppingAll: '[Manager] Stopping %s active job(s)'
+jobAllDisposed: '[Manager] All job resources have been disposed'
+jobStatus_completed: completed
+jobStatus_failed: failed
+jobStatus_cancelled: cancelled
+jobCancelledMessage: Job cancelled
+jobStoppedByManager: Job stopped by Manager
+schedulerStarted: '[Scheduler] Started with %s schedule(s)'
+schedulerStopping: '[Scheduler] Stopping %s schedule(s)'
+schedulerTriggered: '[Scheduler] Triggered: %s'
+schedulerTriggerCompleted: '[Scheduler] Trigger completed: %s'
+schedulerTriggerFailed: '[Scheduler] Trigger failed: %s; error: %s'
+schedulerRegistered: '[Scheduler] Registered %s: %s'
+schedulerRestarting: '[Scheduler] Restarting job: %s'
+serverWebUiDisabled: '[Server] WebUI server is disabled by configuration'
+serverAuthenticationRejected: '[Server] Rejected unauthenticated request: %s %s'
+serverJobStartRequested: '[Server] Job start requested through API: %s'
+serverJobStartRejected: '[Server] Job start request rejected: %s'
+serverJobStopRequested: '[Server] Job stop requested through API: %s'
+serverConfigUpdated: '[Server] Configuration updated; restart required'
+serverConfigRejected: '[Server] Configuration update rejected: %s'
+serverAwaCredentialsUpdated: '[Server] AWA credentials updated'
+serverTwitchCredentialsUpdated: '[Server] Twitch credentials updated'
+serverManagerShutdownRequested: '[Server] Manager shutdown requested through API'
+serverListening: '[Server] Listening on %s://%s:%s'
+serverStopSkipped: '[Server] Stop skipped; server is not listening'
+serverStopping: '[Server] Stopping WebUI server'
+serverStopped: '[Server] WebUI server stopped'
+achievementInitializing: '[Achievement] Initializing AWA session and achievement catalog'
+achievementCatalogLoaded: '[Achievement] Loaded %s achievement(s)'
+achievementActionableCount: '[Achievement] Actionable incomplete achievements: %s'
+achievementTwitchSkippedNoCookie: '[Achievement] Twitch tracking skipped: Twitch cookie is not configured'
+achievementTwitchSkippedNoMatch: '[Achievement] Twitch tracking skipped: no matching incomplete achievement'
+achievementTwitchSkippedCancelled: '[Achievement] Twitch tracking skipped: job was cancelled'
+achievementTwitchStarted: '[Achievement] Twitch tracking started for: %s'
+achievementTwitchStopRequested: '[Achievement] Twitch tracking stop requested'
+achievementReleasingState: '[Achievement] Releasing service state'
+artifactInitializing: '[Artifact] Initializing AWA session'
+artifactSessionExpired: '[Artifact] Initialization failed: AWA session expired'
+artifactInitialized: '[Artifact] Initialization completed'
+artifactProfileUrlMissing: '[Artifact] Initialization failed: profile URL not found'
+artifactRequestedSet: '[Artifact] Requested artifact set: [%s]'
+artifactReplacementCount: '[Artifact] %s replacement(s) required'
+artifactNotInitialized: '[Artifact] Cannot load artifacts before initialization'
+artifactLoadingEquipped: '[Artifact] Loading equipped artifacts'
+artifactLoadFailed: '[Artifact] Failed to load equipped artifacts: %s'
+artifactNoEquippedReturned: '[Artifact] No equipped artifacts were returned'
+artifactEquippedSet: '[Artifact] Equipped artifacts: [%s]'
+artifactInvalidReplacement: '[Artifact] Invalid replacement request for slot %s'
+artifactEquipping: '[Artifact] Equipping artifact %s in slot %s...'
+artifactEquipFailed: '[Artifact] Equip request failed: %s'
+personalizationType_avatar: avatar
+personalizationType_border: border
+dailyQuestRefreshingPersonalization: '[DailyQuest] Refreshing %s personalization...'
+dailyQuestViewingPosts: '[DailyQuest] Viewing up to 3 post(s) from %s candidate(s)'
+dailyQuestSharingPosts: '[DailyQuest] Sharing up to 2 post(s) from %s candidate(s)'
+dailyQuestProcessingNews: '[DailyQuest] Processing promotional news post %s'
+dailyQuestNewsCompleted: '[DailyQuest] Promotional news processing completed'
+dailyQuestMonitorStarted: '[DailyQuest] Quest status monitor started (interval=%sm)'
+dailyQuestMonitorStopped: '[DailyQuest] Quest status monitor stopped'
+awaListenerFailed: 'AWA listener failed: %s'
+twitchAuthorizationExpiredRetrying: Twitch authorization expired, retrying
+updatePrepared: AWA-Helper %s has been downloaded and verified; it will be installed after this process exits.
+managerWeakSecretWarning: 'Warning: manager.secret is %s characters long; at least 16 characters are recommended.'
+deprecatedSteamProxyTarget: 'Warning: proxy.enable target steam is deprecated and controls no distinct request path; use awa or asf for the intended target.'
+logStatusOk: OK
+logStatusError: Error
+logStatusFailed: Failed
+logStatusClosed: Closed
+logStatusFinished: Finished
+
+logStorageBudgetExceeded: Log storage budget exceeded; current or busy files retained.
+
+logPreview: Log preview
+logLoading: Loading…
+logRotated: Log rotated or truncated; showing latest content.
+logEmpty: No log file yet.
+logPageLimit: Each page shows at most 64 KiB.
+logReadFailed: Unable to read; check connection and authentication.
+logOlder: Older
+logLatest: Latest
+logClose: Close
+
+jobStatus_partial: "Partially completed"
+jobStatus_skipped: "Skipped"
+achievementActionResult: "Achievement action %s: %s"
+
+taskPartiallyCompleted: Tasks finished with some operations incomplete.
+
+# 设置页面
+"settings.Settings · AWA Helper": "Settings · AWA Helper"
+"settings.WORKSPACE / PREFERENCES": "WORKSPACE / PREFERENCES"
+"settings.Settings": "Settings"
+"settings.Make AWA Helper work your way.": "Make AWA Helper work your way."
+"settings.Configuration": "Configuration"
+"settings.Config": "Config"
+"settings.Back to top": "Back to top"
+"settings.Click to return on the top page": "Click to return on the top page"
+"settings.Load a configuration template": "Load a configuration template"
+"settings.Choose a YAML file or drag it here to get started.": "Choose a YAML file or drag it here to get started."
+"settings.Or load a template from a URL": "Or load a template from a URL"
+"settings.Load": "Load"
+"settings.Info": "Info"
+"settings.Error": "Error"
+"settings.Message": "Message"
+"settings.Close": "Close"
+"settings.Loading": "Loading"
+"settings.Loading...": "Loading..."
+"settings.Retry loading configuration": "Retry loading configuration"
+"settings.Save": "Save"
+"settings.Saving...": "Saving..."
+"settings.Changes are applied when you save.": "Changes are applied when you save."
+"settings.Saved. Restart required for the changed server settings.": "Saved. Restart required for the changed server settings."
+"settings.Success": "Success"
+"settings.Item": "Item"
+"settings.Add %s": "Add %s"
+"settings.Delete %s": "Delete %s"
+"settings.Set the Manager secret before editing configuration.": "Set the Manager secret before editing configuration."
+"settings.Get configuration failed: %s": "Get configuration failed: %s"
+"settings.Save configuration failed: %s": "Save configuration failed: %s"
+"settings.Configuration must be a mapping.": "Configuration must be a mapping."
+"settings.Get template file failed": "Get template file failed"
+"settings.Expected field definitions": "Expected field definitions"
+"settings.Unsupported field name": "Unsupported field name"
+"settings.Conditional field overrides its selector: %s": "Conditional field overrides its selector: %s"
+"settings.Conflicting conditional field: %s": "Conflicting conditional field: %s"
+"settings.Invalid or excessively nested field": "Invalid or excessively nested field"
+"settings.%s must be a string": "%s must be a string"
+"settings.required must be boolean": "required must be boolean"
+"settings.Invalid repeat count": "Invalid repeat count"
+"settings.Unsupported input type": "Unsupported input type"
+"settings.Array needs an item definition": "Array needs an item definition"
+"settings.Expected string options": "Expected string options"
+"settings.Expected string option labels": "Expected string option labels"
+"settings.Invalid conditional fields": "Invalid conditional fields"
+"settings.Unsupported field type: %s": "Unsupported field type: %s"
+"settings.Expected object default": "Expected object default"
+"settings.Expected array default": "Expected array default"
+"settings.No definition for default array item": "No definition for default array item"
+"settings.Expected boolean default": "Expected boolean default"
+"settings.Expected text or numeric default": "Expected text or numeric default"
+"settings.Expected finite numeric default": "Expected finite numeric default"
+"settings.Expected integer array or comma-separated default": "Expected integer array or comma-separated default"
+"settings.Expected integer array default": "Expected integer array default"
+"settings.Unsupported default option": "Unsupported default option"
+"settings.Unsupported default options": "Unsupported default options"
+"settings.Expected a non-empty array": "Expected a non-empty array"
+"settings.Template": "Template"
+"settings.Template %s": "Template %s"
+"settings.Missing name": "Missing name"
+"settings.Expected YAML or JSON format": "Expected YAML or JSON format"
+"settings.Expected object configuration": "Expected object configuration"
+"settings.Expected array configuration": "Expected array configuration"
+"settings.No definition for array item": "No definition for array item"
+"settings.Expected selected option": "Expected selected option"
+"settings.Expected selected options": "Expected selected options"
+"settings.Expected boolean configuration": "Expected boolean configuration"
+"settings.Expected text or numeric configuration": "Expected text or numeric configuration"
+"settings.Expected finite numeric configuration": "Expected finite numeric configuration"
+"settings.At least one item is required": "At least one item is required"
+"settings.Required": "Required"
+"settings.Expected comma-separated integers": "Expected comma-separated integers"
+"settings.Expected a finite number": "Expected a finite number"
+"settings.Invalid format": "Invalid format"
+"settings.Select a supported option": "Select a supported option"
+"settings.Select supported options": "Select supported options"
+"settings.Changed in another form. Reload this page before saving, or enter the latest values.": "Changed in another form. Reload this page before saving, or enter the latest values."
+"settings.Expected array": "Expected array"
+"settings.Cannot extend this array item": "Cannot extend this array item"
+"settings.Array cannot be extended": "Array cannot be extended"
+"settings.Cannot remove this array item": "Cannot remove this array item"
+"settings.Invalid template URL": "Invalid template URL"
+"settings.Invalid template YAML": "Invalid template YAML"
+"settings.Invalid configuration YAML": "Invalid configuration YAML"
+"settings.Invalid regular expression": "Invalid regular expression"
+
+operationsTitle: "Run history and diagnostics"
+operationsRefresh: "Refresh history and schedules"
+operationsDiagnose: "Check connections"
+operationsExport: "Export redacted diagnostics"
+operationsHistory: "Recent runs"
+operationsSchedules: "Schedules"
+operationsPreview: "Preview cron schedule"
+operationsTimezone: "Timezone"
+operationsPreviewButton: "Preview"
+operationsPreviewHint: "Preview does not save configuration. Edit timezone and scheduling policies in Manager settings."
+operationsConnections: "Connection diagnostics"
+operationsDiagnosticHint: "Checks enabled platforms without running tasks. Export includes recent runs and log excerpts."
+
+# 网页界面共用导航
+"navHome": "Home"
+"navSettings": "Settings"
+"navDiagnostics": "Diagnostics"
+"managerSubtitle": "Manage daily tasks, achievements and run logs."
+"settings.Home": "Home"
+"settings.Diagnostics": "Diagnostics"
+"settings.Navigation settings": "Settings"
+"navGuide": "User guide ↗"
+"settings.User guide": "User guide ↗"
+"navDailyQuest": "Daily quests"
+"settings.Daily quests": "Daily quests"
+"dailyQuestSubtitle": "Track daily quest progress, ARP earnings and live logs."
+"questStatusTitle": "Quest status"
+"questColumn": "Quest"
+
+communityEventDataRequired: CommunityEvent game data is missing or expired. Sync or enter a game ID in WebUI.
+communityEventTitle: "Steam CommunityEvent"
+communityEventHint: "Game data is valid only for the current year and month. Sync or enter it again when expired. Used only while the event is active."
+communityEventSource: "Remote source"
+communityEventGameId: "Game ID (required)"
+communityEventGameName: "Game name (optional)"
+communityEventUpdateTime: "Updated at"
+communityEventSave: "Save game data"
+communityEventSync: "Sync from remote"
+communityEventReload: "Reload"
+communityEventDisabled: "Automatic event joining is disabled. You can save game data; enable joining in settings and reload to sync."
+communityEventNotActive: "CommunityEvent is not active. No game data was fetched."
+communityEventInvalidSource: "Select a built-in GitHub or proxy source."
+communityEventReadFailed: "Could not read CommunityEvent data. Check the data file and retry."
+communityEventLoading: "Loading game data..."
+communityEventSaving: "Saving..."
+communityEventSyncing: "Checking the event and syncing..."
+communityEventCurrent: "Game data is valid for this month."
+communityEventSaved: "Game data saved."
+communityEventSynced: "Remote game data synced and saved."
+communityEventExplanation: "The redesigned Steam CommunityEvent page no longer exposes a recognizable game ID, so sync it from a remote source or enter it manually."

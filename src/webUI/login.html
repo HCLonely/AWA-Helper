@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · AWA Helper</title>
+  <link inline href="static/css/webui.css" rel="stylesheet">
+  <link inline href="static/css/app.css" rel="stylesheet">
+  <link inline href="static/css/login.css" rel="stylesheet">
+</head>
+<body class="app-page login-page">
+  <header class="app-header"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="Help"><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-en="User guide ↗">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper" target="_blank" rel="noopener noreferrer">GitHub ↗</a></nav></div></header>
+  <main class="login-main">
+    <section class="login-card" aria-labelledby="login-title">
+      <p class="app-eyebrow">WORKSPACE / SIGN IN</p>
+      <h1 id="login-title" data-en="Sign in to AWA Helper">登录 AWA Helper</h1>
+      <p class="app-subtitle" data-en="Enter your Manager Secret to access your workspace.">输入 Manager Secret，进入任务管理工作台。</p>
+      <form id="login-form">
+        <label class="form-label" for="login-secret">Manager Secret</label>
+        <input class="form-control" id="login-secret" name="password" type="password" autocomplete="current-password" required aria-describedby="login-help login-message" autofocus>
+        <p id="login-help" data-en="Use the manager.secret value from your server configuration.">请输入服务端配置文件中的 manager.secret。</p>
+        <label class="login-remember"><input id="login-remember" type="checkbox"><span data-en="Remember me on this device">在此设备上记住登录</span></label>
+        <p id="login-message" role="alert" aria-live="polite"></p>
+        <button class="btn btn-primary" id="login-submit" type="submit" data-en="Sign in">登录</button>
+      </form>
+    </section>
+  </main>
+  <script>var lang = "__LANG__";</script>
+  <script inline src="static/js/pages/auth.js"></script>
+  <script inline src="static/js/pages/login.js"></script>
+</body>
+</html>

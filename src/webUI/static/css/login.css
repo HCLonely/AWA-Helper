@@ -1,0 +1,12 @@
+.login-main { width: min(100% - 28px, 460px); margin: 64px auto; }
+.login-card { padding: 32px; border: 1px solid var(--app-border); border-radius: var(--app-radius); background: var(--app-surface); box-shadow: 0 8px 32px #16284108; }
+.login-card h1 { margin: 0 0 12px; font-size: 26px; }
+#login-form { margin-top: 28px; }
+.login-page .form-control, .login-page .btn { min-height: 44px; font-size: 16px; }
+#login-help { font-size: 13px; color: var(--app-muted); margin: 8px 0 16px; overflow-wrap: anywhere; }
+.login-remember { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+.login-remember input { width: 18px; height: 18px; accent-color: var(--app-accent); }
+#login-message { color: #af453a; min-height: 21px; margin: 8px 0 16px; }
+#login-secret[aria-invalid="true"] { border-color: #af453a; }
+#login-submit { width: 100%; }
+@media (max-width: 600px) { .login-main { margin-block: 28px; } .login-card { padding: 24px; } }

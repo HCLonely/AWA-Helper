@@ -1,5 +1,7 @@
 .history/
 node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
 config.yml
 config1.yml
 config2.yml
@@ -7,9 +9,11 @@ AWA-Helper.exe
 *.zip
 *.tar
 *.tar.gz
+AWA-Helper-Win.tar.gz.sha256
 *.blob
 !node-v18.17.1-win-x64.zip
 output/
+native/**/obj/
 log.txt
 version
 chrome-win
@@ -33,12 +37,15 @@ test.ts
 test.exe
 Todo.md
 temp/
+.update/
 src/DailyQuestUS.ts
 src/SteamQuestSU.ts
 babel.index.js
+*.babel.js
 src/package.json
 node_linux/*
 src/webUI/dist
+src/webUI/static/js/pages/*.js
 src/manager/dist
 node_binaries/node-*
 node-*/
@@ -51,3 +58,8 @@ upx/
 DailyQuestO.ts
 
 test
+logs/
+tests/
+
+*05.md
+*06.md

@@ -1,0 +1,360 @@
+/**
+ * @file src/core/Manager/ManagerRuntime.ts
+ * @description 统一管理服务器、计划任务、业务作业以及应用关闭生命周期。
+ */
+import * as fs from 'fs';
+import { execSync } from 'child_process';
+import * as os from 'os';
+import chalk from 'chalk';
+import type { RuntimeMode } from '../../cli/Command';
+import { UnifiedServer } from '../../server';
+import { loadConfig } from '../../tools/config';
+import { flushLogs, logWriter } from '../../tools/logging/LogWriter';
+import { setLogSecrets } from '../../tools/logging/sanitize';
+import { maintainLogs } from '../../tools/logging/retention';
+import { cleanupCompletedUpdatesAsync } from '../../tools/update/retention';
+import { configureWebUiColors, Logger, time } from '../../tools';
+import { initializeI18n } from '../../tools/i18n';
+import { JobCoordinator } from './JobCoordinator';
+import { Scheduler } from './Scheduler';
+import { getManagerListenHost } from '../../server/network';
+import { AchievementJob, ArtifactJob, DailyQuestJob } from './jobs';
+import type { JobName, JobResult, JobSnapshot } from './Job';
+import { scheduleUpdate, UpdateInstallerError } from '../../tools/update';
+// @ts-ignore 由构建流程以文本形式导入。
+import CHANGELOG from '../../CHANGELOG.txt';
+// @ts-ignore 在构建期间由 YAML 生成。
+import * as zh from '../../locales/zh.json';
+// @ts-ignore 在构建期间由 YAML 生成。
+import * as en from '../../locales/en.json';
+
+interface ManagerRuntimeHooks {
+  onReady?: (url?: string) => void
+  onStateChange?: (states: JobSnapshot[]) => void
+}
+
+class ManagerRuntime {
+  readonly coordinator = new JobCoordinator();
+  private readonly loaded = loadConfig();
+  private readonly scheduler = new Scheduler(this.coordinator, this.loaded.manager);
+  private readonly server: UnifiedServer;
+  private readonly initialTlsRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+  private stopPromise?: Promise<void>;
+  private maintenance?: NodeJS.Timeout;
+  private maintaining?: Promise<void>;
+  private shutdownSignalled = false;
+  private resolveShutdown!: () => void;
+  private readonly shutdownRequested = new Promise<void>((resolve) => {
+    this.resolveShutdown = resolve;
+  });
+
+  /**
+   * 初始化 ManagerRuntime 实例。
+   * @param mode - 用于选择处理分支的类型，类型为 `RuntimeMode`。
+   * @param version - 用于比较或展示的应用版本号，类型为 `string`。
+   */
+  constructor(
+    private readonly mode: RuntimeMode,
+    private readonly version: string,
+    private readonly hooks: ManagerRuntimeHooks = {}
+  ) {
+    this.server = new UnifiedServer(
+      this.loaded,
+      this.coordinator,
+      version,
+      () => this.requestShutdown(),
+      () => this.reloadConfiguration(),
+      this.scheduler
+    );
+    this.coordinator.register(new DailyQuestJob(this.loaded.path));
+    this.coordinator.register(new AchievementJob(this.loaded.path));
+    this.coordinator.register(new ArtifactJob(this.loaded.path));
+    this.coordinator.states.subscribe((states) => this.hooks.onStateChange?.(states));
+  }
+
+  /**
+   * 执行任务。
+   * @returns `Promise<number>`，run 计算或读取到的数值。
+   */
+  async run(): Promise<number> {
+    this.initializeEnvironment();
+    new Logger(`${time()}${__('managerEnvironmentInitialized', __(`managerMode_${this.mode}`), this.version)}`);
+    if (this.loaded.manager.secret.length < 16) {
+      new Logger(`${time()}${__('managerWeakSecretWarning', String(this.loaded.manager.secret.length))}`);
+    }
+    this.printStartupInformation();
+    const {
+      webUI
+    } = this.loaded.raw;
+    new Logger(`${time()}${webUI?.enable === false
+      ? __('managerWebUiDisabled')
+      : __('managerWebUiStarting', getManagerListenHost(webUI?.local, process.env.AWA_HELPER_CONTAINER === 'true'), String(webUI?.port || 2345))}`);
+    await this.server.start();
+    if (this.shutdownSignalled) {
+      await this.stop();
+      return 0;
+    }
+    this.hooks.onReady?.(this.getLocalWebUiUrl());
+    this.hooks.onStateChange?.(this.coordinator.states.list());
+    new Logger(`${time()}${__('managerStarted', __(`managerMode_${this.mode}`), String(this.loaded.raw.webUI?.port || 2345))}`);
+    if (await this.scheduleAutomaticUpdate()) {
+      if (this.mode === 'persistent') {
+        this.requestShutdown();
+        await this.shutdownRequested;
+        await this.stop();
+        return 0;
+      }
+    }
+    if (this.shutdownSignalled) {
+      await this.stop();
+      return 0;
+    }
+    if (this.mode === 'once') {
+      new Logger(`${time()}${__('managerOneShotSelected')}`);
+      const result = await this.coordinator.start('dailyQuest', undefined, 'once');
+      await this.stop();
+      return result.success ? 0 : 1;
+    }
+    new Logger(`${time()}${__('managerStartingScheduler')}`);
+    this.scheduler.start();
+    await this.shutdownRequested;
+    await this.stop();
+    return 0;
+  }
+
+  private getLocalWebUiUrl(): string | undefined {
+    const {
+      webUI
+    } = this.loaded.raw;
+    if (webUI?.enable === false) {
+      return undefined;
+    }
+    const protocol = webUI?.ssl?.cert ? 'https' : 'http';
+    return `${protocol}://127.0.0.1:${webUI?.port || 2345}`;
+  }
+
+  private async scheduleAutomaticUpdate(): Promise<boolean> {
+    if (!this.loaded.raw.autoUpdate || process.argv.includes('--no-update')) {
+      return false;
+    }
+    try {
+      const update = await scheduleUpdate({
+        currentVersion: this.version,
+        proxy: this.loaded.raw.proxy,
+        restart: this.mode === 'persistent'
+      });
+      if (update.delegated) {
+        return false;
+      }
+      new Logger(`${time()}${__('newVersion', `V${update.version}`)}`);
+      new Logger(`${time()}${__('updating')}`);
+      return true;
+    } catch (error) {
+      if (error instanceof UpdateInstallerError && error.code === 'UP_TO_DATE') {
+        return false;
+      }
+      new Logger(`${time()}${__('updateFailed')}: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
+  }
+
+  /**
+   * 请求关闭服务。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
+  requestShutdown(): void {
+    if (this.shutdownSignalled) {
+      return;
+    }
+    this.shutdownSignalled = true;
+    this.scheduler.stop();
+    this.coordinator.beginShutdown();
+    new Logger(`${time()}${__('managerShutdownRequested')}`);
+    this.resolveShutdown();
+    void this.coordinator.stopAll().catch((error) => new Logger(error));
+  }
+
+  startJob(name: JobName): Promise<JobResult> {
+    if (this.coordinator.isClosing) {
+      throw new Error('Manager is shutting down');
+    }
+    if (name === 'achievement') {
+      fs.mkdirSync('data/achievement', {
+        recursive: true
+      });
+      fs.writeFileSync('data/achievement/enabled', '');
+    }
+    return this.coordinator.start(name);
+  }
+
+  async stopJob(name: JobName): Promise<void> {
+    this.scheduler.cancelPending(name);
+    await this.coordinator.stop(name);
+    if (name === 'achievement') {
+      fs.rmSync('data/achievement/enabled', {
+        force: true
+      });
+    }
+  }
+
+  /**
+   * 从磁盘重新加载配置，并更新无需重启进程即可生效的运行时状态。
+   * WebUI 的监听方式由已经创建的 HTTP(S) Server 决定，因此相关变化会提示重启。
+   */
+  private reloadConfiguration(): {
+    restartRequired: boolean
+    } {
+    const next = loadConfig(this.loaded.path);
+    const historyLimitChanged = this.loaded.manager.historyLimit !== next.manager.historyLimit;
+    const previousWebUi = this.webUiServerSignature(this.loaded.raw.webUI);
+    const nextWebUi = this.webUiServerSignature(next.raw.webUI);
+    if (this.loaded.manager.secret !== next.manager.secret) {
+      this.server.revokeWebSocketSessions();
+    }
+
+    this.scheduler.reload(next.manager);
+    this.replaceObject(this.loaded.raw, next.raw);
+    this.replaceObject(this.loaded.manager, next.manager);
+    this.applyRuntimeConfiguration();
+
+    return {
+      restartRequired: historyLimitChanged || previousWebUi !== nextWebUi
+    };
+  }
+
+  private webUiServerSignature(webUI: config['webUI']): string {
+    return JSON.stringify({
+      enable: webUI?.enable !== false,
+      port: webUI?.port || 2345,
+      local: webUI?.local,
+      ssl: webUI?.ssl
+    });
+  }
+
+  private replaceObject<T extends object>(target: T, source: T): void {
+    Object.keys(target).forEach((key) => delete (target as Record<string, unknown>)[key]);
+    Object.assign(target, source);
+  }
+
+  /**
+   * 停止任务。
+   * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
+   */
+  stop(): Promise<void> {
+    this.coordinator.beginShutdown();
+    this.scheduler.stop();
+    clearInterval(this.maintenance);
+    this.stopPromise ??= Promise.resolve().then(async () => {
+      new Logger(`${time()}${__('managerShutdownStarted')}`);
+      try {
+        await this.coordinator.stopAll();
+      } finally {
+        try {
+          await this.maintaining;
+          await this.server.stop();
+          new Logger(`${time()}${__('managerShutdownCompleted')}`);
+        } finally {
+          await flushLogs();
+        }
+      }
+    });
+    return this.stopPromise;
+  }
+
+  /**
+   * 初始化运行环境。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
+  private initializeEnvironment(): void {
+    fs.mkdirSync('logs', {
+      recursive: true
+    });
+    fs.mkdirSync('data', {
+      recursive: true
+    });
+    this.applyRuntimeConfiguration();
+    this.coordinator.history.open('data/manager/history.json', this.loaded.manager.historyLimit);
+    globalThis.log = true;
+    globalThis.newVersionNotice = '';
+    this.runMaintenance();
+    this.maintenance = setInterval(() => this.runMaintenance(), 60 * 60 * 1000);
+    this.maintenance.unref();
+  }
+
+  private runMaintenance(): void {
+    if (this.maintaining || this.coordinator.isClosing) {
+      return;
+    }
+    this.maintaining = (async () => {
+      const budget = (this.loaded.raw.logsMaxMB ?? 512) * 1024 * 1024;
+      const result = await maintainLogs('logs', this.loaded.raw.logsExpire || 0, budget, (file) => logWriter.isActive(file));
+      if (budget > 0 && result.remainingBytes > budget) {
+        new Logger(__('logStorageBudgetExceeded'));
+      }
+      await cleanupCompletedUpdatesAsync();
+    })().catch((error) => {
+      new Logger(error);
+    }).finally(() => {
+      this.maintaining = undefined;
+    });
+  }
+
+  /** 将当前已加载配置同步到进程级的动态运行参数。 */
+  private applyRuntimeConfiguration(): void {
+    initializeI18n(this.loaded.raw.language, {
+      zh,
+      en
+    });
+    globalThis.language = this.loaded.raw.language;
+    globalThis.version = this.version;
+    globalThis.webUI = this.loaded.raw.webUI?.enable !== false;
+    configureWebUiColors(globalThis.webUI);
+    globalThis.pusher = this.loaded.raw.pusher;
+    if (this.loaded.raw.proxy?.enable?.includes('steam')) {
+      new Logger(`${time()}${__('deprecatedSteamProxyTarget')}`);
+    }
+    setLogSecrets(this.loaded.raw);
+    if (this.loaded.raw.pusher?.enable && this.loaded.raw.proxy?.enable?.includes('pusher')) {
+      globalThis.pusherProxy = this.loaded.raw.proxy;
+    } else {
+      Reflect.deleteProperty(globalThis, 'pusherProxy');
+    }
+    if (this.loaded.raw.TLSRejectUnauthorized === false) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    } else if (this.initialTlsRejectUnauthorized === undefined) {
+      delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    } else {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = this.initialTlsRejectUnauthorized;
+    }
+  }
+
+  /**
+   * 输出启动信息。
+   * @returns `void`，该函数仅执行副作用，不返回值。
+   */
+  private printStartupInformation(): void {
+    const displayVersion = `V${this.version.replace(/^v/i, '')}`;
+    const logArr = '  ______   __       __   ______           __    __            __\n /      \\ /  |  _  /  | /      \\         /  |  /  |          /  |\n/$$$$$$  |$$ | / \\ $$ |/$$$$$$  |        $$ |  $$ |  ______  $$ |  ______    ______    ______\n$$ |__$$ |$$ |/$  \\$$ |$$ |__$$ | ______ $$ |__$$ | /      \\ $$ | /      \\  /      \\  /      \\\n$$    $$ |$$ /$$$  $$ |$$    $$ |/      |$$    $$ |/$$$$$$  |$$ |/$$$$$$  |/$$$$$$  |/$$$$$$  |\n$$$$$$$$ |$$ $$/$$ $$ |$$$$$$$$ |$$$$$$/ $$$$$$$$ |$$    $$ |$$ |$$ |  $$ |$$    $$ |$$ |  $$/\n$$ |  $$ |$$$$/  $$$$ |$$ |  $$ |        $$ |  $$ |$$$$$$$$/ $$ |$$ |__$$ |$$$$$$$$/ $$ |\n$$ |  $$ |$$$/    $$$ |$$ |  $$ |        $$ |  $$ |$$       |$$ |$$    $$/ $$       |$$ |\n$$/   $$/ $$/      $$/ $$/   $$/         $$/   $$/  $$$$$$$/ $$/ $$$$$$$/   $$$$$$$/ $$/\n                                                                 $$ |\n                                                                 $$ |\n                                                                 $$/               by HCLonely '.split('\n');
+    logArr[logArr.length - 2] = `${logArr[logArr.length - 2]}              ${displayVersion}`;
+    new Logger(logArr.join('\n'));
+    new Logger(chalk.red.bold(`\n${__('codSafetyNotice')}\n`));
+
+    if (!fs.existsSync('.version') || fs.readFileSync('.version', 'utf8').trim() !== displayVersion) {
+      new Logger(chalk.green(__('updateContent')));
+      console.table(CHANGELOG.trim().split('\n').map((entry: string) => entry.trim().replace('- ', '')));
+      if (os.type() === 'Windows_NT') {
+        try {
+          execSync('attrib -h .version');
+        } catch (_error) { /* 文件可能尚未创建。 */ }
+      }
+      fs.writeFileSync('.version', displayVersion);
+      if (os.type() === 'Windows_NT') {
+        try {
+          execSync('attrib +h .version');
+        } catch (_error) { /* 隐藏属性为可选设置。 */ }
+      }
+    }
+  }
+}
+
+export { ManagerRuntime };

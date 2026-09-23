@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "types": [],
+    "strict": true,
+    "noEmitOnError": true,
+    "rootDir": "src/webUI/static/js/pages",
+    "outDir": "src/webUI/static/js/pages",
+    "removeComments": false,
+    "skipLibCheck": true
+  },
+  "files": [
+    "src/webUI/static/js/pages/browser-globals.d.ts",
+    "src/webUI/static/js/pages/native-dom.ts",
+    "src/webUI/static/js/pages/log-preview.ts",
+    "src/webUI/static/js/pages/achievement.ts",
+    "src/webUI/static/js/pages/dailyQuest.ts",
+    "src/webUI/static/js/pages/index.ts",
+    "src/webUI/static/js/pages/community-event.ts",
+    "src/webUI/static/js/pages/settings-i18n.ts",
+    "src/webUI/static/js/pages/settings-model.ts",
+    "src/webUI/static/js/pages/settings-view.ts",
+    "src/webUI/static/js/pages/settings-api.ts",
+    "src/webUI/static/js/pages/settings.ts",
+    "src/webUI/static/js/pages/operations.ts",
+    "src/webUI/static/js/pages/auth.ts",
+    "src/webUI/static/js/pages/login.ts"
+  ]
+}

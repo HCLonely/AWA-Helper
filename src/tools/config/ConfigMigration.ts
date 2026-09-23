@@ -1,0 +1,45 @@
+/**
+ * @file src/tools/config/ConfigMigration.ts
+ * @description 将旧版 Manager、Cron 和遗物字段迁移为当前配置结构。
+ */
+import * as fs from 'fs';
+import { join } from 'path';
+import type { NormalizedManagerConfig } from './types';
+
+/**
+ * 规范化 Manager 配置。
+ * @param value - 需要写入或参与计算的值，类型为 `config`。
+ * @returns `Omit<NormalizedManagerConfig, "secret">`，迁移旧字段并规范化后的 Manager 配置（不含密钥）。
+ */
+const normalizeManagerConfig = (value: config): Omit<NormalizedManagerConfig, 'secret'> => {
+  const legacy = value.managerServer;
+  const current = value.manager;
+  const configuredArtifacts = current?.artifacts || legacy?.artifacts || [];
+  const artifacts = configuredArtifacts.flatMap((item) => {
+    const cron = item.cron || ('corn' in item ? item.corn : undefined);
+    if (!cron) {
+      return [];
+    }
+    const rawIds: string | number[] = item.ids;
+    return [{
+      cron,
+      ids: typeof rawIds === 'string'
+        ? rawIds.split(',').map((id) => Number.parseInt(id.trim(), 10)).filter(Number.isFinite)
+        : rawIds
+    }];
+  });
+  return {
+    timezone: current?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    historyLimit: current?.historyLimit ?? 200,
+    dailyQuestCron: current?.dailyQuest?.cron || legacy?.cron || legacy?.corn,
+    achievement: {
+      enable: current?.achievement?.enable ?? (
+        fs.existsSync(join('data', 'achievement', 'enabled'))
+      ),
+      cron: current?.achievement?.cron || '0 14 * * *'
+    },
+    artifacts
+  };
+};
+
+export { normalizeManagerConfig };

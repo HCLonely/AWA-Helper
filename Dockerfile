@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=node:22.13.1-alpine
+ARG NODE_IMAGE=node:22.23.2-alpine
 FROM ${NODE_IMAGE} AS builder
 
 # builder
@@ -17,7 +17,7 @@ RUN mkdir -p /usr/src/app/output/data /usr/src/app/output/config /usr/src/app/ou
   && chown -R node:node /usr/src/app/output
 VOLUME ["/usr/src/app/output/config", "/usr/src/app/output/logs", "/usr/src/app/output/data"]
 
-EXPOSE 3456 2345
+EXPOSE 2345
 USER node
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["node", "main.js", "--healthcheck"]
-CMD [ "node", "main.js" ]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["node", "healthcheck.js"]
+CMD [ "node", "index.js" ]

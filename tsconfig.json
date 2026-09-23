@@ -7,20 +7,20 @@
     "strict": true,
     "declaration": false,
     "declarationMap": false,
-    "moduleResolution": "node10",
-    "module": "CommonJS",
+    "moduleResolution": "Node16",
+    "module": "Node16",
     "target": "es2022",
     "allowJs": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "ignoreDeprecations": "6.0"
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*.ts"
   ],
   "exclude": [
     "src/DailyQuestUS.ts",
-    "src/SteamQuestSU.ts"
+    "src/SteamQuestSU.ts",
+    "src/webUI/static/js/pages/**/*.ts"
   ]
 }

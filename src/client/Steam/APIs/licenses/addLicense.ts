@@ -1,0 +1,26 @@
+/**
+ * @file src/client/Steam/APIs/licenses/addLicense.ts
+ * @description 通过 ASF 添加 Steam 任务所需的免费应用许可证。
+ */
+import { ASFContext } from '../../ASFContext';
+import { executeCommand } from '../commands';
+import type { ActionResult } from '../../../shared';
+/**
+ * 添加游戏许可证。
+ * @param context - 发起远程请求及保存会话状态所需的客户端上下文，类型为 `ASFContext`。
+ * @param appIds - 需要处理的 Steam 应用标识列表，类型为 `string[]`。
+ * @returns 添加成功时返回 `added`；没有应用需要处理时返回 `not-required`。
+ */
+export const addLicense = async (context: ASFContext, appIds: string[]): Promise<ActionResult<'added' | 'not-required'>> => {
+  if (!appIds.length) {
+    return {
+      ok: true,
+      state: 'not-required'
+    };
+  }
+  await executeCommand(context, `!addlicense ${context.botName} ${appIds.map((id) => `app/${id}`).join(',')}`);
+  return {
+    ok: true,
+    state: 'added'
+  };
+};

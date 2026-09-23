@@ -1,0 +1,62 @@
+/**
+ * @file src/webUI/static/js/pages/browser-globals.d.ts
+ * @description 声明 WebUI 页面使用的浏览器全局变量和外部库类型。
+ */
+declare const axios: typeof import('axios').default;
+declare const dayjs: typeof import('dayjs').default;
+declare const jsyaml: typeof import('js-yaml');
+declare const dom: (input: string | Element | Document | Window | EventTarget | null | undefined | Element[]) => NativeDom;
+
+interface NativeDom {
+  readonly elements: Element[];
+  readonly length: number;
+  [index: number]: Element;
+  ready(callback: () => void): NativeDom;
+  map(callback: (index: number, element: Element) => unknown): unknown[];
+  find(selector: string): NativeDom;
+  eq(index: number): NativeDom;
+  parent(): NativeDom;
+  children(selector?: string): NativeDom;
+  prev(): NativeDom;
+  attr(name: string): string | undefined;
+  attr(name: string, value: string | number): NativeDom;
+  attr(attributes: Record<string, string>): NativeDom;
+  removeAttr(name: string): NativeDom;
+  prop(name: string): unknown;
+  prop(name: string, value: unknown): NativeDom;
+  val(): string | string[] | number | undefined;
+  val(value: unknown): NativeDom;
+  text(): string;
+  text(value: unknown): NativeDom;
+  html(): string;
+  html(value: unknown): NativeDom;
+  append(content: string | Element | NativeDom): NativeDom;
+  empty(): NativeDom;
+  show(): NativeDom;
+  hide(): NativeDom;
+  fadeIn(): NativeDom;
+  fadeOut(): NativeDom;
+  css(name: string, value: string): NativeDom;
+  addClass(...names: string[]): NativeDom;
+  removeClass(...names: string[]): NativeDom;
+  toggleClass(name: string, force?: boolean): NativeDom;
+  hasClass(name: string): boolean;
+  remove(): NativeDom;
+  clone(): NativeDom;
+  before(content: Element | NativeDom): NativeDom;
+  after(content: string | Element | NativeDom): NativeDom;
+  data(name: string): unknown;
+  data(name: string, value: unknown): NativeDom;
+  scrollTop(): number;
+  on(event: string, handler: EventListener): NativeDom;
+  off(event: string, handler?: EventListener): NativeDom;
+  click(handler: (this: Element, event: MouseEvent) => unknown): NativeDom;
+  change(handler: (this: Element, event: Event) => unknown): NativeDom;
+  submit(handler: (this: Element, event: SubmitEvent) => unknown): NativeDom;
+}
+
+declare const I18n: Record<string, Record<string, string> | undefined>;
+declare const lang: string;
+declare function __(text: string, ...values: string[]): string;
+
+declare function openLogPreview(scope: string, secret: string): void;

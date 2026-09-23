@@ -2,43 +2,45 @@
 language: zh # 目前支持中文 (zh) 和 English (en)
 webUI:
   enable: true # 是否启用WebUI
-  port: 3456 # WebUI端口
+  port: 2345 # WebUI端口
   local: true # 仅内网访问，false为开启外网访问
   # ssl: # WebUI启用SSL
     # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
     # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
-  reverseProxyPort: 0 # 反向代理端口，0为不启用
 timeout: 86400 # 超时设置，单位：秒，默认86400s(24h), 0为不限制。如果程序运行超过此时间后还在运行，则终止此程序。
+logsMaxMB: 512 # 日志总容量预算，单位 MiB；0 为不限制；当天及正在写入的文件不会删除。
 logsExpire: 30 # 日志保留时间，单位：天，默认30天，0为不限制。
+debug:
+  http: false # 是否记录HTTP请求地址、状态码和耗时；默认关闭，不记录Cookie、Token、请求头、请求体及URL查询参数
 TLSRejectUnauthorized: true # 是否启用TLSSocket库校验，默认开启。如果使用代理出现网络问题，可尝试更改此项！
 UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47' # 浏览器UA
-autoUpdate: false # 自动安装已暂时禁用；程序仍会检查并提示新版本
+autoUpdate: false # 检测到新版后下载、校验并在当前进程退出后自动安装
 
-#### AWA managerServer配置 ####
-managerServer:
-  enable: false # 需同时启用webUI
-  secret: '' # AWA-Manager Secret，启用管理器时至少设置16个字符
-  local: true # 非容器环境仅本机访问；Docker 中为支持端口转发会监听容器全部接口
-  port: 2345 # AWA managerServer端口
-  # ssl: # managerServer启用SSL
-    # key: xxx.yyy-key.pem # SSL证书key文件名，将此文件放到与config.yml配置文件同一目录！
-    # cert: xxx.yyy.pem # SSL证书文件名，将此文件放到与config.yml配置文件同一目录！
-  corn: '3 30 14,21 * * *' # 定时启动AWA-Helper，需开启managerServer
+#### Manager配置 ####
+manager:
+  # timezone: Asia/Shanghai # IANA 时区；未设置时使用系统时区
+  historyLimit: 200 # 保留最近 10–1000 条运行记录；重启生效
+  secret: '' # Manager API密钥；为空时首次启动会生成随机密钥并写入配置
+  dailyQuest:
+    cron: '3 30 14,21 * * *' # 定时运行DailyQuest
 #        ┬ ┬─ ──┬── ┬ ┬ ┬
 #        │ │    │   │ │ |
-#        │ │    │   │ │ └─────────────── 一周的第几天 (0 - 7, 1L - 7L) (0或7是周日) ┐
+#        │ │    │   │ │ └─────────────── 一周的第几天 (0 - 7) (0或7是周日) ┐
 #        │ │    │   │ └───────────────── 月份　　　　 (1 - 12)　 　　　             ├─ 日期
-#        │ │    │   └─────────────────── 每月的第几天 (1 - 31, L)　　　　           ┘
+#        │ │    │   └─────────────────── 每月的第几天 (1 - 31)　　　　           ┘
 #        │ │    └───────────────────── 小时 (0 - 23) ┐
 #        │ └────────────────────────── 分钟 (0 - 59) ├─ 时间
 #        └──────────────────────────── 秒　 (0 - 59) ┘
-# 示例中的表达式代表每天的14:30:03和21:30:03启动AWA-Helper
+# 示例中的表达式代表每天的14:30:03和21:30:03运行DailyQuest
 # !! 注意每次运行的时间间隔要大于前面设置的timeout
+  achievement:
+    enable: false # 是否启用Achievement定时任务
+    cron: '0 14 * * *'
   artifacts: # 定时更换遗物
-    - corn: '7 29 9 * * 1' # 写法格式同上
-      ids: '636,17056,30235' # 遗物id, 英文逗号分隔
-    - corn: '36 44 10 * * 2'
-      ids: '636,17056,53672'
+    - cron: '7 29 9 * * 1' # 写法格式同上
+      ids: [636, 17056, 30235]
+    - cron: '36 44 10 * * 2'
+      ids: [636, 17056, 53672]
 # !! 注意每次更换遗物的时间间隔要大于24小时
 
 #### AWA 配置(必需) ####
@@ -48,10 +50,11 @@ awaHost: 'www.alienwarearena.com' # 外星人论坛Host, 默认的没问题就�
 awaQuests:
   - getStarted # 自动做左下角的GET STARTED任务，不需要做此任务删除或注释掉此行
   - dailyQuest # 自动做每日任务，不需要做此任务删除或注释掉此行
+  # - battlePass # 自动领取 Battle Pass 中可领取的奖励（默认关闭）
   # - dailyQuestOld # 自动做每日任务(旧版)，不需要做此任务删除或注释掉此行（默认关闭，一般不会再有此类任务）
   - timeOnSite # 自动做AWA在线任务，不需要做此任务删除或注释掉此行
-  - watchTwitch # 自动做Twitch直播间在线任务，不需要做此任务删除或注释掉此行
-  - steamQuest # 自动做Steam游戏时长任务，不需要做此任务删除或注释掉此行
+  # - watchTwitch # 自动做Twitch直播间在线任务；启用前必须配置 twitchCookie
+  # - steamQuest # 自动做Steam游戏时长任务；启用前必须配置 ASF Host、端口和 Botname
 awaDailyQuestType: # 每日任务(旧版)类型，不需要注释掉即可，如果不需要做此任务请注释上面的`dailyQuestOld`
   - click # 浏览页面任务，务标题为任务链接，需点击任务才能完成
   - visitLink # 浏览页面任务，任务标题为任务链接，浏览页面才能完成
@@ -84,7 +87,6 @@ proxy:
     - twitch # 在访问Twitch站点时使用代理，不使用删掉此行
     - awa # 在访问外星人论坛站点时使用代理，不使用删掉此行
     - asf # 在访问ASF时使用代理，不使用删掉此行
-    - steam # 在访问Steam时使用代理，不使用删掉此行
     - pusher # 在推送时使用代理，不使用删掉此行
   protocol: 'http' # 代理协议，'http'|'https'|'socks4'|'socks5'
   host: '127.0.0.1' # 代理host
