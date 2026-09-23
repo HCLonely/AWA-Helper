@@ -1,3 +1,4 @@
+import { communityEventFilePath } from '../../client/AWA/communityEventStore';
 /**
  * @file src/core/DailyQuest/DailyQuestRunner.ts
  * @description 创建每日任务运行环境，依次执行配置加载、任务处理、报告推送和资源清理。
@@ -216,7 +217,7 @@ const runDailyQuest = async ({
           shutdownController.abort(new Error('Process timeout'));
           new Logger(chalk.yellow(__('processTimeout')));
           trackChild(runWithRequestSignal(AbortSignal.timeout(15_000), () => push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`)
-            .catch((error) => new Logger(error))));
+            .catch((error) => new Logger(error)), true));
         }, timeout * 1000);
         timeoutHandle.unref();
       }
@@ -249,6 +250,7 @@ const runDailyQuest = async ({
       const runtime = new DailyQuestRuntime({
         awaCookie: awaCookie as string,
         host: resolvedAwaHost,
+        communityEventFile: communityEventFilePath(configPath),
         proxy,
         joinSteamCommunityEvent,
         getStarted: awaQuests.includes('getStarted'),

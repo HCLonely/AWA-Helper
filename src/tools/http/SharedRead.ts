@@ -34,24 +34,19 @@ export class SharedRead<T> {
           return;
         }
         done = true;
-        signal?.removeEventListener('abort', abort);
         active.waiters--;
         if (!active.waiters) {
           if (this.current === active) {
             this.current = undefined;
           }
-          active.controller.abort();
         }
         action();
       };
       const abort = (): void => finish(() => reject(new Error('Request cancelled', {
         cause: signal?.reason
       })));
-      signal?.addEventListener('abort', abort, {
-        once: true
-      });
       active.promise.then(
-        (value) => finish(() => resolve(value)),
+        (value) => (signal?.aborted ? abort() : finish(() => resolve(value))),
         (error: unknown) => finish(() => reject(error))
       );
     });

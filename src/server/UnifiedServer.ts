@@ -1,7 +1,10 @@
+import { communityEventFilePath, readCommunityEventData, saveCommunityEventData } from '../client/AWA/communityEventStore';
 /**
  * @file src/server/UnifiedServer.ts
  * @description 在同一端口托管 WebUI、管理 API、日志接口和带身份验证的 WebSocket。
  */
+import { AWAApiClient } from '../client/AWA/AWAApiClient';
+import { fetchCommunityEventMetadata, isCommunityEventActive, parseCommunityEventMetadata, validateCommunityEventSource, COMMUNITY_EVENT_SOURCES } from '../client/AWA/communityEventMetadata';
 import { Diagnostics } from '../core/Manager/Diagnostics';
 import { Scheduler } from '../core/Manager/Scheduler';
 import { formatLogValue } from '../tools/logging/sanitize';
@@ -404,6 +407,77 @@ class UnifiedServer {
       res.json({
         status: 'success'
       });
+    });
+
+    const eventFile = communityEventFilePath(configPath);
+    app.get('/api/community-event', (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      try {
+        const current = deepMerge(defaultConfig, parseYaml(fs.readFileSync(configPath, 'utf8')));
+        const data = readCommunityEventData(eventFile);
+        return res.json({
+          enabled: !!current.joinSteamCommunityEvent,
+          sources: Object.keys(COMMUNITY_EVENT_SOURCES),
+          data,
+          valid: !!parseCommunityEventMetadata(data)
+        });
+      } catch (error) {
+        return res.status(422).json({
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    });
+    app.put('/api/community-event', (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      try {
+        const data = saveCommunityEventData(eventFile, req.body?.sourceUrl, {
+          gameId: req.body?.gameId,
+          gameName: req.body?.gameName,
+          updateTime: new Date().toISOString()
+        });
+        return res.json(data);
+      } catch (error) {
+        return res.status(422).json({
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
+    });
+
+    app.post('/api/community-event/sync', async (req, res) => {
+      if (!authenticate(req, res)) {
+        return;
+      }
+      try {
+        const current = deepMerge(defaultConfig, parseYaml(fs.readFileSync(configPath, 'utf8')));
+        if (!current.joinSteamCommunityEvent) {
+          return res.status(409).json({
+            error: 'communityEventDisabled'
+          });
+        }
+        const awa = new AWAApiClient({
+          cookie: current.awaCookie || '',
+          host: current.awaHost,
+          proxy: current.proxy,
+          userAgent: current.UA
+        });
+        const lookup = await awa.communityEvent.findPath();
+        if (!lookup.found || !isCommunityEventActive(await awa.communityEvent.getEvent(lookup.value))) {
+          return res.status(409).json({
+            error: 'communityEventNotActive'
+          });
+        }
+        const sourceUrl = validateCommunityEventSource(req.body?.sourceUrl ?? readCommunityEventData(eventFile).sourceUrl);
+        const metadata = await fetchCommunityEventMetadata(sourceUrl);
+        return res.json(saveCommunityEventData(eventFile, sourceUrl, metadata));
+      } catch (error) {
+        return res.status(422).json({
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     });
 
     app.get('/api/config', (req, res) => authenticate(req, res) && res.type('text/yaml').send(fs.readFileSync(configPath, 'utf8')));

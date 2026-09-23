@@ -139,6 +139,34 @@
     </div>
   </div>
 
+  <section class="button-section" aria-labelledby="community-event-title">
+    <h2 class="section-title" id="community-event-title" data-i18n="communityEventTitle">Steam 社区活动</h2>
+    <p class="community-event-hint" data-i18n="communityEventHint">游戏信息仅当年当月有效，过期后请重新同步或填写。</p>
+    <form id="community-event-form">
+      <fieldset id="community-event-fields" disabled>
+        <div class="community-event-grid">
+          <div><label for="community-event-source" data-i18n="communityEventSource">远程来源</label>
+            <select id="community-event-source" class="form-select">
+              <option value="github">GitHub</option>
+              <option value="https://gh-proxy.org/">https://gh-proxy.org/</option>
+              <option value="https://cdn.gh-proxy.org/">https://cdn.gh-proxy.org/</option>
+              <option value="https://axisnow.gh-proxy.org/">https://axisnow.gh-proxy.org/</option>
+            </select>
+          </div>
+          <div><label for="community-event-id" data-i18n="communityEventGameId">游戏 ID（必填）</label><input id="community-event-id" class="form-control" type="text" inputmode="numeric" pattern="[1-9][0-9]*" required></div>
+          <div><label for="community-event-name" data-i18n="communityEventGameName">游戏名称（可选）</label><input id="community-event-name" class="form-control" type="text"></div>
+        </div>
+        <p class="community-event-hint"><span data-i18n="communityEventUpdateTime">更新时间</span>：<output id="community-event-updated">—</output></p>
+        <div class="btn-group-custom">
+          <button type="submit" class="btn btn-primary" data-i18n="communityEventSave">保存游戏信息</button>
+          <button type="button" id="community-event-sync" class="btn btn-outline-primary" data-i18n="communityEventSync">从远程同步</button>
+        </div>
+      </fieldset>
+      <p id="community-event-status" class="community-event-hint" role="status" aria-live="polite"></p>
+      <button type="button" id="community-event-reload" class="btn btn-outline-primary" data-i18n="communityEventReload">重新加载</button>
+    </form>
+  </section>
+
   <!-- AWA 成就控制区域 -->
   <div class="button-section">
     <div class="section-title"><span data-i18n="awaAchievementControl">AWA-Achievement 控制</span></div>
@@ -172,6 +200,7 @@
   <script src="static/js/pages/log-preview.js" inline></script>
   <script inline src="static/js/pages/auth.js"></script>
   <script src="static/js/pages/index.js" inline></script>
+  <script src="static/js/pages/community-event.js" inline></script>
 
 </body>
 </html>

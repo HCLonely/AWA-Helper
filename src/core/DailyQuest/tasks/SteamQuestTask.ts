@@ -149,7 +149,7 @@ export class SteamQuestTask {
       return true;
     } finally {
       const stopLogger = new Logger(`${time()}${__('stoppingPlayingGames')}`, false);
-      const stopResult = await runWithRequestSignal(AbortSignal.timeout(15_000), () => this.asf.bot.stopGames()).catch((error) => {
+      const stopResult = await runWithRequestSignal(AbortSignal.timeout(15_000), () => this.asf.bot.stopGames(), true).catch((error) => {
         new Logger(error);
         return null;
       });

@@ -145,3 +145,11 @@ Required fields vary by platform. See [all-pusher-api](https://github.com/HCLone
 When enabled, `platform` must be non-empty and `key` must be a non-empty object. Use the optional `pusher.options` object for additional platform options. DailyQuest reports group daily quests, online tasks, Steam, community events, calendar rewards, and Battle Pass results, including ARP, claim progress, and failed rewards. Notifications use plain text.
 
 See [Run history and diagnostics](/en/guide/webui#run-history-and-diagnostics) for timezone selection and history storage.
+
+### Steam CommunityEvent game data
+
+Below **DailyQuest Control** on the home page, enter the required game ID and optional game name, then click **Save game data**. Data is stored in a separate `community-event.json` beside the active `config.yml`, never in YAML configuration. The server timestamps manual saves.
+
+Remote sources are `github` (default), `https://gh-proxy.org/`, `https://cdn.gh-proxy.org/`, and `https://axisnow.gh-proxy.org/`. The GitHub URL is `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`; proxies prepend their prefix directly to that URL. **Sync from remote** validates and saves `{gameName, gameId, updateTime}` immediately, preserving the remote timestamp. Failures preserve existing data.
+
+Use an ISO 8601 date-time for `updateTime`, preferably with a timezone. Both year and month must match the runner's local calendar. Only with `joinSteamCommunityEvent` enabled and the event open and incomplete does the task read this file. Missing or expired data triggers a fetch from the selected source and is saved after validation. Expired remote data skips the event with a prompt to enter an ID. Disabled or ended events do not fetch game data.

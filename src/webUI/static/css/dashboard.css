@@ -31,3 +31,10 @@ font.red { color: #af453a; }
   .button-section { padding: 18px 16px; margin-bottom: 14px; }
   #log-area { padding: 12px; }
 }
+
+#community-event-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.community-event-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
+.community-event-grid > div { min-width: 0; }
+.community-event-grid label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+.community-event-hint { color: var(--app-muted); font-size: 13px; overflow-wrap: anywhere; }
+#community-event-form button { min-height: 44px; }

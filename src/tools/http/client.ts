@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import { Logger } from '../logging';
 import { time } from '../common';
 import { sleep } from '../common/async';
-import { withRequestSignal } from './RequestContext';
+import { getRequestSignal, withRequestSignal } from './RequestContext';
 
 export const http = axios.create({
   maxRedirects: 5,
@@ -27,7 +27,7 @@ http.interceptors.response.use((response) => response, async (error) => {
   const {
     config, response
   } = error;
-  if (!config || axios.isCancel(error) || config.signal?.aborted) {
+  if (!config || axios.isCancel(error) || config.signal?.aborted || getRequestSignal()?.aborted) {
     return Promise.reject(error);
   }
   const method = (config.method || 'get').toUpperCase();
@@ -51,7 +51,8 @@ http.interceptors.response.use((response) => response, async (error) => {
   if (delay > 30000) {
     return Promise.reject(error);
   }
-  if (!await sleep(delay / 1000, config.signal)) {
+  const signals = [config.signal, getRequestSignal()].filter((signal): signal is AbortSignal => Boolean(signal));
+  if (!await sleep(delay / 1000, signals.length ? AbortSignal.any(signals) : undefined)) {
     throw new axios.CanceledError('Request cancelled');
   }
   return http(config);

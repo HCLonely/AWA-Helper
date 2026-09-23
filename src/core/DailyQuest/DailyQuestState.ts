@@ -7,6 +7,7 @@ export type { GetStartedItem, PromotionalCalendarEntry } from '../../client/AWA/
 export interface SteamCommunityEventState {
   path?: string;
   gameId?: string;
+  gameName?: string;
   status: string;
   playedTime: string;
   totalTime: string

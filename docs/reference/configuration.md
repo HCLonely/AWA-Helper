@@ -145,3 +145,11 @@ pusher:
 不同平台所需字段不同，具体参数请参考 [all-pusher-api](https://github.com/HCLonely/all-pusher-api)。不要把包含 Cookie、密钥或推送令牌的 `config.yml` 提交到版本库。
 
 启用时必须提供非空的 `platform` 和非空对象 `key`；可通过对象 `pusher.options` 传入平台附加选项。DailyQuest 结果按每日任务、在线任务、Steam、社区活动、日历奖励和 Battle Pass 分组，展示 ARP、领取进度及失败奖励；推送使用纯文本格式。
+
+### Steam 社区活动游戏信息
+
+在主界面的 **DailyQuest 控制** 下方填写游戏 ID（必填）和游戏名称（可选），点击“保存游戏信息”。数据独立保存在当前 `config.yml` 同目录的 `community-event.json`，不写入 YAML 配置。保存手动数据时，服务器自动记录 `updateTime`。
+
+“远程来源”内置 `github`、`https://gh-proxy.org/`、`https://cdn.gh-proxy.org/`、`https://axisnow.gh-proxy.org/`，默认 GitHub。GitHub 地址为 `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`，代理地址为代理前缀直接拼接该地址。点击“从远程同步”会校验并直接保存 `{gameName, gameId, updateTime}`，保留远程更新时间；失败时保留已有数据。
+
+`updateTime` 使用 ISO 8601 日期时间（建议带时区），按运行机器本地年份和月份判断有效性，去年的同月数据也无效。启用 `joinSteamCommunityEvent` 且活动开放、个人时长未完成时，任务才读取独立文件；信息缺失或过期时从所选来源获取并保存。远程数据仍过期则跳过活动并提示重新填写。关闭开关或活动结束时不请求远程数据。

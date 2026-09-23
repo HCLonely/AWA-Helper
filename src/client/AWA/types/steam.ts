@@ -24,7 +24,8 @@ export interface CommunityEventPage {
   closed: boolean;
   gameId?: string;
   gameName?: string;
-  started: boolean;
+  owned: boolean;
+  joined: boolean;
   playedMinutes: number;
   totalMinutes: number;
 }

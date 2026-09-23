@@ -71,7 +71,8 @@ export class CommunityEventAPI {
    */
   async checkOwned(path: string): Promise<ActionResult<'owned', 'not-owned'>> {
     const response = await this.get<{
-      installed?: boolean
+      installed?: boolean,
+      success?: boolean
     }>(`${this.context.baseURL}/ajax/user/steam/community-event/sync-owned-games/${path}`);
     return (response.data?.installed || response.data?.success) ? {
       ok: true,
