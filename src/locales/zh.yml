@@ -1,4 +1,4 @@
-### index.ts ###
+### 程序入口（index.ts） ###
 running: 另一个AWA-Helper程序正在运行中！
 multipleAccountAlert: 如需多开，请将本程序复制到另一个文件夹运行！
 exitAlert: 按任意键退出...
@@ -27,7 +27,7 @@ missingSSLKey: 未找到SSL证书key文件，请将此文件放到与config.yml�
 missingSSLCert: 未找到SSL证书cert文件，请将此文件放到与config.yml同一目录下！
 clearingLogs: 正在清理日志文件...
 
-### DailyQuest.ts ###
+### 每日任务（DailyQuest.ts） ###
 noREMEMBERMEAlert: 检测到 %s 中没有 %s ，可能会导致连续签到天数获取错误，不影响其他功能
 allTaskCompleted: 今日所有任务已完成！
 updatingCookie: 正在更新 %s
@@ -130,7 +130,7 @@ battlePassProgress: "奖励领取进度 (%s/%s)"
 battlePassStatusProgress: "%s (%s/%s)"
 battlePassClaimFailed: "领取 %s 失败"
 
-### DailyQuestUS.ts ###
+### 美区每日任务（DailyQuestUS.ts） ###
 doingTaskUS: 正在做美区任务[%s]...
 startingQuest: 正在开始任务...
 waitingIFrame: 正在等待加载任务...
@@ -141,7 +141,7 @@ doTaskUSError: 美区任务执行错误！
 fulfillingGame: 正在完成游戏...
 boundingBox: 正在绑定画布框架...
 
-### TwitchTrack.ts ###
+### Twitch 观看跟踪（TwitchTrack.ts） ###
 initing: 正在初始化 %s...
 checkAuthorization: 正在检测是否授权 %s 扩展...
 authorized: 已授权
@@ -156,7 +156,7 @@ getJwtFailed: 获取jwt失败！
 obtainedArp: 今日ARP已获取！
 liveOffline: 此直播间[%s]已停止直播！
 
-### SteamQuestASF.ts ###
+### ASF 方式的 Steam 任务（SteamQuestASF.ts） ###
 gettingSteamQuestInfo: 正在获取 %s 任务信息...
 getSteamQuestInfoSuccess: 获取 %s 任务信息成功
 getSteamQuestInfoFailed: 获取 %s 任务信息失败
@@ -185,7 +185,7 @@ addingLicense: 正在尝试入库Steam游戏...
 syncSteamGamesRequired: 需同步Steam游戏库
 syncingGames: 正在同步Steam游戏库...
 
-### SteamQuestSU.ts ###
+### SU 方式的 Steam 任务（SteamQuestSU.ts） ###
 firstSteamUserAlert: 检测到首次使用此方式[%s]登录Steam, 如果Steam启用了%s，请注意控制台提示输入两步验证码！
 2fa: 两步验证
 loginingSteam: 正在登录 %s...
@@ -194,7 +194,7 @@ playingGames: 正在挂游戏时长...
 lastCodeWrong: 验证码错误，请 %s 秒后重试！
 steamCodeInput: 请输入验证码：
 
-### tool.ts ###
+### 工具函数（tool.ts） ###
 timeout: 连接超时，请尝试更换代理或节点！
 connRefused: 连接被拒绝，请尝试更换代理或节点！
 connReset: 连接被重置，请尝试更换代理或节点！
@@ -218,7 +218,7 @@ downloadingMainJs: 正在下载 index.js ...
 autoUpdated: 已自动更新至 %s
 updateLog: 更新内容：
 
-### webUI ###
+### 网页界面 ###
 webUIStart: webUI服务器已启动，请打开 %s 查看
 webUIConnect: webUI已连接
 webUIDisconnect: webUI已断开
@@ -229,7 +229,7 @@ giveUpReconnectWebUI: 多次连接失败，放弃重连
 reconnectingWebUI: 连接出错，正在重新连接...
 log: 日志
 
-### managerServer ###
+### 管理器服务器 ###
 managerServerNotConfig: managerServer未配置!
 managerServerSecretNotSet: managerServer的secret未设置！
 managerServerStart: managerServer启动成功！访问链接 %s
@@ -250,7 +250,7 @@ codSafetyNotice: '* 重要提示：后台挂机可能导致COD封号，游玩COD
 watchLogs: 查看日志
 changeArtifacts: 更换Artifact
 
-### managerWeb ###
+### 管理器网页 ###
 gettingDailyQuestStatus: 正在获取DailyQuest运行状态...
 getDailyQuestStatusSuccess: 运行状态获取成功！
 getDailyQuestStatusFailed: 运行状态获取失败
@@ -278,7 +278,7 @@ stoppingAchievement: 正在终止AWA-Achievement...
 achievementStopped: AWA-Achievement终止成功！
 achievementStopFailed: AWA-Achievement终止失败！
 
-### Artifacts.ts ###
+### 遗物（Artifacts.ts） ###
 gettingArtifactsInfo: 正在获取遗物信息...
 changingArtifact: '正在更换遗物{id:%s,position:%s}...'
 changeArtifactsSuccess: 遗物更换成功！
@@ -298,7 +298,7 @@ s% additional ARP for each daily calendar claim.: '每日登录额外增加 %s A
 Changes your username color in the forums.: 在论坛中更改您的用户名颜色
 Adds an additional s% ARP to Steam quest completions.: 'Steam任务完成时额外增加 %s ARP'
 
-### Achievement.ts ###
+### 成就（Achievement.ts） ###
 matching: 正在匹配 %s...
 doingAchievement: 正在操作成就[%s]...
 doneAchievement: 完成操作成就[%s]！
@@ -331,7 +331,7 @@ unknownState: '未知状态: %s'
 watchTwitchAfter5min: 'Twitch 运行失败，5分钟后重试...'
 noChannelFound: '频道不存在'
 
-### Manager Web UI ###
+### 管理器网页界面 ###
 systemConfig: 系统配置
 configManagerServer: 配置ManagerServer
 configAWAHelper: 配置AWA-Helper
@@ -360,7 +360,7 @@ rememberSecret: 记住密钥
 cancel: 取消
 confirm: 确定
 
-### Runtime logging ###
+### 运行时日志 ###
 httpRequestStarted: '[HTTP:%s] %s %s 请求开始'
 httpRequestCompleted: '[HTTP:%s] %s %s 请求完成（状态码 %s，耗时 %sms）'
 httpRequestFailed: '[HTTP:%s] %s %s 请求失败（%s，耗时 %sms）'
@@ -471,7 +471,7 @@ achievementActionResult: "成就操作 %s：%s"
 
 taskPartiallyCompleted: 任务已结束，但有部分操作未完成。
 
-# Settings page
+# 设置页面
 "settings.Settings · AWA Helper": "设置 · AWA Helper"
 "settings.WORKSPACE / PREFERENCES": "工作空间 / 偏好设置"
 "settings.Settings": "设置"
@@ -571,7 +571,7 @@ operationsPreviewHint: "预览不会保存配置。时区及调度策略可在�
 operationsConnections: "连接诊断"
 operationsDiagnosticHint: "检查已启用的平台，不执行任务。诊断导出包含最近运行和日志片段。"
 
-# Shared WebUI navigation
+# 网页界面共用导航
 "navHome": "管理首页"
 "navSettings": "配置设置"
 "navDiagnostics": "运行记录与诊断"

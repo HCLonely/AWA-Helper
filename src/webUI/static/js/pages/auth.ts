@@ -1,4 +1,4 @@
-/** Shared Manager authentication, navigation and expired-session handling. */
+/** 管理器共用的身份验证、导航和会话过期处理逻辑。 */
 const ManagerAuth = (() => {
   const key = 'managerServerSecret';
   const isLogin = location.pathname === '/login';
@@ -114,7 +114,7 @@ const ManagerAuth = (() => {
   });
   window.addEventListener('focus', () => {
     if (!isLogin) {
-      void verify().catch(() => { /* A connection failure is not an invalid secret. */ });
+      void verify().catch(() => { /* 连接失败并不表示密钥无效。 */ });
     }
   });
   return {

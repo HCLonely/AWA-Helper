@@ -10,7 +10,7 @@ export interface CommunityEventData {
   updateTime: string;
 }
 
-/** Keep the data beside the selected config, including when --config is used. */
+/** 将数据保存在所选配置文件所在目录中，使用 --config 时也遵循此规则。 */
 export const communityEventFilePath = (configPath: string): string => path.join(path.dirname(path.resolve(configPath)), 'community-event.json');
 
 export const readCommunityEventData = (filename: string): CommunityEventData => {

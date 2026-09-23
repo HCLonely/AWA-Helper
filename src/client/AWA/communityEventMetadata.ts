@@ -23,10 +23,10 @@ export const validateCommunityEventSource = (source: unknown): CommunityEventSou
   return source as CommunityEventSource;
 };
 
-/** A missing progress target is not proof that an event is open. */
+/** 缺少进度目标并不能证明活动已开放。 */
 export const isCommunityEventActive = (page: CommunityEventPage): boolean => !page.closed && !page.concluded && page.totalMinutes > 0 && page.playedMinutes < page.totalMinutes;
 
-/** Use the runner's local calendar month, including the year. */
+/** 使用任务运行器的本地日历月份，并包含年份。 */
 export const parseCommunityEventMetadata = (value: unknown, now = new Date()): CommunityEventMetadata | undefined => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return undefined;

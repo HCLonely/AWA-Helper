@@ -1,4 +1,4 @@
-/* Shared visual system for Manager, settings and diagnostics. */
+/* 管理器、设置和诊断页面共用的视觉样式。 */
 :root {
   --app-bg: #f5f7fb;
   --app-surface: #fff;

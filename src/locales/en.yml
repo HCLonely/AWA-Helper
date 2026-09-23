@@ -323,7 +323,7 @@ allChannelsFailed: 'Failed to get all channel information!'
 unknownState: 'Unknown state: %s'
 watchTwitchAfter5min: 'Twitch start failed, retry in 5 minutes...'
 noChannelFound: 'No channel found'
-### Manager Web UI ###
+### 管理器网页界面 ###
 systemConfig: System Configuration
 configManagerServer: Configure ManagerServer
 configAWAHelper: Configure AWA-Helper
@@ -352,7 +352,7 @@ rememberSecret: Remember secret
 cancel: Cancel
 confirm: Confirm
 
-### Runtime logging ###
+### 运行时日志 ###
 httpRequestStarted: '[HTTP:%s] %s %s request started'
 httpRequestCompleted: '[HTTP:%s] %s %s request completed (status %s, %sms)'
 httpRequestFailed: '[HTTP:%s] %s %s request failed (%s, %sms)'
@@ -463,7 +463,7 @@ achievementActionResult: "Achievement action %s: %s"
 
 taskPartiallyCompleted: Tasks finished with some operations incomplete.
 
-# Settings page
+# 设置页面
 "settings.Settings · AWA Helper": "Settings · AWA Helper"
 "settings.WORKSPACE / PREFERENCES": "WORKSPACE / PREFERENCES"
 "settings.Settings": "Settings"
@@ -563,7 +563,7 @@ operationsPreviewHint: "Preview does not save configuration. Edit timezone and s
 operationsConnections: "Connection diagnostics"
 operationsDiagnosticHint: "Checks enabled platforms without running tasks. Export includes recent runs and log excerpts."
 
-# Shared WebUI navigation
+# 网页界面共用导航
 "navHome": "Home"
 "navSettings": "Settings"
 "navDiagnostics": "Diagnostics"

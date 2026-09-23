@@ -18,7 +18,7 @@
     var lang = "__LANG__";
     var I18n = __I18N__;
 
-    // i18n function
+    // 国际化函数
     function __(text, ...argv) {
       let result = text;
       if (I18n[lang]?.[text]) {
@@ -32,22 +32,22 @@
       return result;
     }
 
-    // Initialize i18n on page load
+    // 页面加载时初始化国际化
     function initI18n() {
-      // Replace text content for elements with data-i18n attribute
+      // 替换带有 data-i18n 属性的元素的文本内容
       document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
         element.textContent = __(key);
       });
 
-      // Replace placeholder text for elements with data-i18n-placeholder attribute
+      // 替换带有 data-i18n-placeholder 属性的元素的占位文本
       document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
         const key = element.getAttribute('data-i18n-placeholder');
         element.placeholder = __(key);
       });
     }
 
-    // Initialize i18n when DOM is loaded
+    // DOM 加载完成后初始化国际化
     document.addEventListener('DOMContentLoaded', initI18n);
   </script>
   <link inline href="static/css/app.css" rel="stylesheet">
@@ -55,7 +55,7 @@
 </head>
 <body class="app-page dashboard-page">
   <header class="app-header" id="top"><div class="app-header-inner"><a class="app-brand" href="/"><span class="app-mark" aria-hidden="true">A</span> AWA Helper</a><nav class="app-nav" aria-label="主导航"><a href="/" data-i18n="navHome" aria-current="page">管理首页</a><a href="/daily-quest" data-i18n="navDailyQuest">每日任务</a><a href="/settings" data-i18n="navSettings">配置设置</a><a href="/operations" data-i18n="navDiagnostics">运行记录与诊断</a><a href="https://awa-helper.vercel.app/" target="_blank" rel="noopener noreferrer" data-i18n="navGuide">使用说明 ↗</a><a href="https://github.com/HCLonely/AWA-Helper">GitHub ↗</a><button type="button" class="app-signout" data-auth-logout>退出登录</button></nav></div></header>
-  <!-- Icons: Font Awesome Free 5.15.4 by Fonticons, Inc. (CC BY 4.0). https://fontawesome.com | static/FontAwesome-LICENSE.txt -->
+  <!-- 图标：由 Fonticons, Inc. 提供的 Font Awesome Free 5.15.4（CC BY 4.0）。 https://fontawesome.com | static/FontAwesome-LICENSE.txt -->
   <main class="app-main">
   <header class="app-intro"><div><p class="app-eyebrow">WORKSPACE / MANAGER</p><h1 data-i18n="navHome">管理首页</h1><p class="app-subtitle" data-i18n="managerSubtitle">管理每日任务、成就与运行日志。</p></div><a class="version" href="https://github.com/HCLonely/AWA-Helper/releases/tag/__VERSION__" target="_blank">__VERSION__</a></header>
   <details class="button-section release-notes">

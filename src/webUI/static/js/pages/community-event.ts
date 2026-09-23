@@ -1,4 +1,4 @@
-/** CommunityEvent editor on the Manager home page; persisted independently of YAML. */
+/** 管理器首页的社区活动编辑器；数据独立于 YAML 配置持久化。 */
 (async () => {
   if (typeof ManagerAuth !== 'undefined' && !await ManagerAuth.ready) {
     return;

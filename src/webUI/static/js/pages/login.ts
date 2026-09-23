@@ -1,4 +1,4 @@
-/** Verify credentials before storing them or entering protected pages. */
+/** 保存凭据或进入受保护页面前，先验证凭据。 */
 (() => {
   const {
     t

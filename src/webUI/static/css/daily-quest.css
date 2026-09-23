@@ -1,4 +1,4 @@
-/* Daily quest progress table; cards and logs share the Manager components. */
+/* 每日任务进度表；卡片和日志复用管理器组件。 */
 .daily-quest-page .section-title { margin-top: 0; }
 .quest-table { border: 1px solid var(--app-border); border-radius: 10px; }
 #quest-info { margin: 0; table-layout: fixed; min-width: 580px; font-size: 13px; }
