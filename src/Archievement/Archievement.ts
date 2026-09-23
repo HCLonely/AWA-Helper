@@ -20,6 +20,7 @@ export class Archievement {
   awa: AWA;
   twitch!: Twitch | null;
   twitchCookie?: string;
+  proxy?: proxy;
   availableAchievements: Array<string> = [
     'Use 25 different borders',
     'Change your border once a day for a week',
@@ -59,6 +60,8 @@ export class Archievement {
       awaHost,
       userAgent
     });
+    // 保存代理配置，供 watchTwitch 流程的 Twitch 实例使用
+    this.proxy = proxy;
     if (twitchCookie) {
       this.twitchCookie = twitchCookie;
     }
@@ -262,7 +265,8 @@ export class Archievement {
         return;
       }
 
-      this.twitch = new Twitch({ cookie: this.twitchCookie });
+      // 将代理透传给 Twitch，避免直连导致证书校验失败
+      this.twitch = new Twitch({ cookie: this.twitchCookie, proxy: this.proxy });
       // await twitch.start(type);
 
       const initStatus = await this.twitch.init();
