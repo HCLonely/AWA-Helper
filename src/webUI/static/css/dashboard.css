@@ -38,6 +38,12 @@ font.red { color: #af453a; }
 .community-event-grid label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
 .community-event-hint { color: var(--app-muted); font-size: 13px; overflow-wrap: anywhere; }
 #community-event-form button { min-height: 44px; }
+.community-event-games { display: grid; gap: 16px; margin: 20px 0; }
+.community-event-game { min-width: 0; border: 1px solid var(--app-border); border-radius: 10px; padding: 16px; }
+.community-event-game legend { float: none; width: auto; padding: 0 8px; font-size: 15px; font-weight: 600; }
+.community-event-game input, .community-event-game select { width: 100%; max-width: 100%; box-sizing: border-box; }
+.community-event-game-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.community-event-game-footer p { margin: 0; }
 
 .community-event-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--app-border); }
 

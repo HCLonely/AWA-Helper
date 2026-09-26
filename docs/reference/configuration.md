@@ -148,8 +148,55 @@ pusher:
 
 ### Steam 社区活动游戏信息
 
-在主界面的 **DailyQuest 控制** 区域内填写游戏 ID（必填）和游戏名称（可选），点击“保存游戏信息”。数据独立保存在当前 `config.yml` 同目录的 `community-event.json`，不写入 YAML 配置。保存手动数据时，服务器自动记录 `updateTime`。
+在主界面的 **DailyQuest 控制 → Steam 社区活动** 中点击“添加游戏”，可设置多个游戏。每行填写游戏 ID（必填）、名称和可选活动路径；路径是活动 URL 最后一段，例如 `aniimo-community-event`。无法通过页面 Steam 链接或横幅游戏名自动匹配时，应填写路径。支持删除条目，游戏 ID 和活动路径不能重复。
 
-“远程来源”内置 `github`、`https://gh-proxy.org/`、`https://cdn.gh-proxy.org/`、`https://axisnow.gh-proxy.org/`，默认 GitHub。GitHub 地址为 `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`，代理地址为代理前缀直接拼接该地址。点击“从远程同步”会校验并直接保存 `{gameName, gameId, updateTime}`，保留远程更新时间；失败时保留已有数据。
+点击“保存游戏信息”后，数据保存在当前 `config.yml` 同目录的 `community-event.json`，不会写入 YAML 配置。服务器为手动保存的每个游戏记录 `updateTime`。新版结构如下，旧版单游戏对象和远程游戏数组仍兼容：
 
-`updateTime` 使用 ISO 8601 日期时间（建议带时区），按运行机器本地年份和月份判断有效性，去年的同月数据也无效。启用 `joinSteamCommunityEvent` 且活动开放、个人时长未完成时，任务才读取独立文件；信息缺失或过期时从所选来源获取并保存。远程数据仍过期则跳过活动并提示重新填写。关闭开关或活动结束时不请求远程数据。
+```json
+{
+  "sourceUrl": "github",
+  "games": [
+    { "gameId": "230410", "gameName": "Warframe", "eventPath": "warframe-community-event-7", "updateTime": "2026-09-26T00:00:00Z" },
+    { "gameId": "4126040", "gameName": "Aniimo", "eventPath": "aniimo-community-event", "updateTime": "2026-09-26T00:00:00Z" }
+  ]
+}
+```
+
+“远程来源”内置 `github`、`https://gh-proxy.org/`、`https://cdn.gh-proxy.org/`、`https://axisnow.gh-proxy.org/`，默认 GitHub。GitHub 地址为 `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`，代理前缀直接拼接该地址。“从远程同步”会保存匹配进行中活动的游戏，保留远程更新时间以及其他仍有效的本地游戏；失败时保留已有数据。
+
+`updateTime` 按运行机器本地年份和月份逐项判断有效性。启用 `joinSteamCommunityEvent` 后，程序仅从 `/control-center` 中的 `LIVE` 活动横幅发现活动，分别检查进度和加入状态。缺少或过期的游戏信息会尝试从远程补充；无法匹配的活动会提示填写信息。已完成、已结束、未成功加入的活动不参与挂时长。所有可执行社区活动与普通 Steam 任务的游戏 ID 合并去重后，只调用一次 ASF 开始挂时长；等待全部已启动任务完成后统一停止。
+
+#### 远程多活动 JSON 格式
+
+远程来源推荐返回以下结构，不需要 `sourceUrl`；该字段由本地配置选择下载来源。示例日期仅用于说明，实际数据应使用当前有效的更新时间。
+
+```json
+{
+  "games": [
+    {
+      "gameId": "230410",
+      "gameName": "Warframe",
+      "eventPath": "warframe-community-event-7",
+      "updateTime": "2026-09-26T00:00:00Z"
+    },
+    {
+      "gameId": "4126040",
+      "gameName": "Aniimo",
+      "eventPath": "aniimo-community-event",
+      "updateTime": "2026-09-26T00:00:00Z"
+    }
+  ]
+}
+```
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `games` | 是（推荐格式） | 游戏信息数组；也兼容直接返回数组或旧版单游戏对象 |
+| `gameId` | 是 | Steam 游戏 ID，推荐使用字符串，必须为正整数 |
+| `gameName` | 否 | 展示名称；无 Steam 链接且未指定路径时，也用于匹配横幅游戏名 |
+| `eventPath` | 否，建议填写 | 活动 URL 最后一段，不含域名、斜杠、查询参数或锚点；只接受小写字母、数字和连字符 |
+| `updateTime` | 是 | ISO 8601 日期时间，须属于运行机器的当前本地年份和月份 |
+
+每个游戏可有独立的 `updateTime`；也支持在顶层设置公共 `updateTime`，未单独填写的条目会继承它。过期条目不会参与挂时长。建议明确填写 `eventPath`，尤其是显示名称使用中文或别名、与 AWA 横幅游戏名不一致时。
+
+ASF 的游戏列表在每次 Steam 任务启动时确定；运行期间新增或更换游戏后，请重新启动每日任务。为满足单次启动调用要求，程序不会在某个活动完成时单独重新调用 ASF，其他活动仍继续挂时长，全部已启动任务完成后统一停止。

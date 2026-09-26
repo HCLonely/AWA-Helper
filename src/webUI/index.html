@@ -139,7 +139,7 @@
     <section class="community-event-section" aria-labelledby="community-event-title">
       <h2 class="section-title" id="community-event-title" data-i18n="communityEventTitle">Steam 社区活动</h2>
       <p class="community-event-notice"><strong data-i18n="communityEventExplanation">由于Steam 社区活动新版界面识别不到游戏Id,所以需要从远程同步或手动输入！</strong></p>
-      <p class="community-event-hint" data-i18n="communityEventHint">游戏信息仅当年当月有效，过期后请重新同步或填写。</p>
+      <p class="community-event-hint" data-i18n="communityEventHint">可设置多个游戏，信息仅当年当月有效。控制中心内正在进行的活动将分别检查进度，未完成游戏合并交给 ASF 挂时长。</p>
       <form id="community-event-form">
         <fieldset id="community-event-fields" disabled>
           <div class="community-event-grid">
@@ -151,11 +151,12 @@
                 <option value="https://axisnow.gh-proxy.org/">https://axisnow.gh-proxy.org/</option>
               </select>
             </div>
-            <div><label for="community-event-id" data-i18n="communityEventGameId">游戏 ID（必填）</label><input id="community-event-id" class="form-control" type="text" inputmode="numeric" pattern="[1-9][0-9]*" required></div>
-            <div><label for="community-event-name" data-i18n="communityEventGameName">游戏名称（可选）</label><input id="community-event-name" class="form-control" type="text"></div>
           </div>
-          <p class="community-event-hint"><span data-i18n="communityEventUpdateTime">更新时间</span>：<output id="community-event-updated">—</output></p>
+          <div id="community-event-games" class="community-event-games"></div>
+          <p id="community-event-empty" class="community-event-hint" data-i18n="communityEventEmpty">尚未配置游戏，请添加游戏或从远程同步。</p>
+          <p class="community-event-hint" data-i18n="communityEventPathHint">活动路径可填写活动链接中最后一段，用于准确关联游戏；无法自动匹配时请填写。</p>
           <div class="btn-group-custom">
+            <button type="button" id="community-event-add" class="btn btn-outline-primary" data-i18n="communityEventAdd">添加游戏</button>
             <button type="submit" class="btn btn-primary" data-i18n="communityEventSave">保存游戏信息</button>
             <button type="button" id="community-event-sync" class="btn btn-outline-primary" data-i18n="communityEventSync">从远程同步</button>
           </div>

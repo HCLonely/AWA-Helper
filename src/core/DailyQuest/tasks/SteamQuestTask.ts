@@ -20,9 +20,17 @@ export class SteamQuestTask {
   constructor(
     private readonly awa: AWAApiClient,
     private readonly asf: SteamClient,
-    private readonly getEventAppId: () => string | undefined = () => undefined,
+    private readonly getEventAppId: () => string | string[] | undefined = () => [],
     private readonly pollDelaySeconds = 10 * 60
   ) {}
+
+  private eventAppIds(): string[] {
+    const ids = this.getEventAppId();
+    if (Array.isArray(ids)) {
+      return [...new Set(ids)];
+    }
+    return ids ? [ids] : [];
+  }
 
   /**
    * 执行任务。
@@ -62,8 +70,8 @@ export class SteamQuestTask {
       }
     }
     questLogger.log(chalk.green(`${__('logStatusOk')} (${quests.length})`));
-    const eventAppId = this.getEventAppId();
-    const requestedIds = [...quests.map((quest) => quest.id), ...(eventAppId ? [eventAppId] : [])];
+    const eventAppIds = this.eventAppIds();
+    const requestedIds = [...new Set([...quests.map((quest) => quest.id), ...eventAppIds])];
     if (!requestedIds.length) {
       return true;
     }
@@ -102,7 +110,7 @@ export class SteamQuestTask {
     }
     matchLogger.log(chalk.green(`${__('logStatusOk')} (${ownedIds.length})`));
     const trackedQuests = quests.filter((quest) => ownedIds.includes(quest.id));
-    if (!trackedQuests.length && !eventAppId) {
+    if (!trackedQuests.length && !eventAppIds.some((id) => ownedIds.includes(id))) {
       throw new Error(__('steamNoMatchingQuests'));
     }
     const playLogger = new Logger(`${time()}${__('usingASF', chalk.yellow('ASF'))}`, false);
@@ -139,7 +147,7 @@ export class SteamQuestTask {
           }
           new Logger(`${time()}${__('checkingProgress', chalk.yellow(quest.link))}: ${progress ?? '-'}%`);
         }
-        if (complete && !this.getEventAppId()) {
+        if (complete && !this.eventAppIds().some((id) => ownedIds.includes(id))) {
           return true;
         }
         if (!await sleep(this.pollDelaySeconds, signal)) {

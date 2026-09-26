@@ -47,5 +47,13 @@ export class DailyQuestState {
   trackError = 0;
   trackTimes = 0;
   postReplied: boolean | null = null;
-  communityEvent?: SteamCommunityEventState;
+  communityEvents: SteamCommunityEventState[] = [];
+
+  /** 兼容旧的单活动调用方。 */
+  get communityEvent(): SteamCommunityEventState | undefined {
+    return this.communityEvents[0];
+  }
+  set communityEvent(value: SteamCommunityEventState | undefined) {
+    this.communityEvents = value ? [value] : [];
+  }
 }

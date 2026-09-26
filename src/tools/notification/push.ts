@@ -69,7 +69,8 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
   if (!quest) {
     return '';
   }
-  const other: Array<[string, ReportValue] | undefined> = new Array(1);
+  const other: Array<[string, ReportValue]> = [];
+  const communityEvents: Array<[string, ReportValue]> = [];
   const daily: Array<[string, ReportValue]> = [];
   const online: Array<[string, ReportValue] | undefined> = new Array(2);
   const steam: Array<[string, ReportValue]> = [];
@@ -84,14 +85,14 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
       other.push([name, value]);
     } else if (name === __('battlePass')) {
       return;
-    } else if (name === __('steamCommunityEvent')) {
+    } else if (name === __('steamCommunityEvent') || name.startsWith(`${__('steamCommunityEvent')}[`)) {
       const status = value[__('status')];
       if (status === __('logStatusFinished') || status === __('logStatusClosed') ||
         status === __('battlePassStatus_ended') || status === __('battlePassStatus_not-started') ||
         parseInt(String(value[__('maxAvailableARP')]), 10) <= 0) {
         return;
       }
-      other[0] = [name, value];
+      communityEvents.push([name, value]);
     } else {
       daily.push([name, value]);
     }
@@ -102,7 +103,7 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
       const status = value[__('status')];
       const obtained = value[__('obtainedARP')];
       const extra = value[__('extraARP')];
-      if (name === __('steamCommunityEvent')) {
+      if (name === __('steamCommunityEvent') || name.startsWith(`${__('steamCommunityEvent')}[`)) {
         const complete = parseInt(String(obtained), 10) >= parseInt(String(value[__('maxAvailableARP')]), 10);
         return `${complete ? '✔️' : '⚠️'}${name}:  ${obtained}/${value[__('maxAvailableARP')]}`;
       }
@@ -136,8 +137,8 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
     formatRows(daily),
     formatRows(online),
     formatRows(steam),
-    formatRows(other.slice(0, 1)),
-    formatRows(other.slice(1)),
+    formatRows(communityEvents),
+    formatRows(other),
     battlePassRows.join('\n')
   ].filter(Boolean);
   const body = sections.join('\n---\n');

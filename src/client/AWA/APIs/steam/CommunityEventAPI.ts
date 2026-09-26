@@ -4,8 +4,9 @@
  */
 import type { AxiosResponse } from 'axios';
 import { AWAContext } from '../../AWAContext';
-import { parseCommunityEvent, parseCommunityEventPath } from '../../parsers';
-import type { CommunityEventPage } from '../../types';
+import { communityEventMatchesGame, parseCommunityEvent, parseLiveCommunityEvents } from '../../parsers';
+import { getControlCenter } from '../quests/getControlCenter';
+import type { CommunityEventListing, CommunityEventPage } from '../../types';
 import type { ActionResult, LookupResult } from '../../../shared';
 
 export class CommunityEventAPI {
@@ -36,17 +37,21 @@ export class CommunityEventAPI {
   }
   /**
    * 查找目标路径。
+   * @param gameId - 指定时匹配活动详情中的 Steam 游戏链接，避免混用其他活动的进度。
    * @returns 找到活动时返回路径；活动已结束或页面无活动时返回对应原因。
    */
-  async findPath(): Promise<LookupResult<string, 'concluded' | 'not-found'>> {
-    const response = await this.get<string>(`${this.context.baseURL}/steam/events`);
-    if (String(response.data).includes('concluded')) {
-      return {
-        found: false,
-        reason: 'concluded'
-      };
+  async findPath(gameId?: string): Promise<LookupResult<string, 'concluded' | 'not-found'>> {
+    const paths = (await this.listEvents()).map((event) => event.path);
+    let path = gameId ? undefined : paths[0];
+    if (gameId) {
+      for (const candidate of paths) {
+        const page = await this.get<string>(`${this.context.baseURL}/steam/community-event/${candidate}`);
+        if (communityEventMatchesGame(String(page.data), gameId)) {
+          path = candidate;
+          break;
+        }
+      }
     }
-    const path = parseCommunityEventPath(String(response.data));
     return path ? {
       found: true,
       value: path
@@ -54,6 +59,10 @@ export class CommunityEventAPI {
       found: false,
       reason: 'not-found'
     };
+  }
+  /** 可复用每日任务刚读取的控制中心 HTML，避免再次请求。 */
+  async listEvents(html?: string): Promise<CommunityEventListing[]> {
+    return parseLiveCommunityEvents(html ?? await getControlCenter(this.context));
   }
   /**
    * 获取社区活动。

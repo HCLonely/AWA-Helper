@@ -20,6 +20,20 @@ Edits are not saved automatically. Saves build on the current configuration and 
 
 You can also select or drop a local **settings template**, or enter a remote template URL. These files define the editing form; an ordinary `config.yml` cannot be imported as a template.
 
+## Manage Multiple Steam Community Events
+
+1. Enable `joinSteamCommunityEvent`, include `steamQuest` in `awaQuests`, and configure ASF.
+2. Under **DailyQuest Control → Steam CommunityEvent**, click **Add game** and enter each Steam game ID. Names are optional.
+3. If a game cannot be matched automatically, supply its event path: `https://www.alienwarearena.com/steam/community-event/aniimo-community-event` uses `aniimo-community-event`, not the full URL.
+4. Click **Save game data** to save all rows. Removing a row only edits the form until you save. Duplicate game IDs and nonempty event paths are rejected.
+5. Alternatively, select a built-in source and click **Sync from remote**. Matching ongoing games are saved directly, preserving other valid local entries. Failed synchronization preserves existing data.
+
+Each row shows its update timestamp and is valid only for the runtime machine's current year and month. Legacy single-game data appears as one row and is converted to a `games` array on save. See [CommunityEvent game data](/en/reference/configuration#steam-communityevent-game-data) for formats and fields. When automatic joining is disabled, manual editing and saving remain available, but remote synchronization is disabled.
+
+All ongoing events are discovered from `LIVE` banners in AWA's `/control-center`, with separate joining and completion checks. Unfinished joined games with valid configuration are combined with ordinary Steam quests, deduplicated, and sent to ASF in one play request. Task status and notifications show each event separately; one event completing does not stop the others.
+
+Restart the daily task after adding or changing games during a run so they are included in ASF's startup list.
+
 ## When Changes Take Effect
 
 | Change or method | Behavior |

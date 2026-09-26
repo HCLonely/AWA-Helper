@@ -113,18 +113,29 @@
         isTargetReached(twitchARP, data[__('watchTwitch')][__('maxAvailableARP')])) {
         dom('#watch-twitch').attr('class', 'table-success');
       }
-      if (data[__('steamCommunityEvent')]) {
-        dom('#steam-event').find('td').eq(0)
-          .text(display(data[__('steamCommunityEvent')][__('status')]));
-        dom('#steam-event').find('td').eq(1)
-          .text(`${data[__('steamCommunityEvent')][__('obtainedARP')]}min`);
-        dom('#steam-event').find('td').eq(2)
-          .text(display(data[__('steamCommunityEvent')][__('maxAvailableARP')]));
-        dom('#steam-event').show();
-        if (data[__('steamCommunityEvent')][__('status')] === __('done') ||
-          isTargetReached(data[__('steamCommunityEvent')][__('obtainedARP')], data[__('steamCommunityEvent')][__('maxAvailableARP')])) {
-          dom('#steam-event').attr('class', 'table-success');
-        }
+      document.querySelectorAll('[data-community-event-row]').forEach((row) => row.remove());
+      const template = document.getElementById('steam-event');
+      if (template) {
+        template.style.display = 'none';
+        let previousRow = template;
+        Object.entries(data).filter(([name]) => name === __('steamCommunityEvent') || name.startsWith(`${__('steamCommunityEvent')}[`)).forEach(([name, value], index) => {
+          const row = template.cloneNode(true) as HTMLElement;
+          row.id = `steam-event-${index}`;
+          row.dataset.communityEventRow = '';
+          row.style.display = '';
+          row.querySelector('th')!.textContent = name;
+          const cells = row.querySelectorAll('td');
+          cells[0].textContent = String(display(value[__('status')]));
+          cells[1].textContent = `${value[__('obtainedARP')]}min`;
+          cells[2].textContent = String(display(value[__('maxAvailableARP')]));
+          cells.forEach((cell) => {
+            cell.className = ''; cell.removeAttribute('data-i18n');
+          });
+          row.className = value[__('status')] === __('done') || (parseFloat(String(value[__('maxAvailableARP')])) > 0 &&
+            isTargetReached(value[__('obtainedARP')], value[__('maxAvailableARP')])) ? 'table-success' : '';
+          previousRow.after(row);
+          previousRow = row;
+        });
       }
       if (data[__('battlePass')]) {
         const battlePass = data[__('battlePass')];

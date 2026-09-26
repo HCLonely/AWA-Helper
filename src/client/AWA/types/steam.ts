@@ -18,12 +18,18 @@ export interface PreparedSteamQuest extends AWASteamQuestListing {
   id: string;
 }
 
+export interface CommunityEventListing {
+  path: string;
+  title: string;
+}
+
 export interface CommunityEventPage {
   path?: string;
   concluded: boolean;
   closed: boolean;
   gameId?: string;
   gameName?: string;
+  linkedGameId?: string;
   owned: boolean;
   joined: boolean;
   playedMinutes: number;

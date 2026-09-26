@@ -1,13 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { atomicWriteFileSync } from '../../tools/config/YamlConfig';
-import { parseCommunityEventMetadata, validateCommunityEventSource, type CommunityEventMetadata, type CommunityEventSource } from './communityEventMetadata';
+import { communityEventEntries, parseCommunityEventMetadata, validateCommunityEventSource, type CommunityEventMetadata, type CommunityEventSource } from './communityEventMetadata';
 
 export interface CommunityEventData {
   sourceUrl: CommunityEventSource;
-  gameId: string;
-  gameName: string;
-  updateTime: string;
+  games: CommunityEventMetadata[];
 }
 
 /** 将数据保存在所选配置文件所在目录中，使用 --config 时也遵循此规则。 */
@@ -25,28 +23,32 @@ export const readCommunityEventData = (filename: string): CommunityEventData => 
     }
     data = {};
   }
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+  if (!data || typeof data !== 'object' || (data.games !== undefined && !Array.isArray(data.games))) {
     throw new Error('communityEventReadFailed');
   }
   return {
     sourceUrl: validateCommunityEventSource(data.sourceUrl ?? 'github'),
-    gameId: typeof data.gameId === 'string' ? data.gameId : '',
-    gameName: typeof data.gameName === 'string' ? data.gameName : '',
-    updateTime: typeof data.updateTime === 'string' ? data.updateTime : ''
+    games: communityEventEntries(data).map((entry) => {
+      if (!entry || typeof entry !== 'object') {
+        throw new Error('communityEventReadFailed');
+      }
+      return entry as CommunityEventMetadata;
+    })
   };
 };
 
-export const saveCommunityEventData = (filename: string, source: unknown, metadata: CommunityEventMetadata): CommunityEventData => {
+export const saveCommunityEventData = (filename: string, source: unknown, metadata: unknown): CommunityEventData => {
   const sourceUrl = validateCommunityEventSource(source);
-  const valid = parseCommunityEventMetadata(metadata);
-  if (!valid) {
+  const entries = communityEventEntries(metadata);
+  const games = entries.map((entry) => parseCommunityEventMetadata(entry));
+  if ((!Array.isArray(metadata) && !entries.length) || games.some((game) => !game) ||
+    new Set(games.map((game) => game?.gameId)).size !== games.length ||
+    new Set(games.filter((game) => game?.eventPath).map((game) => game?.eventPath)).size !== games.filter((game) => game?.eventPath).length) {
     throw new Error('communityEventDataRequired');
   }
   const data: CommunityEventData = {
     sourceUrl,
-    gameId: valid.gameId,
-    gameName: valid.gameName || '',
-    updateTime: valid.updateTime
+    games: games as CommunityEventMetadata[]
   };
   atomicWriteFileSync(filename, `${JSON.stringify(data, null, 2)}\n`);
   return data;

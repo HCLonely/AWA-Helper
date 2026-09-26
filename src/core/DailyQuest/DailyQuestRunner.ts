@@ -414,7 +414,7 @@ const runDailyQuest = async ({
               return false;
             }
             if (asfReady) {
-              const steamTask = new SteamQuestTask(awaAPIs, steamQuest, () => runtime.state.communityEvent?.gameId);
+              const steamTask = new SteamQuestTask(awaAPIs, steamQuest, () => runtime.state.communityEvents.flatMap((event) => (event.gameId ? [event.gameId] : [])));
               trackQuest('Steam ASF', trackRunStep('Steam ASF', () => steamTask.run(shutdownController.signal)));
               if (!await sleep(30, shutdownController.signal)) {
                 return false;

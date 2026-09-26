@@ -581,7 +581,14 @@ operationsDiagnosticHint: "Checks enabled platforms without running tasks. Expor
 
 communityEventDataRequired: CommunityEvent game data is missing or expired. Sync or enter a game ID in WebUI.
 communityEventTitle: "Steam CommunityEvent"
-communityEventHint: "Game data is valid only for the current year and month. Sync or enter it again when expired. Used only while the event is active."
+communityEventHint: "Configure multiple games, valid for the current month. Live events from the control center are checked individually; unfinished games are sent to ASF together."
+communityEventAdd: "Add game"
+communityEventRemove: "Remove game"
+communityEventGame: "Game"
+communityEventEmpty: "No games configured. Add a game or sync from remote."
+communityEventPath: "Event path (optional)"
+communityEventPathHint: "Use the last segment of the event URL to associate a game with its event when automatic matching is unavailable."
+communityEventDuplicate: "Duplicate game ID or event path. Edit or remove the duplicate entry."
 communityEventSource: "Remote source"
 communityEventGameId: "Game ID (required)"
 communityEventGameName: "Game name (optional)"

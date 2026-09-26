@@ -1,6 +1,14 @@
 {
-  "sourceUrl": "github",
-  "gameId": "4126040",
-  "gameName": "Aniimo",
-  "updateTime": "2026-09-23T03:40:16.973Z"
+  "games": [
+    {
+      "gameId": "4126040",
+      "gameName": "伊莫",
+      "updateTime": "2026-09-26T04:58:27.756Z"
+    },
+    {
+      "gameId": "230410",
+      "gameName": "Warframe",
+      "updateTime": "2026-09-26T04:58:27.756Z"
+    }
+  ]
 }

@@ -4,7 +4,7 @@ import { communityEventFilePath, readCommunityEventData, saveCommunityEventData 
  * @description 在同一端口托管 WebUI、管理 API、日志接口和带身份验证的 WebSocket。
  */
 import { AWAApiClient } from '../client/AWA/AWAApiClient';
-import { fetchCommunityEventMetadata, isCommunityEventActive, parseCommunityEventMetadata, validateCommunityEventSource, COMMUNITY_EVENT_SOURCES } from '../client/AWA/communityEventMetadata';
+import { fetchCommunityEventMetadata, isCommunityEventActive, matchCommunityEventMetadata, parseCommunityEventMetadataList, validateCommunityEventSource, COMMUNITY_EVENT_SOURCES } from '../client/AWA/communityEventMetadata';
 import { Diagnostics } from '../core/Manager/Diagnostics';
 import { Scheduler } from '../core/Manager/Scheduler';
 import { formatLogValue } from '../tools/logging/sanitize';
@@ -421,7 +421,7 @@ class UnifiedServer {
           enabled: !!current.joinSteamCommunityEvent,
           sources: Object.keys(COMMUNITY_EVENT_SOURCES),
           data,
-          valid: !!parseCommunityEventMetadata(data)
+          valid: data.games.length > 0 && parseCommunityEventMetadataList(data).length === data.games.length
         });
       } catch (error) {
         return res.status(422).json({
@@ -434,11 +434,20 @@ class UnifiedServer {
         return;
       }
       try {
-        const data = saveCommunityEventData(eventFile, req.body?.sourceUrl, {
+        const entries = req.body?.games ?? [{
           gameId: req.body?.gameId,
           gameName: req.body?.gameName,
+          eventPath: req.body?.eventPath
+        }];
+        if (!Array.isArray(entries)) {
+          throw new Error('communityEventDataRequired');
+        }
+        const data = saveCommunityEventData(eventFile, req.body?.sourceUrl, entries.map((entry) => ({
+          gameId: entry?.gameId,
+          gameName: entry?.gameName,
+          eventPath: entry?.eventPath,
           updateTime: new Date().toISOString()
-        });
+        })));
         return res.json(data);
       } catch (error) {
         return res.status(422).json({
@@ -464,15 +473,32 @@ class UnifiedServer {
           proxy: current.proxy,
           userAgent: current.UA
         });
-        const lookup = await awa.communityEvent.findPath();
-        if (!lookup.found || !isCommunityEventActive(await awa.communityEvent.getEvent(lookup.value))) {
+        const sourceUrl = validateCommunityEventSource(req.body?.sourceUrl ?? readCommunityEventData(eventFile).sourceUrl);
+        const listings = await awa.communityEvent.listEvents();
+        if (!listings.length) {
           return res.status(409).json({
             error: 'communityEventNotActive'
           });
         }
-        const sourceUrl = validateCommunityEventSource(req.body?.sourceUrl ?? readCommunityEventData(eventFile).sourceUrl);
         const metadata = await fetchCommunityEventMetadata(sourceUrl);
-        return res.json(saveCommunityEventData(eventFile, sourceUrl, metadata));
+        const synced: typeof metadata = [];
+        for (const listing of listings) {
+          const page = await awa.communityEvent.getEvent(listing.path);
+          const game = matchCommunityEventMetadata(metadata, listing, page);
+          if (game && isCommunityEventActive(page)) {
+            synced.push({
+              ...game,
+              eventPath: listing.path
+            });
+          }
+        }
+        if (!synced.length) {
+          return res.status(409).json({
+            error: 'communityEventNotActive'
+          });
+        }
+        const existing = parseCommunityEventMetadataList(readCommunityEventData(eventFile));
+        return res.json(saveCommunityEventData(eventFile, sourceUrl, [...synced, ...existing.filter((game) => !synced.some((entry) => entry.gameId === game.gameId || entry.eventPath === game.eventPath))]));
       } catch (error) {
         return res.status(422).json({
           error: error instanceof Error ? error.message : String(error)

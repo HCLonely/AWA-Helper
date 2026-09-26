@@ -5,7 +5,7 @@
 /* global __ */
 import { load } from 'cheerio';
 import { readCommunityEventData, saveCommunityEventData } from '../../client/AWA/communityEventStore';
-import { fetchCommunityEventMetadata, isCommunityEventActive, parseCommunityEventMetadata, type CommunityEventMetadata } from '../../client/AWA/communityEventMetadata';
+import { fetchCommunityEventMetadata, isCommunityEventActive, matchCommunityEventMetadata, parseCommunityEventMetadataList, type CommunityEventMetadata } from '../../client/AWA/communityEventMetadata';
 import chalk from 'chalk';
 import { AWAApiClient } from '../../client/AWA/AWAApiClient';
 import {
@@ -14,7 +14,7 @@ import {
 } from '../../client/AWA/APIs';
 import { parseVerifiedControlCenter as parseControlCenter } from '../../client/AWA/parsers/verifiedControlCenter';
 import { Logger, random, sleep, time } from '../../tools';
-import { DailyQuestState } from './DailyQuestState';
+import { DailyQuestState, type SteamCommunityEventState } from './DailyQuestState';
 import { formatQuestReport } from './QuestReporter';
 import { AWAError } from '../../client/AWA/AWAError';
 import { writeFileLog } from '../../tools/logging';
@@ -168,9 +168,9 @@ export class DailyQuestRuntime {
         }
       }
       if (verify && this.joinSteamCommunityEvent) {
-        await this.initializeCommunityEvent();
-      } else if (this.joinSteamCommunityEvent && this.state.communityEvent?.path) {
-        await this.refreshCommunityEvent();
+        await this.initializeCommunityEvent(html);
+      } else if (this.joinSteamCommunityEvent) {
+        await this.refreshCommunityEvent(html);
       }
 
       const report = formatQuestReport(this.state);
@@ -437,136 +437,115 @@ export class DailyQuestRuntime {
    * 初始化社区活动。
    * @returns `Promise<void>`，异步操作完成后兑现，不携带结果值。
    */
-  private async initializeCommunityEvent(): Promise<void> {
+  private async initializeCommunityEvent(html?: string): Promise<void> {
     if (!this.joinSteamCommunityEvent) {
       return;
     }
-    this.state.communityEvent = undefined;
-    const pathLogger = new Logger(`${time()}${__('gettingSteamCommunityEventPath')}`, false);
-    const pathLookup = await this.awa.communityEvent.findPath().catch((error) => {
-      pathLogger.log(chalk.red(__('logStatusError')));
+    const previous = this.state.communityEvents;
+    // 获取页面失败时也不能继续使用过期或已删除的游戏配置。
+    try {
+      const valid = parseCommunityEventMetadataList(readCommunityEventData(this.communityEventFile));
+      previous.forEach((event) => {
+        if (!valid.some((game) => game.gameId === event.gameId && (!game.eventPath || game.eventPath === event.path))) {
+          event.gameId = undefined;
+        }
+      });
+    } catch {
+      previous.forEach((event) => {
+        event.gameId = undefined;
+      });
+    }
+    const listings = await this.awa.communityEvent.listEvents(html).catch((error) => {
       new Logger(error);
       return null;
     });
-    if (!pathLookup?.found) {
+    if (!listings) {
       return;
     }
-    const path = pathLookup.value;
-    pathLogger.log(chalk.green(__('logStatusOk')));
-    const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')}`, false);
-    const page = await this.awa.communityEvent.getEvent(path).catch((error) => {
-      logger.log(chalk.red(__('logStatusError')));
-      new Logger(error);
-      return null;
-    });
-    if (!page) {
+    if (!listings.length) {
+      this.state.communityEvents = [];
       return;
     }
-    const completed = page.concluded || page.playedMinutes >= page.totalMinutes;
-    if (completed) {
-      this.state.communityEvent = {
-        path,
-        status: (page.concluded || page.closed) ? __('logStatusFinished') : __('done'),
-        playedTime: `${page.playedMinutes}`,
-        totalTime: `${page.totalMinutes}min`
-      };
-      logger.log(chalk.yellow(__('logStatusFinished')));
-      return;
-    }
-    if (!isCommunityEventActive(page)) {
-      logger.log(chalk.yellow(__('logStatusClosed')));
-      return;
-    }
-    const metadata = await this.resolveCommunityEventMetadata();
-    if (!metadata) {
-      logger.log(chalk.yellow(__('communityEventDataRequired')));
-      return;
-    }
-    const {
-      gameId, gameName
-    } = metadata;
-    let {
-      joined
-    } = page;
-    if (!joined) {
-      let owned;
-      if (!page.owned) {
-        const ownedLogger = new Logger(`${time()}${__('checkingOwnedGames', `[${gameName || gameId}](${gameId})`)}`, false);
-        owned = await this.awa.communityEvent.checkOwned(path);
-        ownedLogger.log(owned.ok ? chalk.green(__('owned')) : chalk.yellow(__('notOwned')));
+    const games = await this.resolveCommunityEventMetadata();
+    const events: SteamCommunityEventState[] = [];
+    for (const listing of listings) {
+      const logger = new Logger(`${time()}${__('gettingSteamCommunityEvent')} [${listing.title}]`, false);
+      try {
+        const page = await this.awa.communityEvent.getEvent(listing.path);
+        const metadata = matchCommunityEventMetadata(games, listing, page);
+        const state: SteamCommunityEventState = {
+          path: listing.path,
+          gameName: metadata?.gameName || listing.title,
+          status: __('logStatusClosed'),
+          playedTime: `${page.playedMinutes}`,
+          totalTime: `${page.totalMinutes}min`
+        };
+        events.push(state);
+        if (page.concluded || page.closed) {
+          state.status = __('logStatusFinished');
+        } else if (page.totalMinutes > 0 && page.playedMinutes >= page.totalMinutes) {
+          state.status = __('done');
+        } else if (isCommunityEventActive(page)) {
+          if (!metadata) {
+            state.status = __('communityEventDataRequired');
+          } else {
+            let {
+              joined
+            } = page;
+            if (!joined && (page.owned || (await this.awa.communityEvent.checkOwned(listing.path)).ok)) {
+              joined = (await this.awa.communityEvent.join(listing.path)).ok;
+            }
+            state.status = joined ? __('joined') : __('notOwnedGame', `[${metadata.gameName || metadata.gameId}](${metadata.gameId})`);
+            // 未加入、已结束、已完成或缺少配置的活动都不能交给 ASF 挂时长。
+            state.gameId = joined ? metadata.gameId : undefined;
+          }
+        }
+        logger.log(`${chalk.green(__('logStatusOk'))} (${page.playedMinutes}/${page.totalMinutes}min)`);
+      } catch (error) {
+        logger.log(chalk.red(__('logStatusError')));
+        new Logger(error);
+        const failed = events.find((event) => event.path === listing.path);
+        if (failed) {
+          failed.status = __('logStatusError');
+          failed.gameId = undefined;
+        }
+        if (!events.some((event) => event.path === listing.path)) {
+          const old = previous.find((event) => event.path === listing.path);
+          if (old) {
+            events.push({
+              ...old,
+              gameId: games.some((game) => game.gameId === old.gameId && (!game.eventPath || game.eventPath === old.path)) ? old.gameId : undefined
+            });
+          }
+        }
       }
-      if (owned?.ok || page.owned) {
-        const joinLogger = new Logger(`${time()}${__('enteringSteamCommunityEvent')}`, false);
-        joined = (await this.awa.communityEvent.join(path)).ok;
-        joinLogger.log(joined ? chalk.green(__('logStatusOk')) : chalk.red(__('logStatusError')));
-      }
     }
-    this.state.communityEvent = {
-      path,
-      gameId,
-      gameName,
-      status: joined ? __('joined') : __('notOwnedGame', `[${gameName || gameId}](${gameId})`),
-      playedTime: `${page.playedMinutes}`,
-      totalTime: `${page.totalMinutes}min`
-    };
-    logger.log(joined ? chalk.green('OK') : chalk.yellow(__('notOwned')));
+    this.state.communityEvents = events;
   }
-  /**
-   * 解析当月游戏信息，过期时从远程刷新。
-   */
-  private async resolveCommunityEventMetadata(): Promise<CommunityEventMetadata | undefined> {
+
+  /** 保留本月有效的手工配置，远程数据只补充缺失或过期的游戏。 */
+  private async resolveCommunityEventMetadata(): Promise<CommunityEventMetadata[]> {
+    let valid: CommunityEventMetadata[] = [];
     try {
       const saved = readCommunityEventData(this.communityEventFile);
-      const current = parseCommunityEventMetadata(saved);
-      if (current) {
-        return current;
+      valid = parseCommunityEventMetadataList(saved);
+      if (valid.length && valid.length === saved.games.length) {
+        return valid;
       }
       const remote = await fetchCommunityEventMetadata(saved.sourceUrl);
       const latest = readCommunityEventData(this.communityEventFile);
       if (JSON.stringify(latest) !== JSON.stringify(saved)) {
-        return parseCommunityEventMetadata(latest);
+        return parseCommunityEventMetadataList(latest);
       }
-      return saveCommunityEventData(this.communityEventFile, saved.sourceUrl, remote);
+      const merged = [...valid, ...remote.filter((game) => !valid.some((entry) => entry.gameId === game.gameId || (game.eventPath && entry.eventPath === game.eventPath)))];
+      return saveCommunityEventData(this.communityEventFile, saved.sourceUrl, merged).games;
     } catch (error) {
       new Logger(error instanceof Error ? __(error.message) : String(error));
-      return undefined;
+      return valid;
     }
   }
 
-  private async refreshCommunityEvent(): Promise<void> {
-    const event = this.state.communityEvent;
-    if (!this.joinSteamCommunityEvent || !event?.path) {
-      return;
-    }
-    try {
-      if (!parseCommunityEventMetadata(readCommunityEventData(this.communityEventFile))) {
-        event.gameId = undefined;
-      }
-    } catch {
-      event.gameId = undefined;
-    }
-    const logger = new Logger(`${time()}${__('checkingSteamCommunityEventStatus')}`, false);
-    const page = await this.awa.communityEvent.getEvent(event.path).catch((error) => {
-      logger.log(chalk.red(__('logStatusError')));
-      new Logger(error);
-      return null;
-    });
-    if (!page) {
-      return;
-    }
-    event.playedTime = `${page.playedMinutes}`;
-    event.totalTime = `${page.totalMinutes}min`;
-    if (page.concluded || page.closed || page.playedMinutes >= page.totalMinutes) {
-      event.status = (page.concluded || page.closed) ? __('logStatusFinished') : __('done');
-      event.gameId = undefined;
-    } else if (isCommunityEventActive(page)) {
-      const metadata = await this.resolveCommunityEventMetadata();
-      event.gameId = metadata?.gameId;
-      event.gameName = metadata?.gameName;
-      if (!metadata) {
-        event.status = __('communityEventDataRequired');
-      }
-    }
-    logger.log(`${chalk.green(__('logStatusOk'))}(${chalk.yellow(`${page.playedMinutes}/${page.totalMinutes}min`)})`);
+  private async refreshCommunityEvent(html?: string): Promise<void> {
+    await this.initializeCommunityEvent(html);
   }
 }

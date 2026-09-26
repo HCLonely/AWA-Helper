@@ -60,12 +60,14 @@ export const formatQuestReport = (state: DailyQuestState): QuestReport => {
       [__('maxAvailableARP')]: '0'
     };
   });
-  if (state.communityEvent) {
-    report[__('steamCommunityEvent')] = {
-      [__('status')]: state.communityEvent.status,
-      [__('obtainedARP')]: state.communityEvent.playedTime,
+  for (const event of state.communityEvents) {
+    const name = event.gameName || event.path;
+    const duplicateName = state.communityEvents.some((other) => other !== event && (other.gameName || other.path) === name);
+    report[`${__('steamCommunityEvent')}[${name}${duplicateName ? ` (${event.path})` : ''}]`] = {
+      [__('status')]: event.status,
+      [__('obtainedARP')]: event.playedTime,
       [__('extraARP')]: '0',
-      [__('maxAvailableARP')]: state.communityEvent.totalTime
+      [__('maxAvailableARP')]: event.totalTime
     };
   }
   if (state.battlePass) {

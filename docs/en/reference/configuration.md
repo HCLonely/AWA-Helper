@@ -148,8 +148,45 @@ See [Run history and diagnostics](/en/guide/webui#run-history-and-diagnostics) f
 
 ### Steam CommunityEvent game data
 
-Within **DailyQuest Control** on the home page, enter the required game ID and optional game name, then click **Save game data**. Data is stored in a separate `community-event.json` beside the active `config.yml`, never in YAML configuration. The server timestamps manual saves.
+Under **DailyQuest Control → Steam CommunityEvent**, click **Add game** to configure multiple games. Each row contains a required Steam game ID, an optional name, and an optional event path (the last URL segment, such as `aniimo-community-event`). Supply a path when the Steam link or banner title cannot identify the game. Rows can be removed; duplicate IDs and paths are rejected.
 
-Remote sources are `github` (default), `https://gh-proxy.org/`, `https://cdn.gh-proxy.org/`, and `https://axisnow.gh-proxy.org/`. The GitHub URL is `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`; proxies prepend their prefix directly to that URL. **Sync from remote** validates and saves `{gameName, gameId, updateTime}` immediately, preserving the remote timestamp. Failures preserve existing data.
+**Save game data** stores `{sourceUrl, games: [{gameId, gameName, eventPath, updateTime}]}` in `community-event.json` beside the active `config.yml`, without modifying YAML configuration. The server timestamps manual saves. Legacy single-game objects and remote arrays remain supported.
 
-Use an ISO 8601 date-time for `updateTime`, preferably with a timezone. Both year and month must match the runner's local calendar. Only with `joinSteamCommunityEvent` enabled and the event open and incomplete does the task read this file. Missing or expired data triggers a fetch from the selected source and is saved after validation. Expired remote data skips the event with a prompt to enter an ID. Disabled or ended events do not fetch game data.
+Remote sources are `github` (default), `https://gh-proxy.org/`, `https://cdn.gh-proxy.org/`, and `https://axisnow.gh-proxy.org/`. GitHub uses `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`; proxy prefixes are prepended to that URL. **Sync from remote** saves games matching ongoing events, preserving remote timestamps and other valid local entries. Failed synchronization preserves saved data.
+
+Each game's ISO 8601 `updateTime` must belong to the current local year and month. With `joinSteamCommunityEvent` enabled, events are discovered exclusively from `LIVE` banners in `/control-center`, and progress and joining are handled separately for each event. Missing or expired metadata is fetched from the selected source. Unmatched events request configuration. Completed, closed, and unjoined events are excluded from playback. All eligible community games and ordinary Steam quests are deduplicated into one ASF play request and stopped together when all started tasks finish.
+
+#### Remote JSON for Multiple Events
+
+The recommended remote response is shown below. It does not need `sourceUrl`, which selects the download source locally. The example timestamps are illustrative; publish data with a timestamp valid for the current month.
+
+```json
+{
+  "games": [
+    {
+      "gameId": "230410",
+      "gameName": "Warframe",
+      "eventPath": "warframe-community-event-7",
+      "updateTime": "2026-09-26T00:00:00Z"
+    },
+    {
+      "gameId": "4126040",
+      "gameName": "Aniimo",
+      "eventPath": "aniimo-community-event",
+      "updateTime": "2026-09-26T00:00:00Z"
+    }
+  ]
+}
+```
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `games` | Yes in the recommended format | Game entries; a top-level array and legacy single-game object also remain supported |
+| `gameId` | Yes | Positive integer Steam game ID, preferably a string |
+| `gameName` | No | Display name; also matches the banner game name when there is no Steam link or explicit path |
+| `eventPath` | No, recommended | Last segment of the event URL, without domain, slashes, query or fragment; lowercase letters, digits and hyphens only |
+| `updateTime` | Yes | ISO 8601 timestamp belonging to the runtime machine's current local year and month |
+
+Each game may have its own `updateTime`. A shared top-level `updateTime` is also supported and inherited by entries without one. Expired entries are excluded from playback. Supply `eventPath` when using translated names or aliases that differ from the AWA banner title.
+
+ASF's game list is determined when each Steam task starts. Restart the daily task after adding or changing games during a run. To keep one play request per run, completing one event does not trigger another ASF play call; other events continue, and playback stops together when all started tasks finish.

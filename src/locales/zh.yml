@@ -589,7 +589,14 @@ operationsDiagnosticHint: "检查已启用的平台，不执行任务。诊断�
 
 communityEventDataRequired: 社区活动游戏信息缺失或已过期，请在WebUI同步或填写游戏ID。
 communityEventTitle: "Steam 社区活动"
-communityEventHint: "游戏信息仅当年当月有效，过期后请重新同步或填写。仅在活动开放期间使用。"
+communityEventHint: "可设置多个游戏，信息仅当年当月有效。控制中心内正在进行的活动将分别检查进度，未完成游戏合并交给 ASF 挂时长。"
+communityEventAdd: "添加游戏"
+communityEventRemove: "删除游戏"
+communityEventGame: "游戏"
+communityEventEmpty: "尚未配置游戏，请添加游戏或从远程同步。"
+communityEventPath: "活动路径（可选）"
+communityEventPathHint: "活动路径可填写活动链接中最后一段，用于准确关联游戏；无法自动匹配时请填写。"
+communityEventDuplicate: "游戏 ID 或活动路径重复，请修改或删除重复项。"
 communityEventSource: "远程来源"
 communityEventGameId: "游戏 ID（必填）"
 communityEventGameName: "游戏名称（可选）"
