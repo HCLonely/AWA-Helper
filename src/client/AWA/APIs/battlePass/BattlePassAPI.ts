@@ -91,6 +91,33 @@ export class BattlePassAPI {
     };
   }
 
+  /** 提交加入表单，跟随 302 跳转并解析最终 Battle Pass 页面。 */
+  async join(url: string, form: NonNullable<BattlePassSnapshot['join']>): Promise<BattlePassSnapshot> {
+    const referer = this.resolveSameOriginUrl(url);
+    const target = this.resolveSameOriginUrl(form.path);
+    const passId = referer?.pathname.match(/^\/control-center\/battle-pass\/(\d+)\/?$/)?.[1];
+    if (!referer || !target || !passId || target.pathname !== `/battle-pass/${passId}/start` || !form.csrfToken) {
+      throw new Error('Invalid Battle Pass join form');
+    }
+    const response = await this.context.request({
+      url: target.href,
+      method: 'POST',
+      maxRedirects: 5,
+      data: new URLSearchParams({
+        _csrf_token: form.csrfToken
+      }).toString(),
+      headers: {
+        ...this.context.headers,
+        'content-type': 'application/x-www-form-urlencoded',
+        origin: this.context.baseURL,
+        referer: referer.href
+      },
+      httpsAgent: this.context.httpsAgent
+    });
+    this.context.updateCookies(response.headers?.['set-cookie']);
+    return parseBattlePass(String(response.data));
+  }
+
   private resolveSameOriginUrl(url: string): URL | undefined {
     try {
       const target = new URL(url, `${this.context.baseURL}/`);

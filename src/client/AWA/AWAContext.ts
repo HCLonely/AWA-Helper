@@ -29,6 +29,8 @@ export class AWAContext {
   readonly logRequests: boolean;
   userId?: string;
   username?: string;
+  /** 最近一次成功解析的个性化页面中的 Battle Pass 入口。 */
+  personalizationBattlePassUrl?: string;
   /** 使其他操作共享的页面读取失效，包括通过 GET 发起的状态修改。 */
   readRevision = 0;
 

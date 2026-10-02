@@ -3,10 +3,13 @@
  * @description 解析 AWA 头像库存以及当前装备的头像与边框。
  */
 import { load } from 'cheerio';
+import { DEFAULT_AWA_HOST } from '../../shared/constants';
+import { parseBattlePassUrl } from './battlePassUrl';
 import type { Id, avatarIds, userAvatarInfo } from '../../../types/achievement';
 
 export interface PersonalizationPage {
   userId?: string;
+  battlePassUrl?: string;
   selection: avatarIds | null
 }
 
@@ -14,9 +17,10 @@ export interface PersonalizationPage {
  * 解析个性化配置。
  * @param html - 待解析的 HTML 文本，类型为 `string`。
  * @param type - 用于选择处理分支的类型，类型为 `"avatar" | "border"`。
+ * @param baseURL - 用于解析页面相对地址的站点 URL。
  * @returns `PersonalizationPage`，parsePersonalization 解析得到的结构化结果。
  */
-export const parsePersonalization = (html: string, type: 'avatar' | 'border'): PersonalizationPage => {
+export const parsePersonalization = (html: string, type: 'avatar' | 'border', baseURL = `https://${DEFAULT_AWA_HOST}`): PersonalizationPage => {
   const $ = load(html);
   const userId = html.match(/(?:var|let)\s+user_id\s*=\s*([\d]+);/)?.[1];
   const ids: Id[] = [];
@@ -53,6 +57,7 @@ export const parsePersonalization = (html: string, type: 'avatar' | 'border'): P
   const userAvatarInfo = Object.fromEntries(entries) as userAvatarInfo;
   return {
     userId,
+    battlePassUrl: parseBattlePassUrl($, baseURL),
     selection: ids.length && userAvatarInfo[type] ? {
       ids,
       userAvatarInfo

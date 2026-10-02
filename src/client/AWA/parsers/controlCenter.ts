@@ -3,6 +3,7 @@
  * @description 解析 AWA 控制中心页面中的任务、签到、积分和用户状态。
  */
 import { load, type CheerioAPI } from 'cheerio';
+import { parseBattlePassUrl } from './battlePassUrl';
 import type { ControlCenterSnapshot, PromotionalCalendarEntry } from '../types';
 export type { ControlCenterSnapshot } from '../types';
 
@@ -151,8 +152,6 @@ export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI 
       .filter(({
         link
       }) => !!link),
-    battlePassUrl: $('a.um-nav-link[href*="/control-center/battle-pass/"]').first().attr('href')
-      ? new URL($('a.um-nav-link[href*="/control-center/battle-pass/"]').first().attr('href')!, `${baseURL}/`).href
-      : undefined
+    battlePassUrl: parseBattlePassUrl($, baseURL)
   };
 };

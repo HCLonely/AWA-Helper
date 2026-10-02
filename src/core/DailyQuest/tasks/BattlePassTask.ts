@@ -12,7 +12,7 @@ import { DailyQuestRuntime } from '../DailyQuestRuntime';
 
 export class BattlePassTask {
   /**
-   * 仅读取当前 Battle Pass 状态，供任务开始时立即展示进度。
+   * 读取当前 Battle Pass 状态，必要时先加入，以便后续任务累计进度。
    * @param runtime - 当前 DailyQuest 运行时。
    * @param signal - 任务取消信号。
    * @returns 页面存在且读取成功时返回 true。
@@ -24,7 +24,7 @@ export class BattlePassTask {
     }
     const logger = new Logger(`${time()}${__('battlePassChecking')}`, false);
     try {
-      const snapshot = await runtime.awa.battlePass.getPage(url);
+      const snapshot = await BattlePassTask.loadAndJoin(runtime, url, signal);
       BattlePassTask.applySnapshot(runtime, snapshot);
       logger.log(snapshot.status === 'unknown' ? chalk.yellow(__('battlePassUnknown')) : chalk.green(__('logStatusOk')));
       return true;
@@ -32,7 +32,7 @@ export class BattlePassTask {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       runtime.state.battlePass = {
-        status: 'unknown',
+        status: runtime.state.battlePass?.status === 'not-joined' ? 'not-joined' : 'unknown',
         claimedCount: 0,
         rewardTotal: 0,
         claimed: [],
@@ -55,7 +55,7 @@ export class BattlePassTask {
     }
     const logger = new Logger(`${time()}${__('battlePassChecking')}`, false);
     try {
-      const snapshot = await runtime.awa.battlePass.getPage(url);
+      const snapshot = await BattlePassTask.loadAndJoin(runtime, url, signal);
       const battlePass = BattlePassTask.applySnapshot(runtime, snapshot);
       if (snapshot.status !== 'active') {
         logger.log(snapshot.status === 'unknown' ? chalk.yellow(__('battlePassUnknown')) : chalk.green(__('logStatusOk')));
@@ -106,7 +106,7 @@ export class BattlePassTask {
       logger.log(chalk.red(__('logStatusError')));
       new Logger(error);
       runtime.state.battlePass = {
-        status: 'unknown',
+        status: runtime.state.battlePass?.status === 'not-joined' ? 'not-joined' : 'unknown',
         claimedCount: 0,
         rewardTotal: 0,
         claimed: [],
@@ -142,6 +142,36 @@ export class BattlePassTask {
     return {
       status: 'completed'
     };
+  }
+
+  private static async loadAndJoin(runtime: DailyQuestRuntime, url: string, signal?: AbortSignal): Promise<BattlePassSnapshot> {
+    const snapshot = await runtime.awa.battlePass.getPage(url);
+    if (snapshot.status !== 'not-joined') {
+      return snapshot;
+    }
+    BattlePassTask.applySnapshot(runtime, snapshot);
+    if (signal?.aborted) {
+      throw new Error('Battle Pass cancelled');
+    }
+    const logger = new Logger(`${time()}${__('battlePassJoining')}`, false);
+    try {
+      if (!snapshot.join) {
+        throw new Error(__('battlePassJoinFailed'));
+      }
+      const refreshed = await runtime.awa.battlePass.join(url, snapshot.join);
+      if (signal?.aborted) {
+        throw new Error('Battle Pass cancelled');
+      }
+      BattlePassTask.applySnapshot(runtime, refreshed);
+      if (refreshed.status !== 'active' && refreshed.status !== 'completed') {
+        throw new Error(__('battlePassJoinFailed'));
+      }
+      logger.log(chalk.green(__('logStatusOk')));
+      return refreshed;
+    } catch (error) {
+      logger.log(chalk.red(__('logStatusError')));
+      throw error;
+    }
   }
 
   private static failure(reward: BattlePassReward, reason: string): BattlePassFailedState {

@@ -286,6 +286,10 @@ const runDailyQuest = async ({
       const awaAPIs = runtime.awa;
 
       if (awaQuests.includes('battlePass')) {
+        await runtime.discoverBattlePass(shutdownController.signal);
+        if (shutdownController.signal.aborted) {
+          return false;
+        }
         await BattlePassTask.inspect(runtime, shutdownController.signal);
         if (shutdownController.signal.aborted) {
           return false;

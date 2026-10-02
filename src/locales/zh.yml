@@ -615,3 +615,7 @@ communityEventCurrent: "当前游戏信息在本月有效。"
 communityEventSaved: "游戏信息已保存。"
 communityEventSynced: "远程游戏信息已同步并保存。"
 communityEventExplanation: "由于Steam 社区活动新版界面识别不到游戏Id,所以需要从远程同步或手动输入！"
+
+battlePassStatus_not-joined: 未加入
+battlePassJoining: 正在加入 Battle Pass...
+battlePassJoinFailed: Battle Pass 加入失败或未确认成功

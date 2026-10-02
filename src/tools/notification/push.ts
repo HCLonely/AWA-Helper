@@ -46,7 +46,7 @@ interface PushQuestInfo {
     monthly?: string
   };
   battlePass?: {
-    status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
+    status: 'unknown' | 'not-started' | 'not-joined' | 'active' | 'completed' | 'ended';
     claimedCount: number;
     rewardTotal: number;
     claimed: Array<{
@@ -116,7 +116,7 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
     }).join('\n');
   const battlePassRows: string[] = [];
   if (quest.battlePass) {
-    const statusOnly = quest.battlePass.status === 'not-started' || quest.battlePass.status === 'ended';
+    const statusOnly = quest.battlePass.status === 'not-joined' || quest.battlePass.status === 'not-started' || quest.battlePass.status === 'ended';
     const statusIcon = quest.battlePass.status === 'completed' ? '✔️' : '⚠️';
     if (statusOnly) {
       battlePassRows.push(`${statusIcon}${__('battlePass')}: ${__(`battlePassStatus_${quest.battlePass.status}`)}`);

@@ -24,8 +24,9 @@ export const getAvatarItems = async (context: AWAContext, type: 'avatar' | 'bord
   }
   const response = await context.request<string>(options);
   const {
-    userId, selection
-  } = parsePersonalization(response.data, type);
+    userId, selection, battlePassUrl
+  } = parsePersonalization(response.data, type, context.baseURL);
+  context.personalizationBattlePassUrl = battlePassUrl;
   if (userId) {
     context.userId = userId;
   }

@@ -42,7 +42,7 @@ export type DailyQuestRefreshResult =
 
 export class DailyQuestRuntime {
   readonly awa: AWAApiClient;
-  readonly state = new DailyQuestState();
+  readonly state: DailyQuestState;
   private readonly getStarted: boolean;
   private readonly joinSteamCommunityEvent: boolean;
   private readonly communityEventFile: string;
@@ -59,6 +59,7 @@ export class DailyQuestRuntime {
       userAgent: options.userAgent,
       logRequests: options.logRequests
     });
+    this.state = new DailyQuestState(() => this.awa.context.personalizationBattlePassUrl);
     this.getStarted = !!options.getStarted;
     this.joinSteamCommunityEvent = !!options.joinSteamCommunityEvent;
     this.communityEventFile = options.communityEventFile;
@@ -135,7 +136,7 @@ export class DailyQuestRuntime {
       this.state.questInfo = snapshot.questInfo;
       this.state.userProfileUrl = snapshot.userProfileUrl || this.state.userProfileUrl;
       this.state.dailyQuestLink = snapshot.dailyQuestLink;
-      this.state.battlePassUrl = snapshot.battlePassUrl;
+      this.state.controlCenterBattlePassUrl = snapshot.battlePassUrl;
       this.state.dailyArp = snapshot.dailyArp;
       this.state.taskType = snapshot.taskType;
       this.state.signArp = snapshot.signArp;
@@ -194,6 +195,22 @@ export class DailyQuestRuntime {
         reason: 'request-failed',
         error
       };
+    }
+  }
+
+  /**
+   * 首次检查 Battle Pass 前，入口缺失时只读个性化页面补充识别。
+   * 请求失败仅记录错误，不阻断其他每日任务。
+   */
+  async discoverBattlePass(signal?: AbortSignal): Promise<void> {
+    if (signal?.aborted || this.state.battlePassUrl) {
+      return;
+    }
+    try {
+      // getAvatarItems 只读取页面，并独立保存 Battle Pass 入口；不调用 saveAvatar。
+      await this.awa.personalization.getAvatarItems('border');
+    } catch (error) {
+      new Logger(error);
     }
   }
 

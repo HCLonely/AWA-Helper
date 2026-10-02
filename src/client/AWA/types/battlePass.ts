@@ -2,7 +2,7 @@
  * @file src/client/AWA/types/battlePass.ts
  * @description 定义 AWA Battle Pass 页面、奖励和领取结果。
  */
-export type BattlePassStatus = 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
+export type BattlePassStatus = 'unknown' | 'not-started' | 'not-joined' | 'active' | 'completed' | 'ended';
 
 export type BattlePassRewardState = 'unlockable' | 'claimed' | 'in_progress' | 'locked' | 'unknown';
 
@@ -32,6 +32,10 @@ export interface BattlePassSnapshot {
   tokenTotal: number;
   endsAt?: string;
   rewards: BattlePassReward[];
+  join?: {
+    path: string;
+    csrfToken: string
+  };
 }
 
 export interface BattlePassClaimSuccess {

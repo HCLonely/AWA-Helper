@@ -22,7 +22,7 @@ export interface BattlePassFailedState {
   reason: string
 }
 export interface BattlePassRunState {
-  status: 'unknown' | 'not-started' | 'active' | 'completed' | 'ended';
+  status: 'unknown' | 'not-started' | 'not-joined' | 'active' | 'completed' | 'ended';
   claimedCount: number;
   rewardTotal: number;
   claimed: BattlePassClaimedState[];
@@ -33,7 +33,7 @@ export class DailyQuestState {
   questInfo: questInfo = {};
   userProfileUrl?: string;
   dailyQuestLink?: string;
-  battlePassUrl?: string;
+  controlCenterBattlePassUrl?: string;
   battlePass?: BattlePassRunState;
   additionalTwitchARP = 0;
   signArp: {
@@ -48,6 +48,13 @@ export class DailyQuestState {
   trackTimes = 0;
   postReplied: boolean | null = null;
   communityEvents: SteamCommunityEventState[] = [];
+
+  constructor(private readonly getPersonalizationBattlePassUrl: () => string | undefined = () => undefined) {}
+
+  /** 读取时选择来源，确保个性化页面后续刷新也立即生效。 */
+  get battlePassUrl(): string | undefined {
+    return this.controlCenterBattlePassUrl ?? this.getPersonalizationBattlePassUrl();
+  }
 
   /** 兼容旧的单活动调用方。 */
   get communityEvent(): SteamCommunityEventState | undefined {

@@ -25,6 +25,11 @@ const parseInteger = (value?: string): number => {
  */
 export const parseBattlePass = (html: string): BattlePassSnapshot => {
   const $ = load(html);
+  const joinForm = $('.bp-header__action form').filter((_, form) => (
+    ($(form).attr('method') || '').toLowerCase() === 'post' && $(form).find('.bp-header__start-btn').length > 0
+  )).first();
+  const joinPath = joinForm.attr('action')?.trim();
+  const joinToken = joinForm.find('input[name="_csrf_token"]').attr('value')?.trim();
   let status: BattlePassStatus = 'unknown';
   if ($('.bp-header__completed').length > 0) {
     status = 'completed';
@@ -32,6 +37,8 @@ export const parseBattlePass = (html: string): BattlePassSnapshot => {
     status = 'ended';
   } else if ($('.bp-header__started').length > 0) {
     status = 'active';
+  } else if (joinForm.length > 0) {
+    status = 'not-joined';
   } else if (isBattlePassNotStarted($)) {
     status = 'not-started';
   }
@@ -73,6 +80,10 @@ export const parseBattlePass = (html: string): BattlePassSnapshot => {
   const countdown = $('.bp-header__countdown[data-countdown]').attr('data-countdown')?.trim();
   return {
     status,
+    join: status === 'not-joined' && joinPath && joinToken ? {
+      path: joinPath,
+      csrfToken: joinToken
+    } : undefined,
     claimedCount: rewards.filter((reward) => reward.state === 'claimed').length,
     rewardTotal: rewards.length,
     tokenCount: parseInteger($('.bp-header__token-count').text().trim()),
