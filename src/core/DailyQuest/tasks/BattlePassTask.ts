@@ -57,7 +57,7 @@ export class BattlePassTask {
     try {
       const snapshot = await BattlePassTask.loadAndJoin(runtime, url, signal);
       const battlePass = BattlePassTask.applySnapshot(runtime, snapshot);
-      if (snapshot.status !== 'active') {
+      if (snapshot.status !== 'active' && snapshot.status !== 'completed') {
         logger.log(snapshot.status === 'unknown' ? chalk.yellow(__('battlePassUnknown')) : chalk.green(__('logStatusOk')));
         return true;
       }

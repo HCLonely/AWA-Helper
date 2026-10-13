@@ -9,6 +9,8 @@
 
 完整说明见 [快速开始](https://github.com/HCLonely/AWA-Helper/blob/main/docs/guide/getting-started.md)、[运行方式](https://github.com/HCLonely/AWA-Helper/blob/main/docs/guide/running.md)和[配置参考](https://github.com/HCLonely/AWA-Helper/blob/main/docs/reference/configuration.md)。
 
+源码开发、构建与检查见 [开发说明](Development.md)。
+
 ## 使用说明
 
 ### 用前说明
