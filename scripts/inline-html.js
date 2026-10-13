@@ -11,6 +11,15 @@ const {
   minify
 } = require('html-minifier-terser');
 
+// 浏览器使用与锁文件一致的依赖，避免静态副本遗漏安全更新。
+for (const library of ['axios', 'js-yaml']) {
+  const packageRoot = path.dirname(require.resolve(`${library}/package.json`));
+  fs.copyFileSync(
+    path.join(packageRoot, 'dist', `${library}.min.js`),
+    path.join('src/webUI/static/js', `${library}.min.js`)
+  );
+}
+
 const tasks = [
   {
     src: 'src/webUI/login.html',

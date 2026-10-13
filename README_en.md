@@ -381,7 +381,7 @@ Open the dedicated **Run history & diagnostics** page (`/operations`) from the M
 - [node-tunnel](https://github.com/koichik/node-tunnel)
 - [node-socks-proxy-agent](https://github.com/TooTallNate/node-socks-proxy-agent)
 - [yaml](https://github.com/eemeli/yaml)
-- [yaml-lint](https://github.com/rasshofer/yaml-lint)
+- [js-yaml](https://github.com/nodeca/js-yaml)
 - [eslint](https://github.com/eslint/eslint)
 - [node-fs-extra](https://github.com/jprichardson/node-fs-extra)
 - [highlight.js](https://github.com/highlightjs/highlight.js)
