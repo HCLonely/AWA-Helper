@@ -1,14 +1,10 @@
 {
   "games": [
     {
-      "gameId": "4126040",
-      "gameName": "伊莫",
-      "updateTime": "2026-09-26T04:58:27.756Z"
-    },
-    {
-      "gameId": "230410",
-      "gameName": "Warframe",
-      "updateTime": "2026-09-26T04:58:27.756Z"
+      "gameId": "2073850",
+      "gameName": "THE FINALS",
+      "eventPath": "the-finals-community-event-2",
+      "updateTime": "2026-10-16T01:26:21.979Z"
     }
   ]
 }
