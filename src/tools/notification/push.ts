@@ -104,6 +104,9 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
       const obtained = value[__('obtainedARP')];
       const extra = value[__('extraARP')];
       if (name === __('steamCommunityEvent') || name.startsWith(`${__('steamCommunityEvent')}[`)) {
+        if (status === __('communityEventDataRequired')) {
+          return `⚠️${name}: ${status}`;
+        }
         const complete = parseInt(String(obtained), 10) >= parseInt(String(value[__('maxAvailableARP')]), 10);
         return `${complete ? '✔️' : '⚠️'}${name}:  ${obtained}/${value[__('maxAvailableARP')]}`;
       }

@@ -587,7 +587,7 @@ operationsDiagnosticHint: "检查已启用的平台，不执行任务。诊断�
 "questStatusTitle": "任务状态监控"
 "questColumn": "任务"
 
-communityEventDataRequired: 社区活动游戏信息缺失或已过期，请在WebUI同步或填写游戏ID。
+communityEventDataRequired: 游戏信息缺失或已过期，请在WebUI同步或填写游戏ID
 communityEventTitle: "Steam 社区活动"
 communityEventHint: "可设置多个游戏，信息仅当年当月有效。控制中心内正在进行的活动将分别检查进度，未完成游戏合并交给 ASF 挂时长。"
 communityEventAdd: "添加游戏"
