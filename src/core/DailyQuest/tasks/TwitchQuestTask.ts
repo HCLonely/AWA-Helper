@@ -73,7 +73,9 @@ export class TwitchQuestTask {
           }
           continue;
         }
-        const streamCount = streams.Hive.length + streams.Nexus.length;
+        // 每日任务可使用全部可用频道，优先尝试 Hive 和 Nexus。
+        const candidates = [...new Set([...streams.Hive, ...streams.Nexus, ...streams.Other])];
+        const streamCount = candidates.length;
         streamLogger.log(streamCount > 0 ? chalk.green(`OK (${streamCount})`) : chalk.blue(__('noLive')));
         if (streamCount === 0) {
           if (!await this.waitForAvailableStreams(signal)) {
@@ -82,7 +84,7 @@ export class TwitchQuestTask {
           continue;
         }
         const channelLogger = new Logger(`${time()}${__('gettingChannelInfo')}`, false);
-        const trackingLookup = await this.twitch.channels.findTracking([...streams.Hive, ...streams.Nexus]);
+        const trackingLookup = await this.twitch.channels.findTracking(candidates);
         if (!trackingLookup.found) {
           channelLogger.log(chalk.blue(__('noLive')));
           if (!await this.waitForAvailableStreams(signal)) {

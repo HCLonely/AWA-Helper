@@ -39,6 +39,7 @@ interface ActionHistory {
 interface AvailableStreams {
     Hive: string[];
     Nexus: string[];
+    Other: string[];
 }
 
 export type { Achievement, Id, userAvatarInfo, avatarIds, ActionHistory, AvailableStreams };
