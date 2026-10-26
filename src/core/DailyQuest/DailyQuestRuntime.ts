@@ -46,6 +46,7 @@ export class DailyQuestRuntime {
   private readonly getStarted: boolean;
   private readonly joinSteamCommunityEvent: boolean;
   private readonly communityEventFile: string;
+  private refreshTwitchBonus = false;
 
   /**
    * 初始化 DailyQuestRuntime 实例。
@@ -133,8 +134,15 @@ export class DailyQuestRuntime {
         };
       }
       const snapshot = parseControlCenter(html, this.awa.context.baseURL, page);
-      this.state.questInfo = snapshot.questInfo;
       this.state.userProfileUrl = snapshot.userProfileUrl || this.state.userProfileUrl;
+      // 发布新进度前更新遗物加成，避免心跳按旧上限判断完成。
+      if (this.refreshTwitchBonus && !await this.loadTwitchBonus()) {
+        return {
+          ok: false,
+          reason: 'request-failed'
+        };
+      }
+      this.state.questInfo = snapshot.questInfo;
       this.state.dailyQuestLink = snapshot.dailyQuestLink;
       this.state.controlCenterBattlePassUrl = snapshot.battlePassUrl;
       this.state.dailyArp = snapshot.dailyArp;
@@ -219,6 +227,7 @@ export class DailyQuestRuntime {
    * @returns `Promise<boolean>`，表示 loadTwitchBonus 检查是否通过。
    */
   async loadTwitchBonus(): Promise<boolean> {
+    this.refreshTwitchBonus = true;
     if (!this.state.userProfileUrl) {
       return false;
     }

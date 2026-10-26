@@ -53,7 +53,25 @@ export class TwitchQuestTask {
     let heartbeatErrors = 0;
     let trackingInfo: TwitchChannelTrackingInfo | undefined;
     let trackingExpires = 0;
-    while (!signal?.aborted && !this.isComplete()) {
+    let dailyCapBonus = this.runtime.state.additionalTwitchARP;
+    while (!signal?.aborted) {
+      if (this.isComplete()) {
+        // 达到缓存上限时再次读取当前遗物；失败时等待重试，不能视为已完成。
+        if (!await this.runtime.loadTwitchBonus()) {
+          if (!await sleep(this.controlCenterPollSeconds, signal)) {
+            return true;
+          }
+          continue;
+        }
+        if (signal?.aborted || this.isComplete()) {
+          return true;
+        }
+      }
+      // 更换遗物提高上限后，恢复此前因达到每日上限而暂停的心跳。
+      if (this.runtime.state.additionalTwitchARP !== dailyCapBonus) {
+        dailyCapReached = false;
+        dailyCapBonus = this.runtime.state.additionalTwitchARP;
+      }
       if (dailyCapReached) {
         if (!await sleep(this.controlCenterPollSeconds, signal)) {
           return true;
@@ -104,6 +122,7 @@ export class TwitchQuestTask {
         if (result.state === 'daily_cap_reached') {
           new Logger(`${time()}${chalk.green(result.message || __('obtainedArp'))}`);
           dailyCapReached = true;
+          dailyCapBonus = this.runtime.state.additionalTwitchARP;
           continue;
         }
         if (result.state === 'streamer_offline' || result.state === 'no_channel_found') {

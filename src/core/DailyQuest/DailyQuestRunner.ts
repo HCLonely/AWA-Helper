@@ -340,11 +340,11 @@ const runDailyQuest = async ({
       // Twitch直播心跳
 
       if (awaQuests.includes('watchTwitch')) {
-        await runtime.loadTwitchBonus();
+        const twitchBonusLoaded = await runtime.loadTwitchBonus();
         if (shutdownController.signal.aborted) {
           return false;
         }
-        if (runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
+        if (!twitchBonusLoaded || runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
           if (twitchCookie) {
             const twitch = new TwitchClient({
               cookie: twitchCookie,
