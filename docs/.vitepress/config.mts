@@ -16,18 +16,8 @@ export default defineConfig({
       label: '简体中文',
       lang: 'zh-CN',
       description: 'AWA-Helper 使用与配置说明',
-      link: '/'
-    },
-    en: {
-      label: 'English',
-      lang: 'en-US',
-      description: 'Usage and configuration guide for AWA-Helper',
-      link: '/en/'
-    }
-  },
-  themeConfig: {
-    locales: {
-      root: {
+      link: '/',
+      themeConfig: {
         nav: [
           { text: '首页', link: '/' },
           { text: '使用指南', link: '/guide/getting-started' },
@@ -63,8 +53,14 @@ export default defineConfig({
         lightModeSwitchTitle: '切换到浅色模式',
         darkModeSwitchTitle: '切换到深色模式',
         langMenuLabel: '切换语言'
-      },
-      en: {
+      }
+    },
+    en: {
+      label: 'English',
+      lang: 'en-US',
+      description: 'Usage and configuration guide for AWA-Helper',
+      link: '/en/',
+      themeConfig: {
         nav: [
           { text: 'Home', link: '/en/' },
           { text: 'Guide', link: '/en/guide/getting-started' },

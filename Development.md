@@ -6,6 +6,10 @@
 
 运行配置参考 [README](README.md) 和 `config.example.yml`。实际运行需要按所用功能填写 AWA Cookie、Manager 密钥等配置；离线类型检查不需要这些凭据。不要提交个人配置、Cookie 或包含凭据的网页样本。
 
+### 文档站点
+
+文档源文件位于 `docs/`，在项目根目录运行 `npm run docs:dev` 启动本地预览，运行 `npm run docs:build` 检查并构建站点，再运行 `npm run docs:preview` 预览构建结果。
+
 ## 构建与运行
 
 - `npm run typecheck`：只检查 TypeScript 类型，不生成文件。

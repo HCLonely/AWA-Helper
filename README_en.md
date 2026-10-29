@@ -20,7 +20,9 @@ sh install.sh
 
 Follow the prompts for your AWA cookie, WebUI port, and management secret. You can sync the cookie later; leaving the secret empty generates one automatically. Choose to start the persistent Manager, open `http://127.0.0.1:2345` (or your configured port), sign in with `manager.secret` from your configuration file, and start Helper from the home page.
 
-For account linking, cookies, other installation options, and detailed configuration, see [Getting Started](https://awa-helper-five.vercel.app/en/guide/getting-started). For updates, background services, and Docker, see [Running AWA-Helper](https://awa-helper-five.vercel.app/en/guide/running).
+For account linking, cookies, other installation options, and detailed configuration, see [Getting Started](https://awa-helper-five.vercel.app/en/guide/getting-started).
+
+For updates, background services, and Docker, see [Running AWA-Helper](https://awa-helper-five.vercel.app/en/guide/running).
 
 For source development, builds, and checks, see the [development guide](Development.md).
 
