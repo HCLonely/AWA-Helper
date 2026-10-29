@@ -83,6 +83,8 @@ chmod +x AWA-Manager.sh AWA-DailyQuest.sh
 
 ## 安装器注册的后台服务
 
+Windows 和 Linux 安装向导会检查 WebUI 端口；端口被占用时会提示重新输入，直到选择可用端口。选择启动 Helper 或 Manager 后，安装器还会复查向导生成的配置；如有冲突，询问新端口并备份原配置后保存。手写 YAML 配置需自行修改端口。
+
 安装脚本在配置完成并选择 Manager 后，才询问是否注册服务。默认不注册；不注册时 Manager 在当前终端前台运行。服务运行的是 `AWA-Helper --manager --no-update`，不运行 Windows 托盘，不自动打开浏览器。新配置默认关闭 `autoUpdate`；`--no-update` 只跳过启动更新，不会禁止手动 WebUI 更新。
 
 ### Windows 服务
@@ -106,7 +108,9 @@ Restart-Service AWAHelper
 & 'D:\Apps\AWA-Helper\.service\nssm.exe' remove AWAHelper confirm
 ```
 
-失败时查看 `logs/service-install.log`、包装器日志及程序日志。若注册成功但启动失败，先修正配置，再通过 `Start-Service AWAHelper` 重试；安装器不会覆盖同名服务。
+已有 `AWAHelper` 服务时，安装器会核实服务包装器路径及其实际启动的 `AWA-Helper.exe` 和 Manager 参数。确认属于当前安装目录后，会复用服务并设置为开机自启、立即启动，无需重新下载或注册包装器；仍可能请求 UAC。服务指向其他目录或配置无法核实时，会提示使用原目录或手动处理原服务，不自动停止、删除或接管。
+
+失败时查看 `logs/service-install.log`、包装器日志及程序日志。若注册成功但启动失败，先修正配置，再通过 `Start-Service AWAHelper` 重试。出现“服务已存在”不代表程序下载或配置保存失败；可先用 `Get-Service AWAHelper` 确认状态。
 
 ### Linux 服务与备用方式
 

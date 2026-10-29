@@ -83,9 +83,11 @@ chmod +x AWA-Manager.sh AWA-DailyQuest.sh
 
 ## Installer-Managed Services
 
+On Windows and Linux, the configuration wizard checks the WebUI port and asks for another port when it is occupied. Before launching Helper or Manager, the installer checks wizard-generated configurations again; if needed, it asks for a new port and backs up the configuration before saving. Edit handwritten YAML configurations manually.
+
 After configuration, select Manager and optionally register it as a service. Windows asks you to choose and approve downloading WinSW 2.12.0 or NSSM 2.24-101-g897c7ad, then requests UAC elevation. Service `AWAHelper` runs as LocalSystem, starts automatically and starts immediately. It launches `AWA-Helper.exe --manager --no-update`, without the tray or browser. Keep the installation on a local disk in a trusted directory.
 
-Use `Get-Service AWAHelper`, `Stop-Service AWAHelper`, `Start-Service AWAHelper` or `Restart-Service AWAHelper` in administrator PowerShell. To remove the service while keeping files, stop it and run either `& 'D:\Apps\AWA-Helper\.service\AWAHelperService.exe' uninstall` or `& 'D:\Apps\AWA-Helper\.service\nssm.exe' remove AWAHelper confirm`, matching the wrapper selected. Registration errors are logged to `logs/service-install.log`.
+Use `Get-Service AWAHelper`, `Stop-Service AWAHelper`, `Start-Service AWAHelper` or `Restart-Service AWAHelper` in administrator PowerShell. If the service already exists, the installer verifies its wrapper path, actual Helper executable and Manager arguments. A matching installation reuses and starts the service with automatic startup, without downloading or registering the wrapper again; UAC may still be required. A service belonging to another directory or with unrecognized settings is left untouched. To remove the service while keeping files, stop it and run either `& 'D:\Apps\AWA-Helper\.service\AWAHelperService.exe' uninstall` or `& 'D:\Apps\AWA-Helper\.service\nssm.exe' remove AWAHelper confirm`, matching the wrapper selected. Registration errors are logged to `logs/service-install.log`.
 
 Linux detects systemd, OpenRC, then SysV init with `start-stop-daemon` and `update-rc.d`/`chkconfig`. Registering uses root or sudo; the application runs as the installer user. Prefer running the installer as a normal user and allowing sudo only for registration. If no supported init system exists, the installer separately asks whether to run via nohup; this does not guarantee startup at boot.
 

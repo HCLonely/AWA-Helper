@@ -129,6 +129,57 @@ read_port() {
     done
 }
 
+web_port_available() {
+    local listeners
+    if ! listeners=$(ss -H -ltn "sport = :$1"); then
+        die '无法检测 WebUI 端口，请检查 ss 工具是否可用。'
+    fi
+    [[ -z $listeners ]]
+}
+
+read_web_port() {
+    while true; do
+        read_port 'WebUI 端口' "${1:-2345}"
+        if web_port_available "$REPLY"; then
+            return 0
+        fi
+        log "WebUI 端口 $REPLY 已被占用，请输入其他端口。"
+    done
+}
+
+ensure_configured_web_port() {
+    local config_path="$1/config/config.yml" port temporary backup
+    if [[ -f $1/config.yml ]]; then
+        config_path="$1/config.yml"
+    fi
+    # 仅自动修改向导可解析的 JSON 配置，手写 YAML 保持原样。
+    if [[ ! -f $config_path ]] || ! jq -e 'type == "object" and (.webUI | type == "object")' "$config_path" >/dev/null 2>&1; then
+        return 0
+    fi
+    if jq -e '.webUI.enable == false' "$config_path" >/dev/null; then
+        return 0
+    fi
+    port=$(jq -er '.webUI.port // 2345' "$config_path")
+    if [[ ! $port =~ ^[0-9]{1,5}$ ]] || ! ((10#$port >= 1 && 10#$port <= 65535)); then
+        die '配置中的 WebUI 端口无效，请通过向导重新配置。'
+    fi
+    if web_port_available "$port"; then
+        return 0
+    fi
+    log "配置中的 WebUI 端口 $port 已被占用。请选择新端口，原配置会先备份。"
+    read_web_port "$port"
+    assert_no_link "$config_path"
+    backup=$(mktemp "$config_path.backup.XXXXXXXX")
+    cp -- "$config_path" "$backup"
+    chmod 600 "$backup"
+    temporary=$(mktemp "$(dirname "$config_path")/.awa-config.XXXXXXXX")
+    CLEANUP_FILES+=("$temporary")
+    jq --argjson port "$REPLY" '.webUI.port = $port' "$config_path" > "$temporary"
+    chmod 600 "$temporary"
+    mv -f -- "$temporary" "$config_path"
+    log "已保存新端口 ${REPLY}，原配置备份：$backup"
+}
+
 read_required() {
     while true; do
         ask "$1"
@@ -223,7 +274,7 @@ ensure_glibc() {
 ensure_tools() {
     local tool manager
     local missing=() packages=()
-    for tool in curl jq tar gzip sha256sum stat od realpath mktemp install cp mv chmod mkdir dirname id uname sleep; do
+    for tool in curl jq tar gzip sha256sum stat od realpath mktemp install cp mv chmod mkdir dirname id uname sleep ss; do
         if ! command -v "$tool" >/dev/null 2>&1; then
             missing+=("$tool")
         fi
@@ -235,6 +286,11 @@ ensure_tools() {
     log '正在通过官方包管理器自动尝试安装所需工具；可能要求 sudo 验证。'
     manager=$(package_manager) || die '无法识别官方包管理器，请手动安装所需工具。'
     packages=(curl jq tar gzip coreutils ca-certificates)
+    if [[ $manager == dnf || $manager == yum ]]; then
+        packages+=(iproute)
+    else
+        packages+=(iproute2)
+    fi
     install_packages "$manager" "${packages[@]}"
     for tool in "${missing[@]}"; do
         command -v "$tool" >/dev/null 2>&1 || die "仍缺少 ${tool}，请手动安装后重试。"
@@ -408,7 +464,7 @@ configure() {
     fi
     ask 'AWA Cookie（可留空，稍后通过用户脚本同步）' '' true
     cookie=$REPLY
-    read_port 'WebUI 端口' 2345
+    read_web_port 2345
     web_port=$REPLY
     if yes '是否允许其他设备访问 WebUI？默认仅本机'; then
         local_only=false
@@ -657,6 +713,7 @@ start_installed() {
     mode=$REPLY
     [[ $mode != 0 ]] || return 0
     check_stopped "$directory"
+    ensure_configured_web_port "$directory"
     if [[ $mode == 1 ]]; then
         "$directory/AWA-Helper" --daily --no-update
     elif ! yes '是否注册 Manager 为开机自启服务并立即启动？选否则在当前终端前台运行'; then

@@ -79,6 +79,70 @@ function Read-Port([string]$Message, [int]$Default) {
     }
 }
 
+function Test-WebUIPortAvailable([int]$Port, [bool]$Local = $true) {
+    $address = if ($Local) { [Net.IPAddress]::Loopback } else { [Net.IPAddress]::Any }
+    $listener = [Net.Sockets.TcpListener]::new($address, $Port)
+    try {
+        $listener.Server.ExclusiveAddressUse = $true
+        $listener.Start()
+        return $true
+    } catch [Net.Sockets.SocketException] {
+        return $false
+    } finally {
+        $listener.Stop()
+    }
+}
+
+function Read-WebUIPort([int]$Default = 2345, [bool]$Local = $true) {
+    while ($true) {
+        $port = Read-Port 'WebUI 端口' $Default
+        if (Test-WebUIPortAvailable $port $Local) {
+            return $port
+        }
+        Write-Host "WebUI 端口 $port 已被占用或无法使用，请输入其他端口。"
+    }
+}
+
+function Ensure-ConfiguredWebUIPort([string]$Directory) {
+    $configPath = Join-Path $Directory 'config.yml'
+    if (-not (Test-Path -LiteralPath $configPath)) {
+        $configPath = Join-Path $Directory 'config/config.yml'
+    }
+    if (-not (Test-Path -LiteralPath $configPath)) {
+        return
+    }
+    # 向导生成 JSON 形式的 YAML；手写 YAML 保持原样，不用不完整的解析器修改。
+    try {
+        $config = Get-Content -LiteralPath $configPath -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        return
+    }
+    if (-not $config.PSObject.Properties['webUI'] -or -not $config.webUI -or
+        -not $config.webUI.PSObject.Properties['port']) {
+        return
+    }
+    if ($config.webUI.PSObject.Properties['enable'] -and $config.webUI.enable -eq $false) {
+        return
+    }
+    $local = -not ($config.webUI.PSObject.Properties['local'] -and $config.webUI.local -eq $false)
+    $port = [int]$config.webUI.port
+    if ($port -lt 1 -or $port -gt 65535) {
+        throw '配置中的 WebUI 端口无效，请通过向导重新配置。'
+    }
+    if (Test-WebUIPortAvailable $port $local) {
+        return
+    }
+    Write-Host "配置中的 WebUI 端口 $port 已被占用或无法使用。请选择新端口，原配置会先备份。"
+    $config.webUI.port = Read-WebUIPort $port $local
+    Assert-NoLink $configPath
+    Assert-NoLink "$configPath.installing"
+    $backup = "$configPath.backup-$([guid]::NewGuid().ToString('N'))"
+    Copy-Item -LiteralPath $configPath -Destination $backup
+    Write-Utf8 "$configPath.installing" (($config | ConvertTo-Json -Depth 100) + "`n")
+    Move-Item -LiteralPath "$configPath.installing" -Destination $configPath -Force
+    Write-Host "已保存新端口 $($config.webUI.port)，原配置备份：$backup"
+}
+
 function Read-Required([string]$Message) {
     while ($true) {
         $value = (Read-Value $Message).Trim()
@@ -268,8 +332,12 @@ function Set-Configuration([string]$Directory) {
         }
     }
     $cookie = Read-Value 'AWA Cookie（可留空，稍后通过用户脚本同步）' -Secret
-    $webPort = Read-Port 'WebUI 端口' 2345
+    $webPort = Read-WebUIPort 2345
     $local = -not (Confirm-Choice '是否允许其他设备访问 WebUI？默认仅本机')
+    if (-not $local -and -not (Test-WebUIPortAvailable $webPort $false)) {
+        Write-Host '此端口无法用于局域网监听，请选择其他端口。'
+        $webPort = Read-WebUIPort $webPort $false
+    }
     $generatedSecret = $false
     do {
         $generatedSecret = $false
@@ -395,6 +463,77 @@ function Install-ServiceWrapper([string]$Directory, [string]$Wrapper) {
     return $serviceDir
 }
 
+function Get-ExistingManagerService([string]$Directory) {
+    $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if (-not $service) {
+        return $null
+    }
+    $serviceDir = Join-Path $Directory '.service'
+    $definition = Get-CimInstance -ClassName Win32_Service -Filter "Name='$ServiceName'" -ErrorAction Stop
+    $image = [Environment]::ExpandEnvironmentVariables([string]$definition.PathName).Trim()
+    $wrapper = ''
+    foreach ($candidate in @('WinSW', 'NSSM')) {
+        $fileName = if ($candidate -eq 'WinSW') { 'AWAHelperService.exe' } else { 'nssm.exe' }
+        $path = Join-Path $serviceDir $fileName
+        if ($image -eq $path -or $image -eq ('"' + $path + '"')) {
+            $wrapper = $candidate
+            Assert-NoLink $path
+            break
+        }
+    }
+    if (-not $wrapper) {
+        throw 'AWAHelper 服务指向其他目录或无法识别的程序。请选择原安装目录，或先手动停止并卸载原服务。'
+    }
+    # 同时核实包装器实际启动的程序，避免只凭包装器所在目录接管服务。
+    if ($wrapper -eq 'WinSW') {
+        $xmlPath = Join-Path $serviceDir 'AWAHelperService.xml'
+        Assert-NoLink $xmlPath
+        $settings = New-Object Xml.XmlReaderSettings
+        $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+        $settings.XmlResolver = $null
+        $reader = [Xml.XmlReader]::Create($xmlPath, $settings)
+        try {
+            $document = New-Object Xml.XmlDocument
+            $document.Load($reader)
+        } finally {
+            $reader.Dispose()
+        }
+        $application = [string]$document.service.executable
+        $arguments = [string]$document.service.arguments
+        if ([string]$document.service.id -ne $ServiceName) {
+            throw '已有 WinSW 配置的服务名与 AWAHelper 不一致，未修改服务。'
+        }
+        $application = [Environment]::ExpandEnvironmentVariables($application.Replace('%BASE%', $serviceDir))
+        if (-not [IO.Path]::IsPathRooted($application)) {
+            $application = Join-Path $serviceDir $application
+        }
+    } else {
+        $parameters = Get-ItemProperty -LiteralPath "HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName\Parameters" -ErrorAction Stop
+        $application = [Environment]::ExpandEnvironmentVariables([string]$parameters.Application)
+        $arguments = [string]$parameters.AppParameters
+    }
+    $expected = [IO.Path]::GetFullPath((Join-Path $Directory 'AWA-Helper.exe'))
+    Assert-NoLink $expected
+    if ([IO.Path]::GetFullPath($application) -ne $expected -or
+        ($arguments.Trim() -replace '\s+', ' ') -notin @('--manager', '--manager --no-update')) {
+        throw '已有 AWAHelper 服务运行的程序或参数与此安装不匹配，未修改服务。请检查原服务配置。'
+    }
+    return [pscustomobject]@{ Wrapper = $wrapper; Status = $service.Status }
+}
+
+function Start-ExistingManagerService([string]$Directory, [string]$Wrapper) {
+    $existing = Get-ExistingManagerService $Directory
+    if (-not $existing) {
+        return $false
+    }
+    if ($existing.Wrapper -ne $Wrapper) {
+        throw '服务包装器在操作期间发生变化，未修改服务，请重新运行安装向导。'
+    }
+    Set-Service -Name $ServiceName -StartupType Automatic -ErrorAction Stop
+    Start-Service -Name $ServiceName -ErrorAction Stop
+    return $true
+}
+
 function Register-ManagerService([string]$Directory, [string]$Wrapper) {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($identity)
@@ -402,16 +541,16 @@ function Register-ManagerService([string]$Directory, [string]$Wrapper) {
         throw '服务注册需要管理员权限。'
     }
     Assert-NoLink $Directory
-    Assert-Stopped $Directory
-    if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) {
-        throw 'AWAHelper 服务已存在；请先管理或卸载原服务，未覆盖。'
-    }
     $serviceDir = Join-Path $Directory '.service'
-    if ($Wrapper -eq 'WinSW') {
+    if (Start-ExistingManagerService $Directory $Wrapper) {
+        Write-Host '已复用同一安装目录的 AWAHelper 服务，并设置为开机自启。'
+    } elseif ($Wrapper -eq 'WinSW') {
+        Assert-Stopped $Directory
         $program = Join-Path $serviceDir 'AWAHelperService.exe'
         Invoke-Native $program @('install')
         Invoke-Native $program @('start')
     } else {
+        Assert-Stopped $Directory
         $program = Join-Path $serviceDir 'nssm.exe'
         Invoke-Native $program @('install', $ServiceName, (Join-Path $Directory 'AWA-Helper.exe'), '--manager', '--no-update')
         Invoke-Native $program @('set', $ServiceName, 'AppDirectory', $Directory)
@@ -437,6 +576,7 @@ function Start-Installed([string]$Directory) {
         return
     }
     Assert-Stopped $Directory
+    Ensure-ConfiguredWebUIPort $Directory
     $executable = Join-Path $Directory 'AWA-Helper.exe'
     if ($mode -eq '1') {
         Invoke-Native $executable @('--daily', '--no-update')
@@ -446,19 +586,23 @@ function Start-Installed([string]$Directory) {
         Invoke-Native $executable @('--manager', '--no-update')
         return
     }
-    if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) {
-        throw 'AWAHelper 服务已存在；请先管理或卸载原服务。'
+    $existing = Get-ExistingManagerService $Directory
+    if ($existing) {
+        $name = $existing.Wrapper
+        $serviceDir = Join-Path $Directory '.service'
+        Write-Host '检测到同一安装目录的 AWAHelper 服务，将复用并启动；无需重新下载或注册包装器。'
+    } else {
+        $wrapper = Read-Choice '选择服务包装器：1=WinSW，2=NSSM，0=取消注册' @('0', '1', '2') '1'
+        if ($wrapper -eq '0') {
+            return
+        }
+        $name = if ($wrapper -eq '1') { 'WinSW' } else { 'NSSM' }
+        if (-not (Confirm-Choice "是否允许从官方 HTTPS 站点自动下载并安装 $name？服务使用 LocalSystem 账户运行")) {
+            Write-Host '未下载包装器，未注册或启动服务。'
+            return
+        }
+        $serviceDir = Install-ServiceWrapper $Directory $name
     }
-    $wrapper = Read-Choice '选择服务包装器：1=WinSW，2=NSSM，0=取消注册' @('0', '1', '2') '1'
-    if ($wrapper -eq '0') {
-        return
-    }
-    $name = if ($wrapper -eq '1') { 'WinSW' } else { 'NSSM' }
-    if (-not (Confirm-Choice "是否允许从官方 HTTPS 站点自动下载并安装 $name？服务使用 LocalSystem 账户运行")) {
-        Write-Host '未下载包装器，未注册或启动服务。'
-        return
-    }
-    $serviceDir = Install-ServiceWrapper $Directory $name
     # 提权只执行服务注册。配置与凭据不进入命令行，不向其他用户发送消息。
     $copy = Join-Path $serviceDir 'install-service.ps1'
     Copy-Item -LiteralPath $PSCommandPath -Destination $copy -Force
@@ -466,12 +610,13 @@ function Start-Installed([string]$Directory) {
     $escapedDirectory = $Directory.Replace("'", "''")
     $command = "& '$escapedScript' -InstallDir '$escapedDirectory' -RegisterService '$name'"
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
-    Write-Host '现在请求 UAC 管理员权限，以注册并启动服务。'
+    $action = if ($existing) { '复用并启动现有服务' } else { '注册并启动服务' }
+    Write-Host "现在请求 UAC 管理员权限，以$action。"
     $child = Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', $encoded) -Verb RunAs -WindowStyle Hidden -Wait -PassThru
     if ($child.ExitCode -ne 0) {
         throw "服务注册或启动失败（退出码 $($child.ExitCode)）；配置已保存，请查看 logs/service-install.log。"
     }
-    Write-Host '服务 AWAHelper 已注册为开机自启并启动。管理：Get-Service / Stop-Service / Start-Service AWAHelper（管理员终端）。'
+    Write-Host '服务 AWAHelper 已设为开机自启并启动。管理：Get-Service / Stop-Service / Start-Service AWAHelper（管理员终端）。'
 }
 
 function Main {
