@@ -260,6 +260,7 @@ function Set-Configuration([string]$Directory) {
         $configPath = Join-Path $Directory 'config.yml'
     }
     Assert-NoLink $configPath
+    $firstConfiguration = -not (Test-Path -LiteralPath $configPath)
     if (Test-Path -LiteralPath $configPath) {
         Write-Host "发现已有配置：$configPath"
         if (-not (Confirm-Choice '是否备份并通过向导重新配置？默认保留已有配置')) {
@@ -269,9 +270,12 @@ function Set-Configuration([string]$Directory) {
     $cookie = Read-Value 'AWA Cookie（可留空，稍后通过用户脚本同步）' -Secret
     $webPort = Read-Port 'WebUI 端口' 2345
     $local = -not (Confirm-Choice '是否允许其他设备访问 WebUI？默认仅本机')
+    $generatedSecret = $false
     do {
+        $generatedSecret = $false
         $secret = Read-Value '管理密钥（至少16字符；留空随机生成）' -Secret
         if (-not $secret) {
+            $generatedSecret = $true
             $bytes = New-Object byte[] 24
             $random = [Security.Cryptography.RandomNumberGenerator]::Create()
             try {
@@ -336,6 +340,10 @@ function Set-Configuration([string]$Directory) {
     Write-Utf8 "$configPath.installing" (($config | ConvertTo-Json -Depth 10) + "`n")
     Move-Item -LiteralPath "$configPath.installing" -Destination $configPath -Force
     Write-Host "配置已保存：$configPath（JSON 格式是有效的 YAML；密钥请从该文件读取）"
+    if ($firstConfiguration -and $generatedSecret) {
+        Write-Host "自动生成的管理密钥（仅首次显示）：$secret"
+        Write-Host '请保存此密钥，用于 WebUI 登录；后续可从配置文件读取。'
+    }
 }
 
 function Install-ServiceWrapper([string]$Directory, [string]$Wrapper) {

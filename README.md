@@ -38,7 +38,7 @@ try {
 
 以上命令会在安装向导退出后清理临时脚本，无需手动下载文件。安装位置及是否注册后台服务由向导询问。
 
-按向导填写 AWA Cookie、WebUI 端口和管理密钥（Cookie 可稍后同步，密钥留空自动生成），完成后选择启动常驻 Manager。打开 `http://127.0.0.1:2345`（或设置的端口），使用配置文件中的 `manager.secret` 登录，在首页启动 Helper。
+按向导填写 AWA Cookie、WebUI 端口和管理密钥（Cookie 可稍后同步，密钥留空自动生成）。首次创建配置后，自动生成的密钥会在终端显示一次，请保存；自定义密钥和已有配置中的密钥不显示。完成后选择启动常驻 Manager，打开 `http://127.0.0.1:2345`（或设置的端口），使用 `manager.secret` 登录，在首页启动 Helper；之后也可从配置文件读取密钥。
 
 账号关联、Cookie 获取、其他安装方式及详细配置请参考[在线文档：快速开始](https://awa-helper-five.vercel.app/guide/getting-started)
 

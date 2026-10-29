@@ -34,7 +34,7 @@ sh install.sh
 
 默认下载并校验最新正式发行包。可用 Windows 的 `-Version v4.1.6 -InstallDir 'D:\Apps\AWA-Helper'` 或 Linux 的 `--version v4.1.6 --install-dir "$HOME/Apps/AWA-Helper"` 指定版本与路径；版本标签必须在 Releases 中存在。旧发行包没有 SHA-256 digest 或校验文件时会拒绝安装。
 
-安装器会询问关键配置：AWA Cookie（允许稍后同步）、WebUI 端口与是否允许其他设备访问、管理密钥（留空随机生成），以及可选的 Twitch、ASF 和代理。代理、自动更新默认关闭；Manager 每天按系统时区在 14:30:03、21:30:03 调度每日任务，可修改 `manager.dailyQuest.cron`。配置以 JSON 格式保存为 `config/config.yml`，它是有效的 YAML，可直接被程序读取。密钥请从配置文件读取，安装器不会在终端回显凭据。
+安装器会询问关键配置：AWA Cookie（允许稍后同步）、WebUI 端口与是否允许其他设备访问、管理密钥（留空随机生成），以及可选的 Twitch、ASF 和代理。代理、自动更新默认关闭；Manager 每天按系统时区在 14:30:03、21:30:03 调度每日任务，可修改 `manager.dailyQuest.cron`。配置以 JSON 格式保存为 `config/config.yml`，它是有效的 YAML，可直接被程序读取。首次创建配置并成功保存后，自动生成的管理密钥会在终端显示一次，请保存；自定义密钥、已有配置及重写已有配置时的密钥不显示。之后可从配置文件读取密钥，其他凭据输入保持隐藏。
 
 已有根目录 `config.yml` 优先于 `config/config.yml`，默认保留；选择向导重写时先备份。配置过程不启动 WebUI，也不打开浏览器。完成后再选择单次 Helper、常驻 Manager 或暂不启动；选择 Manager 后再选择是否注册服务，不注册时在当前终端前台运行。具体见[后台服务](/guide/running#安装器注册的后台服务)。
 

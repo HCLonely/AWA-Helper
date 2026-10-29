@@ -391,6 +391,7 @@ json_string() {
 
 configure() {
     local directory=$1 config_path="$1/config/config.yml" temporary backup
+    local first_configuration=true generated_secret=false
     local cookie web_port local_only=true secret twitch_cookie='' twitch_task='' steam_task=''
     local asf_protocol=http asf_host='' asf_port=1242 asf_password='' asf_bot=''
     local proxy_targets='[]' proxy_protocol=http proxy_host='' proxy_port=1080 proxy_user='' proxy_password=''
@@ -399,6 +400,7 @@ configure() {
     fi
     assert_no_link "$config_path"
     if [[ -e $config_path ]]; then
+        first_configuration=false
         log "发现已有配置：$config_path"
         if ! yes '是否备份并通过向导重新配置？默认保留已有配置'; then
             return 0
@@ -412,9 +414,11 @@ configure() {
         local_only=false
     fi
     while true; do
+        generated_secret=false
         ask '管理密钥（至少16字符；留空随机生成）' '' true
         secret=$REPLY
         if [[ -z $secret ]]; then
+            generated_secret=true
             # 每次恰好读取24字节，不使用会被 pipefail/SIGPIPE 中断的 head 管道。
             secret=$(od -An -N24 -tx1 /dev/urandom)
             secret=${secret//[[:space:]]/}
@@ -492,6 +496,10 @@ JSON
     chmod 600 "$temporary"
     mv -f -- "$temporary" "$config_path"
     log "配置已保存：${config_path}（JSON 格式是有效的 YAML；密钥请从该文件读取）"
+    if [[ $first_configuration == true && $generated_secret == true ]]; then
+        log "自动生成的管理密钥（仅首次显示）：${secret}"
+        log '请保存此密钥，用于 WebUI 登录；后续可从配置文件读取。'
+    fi
 }
 
 shell_quote() {
