@@ -14,7 +14,33 @@
 
 ## 获取程序
 
-### 使用发行版（推荐）
+### 一键安装与配置（推荐）
+
+从仓库或 [GitHub Releases](https://github.com/HCLonely/AWA-Helper/releases/latest) 获取安装脚本，在交互终端执行。无需安装 Node.js 或 Python；Windows 需要系统 PowerShell 5.1+ 和 `tar.exe`（Windows 10/11 自带），Linux 使用 Bash 4+、curl、jq、tar/gzip、coreutils 和 glibc。Windows 支持 x64；Linux 支持 x64、armv7、arm64。
+
+Linux 缺少 Bash、curl、jq 等工具时，自动尝试通过官方包管理器安装，可能要求 sudo 验证；可以用 `sh install.sh` 启动，Bash 准备好后自动切换。缺少 glibc 时仍会先询问；同意后通过 apt 安装 `libc6`，或通过 dnf/yum、zypper、pacman 安装 `glibc`，并再次检查是否可用。自动安装仅使用发行版官方包管理器，不添加第三方源。Alpine/musl 官方兼容层不等于真正的 glibc，这类系统无法自动安装时会提示手动准备 glibc 并退出。安装后的发行包还会执行 `--version` 兼容性检查，失败时不替换已有程序。
+
+Windows 下载同目录的 `install.ps1` 与 `install.cmd`，双击 `install.cmd`，或执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+Linux 执行：
+
+```bash
+sh install.sh
+```
+
+默认下载并校验最新正式发行包。可用 Windows 的 `-Version v4.1.6 -InstallDir 'D:\Apps\AWA-Helper'` 或 Linux 的 `--version v4.1.6 --install-dir "$HOME/Apps/AWA-Helper"` 指定版本与路径；版本标签必须在 Releases 中存在。旧发行包没有 SHA-256 digest 或校验文件时会拒绝安装。
+
+安装器会询问关键配置：AWA Cookie（允许稍后同步）、WebUI 端口与是否允许其他设备访问、管理密钥（留空随机生成），以及可选的 Twitch、ASF 和代理。代理、自动更新默认关闭；Manager 每天按系统时区在 14:30:03、21:30:03 调度每日任务，可修改 `manager.dailyQuest.cron`。配置以 JSON 格式保存为 `config/config.yml`，它是有效的 YAML，可直接被程序读取。密钥请从配置文件读取，安装器不会在终端回显凭据。
+
+已有根目录 `config.yml` 优先于 `config/config.yml`，默认保留；选择向导重写时先备份。配置过程不启动 WebUI，也不打开浏览器。完成后再选择单次 Helper、常驻 Manager 或暂不启动；选择 Manager 后再选择是否注册服务，不注册时在当前终端前台运行。具体见[后台服务](/guide/running#安装器注册的后台服务)。
+
+只配置已安装的程序，可执行 `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -ConfigureOnly -InstallDir 'D:\Apps\AWA-Helper'` 或 `bash install.sh --configure-only --install-dir "$HOME/AWA-Helper"`。请先停止原有进程；重新配置会替换向导未包含的自定义项，因此默认建议保留已有配置。
+
+### 手动使用发行版
 
 从 [GitHub Releases](https://github.com/HCLonely/AWA-Helper/releases/latest) 下载适合系统和 CPU 架构的压缩包，解压到独立目录。
 

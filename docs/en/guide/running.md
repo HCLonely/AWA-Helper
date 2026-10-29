@@ -81,6 +81,23 @@ chmod +x AWA-Manager.sh AWA-DailyQuest.sh
 ./AWA-Manager.sh
 ```
 
+## Installer-Managed Services
+
+After configuration, select Manager and optionally register it as a service. Windows asks you to choose and approve downloading WinSW 2.12.0 or NSSM 2.24-101-g897c7ad, then requests UAC elevation. Service `AWAHelper` runs as LocalSystem, starts automatically and starts immediately. It launches `AWA-Helper.exe --manager --no-update`, without the tray or browser. Keep the installation on a local disk in a trusted directory.
+
+Use `Get-Service AWAHelper`, `Stop-Service AWAHelper`, `Start-Service AWAHelper` or `Restart-Service AWAHelper` in administrator PowerShell. To remove the service while keeping files, stop it and run either `& 'D:\Apps\AWA-Helper\.service\AWAHelperService.exe' uninstall` or `& 'D:\Apps\AWA-Helper\.service\nssm.exe' remove AWAHelper confirm`, matching the wrapper selected. Registration errors are logged to `logs/service-install.log`.
+
+Linux detects systemd, OpenRC, then SysV init with `start-stop-daemon` and `update-rc.d`/`chkconfig`. Registering uses root or sudo; the application runs as the installer user. Prefer running the installer as a normal user and allowing sudo only for registration. If no supported init system exists, the installer separately asks whether to run via nohup; this does not guarantee startup at boot.
+
+| Backend | Management | Disable startup and remove |
+| --- | --- | --- |
+| systemd | `sudo systemctl status awa-helper` (or `start`, `stop`, `restart`) | `sudo systemctl disable --now awa-helper`, remove `/etc/systemd/system/awa-helper.service`, then `sudo systemctl daemon-reload` |
+| OpenRC | `sudo rc-service awa-helper status` (or `start`, `stop`, `restart`) | Stop, `sudo rc-update del awa-helper default`, remove `/etc/init.d/awa-helper` |
+| SysV | `sudo /etc/init.d/awa-helper status` (or `start`, `stop`, `restart`) | Stop, `sudo update-rc.d -f awa-helper remove` or `sudo chkconfig --del awa-helper`, remove `/etc/init.d/awa-helper` |
+| nohup | Use the displayed PID: `kill -TERM PID` | No startup registration |
+
+Inspect systemd logs with `journalctl -u awa-helper`; OpenRC/nohup console output is in `logs/service.log`. Stop the service before rerunning the installer for updates, preserve existing configuration, choose no startup, and start the existing service afterwards. Existing service names are never overwritten. New configurations disable automatic updates; `--no-update` only skips startup updates. Without service registration, Manager runs in the current terminal until stopped.
+
 ## Docker
 
 Prepare `/data/awa-helper/config/config.yml` on the host by copying and editing the repository's `config.example.yml`. Create the `logs` and `data` directories and ensure all three mounted directories are readable and writable by the container's `node` user. Manager cannot start without the actual configuration file.

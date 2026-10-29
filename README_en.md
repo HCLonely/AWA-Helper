@@ -43,6 +43,59 @@ Persistent Manager waits for Cron schedules after startup. Start Helper from the
 4. Open the [https://www.alienwarearena.com/control-center](https://www.alienwarearena.com/control-center) page and enter the Manager address and the secret above in `ManagerServer` settings;
 5. Cookies are synchronized every time you open a browser page.
 
+### Interactive installation (Windows / Linux)
+
+Paste the following command into an interactive terminal to download the installer and open its configuration wizard. The scripts are fetched from this repository's `main` branch, so they must be published there first. Node.js is not required.
+
+**Windows x64 (PowerShell):**
+
+```powershell
+& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $installer = Join-Path $env:TEMP 'AWA-Helper-install.ps1'; Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/HCLonely/AWA-Helper/main/install.ps1' -OutFile $installer; powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer }
+```
+
+**Linux (paste the entire block into sh/Bash; no Python required):**
+
+```bash
+(
+    set -e
+    as_root() {
+        if [ "$(id -u)" -eq 0 ]; then
+            "$@"
+        else
+            sudo -- "$@"
+        fi
+    }
+    if ! command -v curl >/dev/null 2>&1 || ! command -v mktemp >/dev/null 2>&1; then
+        if command -v apt-get >/dev/null 2>&1; then
+            as_root apt-get update
+            as_root apt-get install -y --no-install-recommends curl ca-certificates coreutils
+        elif command -v dnf >/dev/null 2>&1; then
+            as_root dnf install -y curl ca-certificates coreutils
+        elif command -v yum >/dev/null 2>&1; then
+            as_root yum install -y curl ca-certificates coreutils
+        elif command -v zypper >/dev/null 2>&1; then
+            as_root zypper --non-interactive install curl ca-certificates coreutils
+        elif command -v pacman >/dev/null 2>&1; then
+            as_root pacman -S --needed --noconfirm curl ca-certificates coreutils
+        elif command -v apk >/dev/null 2>&1; then
+            as_root apk add curl ca-certificates coreutils
+        else
+            echo 'Cannot install curl automatically; install it manually and retry.' >&2
+            exit 1
+        fi
+    fi
+    installer="$(mktemp)"
+    curl -fsSL 'https://raw.githubusercontent.com/HCLonely/AWA-Helper/main/install.sh' -o "$installer"
+    sh "$installer"
+)
+```
+
+Both commands download to a temporary file and run the installer only after a successful download. For manual installation on Windows, download `install.ps1` and `install.cmd` together and double-click `install.cmd`, or run `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1`. On Linux, download and run `sh install.sh`; x64, armv7 and arm64 are detected automatically. Missing Bash 4+, curl, jq, tar/gzip or coreutils triggers an automatic installation attempt through the official package manager, using sudo when necessary. The script can start under sh and switch to Bash once available. Python is not required. Missing glibc still requires separate consent: `libc6` via apt, or `glibc` via dnf/yum, zypper or pacman. Unsupported systems exit with guidance; no third-party repositories are added, and Alpine compatibility layers are not treated as glibc.
+
+The installer verifies the latest stable release and asks for account settings, WebUI access and optional integrations. Proxy use is off by default. Configuration does not start the application, WebUI or browser. Existing configuration is preserved unless you explicitly choose to back it up and recreate it. After configuration, choose a one-off Helper run, persistent Manager, or no startup. Manager service registration is optional; Windows asks you to choose and approve downloading WinSW or NSSM, while Linux supports systemd, OpenRC, SysV init and a separately confirmed nohup fallback. See [service management](docs/en/guide/running.md#installer-managed-services).
+
+Optional Windows flags: `-Version v4.1.6 -InstallDir 'D:\Apps\AWA-Helper' -ConfigureOnly`. Linux equivalents: `--version v4.1.6 --install-dir "$HOME/Apps/AWA-Helper" --configure-only`. Omit configuration-only mode for downloading and installation. Node.js is not required.
+
 ### Run through compiled executable file
 
 > If your computer runs all day without shutting down or runs on a server, it is recommended to use AWA-Manager.

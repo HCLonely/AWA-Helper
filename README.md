@@ -46,6 +46,77 @@ Manager 是程序唯一的运行与调度中心，使用同一个 WebUI 端口�
 4. 打开<https://www.alienwarearena.com/control-center>页面，在 `ManagerServer` 设置中填写 Manager 地址和上述密钥；
 5. 每次你打开浏览器页面时都会同步一次 Cookie.
 
+### 一键安装与配置（Windows / Linux）
+
+在交互终端复制执行以下命令，自动下载安装脚本并进入配置向导；安装器会下载最新正式发行包并校验 SHA-256，无需自行安装 Node.js。命令从仓库 `main` 分支获取脚本，需先将安装脚本发布到该分支。
+
+**Windows（PowerShell）：**
+
+```powershell
+& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $installer = Join-Path $env:TEMP 'AWA-Helper-install.ps1'; Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/HCLonely/AWA-Helper/main/install.ps1' -OutFile $installer; powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer }
+```
+
+**Linux（在 sh/Bash 终端复制整段执行，无需 Python）：**
+
+```bash
+(
+    set -e
+    as_root() {
+        if [ "$(id -u)" -eq 0 ]; then
+            "$@"
+        else
+            sudo -- "$@"
+        fi
+    }
+    if ! command -v curl >/dev/null 2>&1 || ! command -v mktemp >/dev/null 2>&1; then
+        if command -v apt-get >/dev/null 2>&1; then
+            as_root apt-get update
+            as_root apt-get install -y --no-install-recommends curl ca-certificates coreutils
+        elif command -v dnf >/dev/null 2>&1; then
+            as_root dnf install -y curl ca-certificates coreutils
+        elif command -v yum >/dev/null 2>&1; then
+            as_root yum install -y curl ca-certificates coreutils
+        elif command -v zypper >/dev/null 2>&1; then
+            as_root zypper --non-interactive install curl ca-certificates coreutils
+        elif command -v pacman >/dev/null 2>&1; then
+            as_root pacman -S --needed --noconfirm curl ca-certificates coreutils
+        elif command -v apk >/dev/null 2>&1; then
+            as_root apk add curl ca-certificates coreutils
+        else
+            echo '无法自动安装 curl，请手动安装后重试。' >&2
+            exit 1
+        fi
+    fi
+    installer="$(mktemp)"
+    curl -fsSL 'https://raw.githubusercontent.com/HCLonely/AWA-Helper/main/install.sh' -o "$installer"
+    sh "$installer"
+)
+```
+
+上述命令先下载到临时文件，下载成功后再执行。也可以手动下载仓库或发行版中的安装脚本，按以下方式运行或指定版本、目录。
+
+Windows：将 `install.ps1`、`install.cmd` 放在同一目录，双击 `install.cmd`；或在 PowerShell 执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+# 可指定版本、目录；省略则安装最新正式版并询问目录
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version v4.1.6 -InstallDir 'D:\Apps\AWA-Helper'
+```
+
+Linux：自动识别 x64、armv7、arm64；缺少 Bash 4+、curl、jq、tar/gzip、coreutils 等工具时，自动尝试通过官方包管理器安装，可能要求 sudo 验证。脚本可先由 `sh` 启动，准备好 Bash 后自动切换；不依赖 Python。glibc 缺失时仍单独询问，使用 Debian/Ubuntu 的 `libc6`，或 dnf/yum、zypper、pacman 的 `glibc`；无法通过官方源安装时提示并退出，不添加第三方源，也不将 Alpine 的兼容层当作真正的 glibc。
+
+```bash
+sh install.sh
+# 可选参数
+sh install.sh --version v4.1.6 --install-dir "$HOME/Apps/AWA-Helper"
+```
+
+向导询问 AWA Cookie、WebUI 端口与访问范围、管理密钥，以及可选的 Twitch、ASF 和代理；**代理默认关闭**。Cookie 可留空，之后同步；密钥留空则随机生成并保存到配置。已有配置默认保留，选择重新配置会先备份。配置阶段不启动程序或 WebUI，也不打开浏览器。
+
+配置完成后选择单次 Helper、常驻 Manager 或暂不启动。选择 Manager 后再询问是否注册服务：Windows 让用户选择并授权下载 WinSW / NSSM，注册时请求管理员权限；Linux 依次检测 systemd、OpenRC、SysV init，无可用 init 时询问是否用 `nohup` 后台运行（不能保证开机自启）。不注册服务的 Manager 在当前终端前台运行。
+
+仅重新配置现有安装：Windows 添加 `-ConfigureOnly`，Linux 添加 `--configure-only`；使用原安装目录。服务管理、更新与卸载见[运行方式](docs/guide/running.md#安装器注册的后台服务)。安装前先退出同目录的托盘、Helper 或 Manager。尚未发布这些脚本的旧发行版，可使用本仓库中的安装脚本。
+
 ### 通过编译好的可执行文件运行
 
 > 如果你的电脑全天运行不关机或在服务器上运行建议使用 AWA-Manager.

@@ -14,7 +14,19 @@ Idling games in the background may trigger anti-cheat systems. Stop AWA-Helper a
 
 ## Get AWA-Helper
 
-### Use a Release Build (Recommended)
+### Interactive Installer (Recommended)
+
+Get the scripts from this repository or a release. Windows x64 requires PowerShell 5.1+ and `tar.exe`: place `install.ps1` and `install.cmd` together and double-click `install.cmd`, or run `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1`. Linux uses Bash 4+, curl, jq, tar/gzip, coreutils and glibc: run `bash install.sh`. Linux x64, armv7 and arm64 are supported. Neither Python nor Node.js is required.
+
+Missing Bash, curl, jq or other tools triggers an automatic installation attempt through the official package manager, using sudo when necessary. Start with `sh install.sh` to bootstrap Bash if needed. Missing glibc still triggers a separate installation prompt. On approval, the installer uses `libc6` via apt or `glibc` via dnf/yum, zypper or pacman, then checks again. No third-party sources are added. Alpine/musl compatibility layers do not count as glibc, so unsupported systems exit with instructions to prepare genuine glibc manually. A release `--version` check must pass before existing program files are replaced.
+
+Use `-Version TAG -InstallDir PATH` on Windows or `--version TAG --install-dir PATH` on Linux to select a stable release and directory. Default: latest stable release. Missing SHA-256 metadata causes installation to stop. Add `-ConfigureOnly` / `--configure-only` to configure an existing installation without downloading.
+
+The wizard asks for the AWA Cookie (optional for later synchronization), WebUI port and access scope, a management secret (randomly generated if blank), and optional Twitch, ASF and proxy settings. Proxies and automatic updates default to disabled. New `config/config.yml` uses JSON syntax, which is valid YAML. Existing root-level `config.yml` takes precedence; existing configuration is kept unless you explicitly choose to back it up and recreate it. Custom options outside the wizard are not retained when recreating configuration.
+
+Configuration does not start the application or WebUI and does not open a browser. Afterwards choose a one-off Helper run, persistent Manager or no startup. Manager service registration is a separate optional step; without registration Manager runs in the foreground. See [installer-managed services](/en/guide/running#installer-managed-services).
+
+### Manual Release Installation
 
 Download the archive for your operating system and CPU architecture from [GitHub Releases](https://github.com/HCLonely/AWA-Helper/releases/latest), then extract it into a dedicated directory.
 

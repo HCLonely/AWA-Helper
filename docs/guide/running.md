@@ -81,6 +81,50 @@ chmod +x AWA-Manager.sh AWA-DailyQuest.sh
 ./AWA-Manager.sh
 ```
 
+## 安装器注册的后台服务
+
+安装脚本在配置完成并选择 Manager 后，才询问是否注册服务。默认不注册；不注册时 Manager 在当前终端前台运行。服务运行的是 `AWA-Helper --manager --no-update`，不运行 Windows 托盘，不自动打开浏览器。新配置默认关闭 `autoUpdate`；`--no-update` 只跳过启动更新，不会禁止手动 WebUI 更新。
+
+### Windows 服务
+
+用户选择 WinSW 或 NSSM 后，还需允许从官方 HTTPS 来源下载包装器，随后通过 UAC 注册服务。WinSW 固定使用 2.12.0；NSSM 使用官网为现代 Windows 推荐的 2.24-101-g897c7ad。包装器存放在安装目录 `.service/`；服务名为 `AWAHelper`，账户为 LocalSystem，设为自动启动并立即启动。不要将安装目录放在网络盘或可被其他不可信用户修改的位置。服务和托盘不能同时管理同一目录。
+
+管理员 PowerShell 中管理服务：
+
+```powershell
+Get-Service AWAHelper
+Stop-Service AWAHelper
+Start-Service AWAHelper
+Restart-Service AWAHelper
+```
+
+卸载服务（保留程序和配置）先停止，然后按已选包装器运行以下命令之一，路径换成实际安装目录：
+
+```powershell
+& 'D:\Apps\AWA-Helper\.service\AWAHelperService.exe' uninstall
+# NSSM 用户改用：
+& 'D:\Apps\AWA-Helper\.service\nssm.exe' remove AWAHelper confirm
+```
+
+失败时查看 `logs/service-install.log`、包装器日志及程序日志。若注册成功但启动失败，先修正配置，再通过 `Start-Service AWAHelper` 重试；安装器不会覆盖同名服务。
+
+### Linux 服务与备用方式
+
+安装器依次检测正在运行的 systemd、OpenRC、具有 `start-stop-daemon` 和 `update-rc.d`/`chkconfig` 的 SysV init。注册系统服务需要 root 或 sudo；程序以运行安装器的用户身份运行，因此通常应使用普通用户运行 `bash install.sh`，只在注册时使用 sudo。直接以 root 运行安装器时，服务也以 root 运行。
+
+| 检测结果 | 管理命令 | 取消开机自启与卸载 |
+| --- | --- | --- |
+| systemd | `sudo systemctl status/start/stop/restart awa-helper`（将斜线选项替换为其中一个动作） | `sudo systemctl disable --now awa-helper`，删除 `/etc/systemd/system/awa-helper.service` 后运行 `sudo systemctl daemon-reload` |
+| OpenRC | `sudo rc-service awa-helper status/start/stop/restart`（选择一个动作） | 先停止，运行 `sudo rc-update del awa-helper default`，再删除 `/etc/init.d/awa-helper` |
+| SysV init | `sudo /etc/init.d/awa-helper status/start/stop/restart`（选择一个动作） | 先停止，运行 `sudo update-rc.d -f awa-helper remove` 或 `sudo chkconfig --del awa-helper`，再删除 `/etc/init.d/awa-helper` |
+| 无可用 init | 单独询问是否 `nohup` 后台运行；输出 PID，使用 `kill -TERM PID` 停止 | 不注册开机自启 |
+
+systemd 日志可用 `journalctl -u awa-helper` 查看；OpenRC 和 nohup 的控制台日志位于 `logs/service.log`，OpenRC 错误日志位于 `logs/service-error.log`；SysV 运行日志由程序自身写入 `logs/`。配置阶段完全离线于应用账号，不会执行任务；服务启动后按计划调度，需要立即执行时再使用 WebUI。
+
+### 更新与重装
+
+先停止原有服务或进程，重新运行安装器即可下载并校验指定正式版，默认保留配置、Cookie、日志及运行数据。更新现有服务时，在配置保留后选择“暂不启动”，再用上述服务命令启动原服务，无需再次注册。同名服务文件已存在时安装器会拒绝覆盖，避免接管其他安装。
+
 ## Docker
 
 先在宿主机准备 `/data/awa-helper/config/config.yml`（从仓库 `config.example.yml` 复制并修改），创建 `logs` 和 `data` 目录，并确保三个挂载目录可由容器中的 `node` 用户读写。正式配置缺失时 Manager 无法启动。

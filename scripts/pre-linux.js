@@ -4,6 +4,8 @@
  */
 const fs = require('fs');
 
+fs.copyFileSync('install.sh', 'output/install.sh');
+
 fs.rmSync('output/AWA-Helper.exe', {
   force: true
 });

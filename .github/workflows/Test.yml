@@ -23,6 +23,25 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
+      - name: Check installer syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          $bytes = [IO.File]::ReadAllBytes((Join-Path $PWD 'install.ps1'))
+          if ([BitConverter]::ToString($bytes, 0, 3) -ne 'EF-BB-BF') { throw 'install.ps1 needs a UTF-8 BOM for Windows PowerShell 5.1' }
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'install.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) { throw ($errors | Out-String) }
+      - name: Check Linux installer syntax
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          bash -n install.sh
+          sh install.sh --help
+          bash install.sh --help
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck install.sh
+          fi
       - name: Verify
         run: npm run verify
       - name: Compile Windows tray app

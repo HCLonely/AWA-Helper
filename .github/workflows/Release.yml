@@ -59,6 +59,8 @@ jobs:
             output/AWA-Manager.exe
             output/index.js
             output/sha256.txt
+            install.ps1
+            install.cmd
           token: ${{ github.TOKEN }}
   release-linux:
     needs: release
@@ -114,8 +116,9 @@ jobs:
       - name: Verify Linux launch scripts in archives
         run: |
           for archive in AWA-Helper-Linux-{x64,armv7,armv8}.tar.gz; do
+            sha256sum "$archive" > "$archive.sha256"
             entries=$(tar -tzf "$archive")
-            for script in AWA-Manager.sh AWA-DailyQuest.sh update.sh; do
+            for script in AWA-Manager.sh AWA-DailyQuest.sh update.sh install.sh; do
               if ! grep -Fxq "./output/$script" <<< "$entries"; then
                 echo "Missing $script in $archive" >&2
                 exit 1
@@ -134,6 +137,8 @@ jobs:
             AWA-Helper-Linux-x64.tar.gz
             AWA-Helper-Linux-armv7.tar.gz
             AWA-Helper-Linux-armv8.tar.gz
+            AWA-Helper-Linux-*.tar.gz.sha256
+            install.sh
           token: ${{ github.TOKEN }}
   release-docker:
     needs: [release, release-linux]
