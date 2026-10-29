@@ -22,7 +22,9 @@ WebUI 内联构建会从已安装的 `axios` 和 `js-yaml` 同步浏览器脚本
 
 YAML 检查使用项目已有的 `yaml` 解析器，默认检查 `config.example.yml` 和 `src/locales/*.yml`；也可运行 `node scripts/check-yaml.js 文件路径` 检查指定文件。语法错误、重复键或无法读取的文件会返回非零状态，不再依赖 `yamllint` 命令。
 
-依赖更新后运行 `npm audit` 和 `npm audit --omit=dev`，并验证 `npm test`、`npm run build:pre` 与 `npm run docs:build`。`overrides.nodemailer` 用于修复推送库的传递依赖，调整版本后需验证邮件消息生成及实际使用的 SMTP 配置。npm 审计不覆盖 `native/windows-tray/vendor/` 中的第三方源码。
+依赖更新后运行 `npm audit` 和 `npm audit --omit=dev`，并验证 `npm test`、`npm run build:pre` 与 `npm run docs:build`。`overrides.nodemailer` 将推送库的传递依赖限制为 `^10.2.1`，调整版本后需验证邮件消息生成及实际使用的 SMTP 配置；`overrides.vitepress.vite` 使用 `^6.4.5` 修复文档工具链的已知漏洞。npm 审计不覆盖 `native/windows-tray/vendor/` 中的第三方源码。
+
+2026-10-29 更新后，生产依赖审计为 0 漏洞；完整审计仍报告 `@rollup/plugin-node-resolve → deepmerge@4.3.1` 依赖链的 2 项低危问题，源于同一个 [deepmerge 原型污染漏洞](https://github.com/advisories/GHSA-gcqx-w48m-w2h4)，上游尚无修复版本。暂保留当前构建插件，避免采用 `npm audit fix --force` 建议的跨主版本降级；上游修复发布后重新评估并验证构建。
 
 Battle Pass 页面解析位于 `src/client/AWA/parsers/battlePass.ts`，领取与刷新验证位于 `src/core/DailyQuest/tasks/BattlePassTask.ts`。页面的 `completed` 表示进度完成，仍可能有 `unlockable` 奖励；`active` 和 `completed` 状态都应检查领取表单。领取成功后会刷新页面确认奖励变为 `claimed`；遇到 `verification-failed` 时检查刷新结果，遇到 `rejected` 时检查服务器响应与登录状态。
 

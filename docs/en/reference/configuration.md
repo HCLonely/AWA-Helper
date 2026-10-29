@@ -154,11 +154,11 @@ Under **DailyQuest Control → Steam CommunityEvent**, click **Add game** to con
 
 Remote sources are `github` (default), `https://gh-proxy.org/`, `https://cdn.gh-proxy.org/`, and `https://axisnow.gh-proxy.org/`. GitHub uses `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`; proxy prefixes are prepended to that URL. **Sync from remote** saves games matching ongoing events, preserving remote timestamps and other valid local entries. Failed synchronization preserves saved data.
 
-Each game's ISO 8601 `updateTime` must belong to the current local year and month. With `joinSteamCommunityEvent` enabled, events are discovered exclusively from `LIVE` banners in `/control-center`, and progress and joining are handled separately for each event. Missing or expired metadata is fetched from the selected source. Unmatched events request configuration. Completed, closed, and unjoined events are excluded from playback. All eligible community games and ordinary Steam quests are deduplicated into one ASF play request and stopped together when all started tasks finish.
+Each game's ISO 8601 `updateTime` expires when its absolute difference from the runtime machine's current time exceeds 15 days (15 × 24 hours); exactly 15 days is still valid. With `joinSteamCommunityEvent` enabled, events are discovered exclusively from `LIVE` banners in `/control-center`, and progress and joining are handled separately for each event. Missing or expired metadata is fetched from the selected source. Unmatched events request configuration. Completed, closed, and unjoined events are excluded from playback. All eligible community games and ordinary Steam quests are deduplicated into one ASF play request and stopped together when all started tasks finish.
 
 #### Remote JSON for Multiple Events
 
-The recommended remote response is shown below. It does not need `sourceUrl`, which selects the download source locally. The example timestamps are illustrative; publish data with a timestamp valid for the current month.
+The recommended remote response is shown below. It does not need `sourceUrl`, which selects the download source locally. The example timestamps are illustrative; publish data with a timestamp within 15 days of the current time.
 
 ```json
 {
@@ -185,7 +185,7 @@ The recommended remote response is shown below. It does not need `sourceUrl`, wh
 | `gameId` | Yes | Positive integer Steam game ID, preferably a string |
 | `gameName` | No | Display name; also matches the banner game name when there is no Steam link or explicit path |
 | `eventPath` | No, recommended | Last segment of the event URL, without domain, slashes, query or fragment; lowercase letters, digits and hyphens only |
-| `updateTime` | Yes | ISO 8601 timestamp belonging to the runtime machine's current local year and month |
+| `updateTime` | Yes | ISO 8601 timestamp whose absolute difference from the runtime machine's current time does not exceed 15 days (15 × 24 hours) |
 
 Each game may have its own `updateTime`. A shared top-level `updateTime` is also supported and inherited by entries without one. Expired entries are excluded from playback. Supply `eventPath` when using translated names or aliases that differ from the AWA banner title.
 

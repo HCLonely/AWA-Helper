@@ -164,7 +164,7 @@ pusher:
 
 “远程来源”内置 `github`、`https://gh-proxy.org/`、`https://cdn.gh-proxy.org/`、`https://axisnow.gh-proxy.org/`，默认 GitHub。GitHub 地址为 `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`，代理前缀直接拼接该地址。“从远程同步”会保存匹配进行中活动的游戏，保留远程更新时间以及其他仍有效的本地游戏；失败时保留已有数据。
 
-`updateTime` 按运行机器本地年份和月份逐项判断有效性。启用 `joinSteamCommunityEvent` 后，程序仅从 `/control-center` 中的 `LIVE` 活动横幅发现活动，分别检查进度和加入状态。缺少或过期的游戏信息会尝试从远程补充；无法匹配的活动会提示填写信息。已完成、已结束、未成功加入的活动不参与挂时长。所有可执行社区活动与普通 Steam 任务的游戏 ID 合并去重后，只调用一次 ASF 开始挂时长；等待全部已启动任务完成后统一停止。
+`updateTime` 与运行机器当前时间相差超过 15 天（15 × 24 小时）时，该条游戏信息过期；恰好 15 天仍有效。启用 `joinSteamCommunityEvent` 后，程序仅从 `/control-center` 中的 `LIVE` 活动横幅发现活动，分别检查进度和加入状态。缺少或过期的游戏信息会尝试从远程补充；无法匹配的活动会提示填写信息。已完成、已结束、未成功加入的活动不参与挂时长。所有可执行社区活动与普通 Steam 任务的游戏 ID 合并去重后，只调用一次 ASF 开始挂时长；等待全部已启动任务完成后统一停止。
 
 #### 远程多活动 JSON 格式
 
@@ -195,7 +195,7 @@ pusher:
 | `gameId` | 是 | Steam 游戏 ID，推荐使用字符串，必须为正整数 |
 | `gameName` | 否 | 展示名称；无 Steam 链接且未指定路径时，也用于匹配横幅游戏名 |
 | `eventPath` | 否，建议填写 | 活动 URL 最后一段，不含域名、斜杠、查询参数或锚点；只接受小写字母、数字和连字符 |
-| `updateTime` | 是 | ISO 8601 日期时间，须属于运行机器的当前本地年份和月份 |
+| `updateTime` | 是 | ISO 8601 日期时间，与运行机器当前时间相差不得超过 15 天（15 × 24 小时） |
 
 每个游戏可有独立的 `updateTime`；也支持在顶层设置公共 `updateTime`，未单独填写的条目会继承它。过期条目不会参与挂时长。建议明确填写 `eventPath`，尤其是显示名称使用中文或别名、与 AWA 横幅游戏名不一致时。
 

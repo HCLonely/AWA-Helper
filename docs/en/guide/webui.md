@@ -28,7 +28,7 @@ You can also select or drop a local **settings template**, or enter a remote tem
 4. Click **Save game data** to save all rows. Removing a row only edits the form until you save. Duplicate game IDs and nonempty event paths are rejected.
 5. Alternatively, select a built-in source and click **Sync from remote**. Matching ongoing games are saved directly, preserving other valid local entries. Failed synchronization preserves existing data.
 
-Each row shows its update timestamp and is valid only for the runtime machine's current year and month. Legacy single-game data appears as one row and is converted to a `games` array on save. See [CommunityEvent game data](/en/reference/configuration#steam-communityevent-game-data) for formats and fields. When automatic joining is disabled, manual editing and saving remain available, but remote synchronization is disabled.
+Each row shows its update timestamp and expires when the absolute difference between that timestamp and the runtime machine's current time exceeds 15 days (15 × 24 hours); exactly 15 days is still valid. Legacy single-game data appears as one row and is converted to a `games` array on save. See [CommunityEvent game data](/en/reference/configuration#steam-communityevent-game-data) for formats and fields. When automatic joining is disabled, manual editing and saving remain available, but remote synchronization is disabled.
 
 All ongoing events are discovered from `LIVE` banners in AWA's `/control-center`, with separate joining and completion checks. Unfinished joined games with valid configuration are combined with ordinary Steam quests, deduplicated, and sent to ASF in one play request. Task status and notifications show each event separately; one event completing does not stop the others.
 

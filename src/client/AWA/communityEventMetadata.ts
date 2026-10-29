@@ -27,7 +27,7 @@ export const validateCommunityEventSource = (source: unknown): CommunityEventSou
 /** 缺少进度目标并不能证明活动已开放。 */
 export const isCommunityEventActive = (page: CommunityEventPage): boolean => !page.closed && !page.concluded && page.totalMinutes > 0 && page.playedMinutes < page.totalMinutes;
 
-/** 使用任务运行器的本地日历月份，并包含年份。 */
+/** 更新时间与当前时间相差不超过 15 天时有效，按毫秒计算并包含边界。 */
 export const parseCommunityEventMetadata = (value: unknown, now = new Date()): CommunityEventMetadata | undefined => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return undefined;
@@ -41,7 +41,7 @@ export const parseCommunityEventMetadata = (value: unknown, now = new Date()): C
     return undefined;
   }
   const updated = new Date(data.updateTime);
-  if (!Number.isFinite(updated.getTime()) || updated.getFullYear() !== now.getFullYear() || updated.getMonth() !== now.getMonth()) {
+  if (!Number.isFinite(updated.getTime()) || Math.abs(now.getTime() - updated.getTime()) > 15 * 24 * 60 * 60 * 1000) {
     return undefined;
   }
   return {

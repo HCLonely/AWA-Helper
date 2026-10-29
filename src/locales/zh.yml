@@ -589,7 +589,7 @@ operationsDiagnosticHint: "检查已启用的平台，不执行任务。诊断�
 
 communityEventDataRequired: 游戏信息缺失或已过期，请在WebUI同步或填写游戏ID
 communityEventTitle: "Steam 社区活动"
-communityEventHint: "可设置多个游戏，信息仅当年当月有效。控制中心内正在进行的活动将分别检查进度，未完成游戏合并交给 ASF 挂时长。"
+communityEventHint: "可设置多个游戏，信息更新时间与当前时间相差超过 15 天即过期。控制中心内正在进行的活动将分别检查进度，未完成游戏合并交给 ASF 挂时长。"
 communityEventAdd: "添加游戏"
 communityEventRemove: "删除游戏"
 communityEventGame: "游戏"
@@ -611,7 +611,7 @@ communityEventReadFailed: "无法读取社区活动数据，请检查独立数�
 communityEventLoading: "正在加载游戏信息…"
 communityEventSaving: "正在保存…"
 communityEventSyncing: "正在检查活动并同步…"
-communityEventCurrent: "当前游戏信息在本月有效。"
+communityEventCurrent: "当前游戏信息有效，更新时间与当前时间相差不超过 15 天。"
 communityEventSaved: "游戏信息已保存。"
 communityEventSynced: "远程游戏信息已同步并保存。"
 communityEventExplanation: "由于Steam 社区活动新版界面识别不到游戏Id,所以需要从远程同步或手动输入！"

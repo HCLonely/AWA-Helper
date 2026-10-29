@@ -348,7 +348,7 @@ pusher:
 
 In the home page's **DailyQuest control** section, enter a game ID (required) and game name (optional), or select a source and synchronize remotely. Information is stored in `community-event.json` beside the active `config.yml`; include it in backups and migrations.
 
-Information is valid for the runtime machine's local year and month. With `joinSteamCommunityEvent` enabled, an open event, and unfinished personal playtime, missing or expired information is fetched from the selected source. If valid information remains unavailable, the event is skipped with a prompt to supply it.
+With `joinSteamCommunityEvent` enabled, an open event, and unfinished personal playtime, missing or expired information is fetched from the selected source. If valid information remains unavailable, the event is skipped with a prompt to supply it.
 
 ## Run history and diagnostics
 

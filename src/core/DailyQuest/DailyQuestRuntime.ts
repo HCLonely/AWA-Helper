@@ -549,7 +549,7 @@ export class DailyQuestRuntime {
     this.state.communityEvents = events;
   }
 
-  /** 保留本月有效的手工配置，远程数据只补充缺失或过期的游戏。 */
+  /** 保留与当前时间相差不超过 15 天的手工配置，远程数据只补充缺失或过期的游戏。 */
   private async resolveCommunityEventMetadata(): Promise<CommunityEventMetadata[]> {
     let valid: CommunityEventMetadata[] = [];
     try {
