@@ -213,7 +213,7 @@ ensure_glibc() {
         apk) die 'Alpine/musl 官方兼容层不等于 glibc。不会添加第三方源；请手动准备真正的 glibc，或使用受支持的 glibc 系统。' ;;
         *) die '此发行版无法自动安装真正的 glibc，请手动安装后重试。' ;;
     esac
-    log "将通过 $manager 安装 $package；可能要求 sudo 验证。"
+    log "将通过 $manager 安装 ${package}；可能要求 sudo 验证。"
     install_packages "$manager" "$package"
     if ! has_glibc; then
         die '安装完成后仍未检测到真正的 glibc，请手动检查系统；未下载或启动程序。'
@@ -237,7 +237,7 @@ ensure_tools() {
     packages=(curl jq tar gzip coreutils ca-certificates)
     install_packages "$manager" "${packages[@]}"
     for tool in "${missing[@]}"; do
-        command -v "$tool" >/dev/null 2>&1 || die "仍缺少 $tool，请手动安装后重试。"
+        command -v "$tool" >/dev/null 2>&1 || die "仍缺少 ${tool}，请手动安装后重试。"
     done
 }
 
@@ -348,7 +348,7 @@ install_release() {
         read -r expected rest < "$WORK_DIR/release.sha256"
     fi
     [[ $expected =~ ^[a-fA-F0-9]{64}$ ]] || die '发行版缺少有效的 SHA-256 校验信息，拒绝安装。'
-    log "正在下载并校验 $tag / $architecture…"
+    log "正在下载并校验 $tag / ${architecture}…"
     fetch "$asset_url" "$WORK_DIR/release.tar.gz" "$asset_size"
     [[ $(stat -c %s "$WORK_DIR/release.tar.gz") == "$asset_size" ]] || die '发行包大小校验失败，未修改安装目录。'
     read -r actual rest < <(sha256sum "$WORK_DIR/release.tar.gz")
@@ -491,7 +491,7 @@ JSON
     fi
     chmod 600 "$temporary"
     mv -f -- "$temporary" "$config_path"
-    log "配置已保存：$config_path（JSON 格式是有效的 YAML；密钥请从该文件读取）"
+    log "配置已保存：${config_path}（JSON 格式是有效的 YAML；密钥请从该文件读取）"
 }
 
 shell_quote() {
@@ -602,7 +602,7 @@ register_service() {
         target=/etc/init.d/awa-helper
         mode=755
     fi
-    [[ ! -e $target && ! -L $target ]] || die "服务文件已存在：$target；未覆盖，请先管理或卸载原服务。"
+    [[ ! -e $target && ! -L $target ]] || die "服务文件已存在：${target}；未覆盖，请先管理或卸载原服务。"
     assert_no_link "$directory/.service"
     mkdir -p "$directory/.service"
     source="$directory/.service/${target##*/}"
@@ -663,7 +663,7 @@ start_installed() {
             pid=$!
             sleep 2
             kill -0 "$pid" 2>/dev/null || die '后台启动失败，请查看 logs/service.log。'
-            log "后台 PID：$pid；停止：kill -TERM $pid；日志：$directory/logs/service.log"
+            log "后台 PID：${pid}；停止：kill -TERM ${pid}；日志：$directory/logs/service.log"
         fi
     fi
 }

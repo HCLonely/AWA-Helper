@@ -20,7 +20,7 @@ Windows 可执行文件打包使用 `npm run pack:win`；需要打包工具和�
 
 根目录 `install.ps1`（Windows PowerShell 5.1+，`install.cmd` 为双击入口）和 `install.sh`（Bash 4+）为独立安装器，不需要从源码构建。Linux 实现不依赖 Python 或 Node.js，通过 `/dev/tty` 交互，以 curl 下载、jq 处理 JSON、tar/gzip 解包、coreutils 校验与管理文件。缺少真实 glibc 时先询问，使用 apt 的 `libc6` 或 dnf/yum、zypper、pacman 的 `glibc` 安装并复查；其他工具缺失时自动尝试安装，无需额外确认；可通过 `sh install.sh` 启动 POSIX 引导段，缺少 Bash 时先自动准备 Bash 4+ 再重新执行。仅使用发行版官方包管理器，不添加第三方源，不将 Alpine 的 gcompat/libc6-compat 当作 glibc。配置向导生成 JSON 形式的合法 YAML，凭据经标准输入转义，不进入外部进程命令行；已有配置仅在用户明确选择后备份并重写。安装器通过 GitHub API 的 SHA-256 digest 或同一 Release 的 `.sha256` 验证发行包，缺少校验信息时退出；不修改模板 `config.example.yml` 的代理默认值，只在向导新配置中默认关闭代理。
 
-Windows 安装脚本作为 Release 独立附件发布，不加入 Windows 压缩包，以兼容旧版托盘更新器的程序文件白名单。`scripts/pre-linux.js` 将 `install.sh` 复制到 Linux 发行包；Release 工作流还发布独立安装脚本及各 Linux 发行包的 SHA-256 校验文件。变更安装器后需在 Windows 检查 PowerShell AST 解析，在 Linux 检查 `bash -n install.sh`、ShellCheck 和帮助命令，并使用模拟发行包覆盖错误校验和、路径穿越/符号链接、已有配置保留、配置凭据转义、缺少 Bash/curl/jq 的自动安装、glibc 缺失的拒绝/同意/安装后复查及各 init 分支。发行包解压后先执行 `--version` 检查系统运行库兼容性，失败时不替换已安装文件。实际系统包安装与服务注册需在隔离系统中验证，不能将命令模拟当成真实安装通过。
+Windows 安装脚本作为 Release 独立附件发布，不加入 Windows 压缩包，以兼容旧版托盘更新器的程序文件白名单。`scripts/pre-linux.js` 将 `install.sh` 复制到 Linux 发行包；Release 工作流还发布独立安装脚本及各 Linux 发行包的 SHA-256 校验文件。变更安装器后需在 Windows 检查 PowerShell AST 解析，在 Linux 检查 `bash -n install.sh`、ShellCheck 和帮助命令，并使用模拟发行包覆盖错误校验和、路径穿越/符号链接、已有配置保留、配置凭据转义、缺少 Bash/curl/jq 的自动安装、glibc 缺失的拒绝/同意/安装后复查及各 init 分支。发行包解压后先执行 `--version` 检查系统运行库兼容性，失败时不替换已安装文件。Shell 变量紧接中文或 Unicode 标点时统一使用 `${name}` 明确变量边界，避免 ISO-8859-1 等非 UTF-8 locale 将 UTF-8 首字节误识别为变量名字符。实际系统包安装与服务注册需在隔离系统中验证，不能将命令模拟当成真实安装通过。
 
 WebUI 内联构建会从已安装的 `axios` 和 `js-yaml` 同步浏览器脚本到 `src/webUI/static/js/`，再生成页面。依赖升级后运行 `npm run gulp` 并一并提交静态脚本与锁文件，避免浏览器仍使用旧版本；不要手动修改这些第三方脚本。
 
