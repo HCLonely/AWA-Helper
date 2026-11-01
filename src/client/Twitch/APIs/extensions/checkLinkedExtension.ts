@@ -32,6 +32,11 @@ export const checkLinkedExtension = async (context: TwitchContext): Promise<Acti
   }
   try {
     const response = await context.request<Array<TwitchGqlEnvelope<LinkedExtensionsData>>>(options);
+    // 查询失败不能被视为用户尚未授权，否则可能错误触发自动授权。
+    const envelope = response.data?.[0];
+    if (envelope?.errors?.length || !Array.isArray(envelope?.data?.currentUser?.linkedExtensions)) {
+      throw new TwitchError('checkLinkedExtension', 'Invalid linked Twitch extensions response');
+    }
     return parseLinkedArenaExtension(response.data)
       ? {
         ok: true,
