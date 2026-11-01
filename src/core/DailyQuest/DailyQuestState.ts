@@ -34,6 +34,7 @@ export class DailyQuestState {
   userProfileUrl?: string;
   dailyQuestLink?: string;
   controlCenterBattlePassUrl?: string;
+  private readonly staleBattlePassUrls = new Set<string>();
   battlePass?: BattlePassRunState;
   additionalTwitchARP = 0;
   signArp: {
@@ -53,7 +54,17 @@ export class DailyQuestState {
 
   /** 读取时选择来源，确保个性化页面后续刷新也立即生效。 */
   get battlePassUrl(): string | undefined {
-    return this.controlCenterBattlePassUrl ?? this.getPersonalizationBattlePassUrl();
+    const controlCenterUrl = this.controlCenterBattlePassUrl;
+    if (controlCenterUrl && !this.staleBattlePassUrls.has(controlCenterUrl)) {
+      return controlCenterUrl;
+    }
+    const personalizationUrl = this.getPersonalizationBattlePassUrl();
+    return personalizationUrl && !this.staleBattlePassUrls.has(personalizationUrl) ? personalizationUrl : undefined;
+  }
+
+  /** 记住已失效的入口，避免 Control Center 刷新后再次选中同一旧链接。 */
+  invalidateBattlePassUrl(url: string): void {
+    this.staleBattlePassUrls.add(url);
   }
 
   /** 兼容旧的单活动调用方。 */

@@ -25,6 +25,8 @@ export interface BattlePassReward {
 }
 
 export interface BattlePassSnapshot {
+  /** 请求的旧 Battle Pass 入口已重定向回 Control Center。 */
+  redirectedToControlCenter?: boolean;
   status: BattlePassStatus;
   claimedCount: number;
   rewardTotal: number;

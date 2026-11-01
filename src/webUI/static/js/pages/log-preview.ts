@@ -23,9 +23,11 @@
     const status = document.createElement('p');
     status.className = 'log-preview__status';
     status.setAttribute('role', 'status');
-    const body = document.createElement('pre');
+    const body = document.createElement('textarea');
     body.className = 'log-preview__body';
-    body.tabIndex = 0;
+    // 使用只读文本框，让浏览器原生支持选择、全选与复制日志。
+    body.readOnly = true;
+    body.spellcheck = false;
     body.setAttribute('aria-label', __('logPreview'));
     const button = (label: string, callback: () => void): HTMLButtonElement => {
       const item = document.createElement('button');
@@ -64,7 +66,7 @@
         if (closed || request !== current) {
           return;
         }
-        body.textContent = page.text;
+        body.value = page.text;
         cursor = page.older;
         previous.disabled = !cursor;
         const message = page.missing ? __('logEmpty') : __('logPageLimit');

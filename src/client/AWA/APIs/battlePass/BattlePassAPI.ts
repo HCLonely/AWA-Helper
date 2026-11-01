@@ -37,7 +37,16 @@ export class BattlePassAPI {
     }
     const response = await this.context.request<string>(options);
     this.context.updateCookies(response.headers?.['set-cookie']);
-    return parseBattlePass(String(response.data));
+    const snapshot = parseBattlePass(String(response.data));
+    // Axios 的 Node.js 适配器在最终响应上保留重定向后的 URL。
+    const finalUrl = response.request?.res?.responseUrl;
+    if (typeof finalUrl === 'string') {
+      const resolved = this.resolveSameOriginUrl(finalUrl);
+      if (resolved && resolved.pathname.replace(/\/+$/, '') === '/control-center') {
+        snapshot.redirectedToControlCenter = true;
+      }
+    }
+    return snapshot;
   }
 
   /**

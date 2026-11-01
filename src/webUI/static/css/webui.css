@@ -469,7 +469,9 @@ a {
 
 .log-preview__body {
   flex: 1;
+  min-width: 0;
   min-height: 0;
+  resize: none;
   margin: 0 24px;
   padding: 20px;
   overflow: auto;

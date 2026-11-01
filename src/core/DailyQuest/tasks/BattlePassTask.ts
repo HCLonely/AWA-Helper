@@ -62,6 +62,11 @@ export class BattlePassTask {
         return true;
       }
 
+      const currentUrl = runtime.state.battlePassUrl;
+      if (!currentUrl) {
+        return false;
+      }
+
       const claimable = snapshot.rewards
         .filter((reward) => reward.state === 'unlockable' && !!reward.claim)
         .sort((left, right) => left.index - right.index);
@@ -70,7 +75,7 @@ export class BattlePassTask {
         if (signal?.aborted) {
           return false;
         }
-        const result = await runtime.awa.battlePass.claim(url, reward);
+        const result = await runtime.awa.battlePass.claim(currentUrl, reward);
         if (result.ok) {
           accepted.push(reward);
         } else {
@@ -82,7 +87,7 @@ export class BattlePassTask {
         return false;
       }
       if (claimable.length > 0) {
-        const refreshed = await runtime.awa.battlePass.getPage(url);
+        const refreshed = await runtime.awa.battlePass.getPage(currentUrl);
         battlePass.status = refreshed.status;
         battlePass.claimedCount = refreshed.claimedCount;
         battlePass.rewardTotal = refreshed.rewardTotal;
@@ -145,7 +150,23 @@ export class BattlePassTask {
   }
 
   private static async loadAndJoin(runtime: DailyQuestRuntime, url: string, signal?: AbortSignal): Promise<BattlePassSnapshot> {
-    const snapshot = await runtime.awa.battlePass.getPage(url);
+    let snapshot = await runtime.awa.battlePass.getPage(url);
+    if (snapshot.redirectedToControlCenter) {
+      runtime.state.invalidateBattlePassUrl(url);
+      await runtime.discoverBattlePass(signal);
+      const fallbackUrl = runtime.state.battlePassUrl;
+      if (signal?.aborted) {
+        throw new Error('Battle Pass cancelled');
+      }
+      // 仅尝试一次备用入口；个性化页面也可能仍保留上一期链接。
+      if (fallbackUrl) {
+        url = fallbackUrl;
+        snapshot = await runtime.awa.battlePass.getPage(url);
+        if (snapshot.redirectedToControlCenter) {
+          runtime.state.invalidateBattlePassUrl(url);
+        }
+      }
+    }
     if (snapshot.status !== 'not-joined') {
       return snapshot;
     }
