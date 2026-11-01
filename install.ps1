@@ -14,7 +14,9 @@ param(
     [switch]$ConfigureOnly,
     [switch]$Help,
     # 仅供 UAC 子进程执行已由用户确认的服务注册，不重新运行配置向导。
-    [ValidateSet('WinSW', 'NSSM', '')][string]$RegisterService = ''
+    [ValidateSet('WinSW', '')][string]$RegisterService = '',
+    # 供安装目录的一键入口使用；不重新配置。
+    [ValidateSet('Stop', 'Restart', 'Update', '')][string]$ServiceAction = ''
 )
 
 Set-StrictMode -Version Latest
@@ -418,17 +420,16 @@ function Install-ServiceWrapper([string]$Directory, [string]$Wrapper) {
     $serviceDir = Join-Path $Directory '.service'
     Assert-NoLink $serviceDir
     New-Item -ItemType Directory -Force -Path $serviceDir | Out-Null
-    if ($Wrapper -eq 'WinSW') {
-        $release = Get-Release 'winsw/winsw' 'v2.12.0'
-        $asset = @($release.assets | Where-Object { $_.name -eq 'WinSW-x64.exe' })
-        if ($asset.Count -ne 1) {
-            throw 'WinSW 发行版缺少 WinSW-x64.exe。'
-        }
-        # 老版 WinSW 未提供 GitHub digest；只从其官方 HTTPS Release 获取。
-        $destination = Join-Path $serviceDir 'AWAHelperService.exe'
-        Save-Download $asset[0].browser_download_url "$destination.downloading"
-        Move-Item -LiteralPath "$destination.downloading" -Destination $destination -Force
-        $content = @'
+    $release = Get-Release 'winsw/winsw' 'v2.12.0'
+    $asset = @($release.assets | Where-Object { $_.name -eq 'WinSW-x64.exe' })
+    if ($asset.Count -ne 1) {
+        throw 'WinSW 发行版缺少 WinSW-x64.exe。'
+    }
+    # 老版 WinSW 未提供 GitHub digest；只从其官方 HTTPS Release 获取。
+    $destination = Join-Path $serviceDir 'AWAHelperService.exe'
+    Save-Download $asset[0].browser_download_url "$destination.downloading"
+    Move-Item -LiteralPath "$destination.downloading" -Destination $destination -Force
+    $content = @'
 <service>
   <id>AWAHelper</id>
   <name>AWA-Helper Manager</name>
@@ -443,23 +444,7 @@ function Install-ServiceWrapper([string]$Directory, [string]$Wrapper) {
   <log mode="roll"/>
 </service>
 '@
-        Write-Utf8 (Join-Path $serviceDir 'AWAHelperService.xml') $content
-    } else {
-        # 官网推荐现代 Windows 使用此构建，避免旧 2.24 的控制台启动问题。
-        $zip = Join-Path $serviceDir 'nssm.zip'
-        Save-Download 'https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip' $zip
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        $archive = [IO.Compression.ZipFile]::OpenRead($zip)
-        try {
-            $entry = @($archive.Entries | Where-Object { $_.FullName -eq 'nssm-2.24-101-g897c7ad/win64/nssm.exe' })
-            if ($entry.Count -ne 1) {
-                throw 'NSSM 压缩包缺少 win64/nssm.exe。'
-            }
-            [IO.Compression.ZipFileExtensions]::ExtractToFile($entry[0], (Join-Path $serviceDir 'nssm.exe'), $true)
-        } finally {
-            $archive.Dispose()
-        }
-    }
+    Write-Utf8 (Join-Path $serviceDir 'AWAHelperService.xml') $content
     return $serviceDir
 }
 
@@ -471,46 +456,33 @@ function Get-ExistingManagerService([string]$Directory) {
     $serviceDir = Join-Path $Directory '.service'
     $definition = Get-CimInstance -ClassName Win32_Service -Filter "Name='$ServiceName'" -ErrorAction Stop
     $image = [Environment]::ExpandEnvironmentVariables([string]$definition.PathName).Trim()
-    $wrapper = ''
-    foreach ($candidate in @('WinSW', 'NSSM')) {
-        $fileName = if ($candidate -eq 'WinSW') { 'AWAHelperService.exe' } else { 'nssm.exe' }
-        $path = Join-Path $serviceDir $fileName
-        if ($image -eq $path -or $image -eq ('"' + $path + '"')) {
-            $wrapper = $candidate
-            Assert-NoLink $path
-            break
-        }
+    $wrapper = 'WinSW'
+    $path = Join-Path $serviceDir 'AWAHelperService.exe'
+    if ($image -ne $path -and $image -ne ('"' + $path + '"')) {
+        throw 'AWAHelper 服务不属于此目录的 WinSW 安装。请先手动停止并卸载原服务，再重新注册。'
     }
-    if (-not $wrapper) {
-        throw 'AWAHelper 服务指向其他目录或无法识别的程序。请选择原安装目录，或先手动停止并卸载原服务。'
-    }
+    Assert-NoLink $path
     # 同时核实包装器实际启动的程序，避免只凭包装器所在目录接管服务。
-    if ($wrapper -eq 'WinSW') {
-        $xmlPath = Join-Path $serviceDir 'AWAHelperService.xml'
-        Assert-NoLink $xmlPath
-        $settings = New-Object Xml.XmlReaderSettings
-        $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
-        $settings.XmlResolver = $null
-        $reader = [Xml.XmlReader]::Create($xmlPath, $settings)
-        try {
-            $document = New-Object Xml.XmlDocument
-            $document.Load($reader)
-        } finally {
-            $reader.Dispose()
-        }
-        $application = [string]$document.service.executable
-        $arguments = [string]$document.service.arguments
-        if ([string]$document.service.id -ne $ServiceName) {
-            throw '已有 WinSW 配置的服务名与 AWAHelper 不一致，未修改服务。'
-        }
-        $application = [Environment]::ExpandEnvironmentVariables($application.Replace('%BASE%', $serviceDir))
-        if (-not [IO.Path]::IsPathRooted($application)) {
-            $application = Join-Path $serviceDir $application
-        }
-    } else {
-        $parameters = Get-ItemProperty -LiteralPath "HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName\Parameters" -ErrorAction Stop
-        $application = [Environment]::ExpandEnvironmentVariables([string]$parameters.Application)
-        $arguments = [string]$parameters.AppParameters
+    $xmlPath = Join-Path $serviceDir 'AWAHelperService.xml'
+    Assert-NoLink $xmlPath
+    $settings = New-Object Xml.XmlReaderSettings
+    $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+    $settings.XmlResolver = $null
+    $reader = [Xml.XmlReader]::Create($xmlPath, $settings)
+    try {
+        $document = New-Object Xml.XmlDocument
+        $document.Load($reader)
+    } finally {
+        $reader.Dispose()
+    }
+    $application = [string]$document.service.executable
+    $arguments = [string]$document.service.arguments
+    if ([string]$document.service.id -ne $ServiceName) {
+        throw '已有 WinSW 配置的服务名与 AWAHelper 不一致，未修改服务。'
+    }
+    $application = [Environment]::ExpandEnvironmentVariables($application.Replace('%BASE%', $serviceDir))
+    if (-not [IO.Path]::IsPathRooted($application)) {
+        $application = Join-Path $serviceDir $application
     }
     $expected = [IO.Path]::GetFullPath((Join-Path $Directory 'AWA-Helper.exe'))
     Assert-NoLink $expected
@@ -544,28 +516,79 @@ function Register-ManagerService([string]$Directory, [string]$Wrapper) {
     $serviceDir = Join-Path $Directory '.service'
     if (Start-ExistingManagerService $Directory $Wrapper) {
         Write-Host '已复用同一安装目录的 AWAHelper 服务，并设置为开机自启。'
-    } elseif ($Wrapper -eq 'WinSW') {
+    } else {
         Assert-Stopped $Directory
         $program = Join-Path $serviceDir 'AWAHelperService.exe'
         Invoke-Native $program @('install')
         Invoke-Native $program @('start')
-    } else {
-        Assert-Stopped $Directory
-        $program = Join-Path $serviceDir 'nssm.exe'
-        Invoke-Native $program @('install', $ServiceName, (Join-Path $Directory 'AWA-Helper.exe'), '--manager', '--no-update')
-        Invoke-Native $program @('set', $ServiceName, 'AppDirectory', $Directory)
-        Invoke-Native $program @('set', $ServiceName, 'Start', 'SERVICE_AUTO_START')
-        Invoke-Native $program @('set', $ServiceName, 'AppExit', 'Default', 'Restart')
-        Invoke-Native $program @('set', $ServiceName, 'AppRestartDelay', '10000')
-        Invoke-Native $program @('set', $ServiceName, 'AppStopMethodConsole', '60000')
-        Invoke-Native $program @('set', $ServiceName, 'AppStdout', (Join-Path $Directory 'logs/service.log'))
-        Invoke-Native $program @('set', $ServiceName, 'AppStderr', (Join-Path $Directory 'logs/service-error.log'))
-        Invoke-Native $program @('set', $ServiceName, 'AppRotateFiles', '1')
-        Invoke-Native $program @('start', $ServiceName)
     }
     Start-Sleep -Seconds 3
     if ((Get-Service -Name $ServiceName).Status -ne 'Running') {
         throw '服务未能保持运行，请查看安装目录中的 logs。服务文件已保留。'
+    }
+    Write-ServiceScripts $Directory
+}
+
+# 入口使用相对路径，安装路径不进入 cmd 的命令文本。
+function Write-ServiceScripts([string]$Directory) {
+    foreach ($action in @('Stop', 'Restart', 'Update')) {
+        $path = Join-Path $Directory "AWA-$action.cmd"
+        Assert-NoLink $path
+        $content = @"
+@echo off
+setlocal
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0.service\install-service.ps1" -InstallDir "%~dp0." -ServiceAction $action
+set "AWA_EXIT_CODE=%ERRORLEVEL%"
+pause
+exit /b %AWA_EXIT_CODE%
+"@
+        Write-Utf8 $path ($content -replace "\r?\n", [Environment]::NewLine)
+    }
+}
+
+function Invoke-ServiceAction([string]$Directory, [string]$Action) {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        $escapedScript = $PSCommandPath.Replace("'", "''")
+        $escapedDirectory = $Directory.Replace("'", "''")
+        $command = "& '$escapedScript' -InstallDir '$escapedDirectory' -ServiceAction '$Action'"
+        $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
+        $child = Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', $encoded) -Verb RunAs -WindowStyle Hidden -Wait -PassThru
+        if ($child.ExitCode -ne 0) {
+            throw "服务操作失败（退出码 $($child.ExitCode)），请查看 logs/service-action.log。"
+        }
+        return
+    }
+    Start-Transcript -LiteralPath (Join-Path $Directory 'logs/service-action.log') -Append | Out-Null
+    try {
+        $existing = Get-ExistingManagerService $Directory
+        if (-not $existing) {
+            throw '未找到此安装的 AWAHelper 服务，请重新运行安装向导注册。'
+        }
+        $wasRunning = $existing.Status -ne 'Stopped'
+        Stop-Service -Name $ServiceName -ErrorAction Stop
+        (Get-Service -Name $ServiceName).WaitForStatus('Stopped', [TimeSpan]::FromSeconds(90))
+        if ($Action -eq 'Stop') {
+            return
+        }
+        $updated = $false
+        try {
+            if ($Action -eq 'Update') {
+                Get-Command tar.exe -ErrorAction Stop | Out-Null
+                Assert-Stopped $Directory
+                Install-Release $Directory 'latest'
+                $updated = $true
+            }
+        } finally {
+            # 下载或校验失败时恢复原先运行的服务；成功更新后启动新版。
+            if ($Action -eq 'Restart' -or $wasRunning -or $updated) {
+                Start-Service -Name $ServiceName -ErrorAction Stop
+                (Get-Service -Name $ServiceName).WaitForStatus('Running', [TimeSpan]::FromSeconds(90))
+            }
+        }
+    } finally {
+        Stop-Transcript | Out-Null
     }
 }
 
@@ -586,17 +609,12 @@ function Start-Installed([string]$Directory) {
         Invoke-Native $executable @('--manager', '--no-update')
         return
     }
+    $name = 'WinSW'
     $existing = Get-ExistingManagerService $Directory
     if ($existing) {
-        $name = $existing.Wrapper
         $serviceDir = Join-Path $Directory '.service'
         Write-Host '检测到同一安装目录的 AWAHelper 服务，将复用并启动；无需重新下载或注册包装器。'
     } else {
-        $wrapper = Read-Choice '选择服务包装器：1=WinSW，2=NSSM，0=取消注册' @('0', '1', '2') '1'
-        if ($wrapper -eq '0') {
-            return
-        }
-        $name = if ($wrapper -eq '1') { 'WinSW' } else { 'NSSM' }
         if (-not (Confirm-Choice "是否允许从官方 HTTPS 站点自动下载并安装 $name？服务使用 LocalSystem 账户运行")) {
             Write-Host '未下载包装器，未注册或启动服务。'
             return
@@ -616,7 +634,7 @@ function Start-Installed([string]$Directory) {
     if ($child.ExitCode -ne 0) {
         throw "服务注册或启动失败（退出码 $($child.ExitCode)）；配置已保存，请查看 logs/service-install.log。"
     }
-    Write-Host '服务 AWAHelper 已设为开机自启并启动。管理：Get-Service / Stop-Service / Start-Service AWAHelper（管理员终端）。'
+    Write-Host '服务已启动。安装目录已生成 AWA-Stop.cmd、AWA-Restart.cmd、AWA-Update.cmd。'
 }
 
 function Main {
@@ -639,6 +657,10 @@ function Main {
         throw '无效的安装目录。'
     }
     Assert-NoLink $directory
+    if ($ServiceAction) {
+        Invoke-ServiceAction $directory $ServiceAction
+        return
+    }
     if ($RegisterService) {
         $log = Join-Path $directory 'logs/service-install.log'
         try {

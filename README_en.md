@@ -22,6 +22,8 @@ Follow the prompts for your AWA cookie, WebUI port, and management secret. You c
 
 For account linking, cookies, other installation options, and detailed configuration, see [Getting Started](https://awa-helper-five.vercel.app/en/guide/getting-started).
 
+Service registration creates `AWA-Stop`, `AWA-Restart`, and `AWA-Update` scripts (`.cmd` on Windows, `.sh` on Linux) to stop, restart, or update while preserving configuration. Windows services use WinSW exclusively.
+
 For updates, background services, and Docker, see [Running AWA-Helper](https://awa-helper-five.vercel.app/en/guide/running).
 
 For source development, builds, and checks, see the [development guide](Development.md).

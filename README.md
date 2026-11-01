@@ -42,6 +42,8 @@ try {
 
 账号关联、Cookie 获取、其他安装方式及详细配置请参考[在线文档：快速开始](https://awa-helper-five.vercel.app/guide/getting-started)
 
+注册服务成功后，安装目录会生成 `AWA-Stop`、`AWA-Restart`、`AWA-Update` 脚本（Windows 为 `.cmd`，Linux 为 `.sh`），用于停止、重启和保留配置更新。Windows 服务仅支持 WinSW。
+
 更新、后台服务与 Docker 请参考[运行方式](https://awa-helper-five.vercel.app/guide/running)。
 
 源码开发、构建与检查见 [开发说明](Development.md)。

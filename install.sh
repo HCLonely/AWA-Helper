@@ -58,6 +58,8 @@ SERVICE='awa-helper'
 VERSION='latest'
 INSTALL_DIR=''
 CONFIGURE_ONLY=false
+SERVICE_ACTION=''
+SERVICE_KIND=''
 WORK_DIR=''
 REPLY=''
 CLEANUP_FILES=()
@@ -656,6 +658,75 @@ SYSV
     fi
 }
 
+# 将安装器保存在私有服务目录；入口不依赖最初下载脚本的位置。
+write_service_scripts() {
+    local directory=$1 kind=$2 action path installer="$1/.service/install-service.sh"
+    assert_no_link "$installer"
+    cp -- "${BASH_SOURCE[0]}" "$installer"
+    chmod 700 "$installer"
+    for action in stop restart update; do
+        path="$directory/AWA-${action^}.sh"
+        assert_no_link "$path"
+        {
+            printf '#!/usr/bin/env bash\n'
+            printf 'exec bash %s --install-dir %s --service-kind %s --service-action %s\n' \
+                "$(shell_quote "$installer")" "$(shell_quote "$directory")" "$kind" "$action"
+        } > "$path"
+        chmod 700 "$path"
+    done
+}
+
+service_control() {
+    local kind=$1 action=$2
+    case $kind in
+        systemd) as_root systemctl "$action" "$SERVICE" ;;
+        openrc) as_root rc-service "$SERVICE" "$action" ;;
+        sysv) as_root /etc/init.d/awa-helper "$action" ;;
+        *) die '无法识别服务类型。' ;;
+    esac
+}
+
+service_definition_matches() {
+    [[ -f $1 && -f $2 ]] && [[ $(< "$1") == $(< "$2") ]]
+}
+
+# 使用子 shell 的 EXIT trap 恢复运行状态，即使下载函数 die 退出也执行。
+invoke_service_action() (
+    local directory=$1 kind=$2 action=$3 target source was_running=false updated=false result=0
+    case $kind in
+        systemd) target=/etc/systemd/system/awa-helper.service ;;
+        openrc|sysv) target=/etc/init.d/awa-helper ;;
+        *) die '无法识别服务类型。' ;;
+    esac
+    source="$directory/.service/${target##*/}"
+    assert_no_link "$directory"
+    assert_no_link "$source"
+    assert_no_link "$target"
+    # 只管理注册时保存的同一份服务定义，不接管被其他安装替换的服务。
+    service_definition_matches "$source" "$target" || die '服务定义与此安装不匹配，未修改服务。'
+    if [[ $action == stop || $action == restart ]]; then
+        service_control "$kind" "$action"
+        return
+    fi
+    [[ $action == update ]] || die '无法识别服务动作。'
+    ensure_tools
+    if [[ $kind == systemd ]]; then
+        if service_control "$kind" is-active >/dev/null 2>&1; then
+            was_running=true
+        fi
+    elif service_control "$kind" status >/dev/null 2>&1; then
+        was_running=true
+    fi
+    service_control "$kind" stop
+    trap 'result=$?; trap - EXIT; cleanup; if [[ $was_running == true || $updated == true ]]; then service_control "$kind" start || exit 1; fi; exit "$result"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+    check_stopped "$directory"
+    WORK_DIR=$(mktemp -d "${TMPDIR:-/tmp}/awa-install.XXXXXXXX")
+    install_release "$directory" latest
+    updated=true
+)
+
 register_service() {
     local directory=$1 kind=$2 username target source mode
     username=$(id -un)
@@ -703,7 +774,8 @@ register_service() {
             log '管理：sudo /etc/init.d/awa-helper {status|stop|start|restart}'
             ;;
     esac
-    log '服务已注册为开机自启并启动；配置 autoUpdate 默认关闭，请停服务后更新。'
+    write_service_scripts "$directory" "$kind"
+    log '服务已注册并启动；安装目录已生成 AWA-Stop.sh、AWA-Restart.sh、AWA-Update.sh。'
 }
 
 start_installed() {
@@ -758,12 +830,26 @@ main() {
                 CONFIGURE_ONLY=true
                 shift
                 ;;
+            --service-kind|--service-action)
+                (($# >= 2)) || die "$1 缺少参数。"
+                if [[ $1 == --service-kind ]]; then
+                    SERVICE_KIND=$2
+                else
+                    SERVICE_ACTION=$2
+                fi
+                shift 2
+                ;;
             *) die "未知参数：$1（使用 --help 查看用法）" ;;
         esac
     done
     [[ $OSTYPE == linux* ]] || die '此脚本仅支持 Linux；Windows 请使用 install.ps1。'
     ((BASH_VERSINFO[0] >= 4)) || die '需要 Bash 4 或更高版本。'
     [[ $VERSION =~ ^(latest|v?[0-9]+\.[0-9]+\.[0-9]+)$ ]] || die '版本应为 latest 或正式发行版 tag。'
+    if [[ -n $SERVICE_ACTION ]]; then
+        [[ $INSTALL_DIR == /* && $INSTALL_DIR != / ]] || die '无效的安装目录。'
+        invoke_service_action "$INSTALL_DIR" "$SERVICE_KIND" "$SERVICE_ACTION"
+        return
+    fi
     exec 3<>/dev/tty || die '配置向导需要交互终端，请在终端直接运行此脚本。'
     trap cleanup EXIT
     trap 'log "安装未完成（第 $LINENO 行）；已保存的配置和安装文件会保留。"' ERR

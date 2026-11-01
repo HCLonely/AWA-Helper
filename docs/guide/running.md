@@ -89,9 +89,11 @@ Windows 和 Linux 安装向导会检查 WebUI 端口；端口被占用时会提�
 
 ### Windows 服务
 
-用户选择 WinSW 或 NSSM 后，还需允许从官方 HTTPS 来源下载包装器，随后通过 UAC 注册服务。WinSW 固定使用 2.12.0；NSSM 使用官网为现代 Windows 推荐的 2.24-101-g897c7ad。包装器存放在安装目录 `.service/`；服务名为 `AWAHelper`，账户为 LocalSystem，设为自动启动并立即启动。不要将安装目录放在网络盘或可被其他不可信用户修改的位置。服务和托盘不能同时管理同一目录。
+Windows 仅使用 WinSW 2.12.0。用户允许从官方 HTTPS 来源下载包装器后，通过 UAC 注册服务。包装器存放在安装目录 `.service/`；服务名为 `AWAHelper`，账户为 LocalSystem，设为自动启动并立即启动。不要将安装目录放在网络盘或可被其他不可信用户修改的位置。服务和托盘不能同时管理同一目录。
 
-管理员 PowerShell 中管理服务：
+注册或复用服务成功后，安装目录会生成 `AWA-Stop.cmd`（一键停止）、`AWA-Restart.cmd`（一键重启）、`AWA-Update.cmd`（一键更新），双击运行，按需通过 UAC 提权。更新脚本停止服务，下载并校验最新正式发行版，保留配置、日志和运行数据，再启动服务；不会重新运行配置向导。下载或校验失败时会尝试恢复原先运行的服务，错误记录在 `logs/service-action.log`。停止脚本不会取消开机自启。
+
+也可在管理员 PowerShell 中管理服务：
 
 ```powershell
 Get-Service AWAHelper
@@ -100,19 +102,21 @@ Start-Service AWAHelper
 Restart-Service AWAHelper
 ```
 
-卸载服务（保留程序和配置）先停止，然后按已选包装器运行以下命令之一，路径换成实际安装目录：
+卸载服务（保留程序和配置）先停止，然后运行以下命令，路径换成实际安装目录：
 
 ```powershell
 & 'D:\Apps\AWA-Helper\.service\AWAHelperService.exe' uninstall
-# NSSM 用户改用：
-& 'D:\Apps\AWA-Helper\.service\nssm.exe' remove AWAHelper confirm
 ```
+
+旧 NSSM 服务需先自行停止、卸载，再通过安装向导注册 WinSW 服务。安装器不再下载、注册或复用 NSSM。
 
 已有 `AWAHelper` 服务时，安装器会核实服务包装器路径及其实际启动的 `AWA-Helper.exe` 和 Manager 参数。确认属于当前安装目录后，会复用服务并设置为开机自启、立即启动，无需重新下载或注册包装器；仍可能请求 UAC。服务指向其他目录或配置无法核实时，会提示使用原目录或手动处理原服务，不自动停止、删除或接管。
 
 失败时查看 `logs/service-install.log`、包装器日志及程序日志。若注册成功但启动失败，先修正配置，再通过 `Start-Service AWAHelper` 重试。出现“服务已存在”不代表程序下载或配置保存失败；可先用 `Get-Service AWAHelper` 确认状态。
 
 ### Linux 服务与备用方式
+
+成功注册服务后，安装目录会生成 `AWA-Stop.sh`、`AWA-Restart.sh`、`AWA-Update.sh`，分别执行 `bash AWA-Stop.sh`、`bash AWA-Restart.sh`、`bash AWA-Update.sh`。脚本按需调用 sudo。更新会停止服务，下载、校验最新正式发行版，保留配置与数据，再启动服务；失败时尝试恢复原先运行的服务。以原安装用户运行脚本，避免把用户文件改成 root 所有。nohup 备用方式不生成服务管理脚本。
 
 安装器依次检测正在运行的 systemd、OpenRC、具有 `start-stop-daemon` 和 `update-rc.d`/`chkconfig` 的 SysV init。注册系统服务需要 root 或 sudo；程序以运行安装器的用户身份运行，因此通常应使用普通用户运行 `bash install.sh`，只在注册时使用 sudo。直接以 root 运行安装器时，服务也以 root 运行。
 
