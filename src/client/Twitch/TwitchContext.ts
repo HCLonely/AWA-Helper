@@ -13,7 +13,6 @@ export interface TwitchContextOptions {
   proxy?: proxy;
   userAgent?: string;
   transport?: HttpTransport;
-  /** 是否记录真实网络请求；注入测试 transport 时默认关闭。 */
   logRequests?: boolean;
 }
 

@@ -48,3 +48,20 @@ export const extensionInfoQuery = (channelID: string): string => JSON.stringify(
     }
   }
 }]);
+
+/** 使用当前频道刚获取的扩展令牌授权，允许扩展读取用户身份。 */
+export const linkUserQuery = (channelID: string, extensionID: string, token: string): string => JSON.stringify([{
+  operationName: 'LinkUserMutation',
+  variables: {
+    channelID,
+    extensionID,
+    token,
+    showUser: true
+  },
+  extensions: {
+    persistedQuery: {
+      version: 1,
+      sha256Hash: 'dbcf1b2f71842af4ccebbac086ab3fea6ae2cee9aa1086d999001aad164d47ab'
+    }
+  }
+}]);

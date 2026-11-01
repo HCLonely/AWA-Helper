@@ -436,6 +436,10 @@ dailyQuestMonitorStarted: '[DailyQuest] Quest status monitor started (interval=%
 dailyQuestMonitorStopped: '[DailyQuest] Quest status monitor stopped'
 awaListenerFailed: 'AWA listener failed: %s'
 twitchAuthorizationExpiredRetrying: Twitch authorization expired, retrying
+twitchAutoAuthorizing: Twitch extension is not authorized; automatically authorizing Arena Rewards Tracker (sharing user identity)...
+twitchAutoAuthorizationNoChannel: No Twitch channel extension is available for authorization. Skipping Twitch for this run; retry later or authorize manually.
+twitchAutoAuthorizationSucceeded: Twitch extension automatically authorized!
+twitchAutoAuthorizationFailed: Twitch extension authorization was not confirmed. Skipping Twitch for this run; retry later or authorize manually.
 updatePrepared: AWA-Helper %s has been downloaded and verified; it will be installed after this process exits.
 managerWeakSecretWarning: 'Warning: manager.secret is %s characters long; at least 16 characters are recommended.'
 deprecatedSteamProxyTarget: 'Warning: proxy.enable target steam is deprecated and controls no distinct request path; use awa or asf for the intended target.'

@@ -444,6 +444,10 @@ dailyQuestMonitorStarted: '[DailyQuest] 任务状态监控已启动（间隔=%s�
 dailyQuestMonitorStopped: '[DailyQuest] 任务状态监控已停止'
 awaListenerFailed: 'AWA 监听失败：%s'
 twitchAuthorizationExpiredRetrying: Twitch 授权已过期，正在重试
+twitchAutoAuthorizing: Twitch 扩展未授权，正在自动授权 Arena Rewards Tracker（允许共享用户身份）...
+twitchAutoAuthorizationNoChannel: 未找到可用于授权的 Twitch 频道扩展，本轮跳过 Twitch 任务，请稍后重试或手动授权。
+twitchAutoAuthorizationSucceeded: Twitch 扩展自动授权成功！
+twitchAutoAuthorizationFailed: Twitch 扩展授权未生效，本轮跳过 Twitch 任务，请稍后重试或手动授权。
 updatePrepared: AWA-Helper %s 已下载并通过校验，将在当前进程退出后安装。
 managerWeakSecretWarning: '警告：manager.secret 当前长度为 %s，建议至少使用 16 个字符。'
 deprecatedSteamProxyTarget: '警告：proxy.enable 中的 steam 已弃用且不会控制独立请求；请按目标改用 awa 或 asf。'

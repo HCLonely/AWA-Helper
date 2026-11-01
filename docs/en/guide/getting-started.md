@@ -5,7 +5,7 @@
 Make sure that:
 
 1. Your Alienware Arena (AWA) account is linked to Steam, and your Steam profile and game details are public.
-2. Your AWA account is linked to Twitch, and you have authorized the AWA Twitch extension.
+2. Your AWA account is linked to Twitch. When a Twitch viewing task finds Arena Rewards Tracker unauthorized, it obtains a fresh token from an available AWA stream and automatically authorizes the extension to access your Twitch user identity. The task continues after verifying authorization. If no channel is available, authorization is rejected, or verification fails, Twitch is skipped for that run; retry later or authorize manually. “Check connections” only checks authorization and does not grant it.
 3. If you want to automate Steam playtime quests, [ArchiSteamFarm](https://github.com/JustArchiNET/ArchiSteamFarm) is installed and configured.
 
 ::: danger Game safety

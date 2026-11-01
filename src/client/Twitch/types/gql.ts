@@ -3,5 +3,6 @@
  * @description 定义 Twitch GraphQL 请求使用的通用响应信封。
  */
 export interface TwitchGqlEnvelope<T> {
-  data?: T
+  data?: T;
+  errors?: unknown[];
 }

@@ -11,6 +11,7 @@ import type { TwitchChannelTrackingInfo } from '../../../client/Twitch/types';
 import { TwitchClient } from '../../../client/Twitch/TwitchClient';
 import type { DailyQuestRuntime } from '../DailyQuestRuntime';
 import { Logger, sleep, time } from '../../../tools';
+import { ensureTwitchAuthorization } from '../../TwitchAuthorization';
 
 export class TwitchQuestTask {
   /**
@@ -198,10 +199,7 @@ export class TwitchQuestTask {
     try {
       await this.twitch.session.verify();
       sessionLogger.log(chalk.green(__('logStatusOk')));
-      const authorizationLogger = new Logger(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
-      const linked = await this.twitch.extensions.checkLinked();
-      authorizationLogger.log(linked.ok ? chalk.green(__('authorized')) : chalk.red(__('notAuthorized')));
-      return linked.ok;
+      return await ensureTwitchAuthorization(this.twitch, this.awa);
     } catch (error) {
       sessionLogger.log(chalk.red(__('logStatusError')));
       new Logger(error);

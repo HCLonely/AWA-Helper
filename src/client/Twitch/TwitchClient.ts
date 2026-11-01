@@ -3,7 +3,8 @@
  * @description 聚合 Twitch 会话、频道和扩展接口，供观看任务编排调用。
  */
 import { TwitchContext, type TwitchContextOptions } from './TwitchContext';
-import { checkLinkedExtension, getChannelInfo, getChannelsInfo, getExtensionInfo, verifySession } from './APIs';
+import { checkLinkedExtension, getChannelInfo, getChannelsInfo, getExtensionInfo, linkUser, verifySession } from './APIs';
+import type { TwitchExtensionInfo } from './types';
 
 export class TwitchClient {
   readonly context: TwitchContext;
@@ -58,6 +59,8 @@ export class TwitchClient {
        * @returns 包含 `linked` 或 `not-linked` 状态的结构化结果。
        */
       checkLinked: () => checkLinkedExtension(this.context),
+      /** 用频道实时令牌授权扩展，返回授权后的新令牌。 */
+      link: (channelId: string, extension: TwitchExtensionInfo) => linkUser(this.context, channelId, extension),
       /**
        * 获取数据。
        * @param channelId - 目标资源的唯一标识，类型为 `string`。

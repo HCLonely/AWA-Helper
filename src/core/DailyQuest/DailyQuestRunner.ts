@@ -13,6 +13,7 @@ import { LegacyDailyTask } from './tasks/LegacyDailyTask';
 import { TimeOnSiteTask } from './tasks/TimeOnSiteTask';
 import { TwitchClient } from '../../client/Twitch/TwitchClient';
 import { TwitchQuestTask } from './tasks/TwitchQuestTask';
+import { ensureTwitchAuthorization } from '../TwitchAuthorization';
 import { SteamQuestTask } from './tasks/SteamQuestTask';
 import { BattlePassTask } from './tasks/BattlePassTask';
 import { formatQuestReport } from './QuestReporter';
@@ -356,9 +357,7 @@ const runDailyQuest = async ({
             try {
               await trackRunStep('Twitch session', () => twitch.session.verify());
               twitchLogger.log(chalk.green(__('logStatusOk')));
-              const authorizationLogger = new Logger(`${time()}${__('checkAuthorization', chalk.yellow('Twitch'))}`, false);
-              twitchReady = (await trackRunStep('Twitch authorization', () => twitch.extensions.checkLinked())).ok;
-              authorizationLogger.log(twitchReady ? chalk.green(__('authorized')) : chalk.red(__('notAuthorized')));
+              twitchReady = await trackRunStep('Twitch authorization', () => ensureTwitchAuthorization(twitch, awaAPIs));
             } catch (error) {
               twitchLogger.log(chalk.red(__('logStatusError')));
               new Logger(error);

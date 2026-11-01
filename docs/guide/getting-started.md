@@ -5,7 +5,7 @@
 开始前请确认：
 
 1. AWA 账号已关联 Steam，且 Steam 个人资料和游戏详情已设为公开。
-2. AWA 账号已关联 Twitch，并已授权 AWA Twitch 扩展。
+2. AWA 账号已关联 Twitch。启用 Twitch 观看任务后，程序发现 Arena Rewards Tracker 扩展未授权时，会通过 AWA 可用直播频道获取实时令牌并自动授权，允许扩展读取当前 Twitch 用户身份；确认成功后继续任务。没有可用频道、授权被拒绝或确认未生效时，本轮跳过 Twitch，请稍后重新运行或手动授权。“检查连接”只检查授权状态，不会自动授权。
 3. 如果需要自动完成 Steam 时长任务，已安装并配置 [ArchiSteamFarm](https://github.com/JustArchiNET/ArchiSteamFarm)。
 
 ::: danger 游戏安全

@@ -5,6 +5,7 @@
 import { trackRunStep } from '../Manager/RunHistory';
 import type { TaskOutcome } from '../TaskOutcome';
 import { trackingExpiry } from '../DailyQuest/tasks/TwitchQuestTask';
+import { ensureTwitchAuthorization } from '../TwitchAuthorization';
 
 /* global __, proxy */
 import { Achievement, ActionHistory, Id, userAvatarInfo } from '../../types/achievement';
@@ -489,7 +490,7 @@ export class AchievementService {
           logRequests: this.awa.context.logRequests
         });
         await this.twitch.session.verify();
-        if (!(await this.twitch.extensions.checkLinked()).ok) {
+        if (!await ensureTwitchAuthorization(this.twitch, this.awa)) {
           return;
         }
         if (Date.now() >= nextGoalCheck) {

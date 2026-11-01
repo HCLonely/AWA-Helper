@@ -4,3 +4,4 @@
  */
 export * from './checkLinkedExtension';
 export * from './getExtensionInfo';
+export * from './linkUser';
