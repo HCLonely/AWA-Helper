@@ -127,7 +127,7 @@
       }
       if (response.status === 200 || response.status === 202) {
         await sleep(10);
-        const result = await managerStatusChecker('start');
+        const result = await managerStatusChecker('start', 1, response.data?.version);
         if (result === 'success') {
           dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('updateSuccessManager')}</li>`);
           dom('#log-area li:last-child')[0].scrollIntoView();
@@ -166,10 +166,11 @@
       console.error(error);
     }
   }
-  async function managerStatusChecker(status: CheckStatus, times = 1): Promise<'success' | 'error'> {
+  async function managerStatusChecker(status: CheckStatus, times = 1, expectedVersion?: string): Promise<'success' | 'error'> {
     dom('#log-area').append(`<li>${time()}AWA-Manager: ${__('gettingManagerStatus')}</li>`);
     dom('#log-area li:last-child')[0].scrollIntoView();
-    const runStatus = await axios.get('/api/health/live').then(() => true).catch(() => false);
+    const runStatus = await axios.get('/api/health/live').then((response) => !expectedVersion ||
+      String(response.data?.version).replace(/^v/i, '') === String(expectedVersion).replace(/^v/i, '')).catch(() => false);
     if (status === 'start') {
       if (runStatus) {
         return 'success';
@@ -178,7 +179,7 @@
         return 'error';
       }
       await sleep(3);
-      return await managerStatusChecker(status, times + 1);
+      return await managerStatusChecker(status, times + 1, expectedVersion);
     }
     if (status === 'stop') {
       if (!runStatus) {

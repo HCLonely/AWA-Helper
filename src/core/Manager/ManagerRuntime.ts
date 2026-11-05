@@ -141,9 +141,14 @@ class ManagerRuntime {
       const update = await scheduleUpdate({
         currentVersion: this.version,
         proxy: this.loaded.raw.proxy,
-        restart: this.mode === 'persistent'
+        restart: this.mode === 'persistent',
+        serviceHealthcheck: this.loaded.raw.webUI?.enable !== false
       });
       if (update.delegated) {
+        return false;
+      }
+      if (update.serviceManaged) {
+        update.activate?.();
         return false;
       }
       new Logger(`${time()}${__('newVersion', `V${update.version}`)}`);

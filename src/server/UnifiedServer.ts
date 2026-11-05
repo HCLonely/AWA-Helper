@@ -203,6 +203,20 @@ class UnifiedServer {
             ...update
           });
         }
+        if (update.serviceManaged && update.activate) {
+          // HTTP 响应发送完毕后交接，独立任务通过 SCM 停止和启动服务。
+          res.once('finish', () => {
+            try {
+              update.activate!();
+            } catch (error) {
+              new Logger(`${time()}${__('updateFailed')}: ${String(error)}`);
+            }
+          });
+          return res.status(202).json({
+            status: 'scheduled',
+            ...update
+          });
+        }
         this.coordinator.beginShutdown();
         const response = res.status(202).json({
           status: 'scheduled',
