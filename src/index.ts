@@ -123,6 +123,7 @@ const main = async (): Promise<number> => {
         restart: false
       });
       console.log(__('updatePrepared', `V${update.version}`));
+      update.activate?.();
       return 0;
     } catch (error) {
       if (error instanceof UpdateInstallerError && error.code === 'UP_TO_DATE') {

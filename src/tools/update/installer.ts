@@ -14,6 +14,7 @@ import { formatProxy } from '../proxy';
 import { getReleaseCheck, type ReleaseAsset } from './version';
 import { withGitHubFallback } from './github';
 import { ProcessLock } from '../process/ProcessLock';
+import { detectWindowsService, launchWindowsServiceUpdater, renderWindowsServiceUpdater } from './windowsService';
 
 type UpdateErrorCode = 'ALREADY_SCHEDULED' | 'UP_TO_DATE' | 'UNSUPPORTED_PLATFORM' |
   'ASSET_NOT_FOUND' | 'UNVERIFIED_ASSET' | 'INTEGRITY_MISMATCH' | 'INVALID_ARCHIVE';
@@ -22,6 +23,7 @@ interface ScheduleUpdateOptions {
   currentVersion: string
   proxy?: proxy
   restart: boolean
+  serviceHealthcheck?: boolean
 }
 
 interface ScheduledUpdate {
@@ -29,6 +31,8 @@ interface ScheduledUpdate {
   assetName: string
   releaseUrl: string
   delegated?: boolean
+  serviceManaged?: boolean
+  activate?: () => void
 }
 
 class UpdateInstallerError extends Error {
@@ -293,7 +297,7 @@ const launchUpdater = (scriptPath: string): number => {
 };
 
 export const scheduleUpdate = async ({
-  currentVersion, proxy, restart
+  currentVersion, proxy, restart, serviceHealthcheck
 }: ScheduleUpdateOptions): Promise<ScheduledUpdate> => {
   if (os.type() === 'Windows_NT' && process.argv.includes('--tray-child')) {
     if (process.stdout.destroyed || !process.stdout.writable) {
@@ -317,6 +321,9 @@ export const scheduleUpdate = async ({
     if (installLock && !await installLock.acquire()) {
       throw new UpdateInstallerError('ALREADY_SCHEDULED', 'Another installer is running');
     }
+    const service = os.type() === 'Windows_NT'
+      ? await detectWindowsService(path.resolve('.'))
+      : undefined;
     if (os.type() === 'Windows_NT') {
       const trayPath = path.resolve('.update/tray.json');
       if (fs.existsSync(trayPath)) {
@@ -370,14 +377,28 @@ export const scheduleUpdate = async ({
       sourceRoot = await extractArchive(downloadPath, payloadRoot);
     }
     copyExistingFiles(sourceRoot, installRoot, backupRoot);
+    const taskName = `AWA-Helper-update-${crypto.randomUUID()}`;
     const scriptPath = os.type() === 'Windows_NT'
       ? writeWindowsUpdater(stageRoot, sourceRoot, installRoot, backupRoot, restart)
       : writeLinuxUpdater(stageRoot, sourceRoot, installRoot, backupRoot, restart);
+    if (service) {
+      fs.writeFileSync(scriptPath, `\uFEFF${renderWindowsServiceUpdater({
+        stageRoot,
+        sourceRoot,
+        installRoot,
+        backupRoot,
+        identity: service,
+        taskName,
+        restart,
+        healthcheck: serviceHealthcheck
+      })}`, 'utf8');
+    }
     const coordinateTray = restart && process.argv.includes('--tray-child');
     if (coordinateTray && (process.stdout.destroyed || !process.stdout.writable)) {
       throw new Error('Unable to coordinate the update with AWA-Manager');
     }
-    const installerPid = launchUpdater(scriptPath);
+    const serviceUpdater = service ? await launchWindowsServiceUpdater(stageRoot, scriptPath, taskName) : undefined;
+    const installerPid = serviceUpdater?.pid ?? launchUpdater(scriptPath);
     if (installLock) {
       // 延迟安装器等待当前进程退出，并在 finally 中移除锁。
       fs.writeFileSync(path.resolve('.update/install.lock'), JSON.stringify({
@@ -385,14 +406,19 @@ export const scheduleUpdate = async ({
         startedAt: new Date().toISOString()
       }));
     }
-    scheduled = true;
+    // 服务任务失败但 Manager 仍运行时，允许锁释放后再次尝试。
+    scheduled = !serviceUpdater;
     if (coordinateTray) {
       process.stdout.write('@@AWA-TRAY\tUPDATE\n');
     }
     return {
       version: release.version,
       assetName,
-      releaseUrl: release.releaseUrl
+      releaseUrl: release.releaseUrl,
+      ...(serviceUpdater ? {
+        serviceManaged: true,
+        activate: serviceUpdater.activate
+      } : {})
     };
   } catch (error) {
     await installLock?.release();
