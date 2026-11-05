@@ -34,9 +34,7 @@ export class TwitchQuestTask {
    * @returns `boolean`，表示 isComplete 检查是否通过。
    */
   private isComplete(): boolean {
-    const progress = this.runtime.state.questInfo.watchTwitch;
-    const earnedArp = parseFloat(progress?.[0] || '0') + parseFloat(progress?.[1] || '0');
-    return earnedArp >= 15 + this.runtime.state.additionalTwitchARP;
+    return this.runtime.state.twitchComplete;
   }
 
   /**

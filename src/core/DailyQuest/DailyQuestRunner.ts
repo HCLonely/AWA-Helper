@@ -340,42 +340,47 @@ const runDailyQuest = async ({
 
       // Twitch直播心跳
 
+      let twitchTask: TwitchQuestTask | undefined;
+      const runTwitch = async (): Promise<boolean> => {
+        if (!twitchTask) {
+          if (!twitchCookie) {
+            new Logger(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
+            return false;
+          }
+          const twitch = new TwitchClient({
+            cookie: twitchCookie,
+            proxy,
+            logRequests: debug?.http === true
+          });
+          const twitchLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
+          try {
+            await trackRunStep('Twitch session', () => twitch.session.verify());
+            twitchLogger.log(chalk.green(__('logStatusOk')));
+            if (!await trackRunStep('Twitch authorization', () => ensureTwitchAuthorization(twitch, awaAPIs))) {
+              return false;
+            }
+          } catch (error) {
+            twitchLogger.log(chalk.red(__('logStatusError')));
+            new Logger(error);
+            return false;
+          }
+          if (shutdownController.signal.aborted) {
+            return false;
+          }
+          twitchTask = new TwitchQuestTask(runtime, awaAPIs, twitch);
+        }
+        return twitchTask.run(shutdownController.signal);
+      };
+
       if (awaQuests.includes('watchTwitch')) {
         const twitchBonusLoaded = await runtime.loadTwitchBonus();
         if (shutdownController.signal.aborted) {
           return false;
         }
-        if (!twitchBonusLoaded || runtime.state.questInfo.watchTwitch?.[0] !== '15' || parseFloat(runtime.state.questInfo.watchTwitch?.[1] || '0') < runtime.state.additionalTwitchARP) {
-          if (twitchCookie) {
-            const twitch = new TwitchClient({
-              cookie: twitchCookie,
-              proxy,
-              logRequests: debug?.http === true
-            });
-            const twitchLogger = new Logger(`${time()}${__('initing', chalk.yellow('TwitchTrack'))}`, false);
-            let twitchReady = false;
-            try {
-              await trackRunStep('Twitch session', () => twitch.session.verify());
-              twitchLogger.log(chalk.green(__('logStatusOk')));
-              twitchReady = await trackRunStep('Twitch authorization', () => ensureTwitchAuthorization(twitch, awaAPIs));
-            } catch (error) {
-              twitchLogger.log(chalk.red(__('logStatusError')));
-              new Logger(error);
-            }
-            if (shutdownController.signal.aborted) {
-              return false;
-            }
-            if (twitchReady) {
-              const twitchTask = new TwitchQuestTask(runtime, awaAPIs, twitch);
-              trackQuest('Twitch', trackRunStep('Twitch', () => twitchTask.run(shutdownController.signal)));
-              if (!await sleep(10, shutdownController.signal)) {
-                return false;
-              }
-            } else {
-              failedSequentialTasks.push('Twitch initialization');
-            }
-          } else {
-            new Logger(time() + chalk.yellow(__('missingTwitchParams', chalk.blue('["twitchCookie"]'))));
+        if (!twitchBonusLoaded || !runtime.state.twitchComplete) {
+          trackQuest('Twitch', trackRunStep('Twitch', runTwitch));
+          if (!await sleep(10, shutdownController.signal)) {
+            return false;
           }
         } else {
           new Logger(time() + chalk.green(__('twitchTaskCompleted')));
@@ -462,6 +467,31 @@ const runDailyQuest = async ({
         }
         return [];
       })];
+      // 子任务结束后遗物仍可能变化；不能仅凭旧的成功结果标记整个作业完成。
+      if (failedQuests.length === 0 && awaQuests.includes('watchTwitch')) {
+        while (!shutdownController.signal.aborted) {
+          const refreshed = await runtime.updateDailyQuests();
+          if (shutdownController.signal.aborted) {
+            return false;
+          }
+          if (!refreshed.ok) {
+            if (!await sleep(60, shutdownController.signal)) {
+              return false;
+            }
+            continue;
+          }
+          if (runtime.state.twitchComplete) {
+            break;
+          }
+          if (!await trackRunStep('Twitch final verification', runTwitch)) {
+            failedQuests.push('Twitch');
+            break;
+          }
+        }
+      }
+      if (shutdownController.signal.aborted) {
+        return false;
+      }
       if (failedQuests.length > 0) {
         if (!claimTerminalOutcome('failed')) {
           return false;

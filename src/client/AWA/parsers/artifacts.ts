@@ -38,6 +38,6 @@ export const parseTwitchArtifactBonus = (html: string): number => {
       return total;
     }
     return total + parseFloat($(card).find('a[data-description-perk]').attr('data-description-perk')
-      ?.match(/Twitch quests by ([\d]+)/)?.[1] || '0');
+      ?.match(/Twitch quests by (\d+(?:\.\d+)?)/)?.[1] || '0');
   }, 0);
 };

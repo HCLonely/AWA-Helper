@@ -52,6 +52,13 @@ export class DailyQuestState {
 
   constructor(private readonly getPersonalizationBattlePassUrl: () => string | undefined = () => undefined) {}
 
+  /** 按当前遗物加成判断 Twitch 是否已拿满，供启动、心跳和最终核验共用。 */
+  get twitchComplete(): boolean {
+    const progress = this.questInfo.watchTwitch;
+    const earnedArp = parseFloat(progress?.[0] || '0') + parseFloat(progress?.[1] || '0');
+    return earnedArp >= 15 + this.additionalTwitchARP;
+  }
+
   /** 读取时选择来源，确保个性化页面后续刷新也立即生效。 */
   get battlePassUrl(): string | undefined {
     const controlCenterUrl = this.controlCenterBattlePassUrl;
