@@ -424,7 +424,13 @@ const runDailyQuest = async ({
               return false;
             }
             if (asfReady) {
-              const steamTask = new SteamQuestTask(awaAPIs, steamQuest, () => runtime.state.communityEvents.flatMap((event) => (event.gameId ? [event.gameId] : [])));
+              const steamTask = new SteamQuestTask(
+                awaAPIs,
+                steamQuest,
+                () => runtime.state.communityEvents.flatMap((event) => (event.gameId ? [event.gameId] : [])),
+                undefined,
+                (appIds) => runtime.skipUnownedCommunityEventGames(appIds)
+              );
               trackQuest('Steam ASF', trackRunStep('Steam ASF', () => steamTask.run(shutdownController.signal)));
               if (!await sleep(30, shutdownController.signal)) {
                 return false;

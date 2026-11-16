@@ -158,7 +158,7 @@ Remote sources are `github` (default), `https://gh-proxy.org/`, `https://cdn.gh-
 - With `joinSteamCommunityEvent` enabled, events are discovered exclusively from `LIVE` banners in `/control-center`, and progress and joining are handled separately for each event.
 - `autoSyncSteamCommunityEvent` defaults to `false`, including when omitted. Set it to `true` to fetch missing or expired metadata from the selected source automatically.
 - Manual **Sync from remote** remains available when disabled.
-- Unmatched events request configuration. Completed, closed, and unjoined events are excluded from playback.
+- Unmatched events request configuration. Completed, closed, and unjoined events are excluded from playback. Before waiting, ASF `getOwnedGames` checks ownership; unowned community games are skipped and remain excluded after refreshes during the current run.
 - All eligible community games and ordinary Steam quests are deduplicated into one ASF play request and stopped together when all started tasks finish.
 
 #### Remote JSON for Multiple Events

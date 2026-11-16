@@ -49,6 +49,7 @@ export class DailyQuestRuntime {
   private readonly autoSyncSteamCommunityEvent: boolean;
   private readonly communityEventFile: string;
   private refreshTwitchBonus = false;
+  private readonly unownedCommunityGameIds = new Set<string>();
 
   /**
    * 初始化 DailyQuestRuntime 实例。
@@ -517,6 +518,8 @@ export class DailyQuestRuntime {
         } else if (isCommunityEventActive(page)) {
           if (!metadata) {
             state.status = __('communityEventDataRequired');
+          } else if (this.unownedCommunityGameIds.has(metadata.gameId)) {
+            state.status = __('notOwnedGame', `[${state.gameName || metadata.gameId}](${metadata.gameId})`);
           } else {
             let {
               joined
@@ -550,6 +553,20 @@ export class DailyQuestRuntime {
       }
     }
     this.state.communityEvents = events;
+  }
+
+  /** 记住 ASF 确认未拥有的游戏，防止后续页面刷新重新将它们加入挂时长和等待。 */
+  skipUnownedCommunityEventGames(appIds: string[]): void {
+    for (const appId of appIds) {
+      this.unownedCommunityGameIds.add(appId);
+    }
+    for (const event of this.state.communityEvents) {
+      if (event.gameId && this.unownedCommunityGameIds.has(event.gameId)) {
+        event.status = __('notOwnedGame', `[${event.gameName || event.gameId}](${event.gameId})`);
+        event.gameId = undefined;
+        new Logger(`${time()}${event.status}`);
+      }
+    }
   }
 
   /** 保留与当前时间相差不超过 15 天的手工配置，远程数据只补充缺失或过期的游戏。 */

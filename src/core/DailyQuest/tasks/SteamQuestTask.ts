@@ -16,12 +16,14 @@ export class SteamQuestTask {
    * @param asf - 用于控制 ArchiSteamFarm 的客户端，类型为 `SteamClient`。
    * @param getEventAppId - 动态读取尚未完成的社区活动 Steam 应用标识。
    * @param pollDelaySeconds - 首次检查及后续轮询的等待秒数。
+   * @param onUnownedEventGames - 拥有状态查询成功后，通知调用方跳过未拥有的社区游戏。
    */
   constructor(
     private readonly awa: AWAApiClient,
     private readonly asf: SteamClient,
     private readonly getEventAppId: () => string | string[] | undefined = () => [],
-    private readonly pollDelaySeconds = 10 * 60
+    private readonly pollDelaySeconds = 10 * 60,
+    private readonly onUnownedEventGames: (appIds: string[]) => void = () => {}
   ) {}
 
   private eventAppIds(): string[] {
@@ -103,6 +105,8 @@ export class SteamQuestTask {
     if (!ownedIds || signal?.aborted) {
       return false;
     }
+    // 在任何等待之前同步跳过状态；查询失败时不能将游戏误判为未拥有。
+    this.onUnownedEventGames(eventAppIds.filter((id) => !ownedIds.includes(id)));
     if (!ownedIds.length) {
       matchLogger.log(chalk.yellow(__('notOwned')));
       new Logger(`${time()}${chalk.yellow(__('noGamesAlert'))}`);
