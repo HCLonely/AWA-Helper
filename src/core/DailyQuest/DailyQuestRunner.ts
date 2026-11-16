@@ -178,6 +178,7 @@ const runDailyQuest = async ({
         webUI,
         pusher,
         joinSteamCommunityEvent,
+        autoSyncSteamCommunityEvent,
         TLSRejectUnauthorized,
         UA
       }: config = config;
@@ -254,6 +255,7 @@ const runDailyQuest = async ({
         communityEventFile: communityEventFilePath(configPath),
         proxy,
         joinSteamCommunityEvent,
+        autoSyncSteamCommunityEvent,
         getStarted: awaQuests.includes('getStarted'),
         userAgent,
         logRequests: debug?.http === true

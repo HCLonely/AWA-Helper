@@ -26,6 +26,7 @@ export interface DailyQuestRuntimeOptions {
   userAgent?: string;
   getStarted?: boolean;
   joinSteamCommunityEvent?: boolean;
+  autoSyncSteamCommunityEvent?: boolean;
   communityEventFile: string;
   logRequests?: boolean;
 }
@@ -45,6 +46,7 @@ export class DailyQuestRuntime {
   readonly state: DailyQuestState;
   private readonly getStarted: boolean;
   private readonly joinSteamCommunityEvent: boolean;
+  private readonly autoSyncSteamCommunityEvent: boolean;
   private readonly communityEventFile: string;
   private refreshTwitchBonus = false;
 
@@ -63,6 +65,7 @@ export class DailyQuestRuntime {
     this.state = new DailyQuestState(() => this.awa.context.personalizationBattlePassUrl);
     this.getStarted = !!options.getStarted;
     this.joinSteamCommunityEvent = !!options.joinSteamCommunityEvent;
+    this.autoSyncSteamCommunityEvent = options.autoSyncSteamCommunityEvent === true;
     this.communityEventFile = options.communityEventFile;
   }
 
@@ -555,7 +558,7 @@ export class DailyQuestRuntime {
     try {
       const saved = readCommunityEventData(this.communityEventFile);
       valid = parseCommunityEventMetadataList(saved);
-      if (valid.length && valid.length === saved.games.length) {
+      if (!this.autoSyncSteamCommunityEvent || (valid.length && valid.length === saved.games.length)) {
         return valid;
       }
       const remote = await fetchCommunityEventMetadata(saved.sourceUrl);

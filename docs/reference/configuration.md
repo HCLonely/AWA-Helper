@@ -91,6 +91,7 @@ awaQuests:
   # - watchTwitch
   # - steamQuest
 joinSteamCommunityEvent: true
+autoSyncSteamCommunityEvent: false
 ```
 
 从 `awaQuests` 中删除或注释不需要的任务。添加 `battlePass` 可自动领取当前 Battle Pass 中可领取的奖励；该功能默认关闭。`awaCookie` 可以手动填写，也可以通过浏览器用户脚本同步。
@@ -164,7 +165,12 @@ pusher:
 
 “远程来源”内置 `github`、`https://gh-proxy.org/`、`https://cdn.gh-proxy.org/`、`https://axisnow.gh-proxy.org/`，默认 GitHub。GitHub 地址为 `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`，代理前缀直接拼接该地址。“从远程同步”会保存匹配进行中活动的游戏，保留远程更新时间以及其他仍有效的本地游戏；失败时保留已有数据。
 
-`updateTime` 与运行机器当前时间相差超过 15 天（15 × 24 小时）时，该条游戏信息过期；恰好 15 天仍有效。启用 `joinSteamCommunityEvent` 后，程序仅从 `/control-center` 中的 `LIVE` 活动横幅发现活动，分别检查进度和加入状态。缺少或过期的游戏信息会尝试从远程补充；无法匹配的活动会提示填写信息。已完成、已结束、未成功加入的活动不参与挂时长。所有可执行社区活动与普通 Steam 任务的游戏 ID 合并去重后，只调用一次 ASF 开始挂时长；等待全部已启动任务完成后统一停止。
+- `updateTime` 与运行机器当前时间相差超过 15 天（15 × 24 小时）时，该条游戏信息过期；恰好 15 天仍有效。
+- 启用 `joinSteamCommunityEvent` 后，程序仅从 `/control-center` 中的 `LIVE` 活动横幅发现活动，分别检查进度和加入状态。
+- `autoSyncSteamCommunityEvent` 默认关闭（省略时也关闭），设为 `true` 后，缺少或过期的游戏信息才会尝试从所选远程来源补充；关闭时仍可点击“从远程同步”手动获取。
+- 无法匹配的活动会提示填写信息。
+- 已完成、已结束、未成功加入的活动不参与挂时长。
+- 所有可执行社区活动与普通 Steam 任务的游戏 ID 合并去重后，只调用一次 ASF 开始挂时长；等待全部已启动任务完成后统一停止。
 
 #### 远程多活动 JSON 格式
 

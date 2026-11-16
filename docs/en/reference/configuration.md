@@ -154,7 +154,12 @@ Under **DailyQuest Control → Steam CommunityEvent**, click **Add game** to con
 
 Remote sources are `github` (default), `https://gh-proxy.org/`, `https://cdn.gh-proxy.org/`, and `https://axisnow.gh-proxy.org/`. GitHub uses `https://github.com/HCLonely/AWA-Helper/raw/refs/heads/main/community-event.json`; proxy prefixes are prepended to that URL. **Sync from remote** saves games matching ongoing events, preserving remote timestamps and other valid local entries. Failed synchronization preserves saved data.
 
-Each game's ISO 8601 `updateTime` expires when its absolute difference from the runtime machine's current time exceeds 15 days (15 × 24 hours); exactly 15 days is still valid. With `joinSteamCommunityEvent` enabled, events are discovered exclusively from `LIVE` banners in `/control-center`, and progress and joining are handled separately for each event. Missing or expired metadata is fetched from the selected source. Unmatched events request configuration. Completed, closed, and unjoined events are excluded from playback. All eligible community games and ordinary Steam quests are deduplicated into one ASF play request and stopped together when all started tasks finish.
+- Each game's ISO 8601 `updateTime` expires when its absolute difference from the runtime machine's current time exceeds 15 days (15 × 24 hours); exactly 15 days is still valid.
+- With `joinSteamCommunityEvent` enabled, events are discovered exclusively from `LIVE` banners in `/control-center`, and progress and joining are handled separately for each event.
+- `autoSyncSteamCommunityEvent` defaults to `false`, including when omitted. Set it to `true` to fetch missing or expired metadata from the selected source automatically.
+- Manual **Sync from remote** remains available when disabled.
+- Unmatched events request configuration. Completed, closed, and unjoined events are excluded from playback.
+- All eligible community games and ordinary Steam quests are deduplicated into one ASF play request and stopped together when all started tasks finish.
 
 #### Remote JSON for Multiple Events
 

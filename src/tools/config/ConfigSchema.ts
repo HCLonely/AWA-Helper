@@ -91,6 +91,7 @@ const validateHelperConfig = (value: unknown): Array<string> => {
   validateBoolean('TLSRejectUnauthorized', value.TLSRejectUnauthorized);
   validateBoolean('autoUpdate', value.autoUpdate);
   validateBoolean('joinSteamCommunityEvent', value.joinSteamCommunityEvent);
+  validateBoolean('autoSyncSteamCommunityEvent', value.autoSyncSteamCommunityEvent);
   if (value.debug !== undefined) {
     if (!isRecord(value.debug)) {
       errors.push('debug must be an object');

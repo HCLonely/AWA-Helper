@@ -210,6 +210,11 @@
       name: 自动加入Steam社区活动
       type: boolean
       defaultValue: true
+    autoSyncSteamCommunityEvent:
+      name: 自动从远程获取Steam社区活动游戏信息
+      desp: 启用后，游戏信息缺失或过期时尝试从所选远程来源同步；关闭后仍可在首页手动同步。
+      type: boolean
+      defaultValue: false
     twitchCookie:
       name: Twitch Cookie
       desp: 必须包括`unique_id` 和 `auth-token`

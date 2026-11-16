@@ -84,6 +84,7 @@ findLast(
     awaDailyQuestType: Array<'click' | 'visitLink' | 'openLink' | 'changeBorder' | 'changeAvatar' | 'viewNews' | 'sharePost' | 'replyPost'>
     awaSafeReply?: boolean,
     joinSteamCommunityEvent?: boolean
+    autoSyncSteamCommunityEvent?: boolean
     twitchCookie?: string
     steamUse?: 'ASF'
     asfProtocol: string

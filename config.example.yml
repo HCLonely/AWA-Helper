@@ -66,6 +66,7 @@ awaDailyQuestType: # 每日任务(旧版)类型，不需要注释掉即可，如
   # - replyPost # 回复帖子，默认关闭
 # awaDailyQuestNumber1: true # 每日任务有多个时是否只做第一个(已弃用)
 joinSteamCommunityEvent: true # 自动加入Steam社区活动
+autoSyncSteamCommunityEvent: false # 缺少或过期的社区活动游戏信息自动从远程同步；默认关闭，仍可在首页手动同步
 
 #### Twitch 配置 ####
 twitchCookie: '' # Twitch Cookie, 须包括`unique_id` 和 `auth-token`

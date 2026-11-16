@@ -212,6 +212,11 @@
       name: Automatically join Steam community events
       type: boolean
       defaultValue: true
+    autoSyncSteamCommunityEvent:
+      name: Automatically fetch Steam community event game data
+      desp: Fetch missing or expired game data from the selected remote source. Manual sync on the home page remains available when disabled.
+      type: boolean
+      defaultValue: false
     twitchCookie:
       name: Twitch Cookie
       desp: Must include `unique_id` and `auth-token`
