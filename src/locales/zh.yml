@@ -117,6 +117,9 @@ dailyArp: "今日共获得 %s ARP"
 doingGetStartedQuest: "正在做GET START任务[%s]..."
 battlePass: BattlePass
 battlePassChecking: 正在检查 Battle Pass...
+battlePassShutdownClaim: 正在退出，尝试领取 Battle Pass 可领取的奖励（最多等待30秒）...
+battlePassOnlineClaim: AWA 和 Twitch 在线任务均已完成，正在领取 Battle Pass 奖励...
+pushUser: 用户
 battlePassUnknown: Battle Pass 页面状态暂时无法识别
 battlePassPartial: 部分 Battle Pass 奖励领取失败
 battlePassStatus_not-started: 未开始

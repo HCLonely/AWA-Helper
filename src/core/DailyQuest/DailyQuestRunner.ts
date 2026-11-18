@@ -74,7 +74,7 @@ const runDailyQuest = async ({
   const trackChild = (promise: Promise<unknown>): void => {
     children.push(Promise.allSettled([promise]));
   };
-  const trackQuest = (name: string, promise: Promise<unknown>): void => {
+  const trackQuest = (name: string, promise: Promise<unknown>): Promise<PromiseSettledResult<unknown>> => {
     const settled = promise.then<PromiseSettledResult<unknown>, PromiseSettledResult<unknown>>(
       (value) => ({
         status: 'fulfilled',
@@ -94,6 +94,7 @@ const runDailyQuest = async ({
       promise: settled
     });
     children.push(settled);
+    return settled;
   };
   let timeoutHandle: NodeJS.Timeout | undefined;
   let terminalOutcome: TerminalOutcome | undefined;
@@ -109,12 +110,14 @@ const runDailyQuest = async ({
   } = {};
   let commitCookie: ((cookie: string) => boolean) | undefined;
   let awaInitialized = false;
+  let battlePassEnabled = false;
   let partialOutcome = false;
   /**
    * 获取当前推送内容。
    * @returns `{ report: QuestReport; dailyArp: string; signArp: { daily?: string; monthly?: string; }; } | undefined`，当前可推送的任务报告与积分信息；尚未生成报告时返回 `undefined`。
    */
   const currentPushInfo = () => (runtimeHolder.current ? {
+    username: runtimeHolder.current.state.username,
     report: formatQuestReport(runtimeHolder.current.state),
     dailyArp: runtimeHolder.current.state.dailyArp,
     signArp: runtimeHolder.current.state.signArp,
@@ -182,6 +185,7 @@ const runDailyQuest = async ({
         TLSRejectUnauthorized,
         UA
       }: config = config;
+      battlePassEnabled = awaQuests.includes('battlePass');
       if (!managed && TLSRejectUnauthorized === false) {
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
       }
@@ -218,8 +222,6 @@ const runDailyQuest = async ({
           }
           shutdownController.abort(new Error('Process timeout'));
           new Logger(chalk.yellow(__('processTimeout')));
-          trackChild(runWithRequestSignal(AbortSignal.timeout(15_000), () => push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`)
-            .catch((error) => new Logger(error)), true));
         }, timeout * 1000);
         timeoutHandle.unref();
       }
@@ -299,6 +301,7 @@ const runDailyQuest = async ({
         }
         new Logger({
           type: 'questInfo',
+          username: runtime.state.username,
           data: formatQuestReport(runtime.state)
         });
       }
@@ -332,9 +335,10 @@ const runDailyQuest = async ({
         }
       }
 
+      const onlineQuests: Array<Promise<PromiseSettledResult<unknown>>> = [];
       // AWA在线时长
       if (awaQuests.includes('timeOnSite') && runtime.state.questInfo.timeOnSite?.addedArp !== runtime.state.questInfo.timeOnSite?.maxArp) {
-        trackQuest('AWA TimeOnSite', trackRunStep('AWA TimeOnSite', () => TimeOnSiteTask.do(runtime, shutdownController.signal)));
+        onlineQuests.push(trackQuest('AWA TimeOnSite', trackRunStep('AWA TimeOnSite', () => TimeOnSiteTask.do(runtime, shutdownController.signal))));
       }
       if (!await sleep(10, shutdownController.signal)) {
         return false;
@@ -380,13 +384,38 @@ const runDailyQuest = async ({
           return false;
         }
         if (!twitchBonusLoaded || !runtime.state.twitchComplete) {
-          trackQuest('Twitch', trackRunStep('Twitch', runTwitch));
+          onlineQuests.push(trackQuest('Twitch', trackRunStep('Twitch', runTwitch)));
           if (!await sleep(10, shutdownController.signal)) {
             return false;
           }
         } else {
           new Logger(time() + chalk.green(__('twitchTaskCompleted')));
         }
+      }
+
+      if (battlePassEnabled && awaQuests.includes('timeOnSite') && awaQuests.includes('watchTwitch')) {
+        // 只等待两项在线任务，Steam 和社区活动仍可继续运行。
+        // 检查实时进度，避免失败、取消或缺失数据被误判为在线任务完成。
+        trackQuest('Battle Pass online tasks', (async () => {
+          const results = await Promise.all(onlineQuests);
+          const progress = runtime.state.questInfo.timeOnSite;
+          const earned = Number.parseFloat(progress?.addedArp || '');
+          const target = Number.parseFloat(progress?.maxArp || '');
+          if (shutdownController.signal.aborted || results.some((result) => result.status !== 'fulfilled' || result.value !== true) ||
+            !Number.isFinite(earned) || !Number.isFinite(target) || target < 0 || earned < target || !runtime.state.twitchComplete) {
+            return true;
+          }
+          new Logger(time() + chalk.green(__('battlePassOnlineClaim')));
+          const outcome = await trackRunStep('Battle Pass online rewards', () => BattlePassTask.runDetailed(runtime, shutdownController.signal));
+          partialOutcome ||= outcome.status === 'partial';
+          onOutcome?.(outcome);
+          new Logger({
+            type: 'questInfo',
+            username: runtime.state.username,
+            data: formatQuestReport(runtime.state)
+          });
+          return outcome.status !== 'failed';
+        })());
       }
 
       // Steam任务
@@ -466,6 +495,7 @@ const runDailyQuest = async ({
         }
         new Logger({
           type: 'questInfo',
+          username: runtime.state.username,
           data: formatQuestReport(runtime.state)
         });
       }
@@ -525,7 +555,32 @@ const runDailyQuest = async ({
       signal?.removeEventListener('abort', abortFromManager);
       await Promise.allSettled(children);
       if (awaInitialized && runtimeHolder.current) {
+        // 超时和主动停止也要收取本轮已解锁奖励。此时原信号已取消，
+        // 使用独立期限中止在途请求；等待子任务退出后再执行，避免并发领奖。
+        if (battlePassEnabled && terminalOutcome !== 'completed' && (terminalOutcome === 'timeout' || signal?.aborted)) {
+          new Logger(time() + chalk.yellow(__('battlePassShutdownClaim')));
+          const runtime = runtimeHolder.current;
+          const claimSignal = AbortSignal.timeout(30_000);
+          try {
+            await runWithRequestSignal(claimSignal, async () => {
+              await runtime.discoverBattlePass(claimSignal);
+              await trackRunStep('Battle Pass shutdown', () => BattlePassTask.runDetailed(runtime, claimSignal));
+            }, true);
+            new Logger({
+              type: 'questInfo',
+              username: runtime.state.username,
+              data: formatQuestReport(runtime.state)
+            });
+          } catch (error) {
+            new Logger(error);
+          }
+        }
         commitCookie?.(runtimeHolder.current.newCookie);
+      }
+      // 使用补领后的状态生成超时通知，且不把补领成功误报为作业完成。
+      if (terminalOutcome === 'timeout') {
+        await runWithRequestSignal(AbortSignal.timeout(15_000), () => push(`${__('pushTitle')}:\n${__('processTimeout')}\n\n${pushQuestInfoFormat(currentPushInfo())}${globalThis.newVersionNotice}`)
+          .catch((error) => new Logger(error)), true);
       }
     }
   });

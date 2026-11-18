@@ -9,6 +9,7 @@ export interface WebLogEntry {
   data: unknown;
   type: 'log' | 'questInfo';
   scope: LogScope;
+  username?: string;
 }
 
 /** 以先进先出的方式增量计数，更新已有标识时保留其插入顺序。 */

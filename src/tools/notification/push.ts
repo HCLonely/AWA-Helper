@@ -39,6 +39,7 @@ export const push = async (message: string): Promise<void> => {
 
 type ReportValue = Record<string, string | number>;
 interface PushQuestInfo {
+  username?: string;
   report: Record<string, ReportValue>;
   dailyArp: string;
   signArp: {
@@ -145,5 +146,7 @@ export const pushQuestInfoFormat = (quest?: PushQuestInfo): string => {
     battlePassRows.join('\n')
   ].filter(Boolean);
   const body = sections.join('\n---\n');
-  return `👉${__('dailyArp', quest.dailyArp)}\n\n${quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`}${quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`}---${body ? `\n${body}` : ''}`;
+  const username = quest.username?.replace(/\s+/g, ' ').trim();
+  const userLine = username ? `👤${__('pushUser')}: ${username}\n\n` : '';
+  return `${userLine}👉${__('dailyArp', quest.dailyArp)}\n\n${quest.signArp.daily ? `✔️${__('dailySign', quest.signArp.daily)}` : `⚠️${__('dailySign', '-')}`}${quest.signArp.monthly ? `✔️${__('monthlySign', quest.signArp.monthly)}` : `⚠️${__('dailySign', '-')}`}---${body ? `\n${body}` : ''}`;
 };

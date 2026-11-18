@@ -87,6 +87,7 @@ export class Logger {
         id: this.id,
         data: 'data' in value ? value.data : undefined,
         type: 'questInfo',
+        username: 'username' in value && typeof value.username === 'string' ? value.username : undefined,
         scope: this.scope
       };
       broadcastWebUi(entry);

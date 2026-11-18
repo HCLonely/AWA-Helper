@@ -15,6 +15,7 @@
   interface WebUIMessage {
     type?: string;
     scope?: string;
+    username?: string;
     id?: string | number;
     data?: QuestData | string;
     [key: string]: unknown;
@@ -42,8 +43,15 @@
     }
     return result;
   }
-  function generateTaskInfo(data?: QuestData): void {
+  function generateTaskInfo(data?: QuestData, username?: string): void {
     if (data) {
+      const user = document.getElementById('quest-user');
+      const name = document.getElementById('quest-username');
+      if (user && name) {
+        const text = typeof username === 'string' ? username.replace(/\s+/g, ' ').trim() : '';
+        name.textContent = text;
+        user.hidden = !text;
+      }
       Object.entries(data).filter(([name]) => name.includes(__('dailyTask', ''))).forEach(([name, value], index) => {
         if (value.link) {
           try {
@@ -300,7 +308,7 @@
             continue;
           }
           if (value.type === 'questInfo') {
-            generateTaskInfo(value.data as QuestData);
+            generateTaskInfo(value.data as QuestData, value.username);
             continue;
           }
           queueLog(value.id as number, String(value.data ?? ''));
@@ -308,7 +316,7 @@
       } else if (data.type === 'log' && data.scope === 'dailyQuest') {
         queueLog(data.id as number, String(data.data ?? ''));
       } else if (data.type === 'questInfo' && data.scope === 'dailyQuest') {
-        generateTaskInfo(data.data as QuestData);
+        generateTaskInfo(data.data as QuestData, data.username);
       }
     };
   }

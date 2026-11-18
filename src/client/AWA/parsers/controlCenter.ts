@@ -14,6 +14,14 @@ export type { ControlCenterSnapshot } from '../types';
  * @returns `ControlCenterSnapshot`，parseControlCenter 解析得到的结构化结果。
  */
 export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI = load(html)): ControlCenterSnapshot => {
+  let username: string | undefined;
+  // 页面以 JSON 字符串形式赋值，使用 JSON.parse 还原转义字符，不执行网页脚本。
+  const rawUsername = html.match(/\buser_username\s*=\s*("(?:\\.|[^"\\])*")/)?.[1];
+  if (rawUsername) {
+    try {
+      username = (JSON.parse(rawUsername) as string).trim() || undefined;
+    } catch (_error) { /* 可选用户名解析失败时，不影响任务状态识别。 */ }
+  }
   const rewardBonusArp = html.match(/bonusCalendarArp.*?=.*?([\d]+?)/)?.[1] || '';
   const signArp: ControlCenterSnapshot['signArp'] = {};
   const consecutive = html.match(/consecutive_logins.*?=.*?({.+?})/)?.[1];
@@ -139,6 +147,7 @@ export const parseControlCenter = (html: string, baseURL: string, $: CheerioAPI 
     dailyArp,
     signArp,
     promotionalCalendarInfo,
+    username,
     userProfileUrl: html.match(/user_profile_url.*?=.*?"(.+?)"/)?.[1],
     taskType: html.match(/user_country.*?=.*?"(.+?)"/)?.[1] === 'US' ? 'US' : 'New',
     posts: $('.featured-row-News a[href*="/ucf/show/"]').toArray().flatMap((link) => $(link).attr('href')?.match(/ucf\/show\/([\d]+)/)?.[1] || []),

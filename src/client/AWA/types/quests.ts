@@ -13,6 +13,7 @@ export interface GetStartedItem {
 }
 export interface ControlCenterSnapshot {
   questInfo: questInfo;
+  username?: string;
   userProfileUrl?: string;
   dailyQuestLink?: string;
   dailyArp: string;

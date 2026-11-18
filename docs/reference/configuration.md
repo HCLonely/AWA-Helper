@@ -145,7 +145,8 @@ pusher:
 
 不同平台所需字段不同，具体参数请参考 [all-pusher-api](https://github.com/HCLonely/all-pusher-api)。不要把包含 Cookie、密钥或推送令牌的 `config.yml` 提交到版本库。
 
-启用时必须提供非空的 `platform` 和非空对象 `key`；可通过对象 `pusher.options` 传入平台附加选项。DailyQuest 结果按每日任务、在线任务、Steam、社区活动、日历奖励和 Battle Pass 分组，展示 ARP、领取进度及失败奖励；推送使用纯文本格式。
+启用时必须提供非空的 `platform` 和非空对象 `key`；可通过对象 `pusher.options` 传入平台附加选项。
+DailyQuest 结果按每日任务、在线任务、Steam、社区活动、日历奖励和 Battle Pass 分组，展示 ARP、领取进度及失败奖励；推送使用纯文本格式。
 
 ### Steam 社区活动游戏信息
 

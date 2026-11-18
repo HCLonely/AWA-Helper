@@ -31,6 +31,7 @@ export interface BattlePassRunState {
 
 export class DailyQuestState {
   questInfo: questInfo = {};
+  username?: string;
   userProfileUrl?: string;
   dailyQuestLink?: string;
   controlCenterBattlePassUrl?: string;

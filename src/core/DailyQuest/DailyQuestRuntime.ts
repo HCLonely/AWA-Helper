@@ -138,6 +138,7 @@ export class DailyQuestRuntime {
         };
       }
       const snapshot = parseControlCenter(html, this.awa.context.baseURL, page);
+      this.state.username = snapshot.username || this.state.username;
       this.state.userProfileUrl = snapshot.userProfileUrl || this.state.userProfileUrl;
       // 发布新进度前更新遗物加成，避免心跳按旧上限判断完成。
       if (this.refreshTwitchBonus && !await this.loadTwitchBonus()) {
@@ -194,6 +195,7 @@ export class DailyQuestRuntime {
       }
       new Logger({
         type: 'questInfo',
+        username: this.state.username,
         data: report
       });
       return {
