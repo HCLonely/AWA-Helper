@@ -3,6 +3,7 @@
  * @description 通过 ASF 查询账户拥有的 Steam 应用标识。
  */
 import { ASFContext } from '../../ASFContext';
+import { ASFError } from '../../ASFError';
 import { executeCommand } from '../commands';
 
 /**
@@ -16,5 +17,24 @@ export const getOwnedGames = async (context: ASFContext, appIds: string[]): Prom
     return [];
   }
   const result = await executeCommand(context, `!owns ${context.botName} ${appIds.join(',')}`);
-  return [...new Set(result.split('\n').flatMap((line) => line.match(/app\/([\d]+)/)?.[1] || []))];
+  const requestedIds = new Set(appIds);
+  const checkedIds = new Set<string>();
+  const ownedIds = new Set<string>();
+  for (const line of result.split(/\r?\n/)) {
+    // 只读取机器人回复的明确状态，避免把未拥有、汇总或游戏名称中的 app/ID 当成拥有记录。
+    const status = line.match(/^\s*<[^>]+>\s*(Owned already|Not owned yet|已拥有|尚未拥有|已擁有|未擁有)\s*[:：]\s*app\/(\d+)(?=\s|$)/i);
+    if (!status || !requestedIds.has(status[2])) {
+      continue;
+    }
+    checkedIds.add(status[2]);
+    if (/^(?:Owned already|已拥有|已擁有)$/i.test(status[1])) {
+      ownedIds.add(status[2]);
+    }
+  }
+  // IPC 成功并不代表拥有状态查询成功；缺少明确状态时不能把游戏当作未拥有并跳过。
+  if (appIds.some((id) => !checkedIds.has(id))) {
+    throw new ASFError('getOwnedGames', 'ASF did not return a recognized ownership status for every requested game', false);
+  }
+  const games = [...ownedIds];
+  return games;
 };
